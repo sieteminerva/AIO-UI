@@ -18,6 +18,11 @@
   --tab-hover-wash: rgba(255, 255, 255, 0.06);
   --tab-active-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   --tab-divider-color: rgba(255, 255, 255, 0.08);
+  /* folder variant: the rule the tabs sit on, the panel surface they lift onto, and the
+     resting wash of an inactive tab */
+  --tab-border-color: var(--app-border-color, rgba(168, 137, 102, 0.28));
+  --tab-folder-surface: var(--app-surface-background-color, #ffffff);
+  --tab-folder-hover: var(--app-surface-muted, rgba(244, 238, 226, 0.7));
 }
 
 .tab {
@@ -143,6 +148,55 @@
         }
         & .btn-title {
           color: var(--tab-active-foreground);
+        }
+      }
+    }
+  }
+
+  /* ====================================================
+     📁 FOLDER VARIANT (`config.variant: "folder"`)
+     A strip of file-folder tabs sitting on a ruled edge. Only the active tab is a real tab:
+     it lifts onto the panel surface and erases the rule beneath it. Top position only — a
+     folder divider only reads along the top rule of its panel.
+     ==================================================== */
+  &.position-top.variant-folder {
+    & > .menu {
+      gap: 0;
+      padding: 0 0.75rem;
+      align-items: flex-end;
+      border-bottom: 2px solid var(--tab-border-color);
+    }
+
+    & > .menu > .button {
+      width: auto;
+      padding: 0.55rem 1.1rem;
+      border: 1px solid transparent;
+      border-bottom: 0;
+      border-radius: 0.75rem 0.75rem 0 0;
+      background: transparent;
+      color: var(--tab-label-color);
+      box-shadow: none;
+
+      &:hover {
+        background: var(--tab-folder-hover);
+        transform: none;
+      }
+
+      &.active {
+        background: var(--tab-folder-surface);
+        border-color: var(--tab-border-color);
+        border-bottom-color: var(--tab-folder-surface);
+        color: var(--tab-accent-strong);
+        box-shadow: none;
+        /* one pixel over the rule, so the active tab is visually continuous with the panel */
+        margin-bottom: -2px;
+        padding-bottom: calc(0.55rem + 2px);
+
+        & .btn-label {
+          color: var(--tab-accent-strong);
+        }
+        & .btn-title {
+          color: var(--tab-title-color);
         }
       }
     }

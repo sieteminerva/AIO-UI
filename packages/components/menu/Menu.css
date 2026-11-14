@@ -20,6 +20,10 @@
   --menu-text-color: var(--app-text-color, #2c251e);
   --menu-muted-color: var(--app-text-accent-color, #6e5f51);
   --menu-hover-background: var(--app-surface-muted, rgba(244, 238, 226, 0.7));
+  /* Current route. A solid accent pill, not the same wash as hover: the two states have to
+     read differently, otherwise the active item looks like the item under the pointer. */
+  --menu-active-background: var(--app-primary-color, darkgoldenrod);
+  --menu-active-color: var(--app-text-on-primary, #fff);
 }
 
 .nav {
@@ -28,11 +32,15 @@
   left: 0;
   right: 0;
   z-index: 1000;
+  /* `border-box`, or the padding is added on top of the width and a host that sizes the bar
+     with `width: 100%` (a docs shell in the flow) pushes it past its column. */
+  box-sizing: border-box;
   max-width: 1280px;
   margin: 0 auto;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
   gap: 1rem;
   padding: 0.95rem 1.2rem;
 
@@ -52,7 +60,10 @@
 
 .nav .navigations {
   display: flex;
-  gap: 0.85rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.25rem 0.85rem;
+  min-width: 0;
   list-style: none;
   margin: 0;
   padding: 0;
@@ -62,7 +73,48 @@
     transform 0.3s;
 }
 
-.nav .navigations a,
+/*
+ * The row is the item, the pill is the link. `@aio-ui/styles` styles any `nav .item` as a
+ * clickable card, and a `li` is not clickable — leaving it as one painted a hover rectangle
+ * around a link that also painted its own, so hover and active fought over the same box.
+ * Reset the row, then give the anchor the three states in priority order: hover, then the
+ * current route (`.is-active`), then the current route under the pointer (restated so a
+ * hover can never lighten the pill back to the wash).
+ */
+.nav .navigations > .item {
+  background: none;
+  color: inherit;
+  padding: 0;
+  border-radius: 0;
+  cursor: default;
+}
+
+.nav .navigations > .item > a {
+  display: block;
+  padding: 0.35rem 0.85rem;
+  border-radius: var(--menu-radius);
+  color: var(--menu-muted-color);
+  text-decoration: none;
+  font-weight: 600;
+  transition:
+    background-color 180ms ease,
+    color 180ms ease;
+
+  &:hover,
+  &:focus-visible {
+    background-color: var(--menu-hover-background);
+    color: var(--menu-heading-color);
+  }
+
+  &.is-active,
+  &.is-active:hover,
+  &.is-active:focus-visible {
+    background-color: var(--menu-active-background);
+    color: var(--menu-active-color);
+    font-weight: 700;
+  }
+}
+
 .nav .actions a {
   display: block;
   color: var(--menu-muted-color);
@@ -153,13 +205,18 @@
   }
 }
 
+/* A sidebar is the same list turned on its side. `height: auto` — the list is as tall as
+   its items, so a host never gets a second scrollbar inside the panel; the page scrolls.
+   The shell that pins the bar to the viewport is the shell's business, not the sheet's. */
 aside.sidebar .nav.vertical,
 aside.sidebar nav.vertical {
   display: flex;
   flex-direction: column !important;
-  height: 100%;
+  height: auto;
   & .navigations {
+    flex: 0 0 auto;
     flex-direction: column !important;
-    padding-top: clamp(3.5rem, 6.5vw, 5.5rem);
+    align-items: stretch;
+    padding-top: 0.5rem;
   }
 }

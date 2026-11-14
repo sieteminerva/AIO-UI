@@ -20,8 +20,27 @@
     box-shadow 0.3s ease;
   display: flex;
   flex-direction: column;
+  /* Fill the column it was given: the row stretches its columns (below), and the plan
+     button is pushed to the bottom by `margin-top: auto`. Without this the cards ended on
+     three different baselines whenever the feature lists differed in length. */
+  height: 100%;
   border-radius: 1.3em;
   background-color: transparent;
+}
+
+/* The cards live in `.row > .column > .card`, and `.row` centres its items by default, so
+   every column used to shrink to its own content. Stretch instead, so the card boxes share
+   one height and only the real difference — the featured middle plan — is bigger. */
+.row:has(> .column > .card.pricing) {
+  align-items: stretch;
+}
+
+.column:has(> .card.pricing) {
+  display: flex;
+}
+
+.column > .card.pricing {
+  flex: 1 1 auto;
 }
 
 .card.pricing:hover {

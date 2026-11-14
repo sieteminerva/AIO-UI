@@ -83,6 +83,15 @@
 }
 
 .modal .close {
+  /* A button centres its glyph, it does not `text-align` it: the × sat low because the
+     line box was taller than the cap height and nothing was centring it vertically. */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  padding: 0;
+  line-height: 1;
+  font-family: inherit;
   text-align: center;
   width: 2.3rem;
   height: 2.3rem;

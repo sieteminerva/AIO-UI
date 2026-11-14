@@ -213,16 +213,20 @@ section:is(.masonry),
     & .close,
     & .next,
     & .previous {
+      /* `box-sizing: border-box` plus zero padding: with the default content-box, a 3rem box
+         plus padding became an ellipse, which is why the arrows looked squeezed flat. */
+      box-sizing: border-box;
       display: flex;
       position: absolute;
       align-items: center;
       justify-content: center;
+      width: 3rem;
+      height: 3rem;
+      padding: 0;
       background: var(--masonry-lightbox-control-background);
       color: var(--masonry-lightbox-control-color);
       border: none;
       border-radius: 50%;
-      width: 3rem;
-      height: 3rem;
       text-align: center;
       cursor: pointer;
       transition: background 0.3s ease;
@@ -230,24 +234,24 @@ section:is(.masonry),
         background: var(--masonry-lightbox-control-hover-background);
       }
       & i.icon {
-        position: relative !important;
+        flex: 0 0 auto;
+        position: static;
         width: 24px;
         height: 24px;
       }
     }
 
-    & .close:not(i.close) {
-      top: 1.5rem !important;
-      right: 1.5rem !important;
+    & .close {
+      top: 1.5rem;
+      right: 1.5rem;
+      /* The × reads as destructive, so it keeps the error colour for its glyph only. */
       & i.icon {
-        background: red;
+        background-color: var(--app-status-error, #ff114d);
       }
-      /* line-height: 1rem; */
     }
 
     & .next,
     & .previous {
-      padding: 10px 2px;
       font-size: 1.3rem;
     }
 

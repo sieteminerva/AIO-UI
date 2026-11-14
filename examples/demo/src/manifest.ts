@@ -166,6 +166,10 @@ export const DEMO: iDemoEntry[] = [
         body: [{ content: "Isi panel A" }, { content: "Isi panel B" }],
       },
     },
+    // The docs shell already shows the default look on every page, so the demo shows the
+    // other one: folder tabs on a ruled edge.
+    config: { menuPosition: "top", variant: "folder" },
+    note: "config: { variant: \"folder\" } draws folder tabs on a ruled edge (top position only)",
   },
   {
     name: "section",
@@ -283,6 +287,8 @@ export const DEMO: iDemoEntry[] = [
     tier: "basic",
     kind: "element",
     // Shape from `content.ts:531` — an **array** of cards: `header`, `body[]`, `price`.
+    // Three plans, not two: the featured middle card is scaled up, and with only two cards
+    // the row had no middle for it to be the middle of.
     payload: [
       {
         header: "Standard",
@@ -301,9 +307,21 @@ export const DEMO: iDemoEntry[] = [
         body: [
           { title: "Speedboat Kilat (Ancol)" },
           { title: "Snorkeling & Island Tour" },
+          { title: "Dokumentasi Drone" },
           { title: "Mulai dari Rp 750.000 / pax", className: "price-tag" },
         ],
         price: 750000,
+        action: { label: "Pilih" },
+      },
+      {
+        header: "Premium",
+        body: [
+          { title: "Private Speedboat" },
+          { title: "Island Tour + Makan Siang" },
+          { title: "Dokumentasi Drone & Foto" },
+          { title: "Mulai dari Rp 1.250.000 / pax", className: "price-tag" },
+        ],
+        price: 1250000,
         action: { label: "Pilih" },
       },
     ],
@@ -458,26 +476,6 @@ export const DEMO: iDemoEntry[] = [
     },
     config: { column: 2, maxDisplayed: 4 },
     note: "config: { column: 2, maxDisplayed: 4 } — the filter list is derived from `category`, never declared",
-  },
-  {
-    name: "input",
-    path: "@aio-ui/input",
-    stylesheet: "@aio-ui/input/input.css",
-    category: "content",
-    tier: "advanced",
-    kind: "element",
-    // A single record (`iBasicInputNode`), not a list. `label` wins over `title`.
-    payload: { type: "text", id: "demo-email", title: "Email address", placeholder: "you@example.com", required: true },
-    variants: [
-      {
-        label: "text + required",
-        payload: { type: "text", id: "demo-email", title: "Email address", placeholder: "you@example.com", required: true },
-      },
-      { label: "number", payload: { type: "number", id: "demo-qty", title: "Jumlah", value: 2, step: 1 } },
-      { label: "textarea", payload: { type: "textarea", id: "demo-note", title: "Catatan", rows: 3 } },
-      { label: "password", payload: { type: "password", id: "demo-pass", title: "Kata sandi", placeholder: "••••••••" } },
-    ],
-    note: "`type` picks the field; a select field needs `config.options`, so it is not modelled as a variant here",
   },
 ];
 

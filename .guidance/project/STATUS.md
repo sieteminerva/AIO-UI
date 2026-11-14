@@ -3,7 +3,7 @@
 > **Rule:** maximum **3** active items, ≤ 80 lines, **overwritten** every session — never appended.
 > Lifecycle: `plan.md` (why) → `NEXT_TASKS.md` (queue) → **this file** (what now). See `AGENT_RULES.md` §9.
 
-Last updated: 2026-11-14
+Last updated: 2026-11-15
 
 ## Active (max 3)
 
@@ -15,6 +15,16 @@ Last updated: 2026-11-14
 
 ## Landed recently
 
+- **Batch 35 (2026-11-15):** the CSS debt list is empty. `Menu.css` owns its own states — the
+  `li` is no longer a clickable `.item` (hover and active were fighting over one box), the current
+  route is a solid accent pill, and `.nav` is `border-box` so a host can size it. The `datalist`
+  dropdown restates its box (it had been losing fill and border on hover) and the file control is
+  a flex row, so the selector button centres itself instead of riding a `bottom: 5px` nudge.
+  `input.css` stops painting file controls as text inputs; the tab gained `variant: "folder"`.
+  Measured: accordion slide 68 → 137 px over 6 frames, lightbox controls 48×48, modal close
+  37×37 flex-centred, pricing cards share one height with the middle one scaled, footer columns
+  on the copyright's axis. Demo: sidebar collapses below the 900 px **split** (not the sheet's
+  768 px), every hash change scrolls to top, the duplicate `input` demo row is gone.
 - **Batch 34 (2026-11-14):** `@aio-ui` **0.2.0** is published — tag `v0.2.0` and the `cdn` branch
   both at `5251e20` (40 packages), the GitHub release carries 43 assets as a pre-release, 10/10
   sampled CDN URLs answer `200`, `checksums.txt` is byte-identical, and `release.test.ts` is
@@ -27,42 +37,17 @@ Last updated: 2026-11-14
   was dead on every form mounted through the registry. `Form` now resolves every phase through
   the active loader and unloads it between prepares; pinned by a `FormModules` case. Housekeeping:
   `orchestrator/layout.json` regenerated (never listed `skeleton`); CDN guide counts → 40/43.
-- **Batch 31 (2026-11-14):** the `#form` docs tree stopped slicing Markdown. `selectOutline`
-  carries the subsections nested under a selection (`#config` renders its `###` blocks — what the
-  engine's own comment promised). `form`/`input`/`id-address` READMEs declare `<!-- part: id=… -->`
-  pointers, with `role=contract` on the four contract sections. Demo: `FORM_TOPICS.sections` →
-  `parts` (`#payload`, `#cascade` …), `pathMarkdown` / `leadOf` / `sectionHeading` /
-  `subsectionHeading` deleted (`leadSentence` lives in `readme.ts`); Usage renders
-  `["@lead", …parts]`, API renders `CONTRACT_PARTS` minus what the topic claims.
-- **Batch 30 (2026-11-14):** docs-shell CSS regression sweep — `Tab.css` `& .menu` / `& .body` →
-  `& > …`; `input.css` select-mode frame/input/chips and the datalist frame; `Form.css` step glyph.
-  Rule + anti-pattern row in `COMPONENT-CONVENTIONS.md` §12/§13.
-- **Batch 29 (2026-11-14):** `markdown` renders document _parts_: `config.outline` (`@title` /
-  `@lead` / `#anchor` / `role:` / `H2 > H3`), invisible `part:` markers, `@markdown>section`.
-- **Batch 28 (2026-11-14):** the Markdown parser moved out of `@aio-ui/utilities` and into its only
-  consumer (naming settled in batch 29). `@aio-ui/utilities` lost the
-  `./Markdown` subpath and 13 barrel names (`api-map.json` updated, 27 → 13 utilities values).
-  Nothing is published for it: the builder imports it relatively, `build-pack` rewrites the
-  emitted specifier to `.js`, and the package surface stays `MarkdownBuilder` only.
-- **Batch 27 (2026-11-14):** the shared-`Config` problem closed at the source. `form/README.md`
-  gained `## Supported syntax` with one `###` per engine (register, validation, cascade,
-  calculation, multistep), each runnable; `readme.ts` gained `subsectionOf()` (fence-aware H3
-  slice), topic `sections` accept `"<H2> > <H3>"`. Skeleton default became a **2000 ms floor**
-  (`"auto"` never painted: a warm sheet settles in one microtask).
-- **Batch 26 (2026-11-14):** `#form` became a docs tree (`#form/<topic>`, ten topics) reusing the
-  `#kitchen` shell. **A topic declares navigation only** — README `source`, claimed `sections`,
-  optional live `demo`; Usage renders lead + claims, API renders the unclaimed contract, and no
-  prose is written beside the READMEs. `__tests__/form-docs.test.ts` fails on a missing README,
-  missing heading, over-claimed topic or unrendered group.
-- **Batches 21–25 (2026-11-14):** skeleton, start to finish — 20 in-flow builders draw their own
-  silhouette, `duration` became a published floor, shapes became bare compounds. The rewrite
-  proved that **Sass-style `&-suffix` is dropped silently by the build** (rule in `AGENTS.md`).
-- **Batch 23 (2026-11-14):** the `isRoot` debt closed — the swap shipped in `dd34f2d`, the
-  fallback now warns once per builder name in development, and `APP.md` carries the rule table.
-  The generator may emit `isRoot: true` (`TASK-builder-array.md` unblocked).
-- **Batch 20 (2026-11-14):** placeholder became the mandatory `@aio-ui/skeleton` package, the
-  optional `Builder.loading?()` hook landed, the hold moved to `base/BaseAdapters/Hydration`
-  (core's `Stylesheets` is loader-only), and the teardown pin became registry-only.
+- **Batches 26–31 (2026-11-14):** the `#form` docs tree went from sliced Markdown to declared
+  _parts_ — a topic names its README `source`, the `sections` it claims and an optional live
+  demo; `selectOutline` carries nested subsections, `role=contract` marks the four contract
+  sections, and the Markdown parser moved out of `@aio-ui/utilities` into its only consumer.
+  `Tab.css` `& .menu` → `& > .menu` (a dropdown popover inside a panel was inheriting the tab
+  strip), and the skeleton default became a **2000 ms floor** (`"auto"` never painted).
+- **Batches 20–25 (2026-11-14):** skeleton, start to finish — 20 in-flow builders draw their
+  own silhouette, `duration` became a published floor, placeholder became the mandatory
+  `@aio-ui/skeleton` package with the optional `Builder.loading?()` hook, the hold moved to
+  `base/BaseAdapters/Hydration`, and the `isRoot` debt closed (`dd34f2d`, rule table in
+  `APP.md`). The rewrite proved that **Sass-style `&-suffix` is dropped silently by the build**.
 - **Batches 15–19 (2026-11-13):** anti-FOUC gate collapsed (family → `0.2.0`), three leak classes
   and L6 closed with measurements (`APP-LIFECYCLE.md` L1/L2/L5/L6), `#form` docs synced.
 

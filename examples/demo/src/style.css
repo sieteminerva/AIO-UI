@@ -63,7 +63,8 @@ header.docs-head {
 
   /*
    * Demo-only: `Menu.css` pins `.nav` to the viewport (`position: fixed`), which in a docs
-   * shell would float over the content. The top bar sits in the flow instead.
+   * shell would float over the content. The top bar sits in the flow instead. Its width is
+   * `100%` of this column and the sheet is `border-box`, so it can never overflow the page.
    */
   & .nav {
     position: static;
@@ -72,26 +73,6 @@ header.docs-head {
     border: 1px solid var(--app-border-color, #e2e2e6);
     border-radius: var(--app-component-border-radius, 1rem);
     box-shadow: none;
-  }
-
-  /* `Menu.css` ships no active state for links, so the shell marks the current route. */
-  & .navigations a {
-    padding: 0.3rem 0.85rem;
-    border-radius: 9999px;
-    transition:
-      background 0.2s ease,
-      color 0.2s ease;
-
-    &:hover {
-      background: var(--app-surface-muted, #f0f0f2);
-      color: var(--app-text-color, #111);
-    }
-
-    &.is-active {
-      background: var(--app-surface-muted, #f0f0f2);
-      color: var(--app-text-heading-color, #111);
-      font-weight: 700;
-    }
   }
 }
 
@@ -114,38 +95,23 @@ header.docs-head {
 
 /*
  * EXTRACT → packages/styles/src/variables.css
- * `Menu.css` reads its own token namespace (--surface-bg, --text-heading, --border-soft,
- * --radius-component, --shadow-soft, --surface-muted, --text-main, --text-muted) that no
- * package defines yet, so every colour in it resolves to nothing. Mapping that namespace
- * onto the --app-* tokens is what makes the menu render at all; it belongs in
- * variables.css, not in the demo.
+ * (resolved in batch 30): `Menu.css` now declares its own `--menu-*` layer, derived from the
+ * `--app-*` tokens, so the shell no longer bridges a private namespace from here.
  */
-.docs-top,
-.docs-aside {
-  --surface-bg: var(--app-surface-background-color, #fff);
-  --surface-strong: var(--app-surface-strong, #fff);
-  --surface-muted: var(--app-surface-muted, #f4eee2);
-  --border-soft: var(--app-border-color, #e2e2e6);
-  --text-heading: var(--app-text-color, #111);
-  --text-main: var(--app-text-color, #111);
-  --text-muted: var(--app-text-accent-color, #5b5b63);
-  --shadow-soft: var(--app-shadow-soft, none);
-  --radius-component: var(--app-component-border-radius, 1rem);
-}
-
 .docs-aside {
   & .nav {
     position: sticky;
     top: var(--app-gap);
+    /*
+     * The list is as tall as its items. It used to carry `max-height` plus its own
+     * `overflow-y`, which put a second scrollbar inside the panel on a wide screen and
+     * made the page's own scrollbar ambiguous. `auto` here means: page scrolls, panel does
+     * not, and neither axis can grow a gutter.
+     */
     height: auto;
     max-width: none;
-    /*
-     * The list is taller than a short viewport (13 components in 3 tiers). Sticky plus its
-     * own scroll keeps every tier reachable instead of clipping the last ones under the fold.
-     */
-    max-height: calc(100dvh - (var(--app-gap) * 2));
-    overflow-y: auto;
-    overscroll-behavior: contain;
+    max-height: none;
+    overflow: visible;
     border: 1px solid var(--app-border-color, #e2e2e6);
     border-radius: var(--app-component-border-radius, 1rem);
     box-shadow: var(--app-shadow-soft, none);
@@ -161,12 +127,6 @@ header.docs-head {
     cursor: default;
     pointer-events: none;
   }
-
-  & .navigations > .item > a.is-active {
-    background: var(--app-surface-muted, #f4eee2);
-    color: var(--app-text-color, #111);
-    font-weight: 700;
-  }
 }
 
 /*
@@ -174,15 +134,18 @@ header.docs-head {
  * `Menu.css` hides `.navigations` behind the hamburger under 768px; a docs sidebar wants
  * the list open — but only where it is actually a column. Below that breakpoint the
  * builder's own hamburger is the right behaviour, so the override stops.
+ *
+ * The extra `.nav` in every selector is load-bearing: a component sheet is injected when
+ * the component loads, i.e. after this file, so at equal specificity the sheet would win.
  */
-@media (min-width: 769px) {
-  .docs-aside .navigations {
-    display: flex !important;
-    opacity: 1 !important;
+@media (min-width: 901px) {
+  .docs-aside .nav .navigations {
+    display: flex;
+    opacity: 1;
     padding-top: 0.5rem;
   }
 
-  .docs-aside .hamburger-btn {
+  .docs-aside .nav .hamburger-btn {
     display: none;
   }
 }
@@ -190,6 +153,30 @@ header.docs-head {
 @media (max-width: 900px) {
   .docs {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  /*
+   * The sidebar is no longer a column, so it stops being a panel: it collapses to the
+   * builder's own bar and expands on demand. The breakpoint follows the split (900px), not
+   * the sheet's 768px, because it is the *split* that decides whether the list has room.
+   */
+  .docs-aside .nav {
+    position: static;
+    top: auto;
+    max-height: none;
+    overflow: visible;
+  }
+
+  .docs-aside .nav .hamburger-btn {
+    display: flex;
+  }
+
+  .docs-aside .nav .navigations {
+    display: none;
+  }
+
+  .docs-aside .nav .navigations.open {
+    display: flex;
   }
 }
 

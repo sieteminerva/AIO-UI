@@ -159,6 +159,12 @@ async function start(container: HTMLElement) {
   // Debug handles: the app, and the bus it publishes through (component + page events).
   (globalThis as any).__app = app;
   (globalThis as any).__emitter = emitter;
+
+  // A hash route is not a navigation the browser scrolls for us: switching from `#kitchen/footer`
+  // to `#kitchen/accordion` keeps the old scroll offset, so the reader lands halfway down the
+  // next topic. Reset on every change — including the sidebar and the top menu, which both set
+  // the hash — before the next page renders.
+  window.addEventListener("hashchange", () => window.scrollTo({ top: 0, left: 0 }));
 }
 
 const app = document.querySelector<HTMLDivElement>('#app');

@@ -35,9 +35,6 @@ An item lives in exactly one file: it starts here, moves to `STATUS.md` when wor
 
 ## Generator (`orchestrator/`)
 
-- [ ] Emit `isRoot: true` in the generated `mount()` pass (the renderer owns the swap since
-      `dd34f2d`), then probe `gallery` + `store` in a browser: one wrapper per block, metadata tree
-      still walks, `onDestroy` still runs.
 - [ ] GitHub release workflow: tag → `verify` → `release.mjs` → `publish-cdn.mjs` → upload assets.
 - [ ] Verify `npm i <tarball>` from a clean folder (bundler project) and a Node ESM import.
 - [ ] Feed `parsePreset()`/`parseAiContent()` issues back to the model verbatim (retry loop).
@@ -47,7 +44,6 @@ An item lives in exactly one file: it starts here, moves to `STATUS.md` when wor
 
 - [ ] `store` reference: catalog, product, cart, checkout with a real data shape _(paused;
       `product` now composes grid + detail itself — re-check before resuming)_.
-- [ ] `profile` reference: home, services, contact, portfolio.
 - [ ] `blog` reference: home, post list, post, about.
 - [ ] Document each reference's boundaries: capabilities it proves and avoids.
 

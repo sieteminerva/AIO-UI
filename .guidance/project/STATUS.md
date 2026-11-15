@@ -9,9 +9,9 @@ Last updated: 2026-11-16
 
 | #   | Task                        | Project   | State       | Gate                                                                                            |
 | --- | --------------------------- | --------- | ----------- | ----------------------------------------------------------------------------------------------- |
-| 1   | Page-level components (P9b) | Framework | in progress | `isRoot` and `loading()` settled; generator must emit `isRoot: true` in `mount()` and be probed |
-| 2   | Build `profile` reference   | Examples  | not started | home, services, contact, portfolio render; boundaries documented                                |
-| 3   | Build `blog` reference      | Examples  | not started | home, post list, post, about render; boundaries documented                                      |
+| 1   | Theme console view (fab)    | Framework | in progress | `docs/framework/TASK-theme-console.md` — panels compose inside a 24rem popover; ≤380px no overflow |
+| 2   | Generator emits `isRoot`    | Generator | next        | `mount()` emits `isRoot: true`; `gallery` + `store` probed in a browser                          |
+| 3   | Build `profile` reference   | Examples  | queued      | home, services, contact, portfolio render; boundaries documented                                |
 
 ## Landed recently
 
@@ -47,8 +47,7 @@ Last updated: 2026-11-16
 
 ## Open questions
 
-- **The theme console's view still reads odd** — the docked panels are the colouriser's page
-  sections folded into a 24rem popover; the next session continues there (panel composition,
-  narrow widths), not with new components.
+- **The theme console's view still reads odd** — see `docs/framework/TASK-theme-console.md`
+  (`## Open question`). Nothing is broken; the panels are a page grid inside a popover.
 - Generated-site hosting (GitHub Pages vs Cloudflare Pages) — affects deployment only, not the
   preset contract.

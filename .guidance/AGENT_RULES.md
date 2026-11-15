@@ -150,3 +150,35 @@ ctx ~<n>k / 200k · turn <n> · batch: <name> · CP <n> · gate: <green|red|not 
   threshold decision rest on it alone — confirm before signalling compaction.
 - Turns to the next threshold: 60k = wrap the batch, 80k = commit + signal compaction, 100k = stop.
 - Never pad the footer with prose; one line, same position, every time.
+
+## 12. Memory contract (state + pointers, never a library)
+
+`/memories/` is a **cache of state and pointers**. A fact that needs a paragraph belongs in the
+repo, where it is versioned, diffable and readable by the next agent without a memory dump.
+
+| Scope                         | Holds                                                               | Cap      |
+| ----------------------------- | ------------------------------------------------------------------- | -------- |
+| `/memories/preferences.md`    | user preferences that survive every project (naming, tone, gates)   | 15 lines |
+| `/memories/repo/<band>.md`    | the **outline**: where things live, commands, non-negotiables       | 25 lines |
+| `/memories/session/<task>.md` | the **last 3 CPs** (§10) + one `Next:` line + the task-doc path     | 15 lines |
+
+**Nothing else goes in memory.** No `Landed`, `Shape`, `Traps`, `Done/Remaining` sections, no
+history, no prose. Those are repo artifacts:
+
+| What                                    | Where                                                              |
+| --------------------------------------- | ------------------------------------------------------------------ |
+| why / objective / stages                | `.guidance/plan.md` + `.guidance/plan-<project>.md`                |
+| what next                               | `.guidance/project/NEXT_TASKS.md`                                  |
+| what now (≤ 80 lines, overwritten)      | `.guidance/project/STATUS.md`                                      |
+| the live task's detail, traps, gotchas  | `docs/<band>/TASK-<name>.md`                                       |
+| durable engineering + environment rules | `docs/framework/COMPONENT-CONVENTIONS.md` (§12/§13/§15)            |
+| architecture decisions                  | `.guidance/project/DECISIONS.md`                                   |
+
+- **One narrative home per fact.** If a `.guidance/` or `docs/` file already says it, memory keeps
+  the pointer, not a copy.
+- **Memory never holds a rule that the repo holds.** `/memories/working-agreement.md` is a pointer to
+  this file, not a second copy of it.
+- **Prune at handoff.** A batch that is committed leaves at most three CPs behind; a memory file
+  older than the last three batches is dead — delete it. Commits are the only lossless trail.
+- **Recovery reads four things, in this order:** `git log --oneline -8`, `git status --short`,
+  the session memory file, `STATUS.md`. Then the task doc it names. Nothing else.

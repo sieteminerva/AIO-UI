@@ -534,3 +534,85 @@ Anything that needs a real DOM belongs in the demo page, not the suite.
 - [ ] Test covers `normalizePayload` and key/selector coverage
 - [ ] `README.md` follows §1c — five H2s in order (plus `## Methods` for a module)
 - [ ] `npm run verify` is green
+
+---
+
+## 15. Environment, gates and harness
+
+The rules above are about the code; these are about the machine it runs on. Each one was learned
+by measuring, and each has cost at least one session.
+
+### Dev server
+
+- **Dev resolves the `development` export condition**, so `packages/*/index.ts` is served as source:
+  a TS edit is live with no `build:pkgs`. CSS is injected as text by `examples/vite.lazy-css.mjs`.
+  When a change "does nothing", suspect the cascade, not the build.
+- **Component sheets are injected lazily, i.e. after `examples/demo/src/style.css`.** An
+  equal-specificity override in the demo loses; add a class to the selector instead of `!important`.
+- **Two nested rules of equal specificity are decided by bundle emit order**, not by file order.
+  Add one class (`.nav.nav`) so specificity decides.
+- A new workspace package or a new `exports` entry needs `npm install` **and** a dev restart
+  (`touch examples/demo/vite.config.ts`); the symptom otherwise is
+  `500 Failed to resolve import`.
+- **A route's `components` list is a PRELOAD PLAN, not a mount.** Listing `form` loads `Form.css`
+  and the adapter stack but styles nothing. A surface that hand-builds another primitive's classes
+  must have that primitive's sheets on the page — demo convention is a host link in `main.ts`.
+- **Never re-style an input-primitive surface in a component sheet.** `.field.actions` alignment,
+  glued radii and the action-button box belong to `InputControls/inputControls.css`
+  (`@aio-ui/input/controls.css`); the markup obligation is `.field.actions` with the
+  `select`/`input` as a DIRECT child plus `button.controls[data-position="right"]` beside it.
+
+### Gates
+
+- `npm run verify` = build:pkgs (39 of 40 built; `styles` is CSS-only) → typecheck → check:bounds →
+  check:api → version (40) → test → examples build. Once per batch; markdown-only edits after it do
+  not invalidate it.
+- **`orchestrator/layout.json` drifts silently** — neither `check:bounds` nor `check:api` sees a
+  package missing from the map. Regenerate:
+  `node orchestrator/layout.mjs --out orchestrator/layout.json` (prints "stdout is not a tty" but
+  writes), and audit by diffing its keys against `packages/**/package.json`.
+- `node scripts/api.mjs --write` and `scripts/release.mjs` need a real tty — run them bare.
+- `.draft/release/v<version>/` is a snapshot: after any `exports`/subpath change
+  `orchestrator/release.test.ts` fails on a missing file until `release.mjs --version <v> --apply`
+  regenerates it. Without it the cases **skip silently**.
+
+### Terminal (Git-bash on Windows)
+
+- `node` is aliased to `winpty node.exe`; call `node.exe` when stdout is redirected.
+- `node.exe` cannot read git-bash `/tmp` — scratch JSON goes under repo `.draft/`.
+- Git-bash rewrites a `/-x/` argument into `C:/Program Files/Git/-x/`; prefix with
+  `MSYS_NO_PATHCONV=1`.
+- `gh` is not installed: release assets go through `git credential fill` + `curl` (POST
+  `/repos/<owner>/<repo>/releases`, then `uploads.github.com/.../assets?name=<file>`, delete a
+  same-name asset first — 422).
+
+### Browser harness
+
+- Port 5173 serves the demo at base `/demo/`; check the page title before probing. Vite 8 binds
+  `[::1]`, so an external driver needs `--host 127.0.0.1`.
+- Playwright `click()`/`hover()` wait for a stable box and time out on this page — dispatch
+  `page.evaluate(el => el.click())` or move the mouse by coordinates.
+- The shared page is often narrower than 1280×900 and sometimes not visible, so
+  `requestAnimationFrame` never fires and `page.setViewportSize` is ignored.
+- Screenshots cannot be written to `C:\` (EPERM) — use the temp folder.
+- `#kitchen/<name>` is a fragment of the `kitchen` controller (`onPrepare({ fragment })`);
+  `menu type:"sidebar"` treats `navigations[0]` as the brand.
+- **Chrome's computed `grid-template-columns` INCLUDES implicit tracks.** A pinned
+  `grid-column: 2` makes a one-column template still report two values (`0px 273px`), so even an
+  inline `!important` "loses": the placement, not the cascade, laid out the second column. Collapse
+  a pinned grid by resetting `grid-column`/`grid-row` together with the template.
+
+### Known traps in existing code
+
+- **`Base.resolveConfig(defaultOptions: Required<C> | any)` collapses to `any`**, so a builder's
+  default object is never type-checked: a value outside the declared contract compiles and silently
+  does nothing. Read the default block by hand.
+- Masonry: `--masonry-columns` stays at `config.column` (responsive clamps live in CSS) and `.item`
+  must be `display: block`, or filtered cards pile into column 1.
+- `@aio-ui/styles` ships `section { margin: auto; padding: 3rem 0 }` — an auto margin stops a grid
+  item from stretching.
+- `mount()` exists only on elements the DOM renderer created; plain-DOM panels need `appendChild`.
+- `IdAddress` still carries its own `_fetchAPI`; it should depend on `HttpService`.
+- The repo is LITE: optional modules are not bundled and a missing one is a normal state, not an
+  error. FULL (`travel-trip` archives) is older, not a superset — port selectively. Legacy page
+  controllers in `.archives/` are reference only.

@@ -6,9 +6,10 @@
 
 ### 1. Theme console — docked in the fab menu
 
-Colour engine + kit + presets, plus the `ThemeConsole` chrome: one fab panel with style / mode /
-colour switches, tokens broadcast to `<html>`; `fab-menu` now accepts an `HTMLElement` payload.
-**Open:** the panel composition inside a 24rem popover.
+Colour engine + kit + presets, plus the `ThemeConsole` chrome: one fab panel with a mode switch,
+an evenly spread Mixer | Report rail and one drawer open at a time, tokens broadcast to `<html>` and
+kept in ONE persisted config so the page and the panel can never disagree.
+**Open:** the drawers still carry the colouriser's page-only preview sections (ramps, palette).
 → `examples/demo/src/ThemeConsole/TASKS.md`
 
 ### 2. Menu — recursive submenus and a compact strip

@@ -126,35 +126,42 @@ export function formApiPanel(topic: iFormTopic, build: BuildFn): HTMLElement {
 }
 
 /**
- * The sidebar: one `menu` with `type: "sidebar"`, grouped by topic group.
+ * The sidebar: one `menu`, `position: "left sticky"`, grouped by topic group.
  *
- * Brand and group headings are titles, not destinations — `onNavigate` swallows them, the same
- * way `#kitchen` swallows its tier headings. A topic row carries the fragment.
+ * A group heading is a BRANCH, not a look-alike link. It used to be pushed as an ordinary
+ * navigation carrying `className: "group"` and `href: "#form"` — an item that swallows its
+ * own click and is styled by nothing, so the list rendered it as a dead row among the live
+ * ones and (because the config also asked for a `type: "sidebar"` the builder no longer
+ * knows) the whole column laid itself out sideways.
+ *
+ * `activation: "always"` — a docs column reads better with every group open; the sheet still
+ * knows how to collapse it, and `property: "children"` is the key the data uses here.
  */
 export function mountFormSidebar(host: HTMLElement, build: BuildFn, activeId: string): void {
-  const navigations: Record<string, string>[] = [{ label: "Form docs", href: "#form" }];
-
-  for (const group of FORM_GROUPS) {
+  const navigations = FORM_GROUPS.flatMap((group) => {
     const rows = FORM_TOPICS.filter((topic) => topic.group === group);
-    if (!rows.length) continue;
+    if (!rows.length) return [];
 
-    navigations.push({ label: group, href: "#form", className: "group" });
-    for (const topic of rows) {
-      navigations.push({
-        label: topic.label,
-        href: topicHref(topic),
-        ...(topic.id === activeId ? { className: "is-active" } : {}),
-      });
-    }
-  }
+    return [
+      {
+        label: group,
+        children: rows.map((topic) => ({
+          label: topic.label,
+          href: topicHref(topic),
+          ...(topic.id === activeId ? { className: "is-active" } : {}),
+        })),
+      },
+    ];
+  });
 
   mountInto(
     host,
     build("menu", {
-      content: { navigations },
+      content: { brand: { label: "Form docs", href: "#form" }, navigations },
       config: {
-        type: "sidebar",
-        // `form` is the brand and the four group headings: not destinations.
+        position: "left sticky",
+        multilevel: { activation: "always", property: "children", multicolumn: false },
+        // The brand has no page of its own to go back to; the menu passes a bare route.
         onNavigate: (href?: string) => href === "form",
       },
     }),

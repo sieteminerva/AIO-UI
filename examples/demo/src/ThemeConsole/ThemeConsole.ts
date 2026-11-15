@@ -6,6 +6,7 @@ import { Builder } from "@aio-ui/frameworks";
 // lazily loaded by path — the same deal as the archived Editor.
 import { ColorThemeBuilder } from "../ColorTheme/ColorTheme";
 import { THEME_TOKENS_EVENT, type iThemeTokensDetail } from "../ColorTheme/ColorTheme.events";
+import { applyTheme, loadTheme, saveTheme } from "../theme-config";
 
 export type ThemeConsoleElementType =
   | "@console"
@@ -79,12 +80,25 @@ export class ThemeConsoleBuilder extends Builder<ThemeConsoleElementType, iTheme
   }
 
   public prepare(): HTMLElement {
+    // 🔔 THE BRIDGE IS WIRED BEFORE THE CHILD EXISTS. `attach()` initializes each projected
+    // panel, and that first paint is the broadcast this console has to catch — wired in
+    // `initialize()` instead, the announcement was gone before a listener existed and the
+    // page stayed on the app default while the panel showed its own theme.
+    this.#listen();
+
     const root = this.render("@console")!;
 
-    // 🧩 CHILD INSTANTIATED HERE — nothing is registered anywhere: the console
-    // owns its theme builder, and that builder projects its own configurator and
-    // output panels into the slots declared in this builder's config.slots.
-    this.#colorizer = new ColorThemeBuilder({ themeId: this.config.themeId });
+    // 🧩 CHILD INSTANTIATED HERE — nothing is registered anywhere: the console owns its
+    // theme builder, and that builder projects its own configurator and output panels into
+    // the slots declared in this builder's config.slots. It is SEEDED from the ONE theme
+    // config, so a route change no longer resets the panel to the construction defaults.
+    const saved = loadTheme();
+    this.#colorizer = new ColorThemeBuilder({
+      themeId: this.config.themeId,
+      ...(saved
+        ? { preset: saved.preset, primary: saved.primary, accent: saved.accent, mode: saved.mode }
+        : {}),
+    });
     this.#colorizer
       .attach("@colorizer>configurator", "color-configurator")
       .attach("@colorizer>output", "color-report")
@@ -100,20 +114,23 @@ export class ThemeConsoleBuilder extends Builder<ThemeConsoleElementType, iTheme
         const report = this.render("@console>color-report")!;
         const mode = this.render("@console>mode")!;
 
-        // `panel` is welded onto the projected node, so the sheet can lay out a
-        // drawer without knowing which colouriser key landed there.
-        configurator.className = "panel";
-        report.className = "panel";
+        // `drawer` is welded onto the projected node, so the sheet can lay out a drawer
+        // without knowing which colouriser key landed there. NOT `panel`: that is the fab's
+        // own class, and a host rule aimed at the popover would size the drawers too.
+        configurator.className = "drawer";
+        report.className = "drawer";
 
+        // Mode is not a drawer: it is the one setting always worth a click, so it keeps
+        // the top row and the two panels take turns below it. Order matters — CSS places
+        // them by position in this grid.
         const rail = document.createElement("div");
         rail.className = "rail";
         rail.append(
           this.render("@console>trigger", { target: "color-configurator", id: "theme-mixer", label: "Mixer" })!,
           this.render("@console>trigger", { target: "color-report", id: "theme-report", label: "Report" })!,
-          mode,
         );
 
-        el.append(rail, configurator, report);
+        el.append(mode, rail, configurator, report);
         break;
       }
 
@@ -147,35 +164,57 @@ export class ThemeConsoleBuilder extends Builder<ThemeConsoleElementType, iTheme
   }
 
   /**
-   * Triggers and the token bridge.
+   * The token bridge: one theme for the whole demo.
    *
-   * `attach()` already wired the colouriser's own keys; this only owns the
-   * chrome: a trigger toggles `.open` on the panel it names, and the broadcast
-   * is applied to the document so the page behind the panel is the preview.
+   * `attach()` already wired the colouriser's own keys; this only owns the chrome. Every
+   * broadcast is applied to `<html>` AND written to the one theme config, so the page
+   * behind the popover is the preview, the fab panel paints the same tokens, and the next
+   * render starts where this one stopped.
+   */
+  #listen(): void {
+    window.addEventListener(
+      THEME_TOKENS_EVENT,
+      ((event: CustomEvent<iThemeTokensDetail>) => {
+        const { tokens, mode, state } = event.detail;
+        applyTheme({ tokens, mode });
+        saveTheme({ ...state, tokens });
+      }) as EventListener,
+      { signal: this.#abort.signal },
+    );
+  }
+
+  /**
+   * Triggers.
+   *
+   * The two switches are one choice, not two booleans: the popover is 24rem wide, so two
+   * open drawers stack into ~900px of content inside a ~660px panel and the visitor gets
+   * two scrollbars fighting each other. Opening one closes the other, which is what a rail
+   * of drawers means.
    */
   public initialize(root?: HTMLElement): void {
     if (!root) return;
 
     const opts = { signal: this.#abort.signal };
+    const inputs = [...root.querySelectorAll<HTMLInputElement>("input[type='checkbox'][data-target]")];
+    const panelFor = (input: HTMLInputElement) =>
+      root.querySelector<HTMLElement>(`[data-slot="${input.dataset.target}"]`);
 
-    // A switch is its own control: the checkbox carries the state, the panel follows it.
-    for (const input of root.querySelectorAll<HTMLInputElement>("input[type='checkbox'][data-target]")) {
-      const target = input.dataset.target;
-      if (!target) continue;
-
-      input.addEventListener("change", () => {
-        const panel = root.querySelector<HTMLElement>(`[data-slot="${target}"]`);
-        panel?.classList.toggle("open", input.checked);
-      }, opts);
+    for (const input of inputs) {
+      input.addEventListener(
+        "change",
+        () => {
+          if (input.checked) {
+            for (const other of inputs) {
+              if (other === input) continue;
+              other.checked = false;
+              panelFor(other)?.classList.remove("open");
+            }
+          }
+          panelFor(input)?.classList.toggle("open", input.checked);
+        },
+        opts,
+      );
     }
-
-    window.addEventListener(THEME_TOKENS_EVENT, ((event: CustomEvent<iThemeTokensDetail>) => {
-      const { tokens, mode } = event.detail;
-      const style = document.documentElement.style;
-      for (const [name, value] of Object.entries(tokens)) style.setProperty(name, value);
-      style.colorScheme = mode;
-      document.documentElement.dataset.mode = mode;
-    }) as EventListener, opts);
   }
 
   public destroy(): void {

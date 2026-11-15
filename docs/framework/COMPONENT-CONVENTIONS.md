@@ -94,6 +94,7 @@ works while the headings are predictable, so the H2 set is closed and its order 
 | H2                    | Slot                                            | Used by                    |
 | --------------------- | ----------------------------------------------- | -------------------------- |
 | `## Supported syntax` | after `## Config`                               | `markdown`                 |
+| `## Multi-level`      | after `## Config`                               | `menu`                     |
 | `## Methods`          | after `## Tokens`, before `## Wiring checklist` | every `packages/modules/*` |
 | `## Appendix`         | last                                            | `masonry`, `id-address`    |
 

@@ -38,7 +38,7 @@ import tableReadme from "../../../packages/components/table/README.md?raw";
 export const README_REQUIRED = ["Payload", "Config", "Nodes", "Tokens", "Wiring checklist"] as const;
 
 /** The only other H2s a README may carry (see `COMPONENT-CONVENTIONS.md` §1c). */
-export const README_OPTIONAL = ["Supported syntax", "Methods", "Appendix"] as const;
+export const README_OPTIONAL = ["Supported syntax", "Multi-level", "Methods", "Appendix"] as const;
 
 /** Packages whose markup is hand-built rather than produced by a `Builder`. */
 export const PLUGIN_PACKAGES = ["id-address"] as const;

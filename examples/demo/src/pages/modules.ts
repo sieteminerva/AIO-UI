@@ -24,24 +24,22 @@ type BuildFn = (name: string, data?: any) => HTMLElement;
 /**
  * Sidebar.
  *
- * One `menu` with `type: "sidebar"`: the brand is the first navigation (the module split
- * treats entry 0 as the brand), and every other entry is one module. `onNavigate` swallows
- * the brand click, because there is no "modules index" page to go back to.
+ * One `menu`, `position: "left sticky"` — the key the builder reads (`type: "sidebar"` is a
+ * name it no longer knows, so the list laid itself out as a top bar and the rows wrapped
+ * sideways instead of down). The brand is the first navigation, and every other entry is one
+ * module. `onNavigate` swallows the brand click, because there is no "modules index" page.
  */
 function mountSidebar(host: HTMLElement, build: BuildFn, activeName: string): void {
-  const navigations = [
-    { label: "Modules", href: "#modules" },
-    ...MODULES.map((row) => ({
-      label: row.name,
-      href: moduleHash(row.name),
-      ...(row.name === activeName ? { className: "is-active" } : {}),
-    })),
-  ];
+  const navigations = MODULES.map((row) => ({
+    label: row.name,
+    href: moduleHash(row.name),
+    ...(row.name === activeName ? { className: "is-active" } : {}),
+  }));
 
   const menu = build("menu", {
-    content: { navigations },
+    content: { brand: { label: "Modules", href: "#modules" }, navigations },
     config: {
-      type: "sidebar",
+      position: "left sticky",
       // The brand has no destination; a bare route (no fragment) is what the menu passes.
       onNavigate: (href?: string) => !String(href ?? "").includes("/"),
     },

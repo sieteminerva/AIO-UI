@@ -217,9 +217,11 @@ header.docs-head {
  * 180px min-width and no height limit; the docked console needs room, and the
  * console gives each unfolded panel its own scroll area (see `ThemeConsole.css`).
  */
-.theme-switcher .fab .panel {
-  inline-size: min(24rem, 92vw);
-  max-inline-size: min(24rem, 92vw);
+.theme-switcher .fab > .panel {
+  inline-size: 24rem;
+  /* Capped by the VIEWPORT, not by a percentage of it: at 380px `92vw` plus the fab's own
+     20px inset put the panel's left edge off the screen. */
+  max-inline-size: calc(100vw - 2.5rem);
   max-height: min(74vh, 42rem);
   overflow: auto;
 }

@@ -18,7 +18,7 @@ import {
   type ThemeOverrides,
 } from "./ColorTheme.engine";
 import { ColorThemePresets, type iColorThemePreset } from "./ColorTheme.presets";
-import { THEME_TOKENS_EVENT, type iThemeTokensDetail } from "./ColorTheme.events";
+import { THEME_TOKENS_EVENT, type iThemeStateSnapshot, type iThemeTokensDetail } from "./ColorTheme.events";
 
 
 
@@ -53,6 +53,11 @@ export interface iColorThemeConfig extends iBuilderConfig<ColorThemeElementType>
   accent: string; // Default accent color,
   styles: String | Function; // Default css variables,
   mode: "light" | "dark"
+  /**
+   * Preset the state starts on. A host that keeps the theme (the console reads it from
+   * `theme-config.ts`) seeds it here; standalone, the builder starts on its own default.
+   */
+  preset?: string;
   disableValidation?: boolean | undefined;
   validations?: Record<string, ThemeValidationRule>;
   items?: Record<string, ThemeItemConfig>;
@@ -139,7 +144,9 @@ export class ColorThemeBuilder extends Builder<ColorThemeElementType, iColorThem
       bases: { primary: this.config.primary, accent: this.config.accent },
       mode: this.config.mode,
       mixer: { ...ColorThemeEngine.DEFAULT_MIXER },
-      preset: "gum",
+      // A preset NAME is not a picture: `bases`/`mode` come from config above and this only
+      // seeds the select. The caller that seeded them is what keeps the two in step.
+      preset: this.config.preset ?? "gum",
       overrides: Object.fromEntries(
         Object.entries(this.config.items ?? DEFAULT_THEME_ITEMS).map(([key, value]) => [key, { ...value.default }])
       ),
@@ -148,6 +155,8 @@ export class ColorThemeBuilder extends Builder<ColorThemeElementType, iColorThem
 
   /** Abort controller for cleaning up event listeners on destroy. */
   #abort = new AbortController();
+  /** Whether this instance has already announced its first paint (see initialize()). */
+  #announced = false;
   /** 🧲 Unwatch functions for the reactive root sync registered in initialize(). */
   #unwatch: Array<() => void> = [];
 
@@ -188,6 +197,8 @@ export class ColorThemeBuilder extends Builder<ColorThemeElementType, iColorThem
       primary: ColorThemeEngine.DEFAULT_BASES.primary,
       accent: ColorThemeEngine.DEFAULT_BASES.accent,
       mode: "dark",
+      // The preset the state starts on; a host with its own config seeds this.
+      preset: "gum",
       disableValidation: config?.disableValidation ?? false,
       validations: { ...DEFAULT_VALIDATIONS, ...(config?.validations ?? {}) },
       items: { ...DEFAULT_THEME_ITEMS, ...(config?.items ?? {}) },
@@ -599,8 +610,16 @@ export class ColorThemeBuilder extends Builder<ColorThemeElementType, iColorThem
    * this builder stays decoupled from any preview mechanics.
    */
   #broadcastTokens(theme: DerivedTheme): void {
+    // The inputs ride along with the output: a listener can store `state` and hand it back
+    // to the next instance, which is how a host keeps ONE theme across re-renders.
+    const state: iThemeStateSnapshot = {
+      preset: this.#state.preset,
+      primary: this.#state.bases.primary,
+      accent: this.#state.bases.accent,
+      mode: this.#state.mode,
+    };
     window.dispatchEvent(new CustomEvent<iThemeTokensDetail>(THEME_TOKENS_EVENT, {
-      detail: { tokens: theme.tokens, mode: this.#state.mode },
+      detail: { tokens: theme.tokens, mode: this.#state.mode, state },
     }));
   }
 
@@ -727,6 +746,15 @@ export class ColorThemeBuilder extends Builder<ColorThemeElementType, iColorThem
     this.bindState(root, this.#state);
     this.sync(root, this.deriveTheme());
     this.#paintTokens(this.deriveTheme());
+
+    // 🔔 Announce the first paint. The reactive effect below only runs on CHANGE, so a
+    // freshly mounted colouriser used to leave the page on whatever tokens were already
+    // there while its own panels showed the seeded theme — the "page and panel disagree"
+    // look. One broadcast per instance is what makes the host match from the first render.
+    if (!this.#announced) {
+      this.#announced = true;
+      this.#broadcastTokens(this.deriveTheme());
+    }
 
     if (!this.#unwatch.length) {
       this.#unwatch.push(this.proxyRuntime.watchEffect(() => {

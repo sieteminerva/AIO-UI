@@ -1,3 +1,18 @@
+/* Component token layer. The popover used to be a white card with a fixed accent, so a
+   docked widget painted the live theme on the page while the panel it sat in stayed light.
+   Every value here derives from an `--app-*` token, so an app overrides a fab by
+   redeclaring `--fab-*` and nothing else. */
+:root,
+[data-theme] {
+  --fab-surface: var(--app-surface-strong, rgba(255, 255, 255, 0.98));
+  --fab-border-color: var(--app-border-color, #e0e0e0);
+  --fab-text-color: var(--app-text-color, #333333);
+  --fab-muted-color: var(--app-text-accent-color, #888888);
+  --fab-accent-color: var(--app-primary-color, #7b2cbf);
+  --fab-accent-text: var(--app-text-on-primary, #ffffff);
+  --fab-shadow: var(--app-shadow-soft, 0 8px 32px rgba(0, 0, 0, 0.15));
+}
+
 .fab {
   position: fixed;
   z-index: 999999;
@@ -41,22 +56,23 @@
   height: 48px;
   line-height: 1em;
   border-radius: 50%;
-  border: 1px solid #7b2cbf;
-  background: #7b2cbf;
-  color: #ffffff;
+  border: 1px solid var(--fab-accent-color);
+  background: var(--fab-accent-color);
+  color: var(--fab-accent-text);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 20px;
   flex-shrink: 0;
-  box-shadow: 0 4px 16px rgba(123, 44, 191, 0.3);
+  box-shadow: var(--fab-shadow);
   transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
+/* The hover state is a shade of the same accent, so it follows a themed accent too. */
 .fab .trigger:hover {
   transform: scale(1.05);
-  background: #6a1b9a;
+  background: color-mix(in srgb, var(--fab-accent-color) 85%, #000000);
 }
 
 /* (Panel State open) */
@@ -64,11 +80,15 @@
   display: none; /* Dikontrol via JS */
   flex-direction: column;
   gap: 6px;
-  background: rgba(255, 255, 255, 0.98);
+  /* `border-box`, or a host that sizes the panel with `inline-size` gets the padding and the
+     border added on top — at 380px that pushed the panel off the left edge of the screen. */
+  box-sizing: border-box;
+  background: var(--fab-surface);
+  color: var(--fab-text-color);
   padding: 12px;
-  border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
-  border: 1px solid #e0e0e0;
+  border-radius: var(--app-component-border-radius, 12px);
+  box-shadow: var(--fab-shadow);
+  border: 1px solid var(--fab-border-color);
   min-width: 180px;
   backdrop-filter: blur(8px);
   animation: themeWidgetFadeInSlide 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -93,13 +113,14 @@
 .fab .panel .title {
   font-size: 10px;
   font-weight: bold;
-  color: #888;
+  color: var(--fab-muted-color);
   letter-spacing: 0.8px;
   margin-bottom: 4px;
   display: block;
 }
 
-/* Panel Menu */
+/* Panel Menu. The row tints the panel's own text colour instead of naming a grey, so one
+   row renders correctly on a light and on a dark surface. */
 .fab .panel .item.option {
   padding: 8px 12px;
   font-size: 12px;
@@ -109,17 +130,17 @@
   text-align: left;
   transition: all 0.2s ease;
   font-weight: 500;
-  background: #f5f5f5;
-  color: #333333;
+  background: color-mix(in srgb, var(--fab-text-color) 6%, transparent);
+  color: var(--fab-text-color);
 }
 
 .fab .panel .item.option:hover {
-  background: #e8e8e8;
+  background: color-mix(in srgb, var(--fab-text-color) 12%, transparent);
 }
 
 .fab .panel .item.option.active {
-  background: #7b2cbf;
-  color: #ffffff;
+  background: var(--fab-accent-color);
+  color: var(--fab-accent-text);
 }
 
 /* Animation */

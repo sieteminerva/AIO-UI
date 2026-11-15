@@ -32,6 +32,7 @@ import './ColorTheme/ColorTheme.css';
 import './style.css';
 
 import { DEMO, manifestFor } from './manifest';
+import { bootTheme } from './theme-config';
 import { ArticlePage } from './pages/article';
 import { FormPage } from './pages/form';
 import { formManifest } from './form/schema';
@@ -179,6 +180,10 @@ async function start(container: HTMLElement) {
 
 const app = document.querySelector<HTMLDivElement>('#app');
 if (app) {
+  // One theme for the demo (`theme-config.ts`): the stored tokens are painted before the
+  // first render, so the page never flashes the app default ahead of the theme console.
+  bootTheme();
+
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => { start(app).catch(console.error); });
   } else {

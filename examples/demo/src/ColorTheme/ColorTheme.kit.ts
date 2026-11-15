@@ -114,7 +114,12 @@ export class ColorThemeKit {
     const modeInput = root.querySelector<HTMLInputElement>("input[name='mode']");
     if (modeInput) modeInput.checked = mode === "dark";
 
-    const modeLabel = root.querySelector<HTMLLabelElement>(".field:has(.switch.control) label");
+    // The scope may BE the `.field` wrapper: an attached key is projected together with its
+    // wrapper, so a descendant-only lookup finds nothing and the label kept its static
+    // default text (the panel said "light" whatever the mode was).
+    const modeLabel = root.matches(".field")
+      ? root.querySelector<HTMLLabelElement>("label")
+      : root.querySelector<HTMLLabelElement>(".field:has(.switch.control) label");
     if (modeLabel) modeLabel.textContent = mode;
   }
 

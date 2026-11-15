@@ -6,9 +6,9 @@ Why / stages: `.guidance/plan-framework.md`. Engineering rules:
 
 ## Active (max 3)
 
-| #   | Task                     | State       | Gate                                                                                                  |
-| --- | ------------------------ | ----------- | ----------------------------------------------------------------------------------------------------- |
-| 1   | Theme console view (fab) | in progress | `examples/demo/src/ThemeConsole/TASKS.md` — panels compose inside a 24rem popover; ≤380px no overflow |
+| #   | Task                     | State       | Gate                                                                                                     |
+| --- | ------------------------ | ----------- | -------------------------------------------------------------------------------------------------------- |
+| 1   | Theme console view (fab) | in progress | `examples/demo/src/ThemeConsole/TASKS.md` — view composed, gate green; open: page-only sections in the popover |
 
 ## Next
 
@@ -25,6 +25,9 @@ Why / stages: `.guidance/plan-framework.md`. Engineering rules:
 
 ## Landed
 
+- **Batch 39** — theme console composed: mode row + evenly spread rail + one drawer at a time, drawers
+  flattened onto the popover, one persisted theme config (`theme-config.ts`) so page and panel agree;
+  `--fab-*` token layer; `#form`/`#modules` sidebars use `position: "left sticky"` + branch headings.
 - **Batch 38** — `fab-menu` accepts an `HTMLElement` payload; `ThemeConsole` docks the colouriser
   into the fab and writes tokens to `<html>`; the `#theme` route, page and nav leaf are gone.
 - **Batch 37** — recursive menu (`config.multilevel`), class-based branch state, compact strip.

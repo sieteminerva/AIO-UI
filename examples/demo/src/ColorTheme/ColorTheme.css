@@ -171,12 +171,12 @@
   }
 }
 
+/* The page card. The console is NOT here: its panels are flattened onto the popover's own
+   surface by `ThemeConsole.css`, which is the sheet that knows the container. */
 .colorizer .configurator,
 .colorizer .output,
 .editor [data-slot="color-report"],
-.editor [data-slot="color-configurator"],
-.theme-console [data-slot="color-report"],
-.theme-console [data-slot="color-configurator"] {
+.editor [data-slot="color-configurator"] {
   background: var(--app-surface-strong, #ffffff);
   color: var(--app-text-color, #2c251e);
   border: 1px solid var(--app-border-color, #ddd);
@@ -187,13 +187,17 @@
   min-inline-size: 0;
 }
 
-.colorizer .configurator,
-.editor [data-slot="color-configurator"],
-.theme-console [data-slot="color-configurator"] {
+/* Two page columns, so the placement belongs to the page. A `grid-row: 2` here also landed
+   on the console's configurator, where row 2 is the rail: the drawer painted over it. */
+.colorizer .configurator {
   grid-column: 1;
   grid-row: 2;
   justify-content: space-between;
+}
 
+.colorizer .configurator,
+.editor [data-slot="color-configurator"],
+.theme-console [data-slot="color-configurator"] {
   & select,
   & input[type="range"] {
     --input-border-color: var(--app-border-color);

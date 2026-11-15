@@ -6,11 +6,29 @@ import { DEFAULT_MENU_SELECTORS } from "./Menu.kit";
 import type { MenuElementType } from "./Menu.kit";
 import { splitMenuContent } from "./Menu.engine";
 
+type MenuPositionType =
+  | "top"
+  | "top sticky"
+  | "left"
+  | "left sticky"
+  | "right"
+  | "right sticky"
+  | "bottom"
+  | "bottom sticky"
+  ;
+
+interface iMultilevelMenuConfig {
+  // activate recursive child iteration under defined property
+  activation: "always" | "hover" | "click" | Function; // open submenus on hover/click, default `always` it means always shown
+  property: string;
+  multicolumn: boolean; // true: multicolumn + multirow, false: single column + multirow 
+}
+
 export interface iMenuConfig extends iBuilderConfig<MenuElementType> {
   /** 
    * TOTAL EXTRACTED SELECTORS (Semua elemen diekstrak utuh ke sini!)
    */
-  type: "top" | "sidebar"
+
   selectors: Record<MenuElementType, iElementProperty>;
 
   /** Default route */
@@ -20,7 +38,8 @@ export interface iMenuConfig extends iBuilderConfig<MenuElementType> {
 
   /** Valid application routes */
   routes?: string[];
-
+  position?: MenuPositionType;
+  multilevel?: iMultilevelMenuConfig | null;
   onNavigate?: (href?: string) => boolean
 }
 
@@ -60,13 +79,14 @@ export class MenuBuilder extends Builder<MenuElementType, iMenuConfig> {
     const defaultSelectors = DEFAULT_MENU_SELECTORS;
 
     const defaultConfig: Required<iMenuConfig> = {
-      type: "top",
       themeId: "default",
       defaultRoute: "home",
       routes: ["home", "package", "gallery", "dashboard", "wizard"],
       emit: () => { },
       onNavigate(href?: string) { return href ? true : false; },
       namespace: null,
+      position: "top",
+      multilevel: null,
       ...config,
       // 🛡️ MERGE SELECTORS TERPISAH: Jangan biarkan `...config` menggantikan seluruh
       // defaultSelectors dengan selectors parsial (mis. createSidebar hanya mengirim
@@ -104,8 +124,7 @@ export class MenuBuilder extends Builder<MenuElementType, iMenuConfig> {
     if (actions) nav.appendChild(actions);
 
     // `type` decides the shell, not the content: a sidebar is the same nav in a wrapper.
-    if (this.config.type === "sidebar") {
-      nav.classList.add("vertical");
+    if (this.config.position === "left" || this.config.position === "right") {
       const sidebar = this.render("@container", source)!;
       sidebar.appendChild(nav);
       return sidebar;
@@ -131,6 +150,8 @@ export class MenuBuilder extends Builder<MenuElementType, iMenuConfig> {
       "@menu>hamburger": {},
       "@menu>navigations": navigations,
       "@menu>navigations>item": null,
+      "@menu>menus": null,
+      "@menu>menus>item": null,
       "@menu>actions": actions,
     } as Record<MenuElementType, any>;
   }
@@ -151,12 +172,19 @@ export class MenuBuilder extends Builder<MenuElementType, iMenuConfig> {
     hamburger.removeEventListener("click", this.handleToggle);
     hamburger.addEventListener("click", this.handleToggle);
 
+    nav.removeEventListener("keydown", this.handleEscape);
+    nav.addEventListener("keydown", this.handleEscape);
+
     // Reflect the current state on first paint, so `aria-expanded` is never a lie.
     this.setOpen(this.isMenuOpened);
   }
 
   private hamburger: HTMLButtonElement | null = null;
   private navigations: HTMLElement | null = null;
+
+  private handleEscape = (event: KeyboardEvent): void => {
+    if (event.key === "Escape") this.closeSubmenus();
+  };
 
   private handleToggle = (): void => {
     this.isMenuOpened = !this.isMenuOpened;
@@ -196,7 +224,13 @@ export class MenuBuilder extends Builder<MenuElementType, iMenuConfig> {
         break;
 
       case "@menu":
-
+        el.dataset.position = this.config.position;
+        // The activation is a css hook on the bar, not a per-item class: the sheet owns
+        // *when* a branch opens, the builder only says *how* the host asked for it.
+        // A function activation is the host's own wiring, so there is nothing to stamp.
+        if (this.config.multilevel && typeof this.config.multilevel.activation === "string") {
+          el.dataset.multilevel = this.config.multilevel.activation;
+        }
         break;
 
       case "@menu>brand":
@@ -206,17 +240,16 @@ export class MenuBuilder extends Builder<MenuElementType, iMenuConfig> {
         break;
 
       case "@menu>navigations":
-        for (const p of payload) {
-          const item = this.render("@menu>navigations>item", p) as HTMLElement;
-          el.appendChild(item)
-        }
+        this.paintList(el, payload, "@menu>navigations>item");
+        break;
 
+      case "@menu>menus":
+        this.paintList(el, payload, "@menu>menus>item");
         break;
 
       case "@menu>navigations>item":
-        const a = this.render("@menu>item>link", payload) as HTMLAnchorElement
-
-        el.appendChild(a)
+      case "@menu>menus>item":
+        this.paintItem(el, payload);
         break;
 
       case "@menu>item>link": {
@@ -296,6 +329,113 @@ export class MenuBuilder extends Builder<MenuElementType, iMenuConfig> {
         }
         break;
 
+    }
+  }
+
+  // ====================================================
+  // 🪜 MULTI-LEVEL: one list shape, iterated recursively
+  // ====================================================
+
+  /**
+   * The children of one entry, or `null` when it is a leaf.
+   *
+   * The holding property is the host's choice (`config.multilevel.property`), so the data
+   * keeps whatever shape it already had — `children`, `menus`, `submenu`. There is no depth
+   * limit because nothing here recurses by hand: `paintList()` renders `@menu>menus`, and
+   * each of those items comes straight back through this method.
+   */
+  private childrenOf(entry: any): iElementProperty[] | null {
+    const property = this.config.multilevel?.property ?? "children";
+    const raw = entry?.[property];
+    if (!raw) return null;
+
+    const children = Array.isArray(raw) ? raw : [raw];
+    return children.length ? children : null;
+  }
+
+  private paintList(list: HTMLElement, payload: any, itemKey: MenuElementType): void {
+    const entries: iElementProperty[] = Array.isArray(payload) ? payload : payload ? [payload] : [];
+    for (const entry of entries) {
+      const item = this.render(itemKey, entry);
+      if (item) list.appendChild(item);
+    }
+  }
+
+  /**
+   * One `li`. A leaf is a link; a branch is a link plus the same `.menus` list one level
+   * down, marked `.submenu` so the sheet knows it is a disclosure.
+   *
+   * A branch never navigates — its click belongs to the disclosure. A group that is also a
+   * page is expressed by making that page its first child, otherwise one click would have
+   * to mean two things and the pointer would get whichever handler happened to run first.
+   */
+  private paintItem(item: HTMLElement, payload: any): void {
+    const children = this.childrenOf(payload);
+    const activation = this.config.multilevel?.activation ?? "hover";
+
+    if (!children) {
+      const leaf = this.render("@menu>item>link", payload);
+      if (leaf) item.appendChild(leaf);
+      return;
+    }
+
+    item.classList.add("submenu");
+    item.classList.toggle("open", activation === "always");
+    item.classList.toggle("closed", activation !== "always");
+    // A branch lights up when the route lives under it, so the bar still says where you are.
+    if (children.some((child) => /\bis-active\b/.test(String(child?.className ?? "")))) {
+      item.classList.add("is-active");
+    }
+
+    const isOpen = item.classList.contains("open");
+
+    // Supplying `onClick` short-circuits `bindNavigation()` in the link template, which is
+    // what keeps a branch off the route table even when it carries no `href` of its own.
+    const link = this.render("@menu>item>link", {
+      ...payload,
+      // The disclosure glyph is the shared icon set, never a bespoke caret: a branch is
+      // handed the closed arrow unless the data named an icon of its own.
+      icon: payload?.icon ?? "icon arrow right",
+      onClick: (event: MouseEvent) => {
+        event.preventDefault();
+        if (activation === "click") this.toggleSubmenu(item);
+        payload?.onClick?.(event);
+      },
+    });
+    if (!link) return;
+
+    link.setAttribute("aria-haspopup", "true");
+    link.setAttribute("aria-expanded", String(isOpen));
+    // A branch has no `href` on purpose, and an anchor without one is neither focusable nor
+    // keyboard-operable. Restore both instead of inventing a `href="#"` that would pollute
+    // the history.
+    link.setAttribute("tabindex", "0");
+    link.setAttribute("role", "button");
+    link.addEventListener("keydown", (event: KeyboardEvent) => {
+      if (event.key !== "Enter" && event.key !== " ") return;
+      event.preventDefault();
+      link.click();
+    });
+    item.appendChild(link);
+
+    const nested = this.render("@menu>menus", children);
+    if (nested) item.appendChild(nested);
+  }
+
+  private toggleSubmenu(item: HTMLElement): void {
+    const open = item.classList.toggle("open");
+    item.classList.toggle("closed", !open);
+    item.querySelector(":scope > a")?.setAttribute("aria-expanded", String(open));
+  }
+
+  /** Escape closes what a click opened. A hover branch closes by leaving it. */
+  private closeSubmenus(): void {
+    if (this.config.multilevel?.activation === "always") return;
+    const nav = this.load("@menu") as HTMLElement | null;
+    for (const item of nav?.querySelectorAll<HTMLElement>(".item.submenu.open") ?? []) {
+      item.classList.remove("open");
+      item.classList.add("closed");
+      item.querySelector(":scope > a")?.setAttribute("aria-expanded", "false");
     }
   }
 

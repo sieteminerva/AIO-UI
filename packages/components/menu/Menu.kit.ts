@@ -17,6 +17,8 @@ export const ELEMENT_KEYS = [
   "@menu>navigations",
   "@menu>navigations>item",
   "@menu>actions",
+  "@menu>menus",
+  "@menu>menus>item",
   "@menu>item>link",
   "@menu>item>icon",
 ] as const;
@@ -30,9 +32,14 @@ export const DEFAULT_MENU_SELECTORS: Record<MenuElementType, iElementProperty> =
   "@menu": { tagName: "nav", className: "nav" },
   "@menu>brand": { tagName: "div", className: "brand", attrs: { src: "" } },
   "@menu>hamburger": { tagName: "button", className: "hamburger-btn", attrs: { "aria-label": "Toggle menu" } },
-  "@menu>navigations": { tagName: "ul", className: "navigations" },
+  // One class for a list at every depth: `menus`. `navigations` stays on the root only,
+  // because it is the hook the hamburger declares in `aria-controls` and the element the
+  // mobile sheet hides — a role marker, not a second list type.
+  "@menu>navigations": { tagName: "ul", className: "menus navigations" },
   "@menu>navigations>item": { tagName: "li", className: "item" },
   "@menu>actions": { tagName: "div", className: "actions" },
+  "@menu>menus": { tagName: "ul", className: "menus" },
+  "@menu>menus>item": { tagName: "li", className: "item" },
   "@menu>item>link": { tagName: "a" },
   "@menu>item>icon": { tagName: "i", className: "icon" },
 };

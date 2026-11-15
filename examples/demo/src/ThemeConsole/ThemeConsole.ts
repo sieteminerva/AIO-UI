@@ -120,17 +120,18 @@ export class ThemeConsoleBuilder extends Builder<ThemeConsoleElementType, iTheme
         configurator.className = "drawer";
         report.className = "drawer";
 
-        // Mode is not a drawer: it is the one setting always worth a click, so it keeps
-        // the top row and the two panels take turns below it. Order matters — CSS places
-        // them by position in this grid.
+        // All three controls are the same switch, so they share ONE row: a control surface
+        // with two rows of toggles reads as two unrelated groups, and the mode switch is not
+        // a category of its own. Order: the two drawers, then the setting that is always on.
         const rail = document.createElement("div");
         rail.className = "rail";
         rail.append(
           this.render("@console>trigger", { target: "color-configurator", id: "theme-mixer", label: "Mixer" })!,
           this.render("@console>trigger", { target: "color-report", id: "theme-report", label: "Report" })!,
+          mode,
         );
 
-        el.append(mode, rail, configurator, report);
+        el.append(rail, configurator, report);
         break;
       }
 

@@ -6,8 +6,8 @@ Why / stages: `.guidance/plan-framework.md`. Engineering rules:
 
 ## Active (max 3)
 
-| #   | Task                     | State       | Gate                                                                                                     |
-| --- | ------------------------ | ----------- | -------------------------------------------------------------------------------------------------------- |
+| #   | Task                     | State       | Gate                                                                                                           |
+| --- | ------------------------ | ----------- | -------------------------------------------------------------------------------------------------------------- |
 | 1   | Theme console view (fab) | in progress | `examples/demo/src/ThemeConsole/TASKS.md` — view composed, gate green; open: page-only sections in the popover |
 
 ## Next

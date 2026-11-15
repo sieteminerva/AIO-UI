@@ -28,26 +28,47 @@ its page, its `componentRoutes` entry and its nav leaf are gone.
 
 ## Batch 39 — the composition
 
-Three controls on two rows and ONE drawer at a time:
+Three switches on ONE row and ONE drawer at a time:
 
 ```
-mode switch        always visible — the one setting worth a click at any moment
-Mixer | Report     a rail, `justify-content: space-evenly`
-the open drawer    the colouriser's `aside.configurator` / `aside.output`
+Mixer | Report | dark   the rail, `justify-content: space-evenly`
+the open drawer        the colouriser's `aside.configurator` / `aside.output`
 ```
 
+- **The mode switch is a rail switch, not a pill.** All three controls are the input
+  primitive's `.field` + `.switch.control`, so they belong in one line: two rows of toggles read
+  as two unrelated groups, and the mode is not a category of its own. The label is the current
+  mode (`ColorThemeKit.syncModeControl` writes it), so the switch says what it is set to.
 - **The drawers are the popover** (option 1 of the two that were on the table):
   `background: transparent`, `border: 0`, `border-radius: 0`, `padding: 0`, so a page card is no
   longer drawn inside a card.
-- **No `max-block-size`.** The old 52vh cap gave every drawer its own scrollbar inside a popover
-  that was already scrolling. One scroll area now: the popover.
+- **No `max-block-size`** on a drawer. The old 52vh cap gave every drawer its own scrollbar
+  inside a popover that was already scrolling. One scroll area now: the popover. (The token
+  `<pre>` keeps its own bounded box — thousands of pixels of CSS — which is the mockup's own
+  arrangement.)
 - **One drawer at a time.** Two open drawers were ~900px of content inside a ~660px popover.
 - **`grid-template-columns: minmax(0, 1fr)`** — the old auto column was sized by the report's token
   block, so the panels leaned ~7px out of the popover.
 - The welded class is `drawer`, not `panel`: `.panel` is the fab's own class, and a host rule aimed
   at the popover was sizing the drawers too.
 - The mode label reads the real mode again: `ColorThemeKit.syncModeControl` looked for `.field`
-  *inside* its scope, but an attached key's scope **is** the `.field`.
+  _inside_ its scope, but an attached key's scope **is** the `.field`.
+
+## The report drawer had NO rules (and why)
+
+The colouriser's sheet scopes everything under its container: `.colorizer .configurator[…]`,
+`.colorizer .output[…]`. The console hosts those panels through `attach()`, so a drawer carries the
+`configurator` / `output` class but has **no `.colorizer` ancestor** — every nested rule missed it.
+The configurator block happened to list `.theme-console [data-slot="color-configurator"]` at its
+root; the output block did not, so the report rendered as a wall of unstyled text (no grid, no
+`.report-item` rows, no code block box).
+
+Two fixes, both in `ColorTheme.css`:
+
+1. `.theme-console [data-slot="color-report"]` joins the report's root selector, so the whole
+   nested tree applies in the popover.
+2. `grid-column` / `grid-row` moved to their own **page-only** rules. A page placement is a fact
+   about the page grid; on the drawer it created an implicit second column and squeezed the panel.
 
 ## The page and the panel are one theme
 

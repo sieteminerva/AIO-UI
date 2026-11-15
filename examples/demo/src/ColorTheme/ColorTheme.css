@@ -405,10 +405,22 @@
   }
 }
 
+/* Page placement only. A `grid-column` here is a fact about the PAGE grid — it also landed
+   on the console's drawer, where column 2 does not exist, so the report was laid out into
+   an implicit column and the whole report tree lost its rules. */
 .colorizer .output,
 .editor [data-slot="color-report"] {
   grid-column: 2;
   grid-row: 2;
+}
+
+/* The report's own rules, shared by the page column AND the console's drawer. The console
+   hosts this panel through `attach()`, so it has the `output` class but no `.colorizer`
+   ancestor: without its own selector at the root below, not one nested rule applied and the
+   drawer rendered as a wall of unstyled text. */
+.colorizer .output,
+.editor [data-slot="color-report"],
+.theme-console [data-slot="color-report"] {
   & .title {
     margin-block-end: 0.5em;
   }

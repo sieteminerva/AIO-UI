@@ -31,18 +31,9 @@
   }
 
   /*
-   * Mode is not a drawer. It is the one setting worth a click at any moment, so it keeps
-   * the row above the rail and the drawers unfold underneath it — which leaves the rail
-   * purely "which panel am I looking at".
-   */
-  & > [data-slot="color-mode"] {
-    justify-self: center;
-    margin: 0;
-  }
-
-  /*
-   * Two triggers, spaced evenly across the panel width: an edge-to-edge rail reads as a
-   * pair of tabs, which is what it is.
+   * ONE row of three switches: the two drawers and the mode. They are the same widget —
+   * the input primitive's `.field` + `.switch.control` — so they belong in the same line;
+   * a second row made the mode look like a different kind of setting.
    */
   & .rail {
     display: flex;
@@ -50,6 +41,8 @@
     align-items: center;
     gap: 0.25rem 0.75rem;
     min-inline-size: 0;
+    padding-top: 0.5em;
+    padding-bottom: 0.5em;
   }
 
   /*
@@ -84,11 +77,13 @@
   }
 
   /*
-   * The generated token block is a `<pre>`: it is wider than this popover by
-   * design, and the colouriser's own `overflow` rule is scoped to its page mode.
-   * Here the console is the container, so the console is what scrolls it.
+   * The generated token block is a `<pre>`: it is wider than this popover by design, and
+   * the colouriser's own `overflow` rule is scoped to its page mode. Here the console is the
+   * container, so the console is what scrolls it. Its HEIGHT cap stays where the colouriser
+   * put it: the block is thousands of pixels of CSS, and a bounded box that scrolls is the
+   * mockup's own arrangement (`.archives/1x/colorTheme_configurator&report_layout.png`).
    */
-  & .drawer[data-slot] pre {
+  & .panel[data-slot] pre {
     max-inline-size: 100%;
     overflow-x: auto;
   }

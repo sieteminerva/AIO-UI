@@ -3,7 +3,7 @@
 > **Rule:** maximum **3** active items, ≤ 80 lines, **overwritten** every session — never appended.
 > Lifecycle: `plan.md` (why) → `NEXT_TASKS.md` (queue) → **this file** (what now). See `AGENT_RULES.md` §9.
 
-Last updated: 2026-11-15
+Last updated: 2026-11-16
 
 ## Active (max 3)
 
@@ -15,19 +15,25 @@ Last updated: 2026-11-15
 
 ## Landed recently
 
-- **Batch 36 (2026-11-15):** the masonry lightbox is markup again. `@masonry>modal>stage|image|
-caption|title|desc` are declared selectors, so `template()` builds the whole modal from the
-  payload it is handed and nothing writes text afterwards; `_initModal()` only assembles
-  `payloadOf(record)` and re-renders per open (`updateNavigation()` is gone — the arrows read
-  `currentIndex` live). The card, not the `img`, carries the click (`onclick`, one handler that
-  leaves with its node), and `_applyFilter` drops the old cards with `replaceChildren()`. The
-  grid is a preview now: the caption the card reveals on hover is repeated in the lightbox.
+- **Batch 37 (2026-11-16):** the menu is recursive. `config.multilevel.property` names the
+  children key and `paintList()`/`paintItem()` re-enter the builder per level, so depth is
+  unbounded; every list is `ul.menus`, and the root's extra `navigations` is the hamburger's
+  `aria-controls` target, not a second list type. A branch is `li.item.submenu` with `open` /
+  `closed`, never navigates, and draws its glyph from the shared icon set. Below 768px every
+  position becomes the same strip — one `11rem` column per branch, `overflow-x: auto` — so a long
+  list costs the height of its tallest column instead of every row. Also fixed: an explicit
+  `content.brand` no longer eats the first navigation.
+- **Batch 36 (2026-11-15):** the masonry lightbox is markup again —
+  `@masonry>modal>stage|image|caption|title|desc` are declared selectors, so `template()` builds
+  it from the payload and `_initModal()` only re-renders per open (no `updateNavigation()`). The
+  card, not the `img`, carries the click, and the grid is a preview: the caption it reveals on
+  hover is repeated in the lightbox.
 - **Batch 35 (2026-11-15):** the CSS debt list is empty. `Menu.css` owns its own states — the
   `li` is no longer a clickable `.item` (hover and active were fighting over one box), the current
   route is a solid accent pill, and `.nav` is `border-box` so a host can size it. The `datalist`
   dropdown restates its box (it had been losing fill and border on hover) and the file control is
   a flex row, so the selector button centres itself instead of riding a `bottom: 5px` nudge.
-  `input.css` stops painting file controls as text inputs; the tab gained `variant: "folder"`.
+  `input.css` stops painting file controls as text inputs; the tab gained `tabStyle: "folder"`.
   Measured: accordion slide 68 → 137 px over 6 frames, lightbox controls 48×48, modal close
   37×37 flex-centred, pricing cards share one height with the middle one scaled, footer columns
   on the copyright's axis. Demo: sidebar collapses below the 900 px **split** (not the sheet's

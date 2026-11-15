@@ -77,7 +77,35 @@ export interface iDemoEntry {
   note?: string;
 }
 
-const image = (label: string) => `https://placehold.co/600x400/222/fff?text=${encodeURIComponent(label)}`;
+const image = (label: string) => {
+  const size = ["300x300", "600x480", "360x720", "1024x640", "800x600"];
+  const C = ["4f3274", "607d31", "25b298", "8764b5", "1e3a5f", "d6ac23"];
+
+  function shuffle(array: string[]) {
+    let pool: string[] = [];
+    let lastItem: string | null = null;
+
+    // Jika stok warna habis, isi ulang dan kocok dengan algoritma Fisher-Yates
+    if (pool.length === 0) {
+      pool = [...array];
+      for (let i = pool.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [pool[i], pool[j]] = [pool[j], pool[i]];
+      }
+
+      // Cegah warna pertama di kocokan baru sama dengan warna terakhir sebelumnya
+      if (pool[pool.length - 1] === lastItem) {
+        [pool[0], pool[pool.length - 1]] = [pool[pool.length - 1], pool[0]];
+      }
+    }
+
+    lastItem = pool.pop()!;
+    return lastItem;
+
+  }
+
+  return `https://placehold.co/${shuffle(size)}/${shuffle(C)}/fff?text=${encodeURIComponent(label)}`
+};
 
 export const DEMO: iDemoEntry[] = [
   {
@@ -131,7 +159,7 @@ export const DEMO: iDemoEntry[] = [
     },
     // Two slides per view, so the sliding path and the reduced dot count are exercised
     // instead of the default single-slide fade.
-    config: { slidesPerView: 2, animation: "slide-left", showControl: true, showNavigation: true },
+    config: { slidesPerView: 1, animation: "slide-left", showControl: true, showNavigation: true, vertical: false },
     note: "config: { slidesPerView: 2, animation: slide-left } → maxIndex = slides - perView",
   },
   {
@@ -168,8 +196,8 @@ export const DEMO: iDemoEntry[] = [
     },
     // The docs shell already shows the default look on every page, so the demo shows the
     // other one: folder tabs on a ruled edge.
-    config: { menuPosition: "top", variant: "folder" },
-    note: "config: { variant: \"folder\" } draws folder tabs on a ruled edge (top position only)",
+    config: { menuPosition: "top", tabStyle: "folder" },
+    note: "config: { tabStyle: \"folder\" } draws folder tabs on a ruled edge (top position only)",
   },
   {
     name: "section",

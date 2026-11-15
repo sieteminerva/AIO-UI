@@ -31,7 +31,7 @@
   top: 0;
   left: 0;
   right: 0;
-  z-index: 1000;
+  z-index: 10;
   /* `border-box`, or the padding is added on top of the width and a host that sizes the bar
      with `width: 100%` (a docs shell in the flow) pushes it past its column. */
   box-sizing: border-box;
@@ -50,117 +50,98 @@
   box-shadow: var(--menu-shadow);
   border-radius: 0 0 var(--menu-radius) var(--menu-radius);
   transition: all 300ms ease-in;
-}
 
-.nav .brand a {
-  color: var(--menu-heading-color);
-  text-decoration: none;
-  font-weight: 800;
-}
+  & .brand {
+    font-size: clamp(1.2rem, 1.1rem + 0.5vw, 1.45rem);
+    font-weight: 800;
+    & > a {
+      color: var(--menu-heading-color);
+      text-decoration: none;
+      font-weight: 800;
+    }
+  }
 
-.nav .navigations {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0.25rem 0.85rem;
-  min-width: 0;
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  transition:
-    display 0.3s allow-discrete,
-    opacity 0.3s,
-    transform 0.3s;
-}
+  & .navigations {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: stretch;
+    gap: 0.25rem 0.85rem;
+    min-width: 0;
+    list-style: none;
+    /* width: 100%; */
+    margin: 0;
+    padding: 0;
+    transition:
+      background 0.3s ease,
+      border-color 0.3s ease,
+      display 0.3s allow-discrete,
+      opacity 0.3s,
+      transform 0.3s;
+  }
 
-/*
- * The row is the item, the pill is the link. `@aio-ui/styles` styles any `nav .item` as a
- * clickable card, and a `li` is not clickable — leaving it as one painted a hover rectangle
- * around a link that also painted its own, so hover and active fought over the same box.
- * Reset the row, then give the anchor the three states in priority order: hover, then the
- * current route (`.is-active`), then the current route under the pointer (restated so a
- * hover can never lighten the pill back to the wash).
- */
-.nav .navigations > .item {
-  background: none;
-  color: inherit;
-  padding: 0;
-  border-radius: 0;
-  cursor: default;
-}
+  & .actions {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
 
-.nav .navigations > .item > a {
-  display: block;
-  padding: 0.35rem 0.85rem;
-  border-radius: var(--menu-radius);
-  color: var(--menu-muted-color);
-  text-decoration: none;
-  font-weight: 600;
-  transition:
-    background-color 180ms ease,
-    color 180ms ease;
+  & i {
+    display: block;
+    height: 100%;
+    width: 100%;
+  }
 
-  &:hover,
-  &:focus-visible {
-    background-color: var(--menu-hover-background);
+  & .hamburger-btn {
+    display: none;
+    background: none;
+    border: none;
     color: var(--menu-heading-color);
+    cursor: pointer;
+    padding: 0.5rem;
+    margin-left: auto;
   }
 
-  &.is-active,
-  &.is-active:hover,
-  &.is-active:focus-visible {
-    background-color: var(--menu-active-background);
-    color: var(--menu-active-color);
-    font-weight: 700;
+  /*
+     * The row is the item, the pill is the link. `@aio-ui/styles` styles any `nav .item` as a
+     * clickable card, and a `li` is not clickable — leaving it as one painted a hover rectangle
+     * around a link that also painted its own, so hover and active fought over the same box.
+     * Reset the row, then give the anchor the three states in priority order: hover, then the
+     * current route (`.is-active`), then the current route under the pointer (restated so a
+     * hover can never lighten the pill back to the wash).
+     */
+  & .item {
+    background: none;
+    color: inherit;
+    padding: 0;
+    border-radius: 0;
+    cursor: default;
+    font-size: var(--app-font-size-sm);
+    & > a {
+      display: block;
+      padding: 0.35rem 0.85rem;
+      border-radius: var(--menu-radius);
+      color: var(--menu-muted-color);
+      text-decoration: none;
+      font-weight: 600;
+      transition:
+        background-color 180ms ease,
+        color 180ms ease;
+
+      &:hover,
+      &:focus-visible {
+        background-color: var(--menu-hover-background);
+        color: var(--menu-heading-color);
+      }
+
+      &.is-active,
+      &.is-active:hover,
+      &.is-active:focus-visible {
+        background-color: var(--menu-active-background);
+        color: var(--menu-active-color);
+        font-weight: 700;
+      }
+    }
   }
-}
-
-.nav .actions a {
-  display: block;
-  color: var(--menu-muted-color);
-  text-decoration: none;
-  font-weight: 600;
-  height: 100%;
-  width: 100%;
-}
-
-.nav .navigations a i,
-.nav .actions a i {
-  display: block;
-  height: 100%;
-  width: 100%;
-}
-
-.nav .actions {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-}
-
-.nav .actions .item {
-  border-radius: var(--menu-radius);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 5px;
-  color: var(--menu-text-color);
-}
-
-.nav .actions .item:hover {
-  background-color: var(--menu-hover-background);
-  transform: translateY(-1px) !important;
-  box-shadow: var(--menu-shadow);
-  transition: all 1ms ease;
-}
-
-.hamburger-btn {
-  display: none;
-  background: none;
-  border: none;
-  color: var(--menu-heading-color);
-  cursor: pointer;
-  padding: 0.5rem;
-  margin-left: auto;
 }
 
 @media (max-width: 768px) {
@@ -170,31 +151,30 @@
 
   .nav {
     flex-wrap: wrap;
-  }
+    & .actions {
+      width: -webkit-fill-available;
+    }
 
-  .nav .actions {
-    width: -webkit-fill-available;
-  }
+    & .brand {
+      width: 100%;
+      text-align: center;
+      align-items: center;
+    }
 
-  .nav .brand {
-    width: 100%;
-    text-align: center;
-    align-items: center;
-  }
-
-  .nav .navigations {
-    display: none;
-    width: 100%;
-    flex-direction: column;
-    align-items: center;
-    padding-bottom: 1rem;
-    opacity: 0;
-  }
-
-  .nav .navigations.open {
-    display: flex;
-    opacity: 1;
-    transform: translateY(0);
+    & .navigations {
+      display: none;
+      width: 100%;
+      flex-direction: column;
+      align-items: center;
+      padding-bottom: 1rem;
+      opacity: 0;
+      gap: clamp(0.75rem, 1.5vw, 1.75rem);
+      &:is(.open) {
+        display: flex;
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
   }
 
   @starting-style {
@@ -218,5 +198,16 @@ aside.sidebar nav.vertical {
     flex-direction: column !important;
     align-items: stretch;
     padding-top: 0.5rem;
+  }
+}
+
+/* ─── Mobile Responsiveness for Nav ─── */
+@media (max-width: 768px) {
+  nav {
+    padding: 0.85rem 1rem;
+  }
+
+  nav .navigations {
+    display: none; /* Keep clean on small mobile */
   }
 }

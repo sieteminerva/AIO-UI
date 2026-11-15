@@ -15,3 +15,10 @@ Index: `STATUS.md`.
 - Verify `npm i <tarball>` from a clean folder (bundler project) and a Node ESM import.
 - Feed `parsePreset()` / `parseAiContent()` issues back to the model verbatim (retry loop).
 - Regenerate `layout.json` inside the release workflow so the map cannot describe a moved package.
+
+## Landed
+
+- **v0.2.0 pre-release (2026-11-14)** — tag `v0.2.0` on the orphan `cdn` branch of
+  `sieteminerva/-aio-ui-dev`, 43 release assets, CDN base
+  `https://cdn.jsdelivr.net/gh/sieteminerva/-aio-ui-dev@v0.2.0/`. Release order and the `gh`-absent
+  workaround: `docs/live-cdn-repo.md`.

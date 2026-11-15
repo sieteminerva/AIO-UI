@@ -8,7 +8,7 @@ Why / stages: `.guidance/plan-framework.md`. Engineering rules:
 
 | #   | Task                      | State       | Gate                                                                                              |
 | --- | ------------------------- | ----------- | ------------------------------------------------------------------------------------------------- |
-| 1   | Theme console view (fab)  | in progress | `docs/framework/TASK-theme-console.md` — panels compose inside a 24rem popover; ≤380px no overflow |
+| 1   | Theme console view (fab)  | in progress | `examples/demo/src/ThemeConsole/TASKS.md` — panels compose inside a 24rem popover; ≤380px no overflow |
 
 ## Next
 

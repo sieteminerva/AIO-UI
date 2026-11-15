@@ -1,11 +1,11 @@
-> **STEP 0 — memory recovery + claim (mandatory, first action of any session):** `git log --oneline -12`,
-> then `git status --short`, then open your project's status file —
-> `.guidance/project/{framework,gallery,generator}.md`, indexed by `.guidance/project/STATUS.md`
-> — and the active checkpoint `/memories/session/<task>.md`. **Then read the claim board
-> `.guidance/project/AGENTS.md` and take your row before the first edit** — overlapping a live row
-> is a stop-and-ask, not an override. Only then plan. Every finished action category leaves
-> **3 pointer lines** (`CHANGED →`, `PROVED →`, `NEXT →`); see `.guidance/AGENT_RULES.md` §10
-> (checkpoint) and §11 (claims).
+> **STEP 0 — logbook, then claim (mandatory, first action of any session):** `git log --oneline -8`,
+> then `git status --short`, then read **only** `.guidance/project/STATUS.md` — the logbook: three
+> cards, each a one-line summary plus the link to the real detail. Report the three, say the detail
+> is **not** read yet, and ask which card to continue. Open `TASKS.md`, `TASK-*.md` or a band file
+> only **after** the user picks. Then read the claim board `.guidance/project/AGENTS.md` and take
+> your row **before the first edit** — overlapping a live row is a stop-and-ask, not an override.
+> Every finished action category leaves **3 pointer lines** (`CHANGED →`, `PROVED →`, `NEXT →`);
+> see `.guidance/AGENT_RULES.md` §10 (checkpoint), §11 (claims), §13 (logbook).
 
 # AGENTS.md — Generator band (`orchestrator/**`)
 
@@ -62,12 +62,10 @@ SMOKE_BASE=https://cdn.jsdelivr.net/gh/sieteminerva/-aio-ui-dev@v0.1.0/ \
 node .draft/smoke/serve.mjs 5300             # open /.draft/cdn-smoke/store/#checkout
 ```
 
-## Release state (pre-release, live)
+## Release state
 
-Repo `sieteminerva/-aio-ui-dev` (public; `origin`). Tag **`v0.2.0`** points at the orphan **`cdn`**
-branch (jsDelivr serves the import map). 43 release assets. CDN base:
-`https://cdn.jsdelivr.net/gh/sieteminerva/-aio-ui-dev@v0.2.0/`. Never push `main` to the
-`rajutan` remote. Release order and the `gh`-absent workaround: `docs/live-cdn-repo.md`.
+Not tracked here. Facts and dates: `.guidance/project/generator.md` (`## Landed`); the release
+walkthrough is `docs/live-cdn-repo.md`. One rule stays: never push `main` to the `rajutan` remote.
 
 ## Read when relevant
 

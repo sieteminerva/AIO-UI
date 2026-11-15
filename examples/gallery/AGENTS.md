@@ -1,11 +1,11 @@
-> **STEP 0 — memory recovery + claim (mandatory, first action of any session):** `git log --oneline -12`,
-> then `git status --short`, then open your project's status file —
-> `.guidance/project/{framework,gallery,generator}.md`, indexed by `.guidance/project/STATUS.md`
-> — and the active checkpoint `/memories/session/<task>.md`. **Then read the claim board
-> `.guidance/project/AGENTS.md` and take your row before the first edit** — overlapping a live row
-> is a stop-and-ask, not an override. Only then plan. Every finished action category leaves
-> **3 pointer lines** (`CHANGED →`, `PROVED →`, `NEXT →`); see `.guidance/AGENT_RULES.md` §10
-> (checkpoint) and §11 (claims).
+> **STEP 0 — logbook, then claim (mandatory, first action of any session):** `git log --oneline -8`,
+> then `git status --short`, then read **only** `.guidance/project/STATUS.md` — the logbook: three
+> cards, each a one-line summary plus the link to the real detail. Report the three, say the detail
+> is **not** read yet, and ask which card to continue. Open `TASKS.md`, `TASK-*.md` or a band file
+> only **after** the user picks. Then read the claim board `.guidance/project/AGENTS.md` and take
+> your row **before the first edit** — overlapping a live row is a stop-and-ask, not an override.
+> Every finished action category leaves **3 pointer lines** (`CHANGED →`, `PROVED →`, `NEXT →`);
+> see `.guidance/AGENT_RULES.md` §10 (checkpoint), §11 (claims), §13 (logbook).
 
 # AGENTS.md — Gallery band (`examples/gallery/**`)
 
@@ -39,10 +39,10 @@ npm run build    # gallery build (from repo root)
 - The multistep, paragraph-driven form is the main course — style it to match the site.
 - Future i18n: English and Indonesian content objects kept consistent.
 
-## Active roadmap
+## Tasking
 
-`store` (in progress) → `profile` → `blog` manual model references. See
-`.guidance/project/gallery.md`. Official release waits for all four models (`gallery`, `store`,
+This file carries rules only. The queue is `.guidance/project/gallery.md`; live work for a folder
+is that folder's `TASKS.md`. Official release waits for all four models (`gallery`, `store`,
 `profile`, `blog`).
 
 ## Do NOT read by default

@@ -1,17 +1,40 @@
-# Project status — index
+# Logbook — top three
 
-> Read **only** your band's file, then stop. Band rules: that band's `AGENTS.md`. Why:
-> `.guidance/plan*.md`. Decisions: `DECISIONS.md`. Live writers: `AGENTS.md` (claim board).
+> Read this file only at orientation, beside `git log --oneline -8`. Cards are rewritten every
+> session, never appended: each is a summary plus the link to the real detail, which is opened only
+> after the user picks a card (`AGENT_RULES.md` §13).
 
-| Band (folders)                                | Status file    |
-| --------------------------------------------- | -------------- |
-| Framework — `packages/**`, `examples/demo/**` | `framework.md` |
-| Gallery — `examples/gallery/**`                | `gallery.md`   |
-| Generator — `orchestrator/**`                  | `generator.md` |
-| Tooling — `scripts/**`                         | no queue; rules are in `scripts/AGENTS.md` |
+### 1. Theme console — docked in the fab menu
 
-Each project file holds `## Active` (max 3), `## Next` (one line per item) and `## Landed` (the
-last three batches). **Done = delete the line**; the evidence lives in the commit message.
+Colour engine + kit + presets, plus the `ThemeConsole` chrome: one fab panel with style / mode /
+colour switches, tokens broadcast to `<html>`; `fab-menu` now accepts an `HTMLElement` payload.
+**Open:** the panel composition inside a 24rem popover.
+→ `examples/demo/src/ThemeConsole/TASKS.md`
+
+### 2. Menu — recursive submenus and a compact strip
+
+`config.multilevel` (`activation`, `property`, `multicolumn`) beside `position`; a branch is
+`li.item.submenu` with `open`/`closed` and never navigates; below 768px every position becomes one
+scrolling strip. Shipped.
+→ `packages/components/menu/README.md` (`## Multi-level`, `## Compact viewport`)
+
+### 3. Masonry — the lightbox is part of the payload
+
+`@masonry>modal>stage|image|caption|title|desc` are declared selectors, so `template()` builds the
+lightbox and re-renders it per open. Shipped; the column distribution is still open.
+→ `packages/components/masonry/README.md`
+
+## Where everything else lives
+
+| Need                                | File                                        |
+| ----------------------------------- | ------------------------------------------- |
+| Framework queue + landed            | `.guidance/project/framework.md`            |
+| Gallery queue + landed              | `.guidance/project/gallery.md`              |
+| Generator queue + landed            | `.guidance/project/generator.md`            |
+| Rules — process                     | `.guidance/AGENT_RULES.md`                  |
+| Rules — component + environment     | `docs/framework/COMPONENT-CONVENTIONS.md`   |
+| Live writers (lock)                 | `.guidance/project/AGENTS.md`               |
+| Architecture decisions              | `.guidance/project/DECISIONS.md`            |
 
 Last updated: 2026-11-16
 

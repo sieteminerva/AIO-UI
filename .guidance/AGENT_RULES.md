@@ -65,7 +65,7 @@ One item lives in **exactly one** file. Never duplicate, never append history.
 | -------------------------------- | -------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
 | `.guidance/plan*.md`             | **why** — objective, decisions, stages, long-term order  | `plan.md` index (§0/§4) + `plan-{framework,gallery,generator}.md`                           |
 | `.guidance/project/<project>.md` | **what now + what next**, one file per project           | `## Active` (max 3) / `## Next` / `## Landed` — `framework.md`, `gallery.md`, `generator.md` |
-| `.guidance/project/STATUS.md`    | **index only** — which file to read for your band        | ≤ 30 lines, one table                                                                       |
+| `.guidance/project/STATUS.md`    | **logbook** — top 3 cards + where the rest lives         | ≤ 40 lines, rewritten every session                                         |
 
 - **One project, one file.** A session reads its own project file plus its band's `AGENTS.md`;
   nothing else. Shared files are `AGENTS.md` (claim board) and `STATUS.md` (index).
@@ -102,8 +102,9 @@ NEXT    → <one action> | blocks: <none|item>
   lives in commits.
 - **Commits are the only lossless trail.** A batch that passed a gate must be committed with
   `finding → fix → evidence` bullets; nothing else survives compaction intact.
-- **Recovery (new chat, ≤ 3 turns):** `git log --oneline -15` + `git status --short` → view
-  `/memories/session/<task>.md` → read `.guidance/project/STATUS.md`. Then state the plan.
+- **Recovery (new chat, ≤ 3 turns):** `git log --oneline -8` + `git status --short` → read the
+  logbook `.guidance/project/STATUS.md` → report its three cards and ask which one to continue
+  (§13). Detail docs open only after that answer.
 - **Prefix:** the same `STEP 0` block sits at the top of **all 6** band `AGENTS.md` files
   (root router + 5 bands). Edit all six or none — a band opened standalone must still carry it.
   The block also reads the claim board (§11), so a session cannot start on an owned scope.
@@ -174,7 +175,7 @@ history, no prose. Those are repo artifacts:
 | --------------------------------------- | ------------------------------------------------------------------ |
 | why / objective / stages                | `.guidance/plan.md` + `.guidance/plan-<project>.md`                |
 | what now + what next (per project)      | `.guidance/project/<project>.md`                                   |
-| which project file to read              | `.guidance/project/STATUS.md` (index, ≤ 30 lines)                  |
+| which project file to read              | `.guidance/project/STATUS.md` (logbook, ≤ 50 lines)                |
 | the live task's detail, traps, gotchas  | `docs/<band>/TASK-<name>.md`                                       |
 | durable engineering + environment rules | `docs/framework/COMPONENT-CONVENTIONS.md` (§12/§13/§15)            |
 | architecture decisions                  | `.guidance/project/DECISIONS.md`                                   |
@@ -185,5 +186,51 @@ history, no prose. Those are repo artifacts:
   this file, not a second copy of it.
 - **Prune at handoff.** A batch that is committed leaves at most three CPs behind; a memory file
   older than the last three batches is dead — delete it. Commits are the only lossless trail.
+
+## 13. Two document types — outline vs detail
+
+A session pays for every file it opens, so each document is one of two things: **outline** (read at
+orientation, tiny) or **detail** (opened only for the thing being worked on).
+
+### Outline — read at orientation
+
+| File                          | Holds                                                  | Cap      |
+| ----------------------------- | ------------------------------------------------------ | -------- |
+| `AGENTS.md` ×6 + `README.md`  | rules, scope, where to look — **never a task list**     | as is    |
+| `.guidance/project/STATUS.md` | **logbook**: three cards, each one line + a link        | 50 lines |
+| `.guidance/project/<band>.md` | `## Active` (max 3) / `## Next` / `## Landed` (3)       | 40 lines |
+| `/memories/`                  | preferences, band outline, last 3 CPs                   | §12      |
+
+### Detail — opened only for the current task
+
+| File                                        | Holds                                              |
+| ------------------------------------------- | -------------------------------------------------- |
+| `<folder>/TASKS.md`                         | one folder's live work: what, next, its own traps   |
+| `docs/<band>/TASK-<name>.md`                | a task that spans more than one package             |
+| `.guidance/plan-<project>.md`               | why / stages / long-term order                      |
+| `docs/framework/COMPONENT-CONVENTIONS.md`   | engineering + environment rules                     |
+| `.guidance/project/DECISIONS.md`            | architecture decisions, append-only                 |
+
+- **Placement:** work inside one folder → `TASKS.md` in that folder; more than one package →
+  `docs/<band>/TASK-<name>.md`. Never both, never a third place.
+- **`AGENTS.md` carries no task list.** A roadmap, queue or "next step" belongs in the logbook or
+  the band file; a band file points, it does not plan.
+- **Done = delete the detail doc** (or empty it and delete it in the same commit). The commit
+  message is the record; a `TASKS.md` left behind for finished work is the new stale doc.
+- **A card without a link is a bug**, and a link that does not resolve is worse.
+- **`TASKS.md` inside a package is safe:** every `package.json` declares
+  `files: ["dist", "*.ts", "*.css"]` and `npm pack` follows it, so the doc never ships.
+
+### Logbook ritual — the first answer of every session
+
+1. Read `.guidance/project/STATUS.md` + `git log --oneline -8`. Nothing else.
+2. Answer with the three cards in order — one line each plus its link — then state plainly that
+   the detail is **not** read yet and ask which card to continue.
+3. After the user picks: open that card's detail doc and the band's `AGENTS.md`, take the claim
+   row, then work.
+4. **Reorder on pick:** the chosen card becomes #1, the others keep their order, and the tail
+   leaves the logbook. The file it pointed at stays; only the card goes.
+5. At handoff: update the detail doc's `Status:` line, write the 3 CPs, rewrite the three cards.
 - **Recovery reads four things, in this order:** `git log --oneline -8`, `git status --short`,
-  the session memory file, `STATUS.md`. Then the task doc it names. Nothing else.
+  the logbook `STATUS.md`, then the session memory file. Detail docs only after the user picks a
+  card (§13).

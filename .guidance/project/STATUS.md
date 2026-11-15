@@ -15,56 +15,29 @@ Last updated: 2026-11-16
 
 ## Landed recently
 
-- **Batch 37 (2026-11-16):** the menu is recursive. `config.multilevel.property` names the
-  children key and `paintList()`/`paintItem()` re-enter the builder per level, so depth is
-  unbounded; every list is `ul.menus`, and the root's extra `navigations` is the hamburger's
-  `aria-controls` target, not a second list type. A branch is `li.item.submenu` with `open` /
-  `closed`, never navigates, and draws its glyph from the shared icon set. Below 768px every
-  position becomes the same strip — one `11rem` column per branch, `overflow-x: auto` — so a long
-  list costs the height of its tallest column instead of every row. Also fixed: an explicit
-  `content.brand` no longer eats the first navigation.
-- **Batch 36 (2026-11-15):** the masonry lightbox is markup again —
-  `@masonry>modal>stage|image|caption|title|desc` are declared selectors, so `template()` builds
-  it from the payload and `_initModal()` only re-renders per open (no `updateNavigation()`). The
-  card, not the `img`, carries the click, and the grid is a preview: the caption it reveals on
-  hover is repeated in the lightbox.
-- **Batch 35 (2026-11-15):** the CSS debt list is empty. `Menu.css` owns its own states — the
-  `li` is no longer a clickable `.item` (hover and active were fighting over one box), the current
-  route is a solid accent pill, and `.nav` is `border-box` so a host can size it. The `datalist`
-  dropdown restates its box (it had been losing fill and border on hover) and the file control is
-  a flex row, so the selector button centres itself instead of riding a `bottom: 5px` nudge.
-  `input.css` stops painting file controls as text inputs; the tab gained `tabStyle: "folder"`.
-  Measured: accordion slide 68 → 137 px over 6 frames, lightbox controls 48×48, modal close
-  37×37 flex-centred, pricing cards share one height with the middle one scaled, footer columns
-  on the copyright's axis. Demo: sidebar collapses below the 900 px **split** (not the sheet's
-  768 px), every hash change scrolls to top, the duplicate `input` demo row is gone.
-- **Batch 34 (2026-11-14):** `@aio-ui` **0.2.0** is published — tag `v0.2.0` and the `cdn` branch
-  both at `5251e20` (40 packages), the GitHub release carries 43 assets as a pre-release, 10/10
-  sampled CDN URLs answer `200`, `checksums.txt` is byte-identical, and `release.test.ts` is
-  15/15 against the tag. New handout `docs/live-cdn-migration.md` maps copied files and symbols
-  onto the packages for apps that still vendor the source; `docs/live-cdn-repo.md` follows the tag.
-  The demo deploys itself to Pages: `deploy.yml` builds `build:pkgs` + the demo under `/-aio-ui-dev/`.
-- **Batch 32 (2026-11-14):** the last five `#form` topics have live demos (`cascade`,
-  `calculation`, `id-address`, `modules`, `layout`). Building them exposed a real defect: a
-  loader handed over by a manifest/registry never ran the **initialize** phase, so `calculation`
-  was dead on every form mounted through the registry. `Form` now resolves every phase through
-  the active loader and unloads it between prepares; pinned by a `FormModules` case. Housekeeping:
-  `orchestrator/layout.json` regenerated (never listed `skeleton`); CDN guide counts → 40/43.
-- **Batches 26–31 (2026-11-14):** the `#form` docs tree went from sliced Markdown to declared
-  _parts_ — a topic names its README `source`, the `sections` it claims and an optional live
-  demo; `selectOutline` carries nested subsections, `role=contract` marks the four contract
-  sections, and the Markdown parser moved out of `@aio-ui/utilities` into its only consumer.
-  `Tab.css` `& .menu` → `& > .menu` (a dropdown popover inside a panel was inheriting the tab
-  strip), and the skeleton default became a **2000 ms floor** (`"auto"` never painted).
-- **Batches 20–25 (2026-11-14):** skeleton, start to finish — 20 in-flow builders draw their
-  own silhouette, `duration` became a published floor, placeholder became the mandatory
-  `@aio-ui/skeleton` package with the optional `Builder.loading?()` hook, the hold moved to
-  `base/BaseAdapters/Hydration`, and the `isRoot` debt closed (`dd34f2d`, rule table in
-  `APP.md`). The rewrite proved that **Sass-style `&-suffix` is dropped silently by the build**.
-- **Batches 15–19 (2026-11-13):** anti-FOUC gate collapsed (family → `0.2.0`), three leak classes
-  and L6 closed with measurements (`APP-LIFECYCLE.md` L1/L2/L5/L6), `#form` docs synced.
+- **Batch 38 (2026-11-16):** the colour generator is host chrome, not a route. `fab-menu` accepts an
+  **`HTMLElement` payload** — an entry in `actions` or the whole payload — the contract `tab`, `form`
+  and `modal` already had, so a host can dock a real widget instead of option buttons. `ThemeConsole`
+  (demo) is a slot host in the `Editor.ts` arrangement: it instantiates `ColorThemeBuilder`, attaches
+  `@colorizer>configurator` / `>output` / `>mode` into one fab panel, and applies the broadcast tokens
+  to `documentElement` — the page behind the popover is the preview. Its three rail controls are the
+  input primitive's switch (`.field` + `.switch.control`), and the fab no longer auto-closes. Fixed on
+  the way: `.page` is `minmax(0, 1fr)` (an implicit `auto` track grew to the code block's width), the
+  projected panels are border-box, and the preset save button belongs to `InputControls` — `input.css`
+  alone was not enough, `controls.css` is host-linked too. `#theme` route, its page and nav leaf: gone.
+- **Batch 37 (2026-11-16):** the menu is recursive. `config.multilevel.property` names the children key
+  and `paintList()`/`paintItem()` re-enter per level, so depth is unbounded; every list is `ul.menus`.
+  A branch is `li.item.submenu` with `open`/`closed`, never navigates, and draws its glyph from the
+  shared icon set. Below 768px every position becomes the same strip. An explicit `content.brand` no
+  longer eats the first navigation; `.nav.nav` keeps compact rules from losing on emit order.
+- **Batch 36 (2026-11-15):** the masonry lightbox is markup again — `@masonry>modal>stage|image|
+  caption|title|desc` are declared selectors, so `template()` builds it from the payload. The card, not
+  the `img`, carries the click.
+- **Batches 32–35 (2026-11-14/15):** the CSS debt list emptied (Menu owns its states, file control is a
+  flex row, tab gained `tabStyle: "folder"`), the last five `#form` topics got live demos — which
+  exposed a loader that never ran **initialize** — and `@aio-ui` **0.2.0** shipped to CDN + Pages
+  with `docs/live-cdn-migration.md` for apps that still vendor the source.
 
-_(Everything before batch 15 is in `git log`; only open work stays in this file.)_
 
 ## Blocked
 
@@ -74,5 +47,8 @@ _(Everything before batch 15 is in `git log`; only open work stays in this file.
 
 ## Open questions
 
+- **The theme console's view still reads odd** — the docked panels are the colouriser's page
+  sections folded into a 24rem popover; the next session continues there (panel composition,
+  narrow widths), not with new components.
 - Generated-site hosting (GitHub Pages vs Cloudflare Pages) — affects deployment only, not the
   preset contract.

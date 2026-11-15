@@ -15,6 +15,13 @@ Last updated: 2026-11-15
 
 ## Landed recently
 
+- **Batch 36 (2026-11-15):** the masonry lightbox is markup again. `@masonry>modal>stage|image|
+caption|title|desc` are declared selectors, so `template()` builds the whole modal from the
+  payload it is handed and nothing writes text afterwards; `_initModal()` only assembles
+  `payloadOf(record)` and re-renders per open (`updateNavigation()` is gone — the arrows read
+  `currentIndex` live). The card, not the `img`, carries the click (`onclick`, one handler that
+  leaves with its node), and `_applyFilter` drops the old cards with `replaceChildren()`. The
+  grid is a preview now: the caption the card reveals on hover is repeated in the lightbox.
 - **Batch 35 (2026-11-15):** the CSS debt list is empty. `Menu.css` owns its own states — the
   `li` is no longer a clickable `.item` (hover and active were fighting over one box), the current
   route is a solid accent pill, and `.nav` is `border-box` so a host can size it. The `datalist`

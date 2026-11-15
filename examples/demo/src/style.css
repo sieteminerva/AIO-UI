@@ -22,6 +22,10 @@ body {
 
 .page {
   display: grid !important;
+  /* One column, but a `minmax(0, 1fr)` one: an implicit `auto` track is sized by
+     its content's max-content, so a single wide child (the theme generator's code
+     block) stretched the whole page to 600px on a 380px viewport. */
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--app-gap);
   padding: var(--app-padding-layout);
 }
@@ -205,6 +209,19 @@ header.docs-head {
   display: grid;
   gap: var(--app-gap);
   min-width: 0;
+}
+
+/*
+ * Demo-only: the theme fab now hosts the colour generator (mixer + report), so its
+ * panel is a control surface instead of a list of options. `FabMenu.css` pins a
+ * 180px min-width and no height limit; the docked console needs room, and the
+ * console gives each unfolded panel its own scroll area (see `ThemeConsole.css`).
+ */
+.theme-switcher .fab .panel {
+  inline-size: min(24rem, 92vw);
+  max-inline-size: min(24rem, 92vw);
+  max-height: min(74vh, 42rem);
+  overflow: auto;
 }
 
 /* ==========================================================================

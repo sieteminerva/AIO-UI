@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" id="Layer_1" data-name="Layer 1" viewBox="0 0 1000.24 1000">
+  <defs>
+    <style>
+      .cls-1{fill:#29b0fe}
+    </style>
+  </defs>
+  <title>AIO_Logo</title>
+  <path d="M.12 0h1000v1000H.12z" class="cls-1"/>
+  <path d="M55.68 55.56h888.89v888.89H55.68z" style="fill:#fff"/>
+  <path d="M351.97 351.85h296.3v296.3h-296.3z" class="cls-1"/>
+  <path d="M351.97 648.15h296.3v296.3h-296.3z" style="fill:#ef4e3e"/>
+</svg>

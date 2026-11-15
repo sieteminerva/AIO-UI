@@ -1,0 +1,71 @@
+/* ================================================================
+   🎛 THEME CONSOLE — host chrome docked into the fab menu's panel.
+
+   `fab-menu` mounts an HTMLElement payload as-is (the same contract as `tab`,
+   `form` and `modal`), so this widget makes the fab the ONE place for theming:
+   the theme-style options are the fab's own, and mode + colour are the
+   `color-theme` builder's keys projected into slots by `attach()`.
+
+   Nothing inside the panels is restyled here — only where they sit and how they
+   unfold: the popover is small, so each panel opens on demand with its own
+   scroll area instead of growing the fab.
+   ================================================================ */
+
+.theme-console {
+  display: grid;
+  gap: 0.5rem;
+  font: inherit;
+
+  /* The projected panels carry `width: 100%` plus their own padding and border;
+     border-box keeps them inside the popover instead of leaning out of it. */
+  &,
+  & * {
+    box-sizing: border-box;
+  }
+
+  & .rail {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.25rem 0.75rem;
+  }
+
+  /*
+   * Every control in the rail is the input primitive's switch — `.field` with a
+   * label and `.switch.control` — so the console packs them and nothing else: the
+   * box, the track, the knob and the checked state all come from `input.css`.
+   */
+  & .rail .field:has(.switch.control) {
+    margin: 0;
+    inline-size: max-content;
+  }
+
+  /* The colouriser's own mode switch rides in the same row as the triggers. */
+  & .field:has(.switch.control)[data-slot="color-mode"] {
+    margin: 0;
+    inline-size: auto;
+  }
+
+  /* Panels are the colouriser's `aside.configurator` / `aside.output`, welded with `.panel`. */
+  & .panel[data-slot] {
+    display: none;
+    max-block-size: 52vh;
+    overflow: auto;
+    border-block-start: 1px solid var(--app-border-color, #ddd);
+    padding-block-start: 0.5rem;
+  }
+
+  & .panel.open {
+    display: block;
+  }
+
+  /*
+   * The generated token block is a `<pre>`: it is wider than this popover by
+   * design, and the colouriser's own `overflow` rule is scoped to its page mode.
+   * Here the console is the container, so the console is what scrolls it.
+   */
+  & .panel[data-slot] pre {
+    max-inline-size: 100%;
+    overflow-x: auto;
+  }
+}

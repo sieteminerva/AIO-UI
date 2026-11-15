@@ -76,5 +76,9 @@ export const componentAssets = {
     "@aio-ui/skeleton/Skeleton.css": () => import("@aio-ui/skeleton/Skeleton.css?inline"),
     "@aio-ui/tab/Tab.css": () => import("@aio-ui/tab/Tab.css?inline"),
     "@aio-ui/table/Table.css": () => import("@aio-ui/table/Table.css?inline"),
+    // The theme console is host chrome, not a registry component: it declares
+    // `stylesheet: "./ThemeConsole.css"` and the seam resolves it by basename.
+    // (`ColorTheme.css` is host-linked from main.ts — its builder is created directly.)
+    "/ThemeConsole/ThemeConsole.css": () => import("./ThemeConsole/ThemeConsole.css?inline"),
   } as Record<string, () => Promise<unknown>>,
 };

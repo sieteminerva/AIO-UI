@@ -20,9 +20,24 @@ export function currentRoute(): string {
 }
 
 /** Brand on its own key, then the bar as a reader sees it: two groups, not six links. */
-const TOP_BRAND = { label: "@aio demo", href: "#kitchen" };
+const TOP_BRAND = { label: "@aio demo", href: "#kitchen", src: "favicon.svg" };
 
-const TOP_NAV = [
+interface iTopLeaf {
+  label: string;
+  href: string;
+  route: string;
+}
+
+interface iTopGroup {
+  label: string;
+  children: iTopLeaf[];
+}
+
+/**
+ * Branches only. The theme generator is NOT a destination any more: it is host chrome
+ * (see `ThemeConsole`), reachable from every page, so it has no place in this bar.
+ */
+const TOP_NAV: iTopGroup[] = [
   {
     label: "Guide",
     children: [
@@ -49,7 +64,7 @@ function mountTopMenu(host: HTMLElement, build: BuildFn): void {
     children: group.children.map(({ label, href, route: id }) => ({
       label,
       href,
-      ...(id && id === route ? { className: "is-active" } : {}),
+      ...(id === route ? { className: "is-active" } : {}),
     })),
   }));
 

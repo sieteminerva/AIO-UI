@@ -26,7 +26,8 @@
   --menu-active-color: var(--app-text-on-primary, #fff);
 }
 
-.nav {
+.nav,
+.nav:is([position^="top"]) {
   position: fixed;
   top: 0;
   left: 0;
@@ -85,7 +86,9 @@
     gap: 0.6rem;
   }
 
-  & i {
+  /* `icon.css` owns the glyph box, so the blanket rule skips it: stretching an `i.icon` to
+     100% would blow the masked arrow up to the row height. */
+  & i:not(.icon) {
     display: block;
     height: 100%;
     width: 100%;
@@ -142,10 +145,98 @@
       }
     }
   }
+
+  /*
+     * MULTI-LEVEL. Every list is `.menus` — the root carries `navigations` too, but as a role
+     * marker for the hamburger, not as a second kind of list. What differs is *depth*, and
+     * depth is already in the markup: `.item > .menus` is a submenu, always.
+     *
+     * A branch is `li.item.submenu`; its state is the `open` / `closed` class the builder
+     * keeps (`always` starts every branch open). `data-multilevel` on the bar is config —
+     * who may change that state — and is stamped once, not per row.
+     */
+  & .item.submenu {
+    position: relative;
+
+    & > a {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    /* The glyph is the shared icon set, not a bespoke caret: only the turn belongs here.
+       `icon.css` builds `arrow right` by flipping the left-pointing path with `scaleX(-1)`,
+       and this rule replaces that transform — so the glyph is a **left** arrow here, and
+       `-90deg` is what makes it read as `arrow down`. */
+    & > a > i.icon {
+      transform: rotate(-90deg);
+      transition: transform 180ms ease;
+    }
+
+    &.open > a > i.icon {
+      transform: rotate(90deg);
+    }
+
+    /* The branch lights up when the current route lives under it. */
+    &.is-active > a {
+      color: var(--menu-heading-color);
+    }
+  }
+
+  /* A submenu leaves the row: on a bar it is a popover under its branch. */
+  & .item > .menus {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 20;
+    min-width: 12rem;
+    margin: 0.35rem 0 0;
+    padding: 0.35rem;
+    /* A `ul` is a list: without the reset the nested one draws its own bullets. */
+    list-style: none;
+    background: var(--menu-background);
+    border: 1px solid var(--menu-border-color);
+    border-radius: var(--menu-radius);
+    box-shadow: var(--menu-shadow);
+
+    /* The gap between the branch and the panel is dead space the pointer has to cross;
+       without this bridge the panel closes midway. It is deliberately taller than the gap
+       and overlaps the branch: a bridge that starts exactly at the `li` boundary leaves a
+       sub-pixel seam, and losing `:hover` for one pixel closes the panel for good. */
+    &::before {
+      content: "";
+      position: absolute;
+      top: -0.6rem;
+      right: 0;
+      left: 0;
+      height: 0.6rem;
+    }
+  }
+
+  /* `always`: the branch is open from the first paint. */
+  &[data-multilevel="always"] .item.submenu.open > .menus,
+  /* `click`: the builder flips the `open` class, so the sheet has nothing to guess. */
+  &[data-multilevel="click"] .item.submenu.open > .menus,
+  /* `hover`: the branch, the gap bridge, or the panel itself keeps it open — the panel is a
+     child of the branch, so crossing into it must not drop the state. The glyph turns on the
+     same trigger, because in this mode no `open` class is ever written. */
+  &[data-multilevel="hover"] .item.submenu:hover > .menus,
+  &[data-multilevel="hover"] .item.submenu > .menus:hover,
+  &[data-multilevel="hover"] .item.submenu:focus-within > .menus {
+    display: block;
+  }
+
+  &[data-multilevel="hover"] .item.submenu:is(:hover, :focus-within) > a > i.icon {
+    transform: rotate(90deg);
+  }
 }
 
 @media (max-width: 768px) {
-  .hamburger-btn {
+  /* The base rule is nested (`& .hamburger-btn` inside `.nav`), so it lands at `.nav
+     .hamburger-btn` and an equal-specificity rule here does not reliably win — the trigger
+     only appeared because a host re-declared it. One extra `.nav` settles it. */
+  .nav.nav .hamburger-btn {
     display: flex;
   }
 
@@ -155,24 +246,33 @@
       width: -webkit-fill-available;
     }
 
-    & .brand {
-      width: 100%;
-      text-align: center;
-      align-items: center;
-    }
-
+    /* The list itself is a strip at every position — the rules live in the compact block at
+       the end of this sheet, so there is one narrow-viewport look instead of three. */
     & .navigations {
       display: none;
       width: 100%;
-      flex-direction: column;
-      align-items: center;
-      padding-bottom: 1rem;
       opacity: 0;
-      gap: clamp(0.75rem, 1.5vw, 1.75rem);
       &:is(.open) {
         display: flex;
         opacity: 1;
         transform: translateY(0);
+      }
+    }
+
+    /* Below the hamburger there is no bar to hang a popover off, so a branch opens in
+       place as an inset list. */
+    & .item > .menus {
+      position: static;
+      min-width: 0;
+      margin: 0.15rem 0 0.35rem;
+      padding: 0 0 0 0.7rem;
+      border: 0;
+      border-left: 1px solid var(--menu-border-color);
+      border-radius: 0;
+      box-shadow: none;
+      /* An inset list sits against its branch: there is no gap to bridge. */
+      &::before {
+        content: none;
       }
     }
   }
@@ -185,22 +285,6 @@
   }
 }
 
-/* A sidebar is the same list turned on its side. `height: auto` — the list is as tall as
-   its items, so a host never gets a second scrollbar inside the panel; the page scrolls.
-   The shell that pins the bar to the viewport is the shell's business, not the sheet's. */
-aside.sidebar .nav.vertical,
-aside.sidebar nav.vertical {
-  display: flex;
-  flex-direction: column !important;
-  height: auto;
-  & .navigations {
-    flex: 0 0 auto;
-    flex-direction: column !important;
-    align-items: stretch;
-    padding-top: 0.5rem;
-  }
-}
-
 /* ─── Mobile Responsiveness for Nav ─── */
 @media (max-width: 768px) {
   nav {
@@ -209,5 +293,129 @@ aside.sidebar nav.vertical {
 
   nav .navigations {
     display: none; /* Keep clean on small mobile */
+  }
+}
+
+nav.nav,
+.nav {
+  /* A sidebar is the same list turned on its side. `height: auto` — the list is as tall as
+   its items, so a host never gets a second scrollbar inside the panel; the page scrolls.
+   The shell that pins the bar to the viewport is the shell's business, not the sheet's. */
+  &:is([data-position^="left"]),
+  &:is([data-position^="right"]) {
+    display: flex;
+    flex-direction: column !important;
+    height: auto;
+    & .navigations {
+      flex: 0 0 auto;
+      flex-direction: column !important;
+      align-items: stretch;
+      padding-top: 0.5rem;
+    }
+
+    /* A column has no room for a popover either: the branch opens in place, indented, and
+       the rail draws the depth without a second surface. */
+    & .item > .menus {
+      position: static;
+      min-width: 0;
+      margin: 0.15rem 0 0.35rem;
+      padding: 0 0 0 0.7rem;
+      border: 0;
+      border-left: 1px solid var(--menu-border-color);
+      border-radius: 0;
+      box-shadow: none;
+      /* An inset list sits against its branch: there is no gap to bridge. */
+      &::before {
+        content: none;
+      }
+    }
+  }
+
+  &:is([data-position^="bottom"]) {
+    position: fixed;
+  }
+}
+
+aside:has(> .nav[data-position*="sticky"]) {
+  position: sticky !important;
+  top: 0;
+}
+
+/* ==========================================================================
+   COMPACT — every bar on a narrow viewport
+   ========================================================================== */
+
+/*
+ * The sheet has no element to measure — the host decides how wide the aside is — so the only
+ * signal CSS can read is the viewport. No resize observer, no `@container` the host did not
+ * declare: one breakpoint, and the trigger is the hamburger the builder already wires.
+ *
+ * One look for every position. Closed bar is brand plus trigger; the open list is a strip of
+ * columns scrolled sideways, so a long list costs the height of its tallest column instead of
+ * the height of every row. A top bar used to spill into a tall centred column here — the
+ * sidebar shape reads better on a phone and is the same code either way.
+ */
+@media (max-width: 768px) {
+  /*
+   * Two classes on the bar, and the `:is()` variant on purpose: the column rule above is
+   * `.nav[data-position^="left"] .navigations` (three classes, `!important`), and a plain
+   * `.nav .navigations` ties with it — at which point whichever block the bundler emits last
+   * wins, which is how the sidebar kept its column while the top bar became a strip. One more
+   * class settles it by specificity instead of by source order.
+   */
+  .nav.nav,
+  .nav.nav:is([data-position^="left"], [data-position^="right"]) {
+    /* The column rule above forces `column !important`; in compact the bar is a row again
+       and the strip wraps under it. */
+    flex-direction: row !important;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+
+    & .brand {
+      width: auto;
+      flex: 1 1 auto;
+      text-align: start;
+    }
+
+    & .navigations {
+      display: none;
+      flex-direction: row !important;
+      /* The base list wraps for a top bar; a strip must not, or the columns stack and
+         nothing is left to scroll. */
+      flex-wrap: nowrap;
+      align-items: flex-start;
+      width: 100%;
+      padding: 0.25rem 0 0.5rem;
+      gap: 1rem;
+      overflow-x: auto;
+      overflow-y: hidden;
+      overscroll-behavior-x: contain;
+      scroll-snap-type: x proximity;
+      scrollbar-width: thin;
+
+      &.open {
+        display: flex;
+        opacity: 1;
+      }
+    }
+
+    /* One column per branch. `flex: 0 0` is what stops a column shrinking to its share:
+       the strip scrolls instead of squeezing the labels. */
+    & .navigations > .item {
+      flex: 0 0 11rem;
+      min-width: 0;
+      scroll-snap-align: start;
+    }
+
+    /*
+     * A branch is open in compact, whatever its activation. A column has the vertical room,
+     * and `hover` cannot happen on a touch screen — a `hover` branch would otherwise render
+     * as a heading with nothing under it. This is the sidebar shape, applied to every
+     * position; above the breakpoint each position keeps the behaviour it asked for.
+     */
+    & .item.submenu > .menus {
+      display: block;
+    }
   }
 }

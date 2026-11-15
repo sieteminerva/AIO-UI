@@ -21,7 +21,7 @@ body {
 }
 
 .page {
-  display: grid;
+  display: grid !important;
   gap: var(--app-gap);
   padding: var(--app-padding-layout);
 }

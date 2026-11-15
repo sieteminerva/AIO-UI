@@ -52,7 +52,7 @@ measured against the **model window** (200k here), not a fixed number:
   crawl `.guidance/mandatory/` or `plan*.md` unless the picked card needs them.
 - **State plan briefly:** after the single read turn, state the plan in 2–3 lines and execute.
 - **~60k = wrap the batch** — finish the edit in flight, run the gate, commit.
-- **~80k = run the handoff (§14)** and tell the user to compact.** The agent signals; the user
+- **~80k = run the handoff (§14)** and tell the user to compact.\*\* The agent signals; the user
   presses the button — no agent can trigger compaction itself.
 - **~100k = stop work.** Only §14 may run: a half-written batch is worse than an untouched one.
 - **During & finish:** preserve unrelated user edits; record architectural decisions in
@@ -95,12 +95,12 @@ PROVED  → <command> → <measured result>
 NEXT    → <one action> | blocks: <none|item>
 ```
 
-| Trigger (category done) | Sink                                                                     |
-| ----------------------- | ------------------------------------------------------------------------ |
-| probe / read batch      | `/memories/session/<task>.md` — overwrite the CP block                   |
-| edit batch              | same file + the detail doc's `Status:` line                              |
-| `verify` / test gate    | git commit of the batch (§15) + the `Gate` cell in the band file          |
-| handoff / pre-compact   | run §14 in full — the CP alone is not a handoff                          |
+| Trigger (category done) | Sink                                                             |
+| ----------------------- | ---------------------------------------------------------------- |
+| probe / read batch      | `/memories/session/<task>.md` — overwrite the CP block           |
+| edit batch              | same file + the detail doc's `Status:` line                      |
+| `verify` / test gate    | git commit of the batch (§15) + the `Gate` cell in the band file |
+| handoff / pre-compact   | run §14 in full — the CP alone is not a handoff                  |
 
 - **Never add a fourth line.** If it matters and does not fit, it belongs in a file — write
   the pointer instead.

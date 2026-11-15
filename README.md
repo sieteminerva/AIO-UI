@@ -117,6 +117,7 @@ Working areas — `orchestrator/` is tracked; `.draft/` and `.archives/` are loc
 | Why / long-term order                       | `.guidance/plan.md`                                                                                                   |
 | What is next + what is running (per band)   | `.guidance/project/STATUS.md` (logbook) → `framework.md`, `gallery.md`, `generator.md`                                |
 | Rules an agent must follow                  | `.guidance/AGENT_RULES.md`, `.guidance/mandatory/`                                                                    |
+| Prompt templates — session / batch / handoff | `.guidance/PROMPTS.md`                                                                                               |
 | Renderer internals                          | `docs/framework/DOMRenderer.md`                                                                                       |
 | Component conventions / template / data     | `docs/framework/COMPONENT-CONVENTIONS.md`, `docs/framework/COMPONENT-TEMPLATE.md`, `docs/framework/COMPONENT-DATA.md` |
 | Input field types & actions                 | `docs/framework/FIELD-TYPES.md`, `docs/framework/INPUT-ACTIONS.md`                                                    |

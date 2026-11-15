@@ -22,6 +22,22 @@ preview frame, a split pane) must override both — the demo does exactly that f
 `title` is uppercased by the component; `actions` become `button` elements whose `label`, `id` and
 `type` come straight from the record. An option without a label prints `Option`.
 
+### Element payload
+
+An entry in `actions` may be an **`HTMLElement`**: it is mounted as-is, untouched, instead of an
+option button. The payload itself may be an element too — the panel then holds just that element and
+gets no title.
+
+```ts
+const dock = new SliderBank();            // any element, no registration involved
+build("fab-menu", { actions: [{ label: "Reset" }, dock] });
+build("fab-menu", dock);                  // element as the whole payload
+```
+
+This is the same contract as `tab` (`body`), `form` (`inputs`) and `modal` (content): the fab stops
+being only a list of destinations and can host a real control surface — the demo docks its colour
+generator there, so theme style, mode and colour live in one place.
+
 ## Config
 
 | Option            | Default         | Meaning                                     |

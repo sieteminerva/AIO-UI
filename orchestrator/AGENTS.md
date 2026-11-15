@@ -40,6 +40,15 @@ The framework is licensed via the CDN tag, never copied into the client repo.
    `multistep: true`.
 6. **Generated runtime mounts builders itself** (`mount()` over `preset.pages`); `DOMRenderer`
    never builds builder nodes.
+7. **`app.js` is served to a browser as-is** — no `import type`, no type annotations: either one is
+   a SyntaxError and the whole site never boots, while every unit test stays green.
+   `runtime.test.ts` guards `/^import type /m` and `/pageDefinitions:\s/`.
+8. **A page's preload list is computed, not written by hand** — `pageRequires()` = the `builder`
+   words in that page's content, minus `input` / `dropdown` / `input-controls`, emitted as
+   `pageDefinitions = [{ route, requires }]` → `registerPage`. `release.test.ts` proves every word
+   has a registration **and** an import-map key.
+9. **`parsePreset()` reports `INVALID_SHAPE`** for a non-string `builder` — the array shape fails
+   validation instead of being dropped silently.
 
 ## Commands
 
@@ -55,10 +64,10 @@ node .draft/smoke/serve.mjs 5300             # open /.draft/cdn-smoke/store/#che
 
 ## Release state (pre-release, live)
 
-Repo `sieteminerva/-aio-ui-dev` (public; `origin`). Tag `v0.1.0` points at the orphan **`cdn`**
-branch (jsDelivr serves the import map). 40 release assets. CDN base:
-`https://cdn.jsdelivr.net/gh/sieteminerva/-aio-ui-dev@v0.1.0/`. Never push `main` to the
-`rajutan` remote.
+Repo `sieteminerva/-aio-ui-dev` (public; `origin`). Tag **`v0.2.0`** points at the orphan **`cdn`**
+branch (jsDelivr serves the import map). 43 release assets. CDN base:
+`https://cdn.jsdelivr.net/gh/sieteminerva/-aio-ui-dev@v0.2.0/`. Never push `main` to the
+`rajutan` remote. Release order and the `gh`-absent workaround: `docs/live-cdn-repo.md`.
 
 ## Read when relevant
 

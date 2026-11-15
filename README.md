@@ -95,10 +95,10 @@ npm run verify         # the full gate — run before claiming anything works
 Work tracking has two layers, and **one item lives in exactly one file**:
 
 - **Outline** — read at orientation. `.guidance/project/STATUS.md` is the logbook: three cards,
-one line each, plus a link. `.guidance/project/<band>.md` holds `## Active` / `## Next` /
-`## Landed`. An `AGENTS.md` carries rules only, never a task list.
+  one line each, plus a link. `.guidance/project/<band>.md` holds `## Active` / `## Next` /
+  `## Landed`. An `AGENTS.md` carries rules only, never a task list.
 - **Detail** — opened only for the current task. `<folder>/TASKS.md` for work inside one folder;
-`docs/<band>/TASK-<name>.md` when it spans packages. Done = delete the doc, the commit is the record.
+  `docs/<band>/TASK-<name>.md` when it spans packages. Done = delete the doc, the commit is the record.
 
 Working areas — `orchestrator/` is tracked; `.draft/` and `.archives/` are local-only:
 

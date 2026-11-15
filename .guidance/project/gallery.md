@@ -5,9 +5,9 @@ Index: `STATUS.md`.
 
 ## Active (max 3)
 
-| #   | Task                   | State  | Gate                                                                             |
-| --- | ---------------------- | ------ | -------------------------------------------------------------------------------- |
-| 1   | `profile` reference    | queued | home, services, contact, portfolio render; boundaries documented                  |
+| #   | Task                | State  | Gate                                                             |
+| --- | ------------------- | ------ | ---------------------------------------------------------------- |
+| 1   | `profile` reference | queued | home, services, contact, portfolio render; boundaries documented |
 
 ## Next
 

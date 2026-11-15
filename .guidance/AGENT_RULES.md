@@ -43,14 +43,20 @@ Every single tool turn re-sends the entire prompt history. Minimize round-trips:
 - **Framework-agnostic components:** Publish via `config.emit?.(…)`; never import the app.
 - **Objective proof:** Prove changes at the highest affected level (unit test, CLI test, or build gate). For CSS geometry claims, measure `getBoundingClientRect` / `getComputedStyle` and report exact numbers.
 
-## 7. Session lifecycle & hard context cap (60k limit)
+## 7. Session lifecycle & context budget
 
-Long transcripts and VS Code auto-compaction trigger massive cache-miss penalties.
+Long transcripts and VS Code auto-compaction trigger massive cache-miss penalties. The budget is
+measured against the **model window** (200k here), not a fixed number:
 
-- **Single-file startup:** Read **only** `.guidance/project/STATUS.md` (≤ 80 lines) to start. Do **not** crawl `.guidance/mandatory/` or `plan.md` unless specifically relevant to the active task.
-- **State plan briefly:** After the single parallel read turn, state your plan in 2–3 lines and execute.
-- **Hard stop at ~15 turns or ~60k tokens:** Before auto-compaction triggers, stop work, update `STATUS.md` with current state + next steps, and tell the user to open a **New Chat**.
-- **During & finish:** Preserve unrelated user edits; record architectural decisions in `.guidance/project/DECISIONS.md`; report honestly what was proven and what remains unproven.
+- **Single-file startup:** read **only** the logbook `.guidance/project/STATUS.md` (§13). Do **not**
+  crawl `.guidance/mandatory/` or `plan*.md` unless the picked card needs them.
+- **State plan briefly:** after the single read turn, state the plan in 2–3 lines and execute.
+- **~60k = wrap the batch** — finish the edit in flight, run the gate, commit.
+- **~80k = run the handoff (§14)** and tell the user to compact.** The agent signals; the user
+  presses the button — no agent can trigger compaction itself.
+- **~100k = stop work.** Only §14 may run: a half-written batch is worse than an untouched one.
+- **During & finish:** preserve unrelated user edits; record architectural decisions in
+  `.guidance/project/DECISIONS.md`; report honestly what was proven and what remains unproven.
 
 ## 8. Language
 
@@ -61,11 +67,11 @@ Long transcripts and VS Code auto-compaction trigger massive cache-miss penaltie
 
 One item lives in **exactly one** file. Never duplicate, never append history.
 
-| File                             | Holds                                                    | Shape                                                                                       |
-| -------------------------------- | -------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| `.guidance/plan*.md`             | **why** — objective, decisions, stages, long-term order  | `plan.md` index (§0/§4) + `plan-{framework,gallery,generator}.md`                           |
-| `.guidance/project/<project>.md` | **what now + what next**, one file per project           | `## Active` (max 3) / `## Next` / `## Landed` — `framework.md`, `gallery.md`, `generator.md` |
-| `.guidance/project/STATUS.md`    | **logbook** — top 3 cards + where the rest lives         | ≤ 40 lines, rewritten every session                                         |
+| File                             | Holds                                                   | Shape                                                                                        |
+| -------------------------------- | ------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| `.guidance/plan*.md`             | **why** — objective, decisions, stages, long-term order | `plan.md` index (§0/§4) + `plan-{framework,gallery,generator}.md`                            |
+| `.guidance/project/<project>.md` | **what now + what next**, one file per project          | `## Active` (max 3) / `## Next` / `## Landed` — `framework.md`, `gallery.md`, `generator.md` |
+| `.guidance/project/STATUS.md`    | **logbook** — top 3 cards + where the rest lives        | ≤ 50 lines, rewritten every session                                                          |
 
 - **One project, one file.** A session reads its own project file plus its band's `AGENTS.md`;
   nothing else. Shared files are `AGENTS.md` (claim board) and `STATUS.md` (index).
@@ -89,12 +95,12 @@ PROVED  → <command> → <measured result>
 NEXT    → <one action> | blocks: <none|item>
 ```
 
-| Trigger (category done) | Sink                                                     |
-| ----------------------- | -------------------------------------------------------- |
-| probe / read batch      | `/memories/session/<task>.md` — overwrite the CP block   |
-| edit batch              | same file + the task doc's `Status:` line                |
-| `verify` / test gate    | git commit of the batch + the `Gate` cell in `STATUS.md` |
-| handoff / pre-compact   | same file `Done / Remaining / NEXT` + `STATUS.md`        |
+| Trigger (category done) | Sink                                                                     |
+| ----------------------- | ------------------------------------------------------------------------ |
+| probe / read batch      | `/memories/session/<task>.md` — overwrite the CP block                   |
+| edit batch              | same file + the detail doc's `Status:` line                              |
+| `verify` / test gate    | git commit of the batch (§15) + the `Gate` cell in the band file          |
+| handoff / pre-compact   | run §14 in full — the CP alone is not a handoff                          |
 
 - **Never add a fourth line.** If it matters and does not fit, it belongs in a file — write
   the pointer instead.
@@ -119,8 +125,8 @@ and a commit drags in someone else's half-finished batch.
 - **Override is allowed, blind override is not.** Before touching files another agent edited,
   prove it is idle: `git status --short` twice a few minutes apart, or compare `mtime`. Still
   changing → stop and ask the user. Once proven idle, override freely — no merge archaeology.
-- **Claim the tree** at the first edit: one line in `STATUS.md` `Active` naming the task, **plus a
-  row on the claim board** `.guidance/project/AGENTS.md`. Clear both at handoff.
+- **Claim the tree** at the first edit: one `## Active` row in `.guidance/project/<band>.md` naming
+  the task, **plus a row on the claim board** `.guidance/project/AGENTS.md`. Clear both at handoff.
 - **The claim board is the only shared lock.** One row per live writer: agent identity, band,
   task, write scope (paths/globs), start date, checkpoint file, state (`active|blocked|handoff`).
   A `STATUS.md` line says _what_ is running; the board says _who owns which paths_ — needed
@@ -134,9 +140,9 @@ and a commit drags in someone else's half-finished batch.
   one scope.
 - **Commit per gate, before compaction.** Compaction is lossy by design; an uncommitted batch
   cannot be recovered from memory files alone.
-- **Budget:** ≤ 60k tokens / ~15 turns per batch (§7). At ~80k: finish the edit, run the gate,
-  write the CP, commit, then ask the user to compact. **The agent signals; the user presses the
-  button** — an agent cannot trigger compaction itself.
+- **Budget:** ~60k tokens / ~15 turns per batch (§7). At ~80k: finish the edit, run the gate,
+  write the CP, commit, then run the handoff (§14) and ask the user to compact. **The agent
+  signals; the user presses the button.**
 
 ### Reply footer (every reply)
 
@@ -162,23 +168,23 @@ ctx ~<n>k / 200k · turn <n> · batch: <name> · CP <n> · gate: <green|red|not 
 `/memories/` is a **cache of state and pointers**. A fact that needs a paragraph belongs in the
 repo, where it is versioned, diffable and readable by the next agent without a memory dump.
 
-| Scope                         | Holds                                                               | Cap      |
-| ----------------------------- | ------------------------------------------------------------------- | -------- |
-| `/memories/preferences.md`    | user preferences that survive every project (naming, tone, gates)   | 15 lines |
-| `/memories/repo/<band>.md`    | the **outline**: where things live, commands, non-negotiables       | 25 lines |
-| `/memories/session/<task>.md` | the **last 3 CPs** (§10) + one `Next:` line + the task-doc path     | 15 lines |
+| Scope                         | Holds                                                             | Cap      |
+| ----------------------------- | ----------------------------------------------------------------- | -------- |
+| `/memories/preferences.md`    | user preferences that survive every project (naming, tone, gates) | 15 lines |
+| `/memories/repo/<band>.md`    | the **outline**: where things live, commands, non-negotiables     | 25 lines |
+| `/memories/session/<task>.md` | the **last 3 CPs** (§10) + one `Next:` line + the task-doc path   | 15 lines |
 
 **Nothing else goes in memory.** No `Landed`, `Shape`, `Traps`, `Done/Remaining` sections, no
 history, no prose. Those are repo artifacts:
 
-| What                                    | Where                                                              |
-| --------------------------------------- | ------------------------------------------------------------------ |
-| why / objective / stages                | `.guidance/plan.md` + `.guidance/plan-<project>.md`                |
-| what now + what next (per project)      | `.guidance/project/<project>.md`                                   |
-| which project file to read              | `.guidance/project/STATUS.md` (logbook, ≤ 50 lines)                |
-| the live task's detail, traps, gotchas  | `docs/<band>/TASK-<name>.md`                                       |
-| durable engineering + environment rules | `docs/framework/COMPONENT-CONVENTIONS.md` (§12/§13/§15)            |
-| architecture decisions                  | `.guidance/project/DECISIONS.md`                                   |
+| What                                    | Where                                                   |
+| --------------------------------------- | ------------------------------------------------------- |
+| why / objective / stages                | `.guidance/plan.md` + `.guidance/plan-<project>.md`     |
+| what now + what next (per project)      | `.guidance/project/<project>.md`                        |
+| which project file to read              | `.guidance/project/STATUS.md` (logbook, ≤ 50 lines)     |
+| the live task's detail, traps, gotchas  | `docs/<band>/TASK-<name>.md`                            |
+| durable engineering + environment rules | `docs/framework/COMPONENT-CONVENTIONS.md` (§12/§13/§15) |
+| architecture decisions                  | `.guidance/project/DECISIONS.md`                        |
 
 - **One narrative home per fact.** If a `.guidance/` or `docs/` file already says it, memory keeps
   the pointer, not a copy.
@@ -186,6 +192,9 @@ history, no prose. Those are repo artifacts:
   this file, not a second copy of it.
 - **Prune at handoff.** A batch that is committed leaves at most three CPs behind; a memory file
   older than the last three batches is dead — delete it. Commits are the only lossless trail.
+- **Recovery reads four things, in this order:** `git log --oneline -8`, `git status --short`, the
+  logbook `STATUS.md`, then the session memory file. Detail docs only after the user picks a card
+  (§13).
 
 ## 13. Two document types — outline vs detail
 
@@ -194,22 +203,22 @@ orientation, tiny) or **detail** (opened only for the thing being worked on).
 
 ### Outline — read at orientation
 
-| File                          | Holds                                                  | Cap      |
-| ----------------------------- | ------------------------------------------------------ | -------- |
-| `AGENTS.md` ×6 + `README.md`  | rules, scope, where to look — **never a task list**     | as is    |
-| `.guidance/project/STATUS.md` | **logbook**: three cards, each one line + a link        | 50 lines |
-| `.guidance/project/<band>.md` | `## Active` (max 3) / `## Next` / `## Landed` (3)       | 40 lines |
-| `/memories/`                  | preferences, band outline, last 3 CPs                   | §12      |
+| File                          | Holds                                               | Cap      |
+| ----------------------------- | --------------------------------------------------- | -------- |
+| `AGENTS.md` ×6 + `README.md`  | rules, scope, where to look — **never a task list** | as is    |
+| `.guidance/project/STATUS.md` | **logbook**: three cards, each one line + a link    | 50 lines |
+| `.guidance/project/<band>.md` | `## Active` (max 3) / `## Next` / `## Landed` (3)   | 40 lines |
+| `/memories/`                  | preferences, band outline, last 3 CPs               | §12      |
 
 ### Detail — opened only for the current task
 
-| File                                        | Holds                                              |
-| ------------------------------------------- | -------------------------------------------------- |
-| `<folder>/TASKS.md`                         | one folder's live work: what, next, its own traps   |
-| `docs/<band>/TASK-<name>.md`                | a task that spans more than one package             |
-| `.guidance/plan-<project>.md`               | why / stages / long-term order                      |
-| `docs/framework/COMPONENT-CONVENTIONS.md`   | engineering + environment rules                     |
-| `.guidance/project/DECISIONS.md`            | architecture decisions, append-only                 |
+| File                                      | Holds                                             |
+| ----------------------------------------- | ------------------------------------------------- |
+| `<folder>/TASKS.md`                       | one folder's live work: what, next, its own traps |
+| `docs/<band>/TASK-<name>.md`              | a task that spans more than one package           |
+| `.guidance/plan-<project>.md`             | why / stages / long-term order                    |
+| `docs/framework/COMPONENT-CONVENTIONS.md` | engineering + environment rules                   |
+| `.guidance/project/DECISIONS.md`          | architecture decisions, append-only               |
 
 - **Placement:** work inside one folder → `TASKS.md` in that folder; more than one package →
   `docs/<band>/TASK-<name>.md`. Never both, never a third place.
@@ -231,6 +240,55 @@ orientation, tiny) or **detail** (opened only for the thing being worked on).
 4. **Reorder on pick:** the chosen card becomes #1, the others keep their order, and the tail
    leaves the logbook. The file it pointed at stays; only the card goes.
 5. At handoff: update the detail doc's `Status:` line, write the 3 CPs, rewrite the three cards.
-- **Recovery reads four things, in this order:** `git log --oneline -8`, `git status --short`,
-  the logbook `STATUS.md`, then the session memory file. Detail docs only after the user picks a
-  card (§13).
+
+## 14. Pre-compact handoff
+
+Trigger: the footer crosses ~80k, or the user says "compact" / "pre-compact" / "new chat". From
+that moment **no new editing starts** — this list runs in order and nothing else.
+
+1. **Stop clean.** Finish or revert the edit in flight; never leave a half-written file.
+2. **Gate.** If code changed, run the narrowest gate that proves it (`npm run verify` for a whole
+   batch, one test file while iterating). Markdown-only → say `md-only`, do not run the build.
+3. **Commit** every batch with the shape in §15. An uncommitted batch does not survive compaction
+   and cannot be rebuilt from memory.
+4. **Detail doc** — the live `TASKS.md` / `TASK-*.md` gets its `Status:` line and a `## Next` list
+   precise enough to start from cold (file + symbol, not "continue the work").
+5. **Memory** — the session file becomes exactly: task-doc path, two lines of state, the last
+   three CPs. Nothing else (§12).
+6. **Logbook** — rewrite the three cards: newest on top, one summary line each, a link that
+   resolves in the commit you just made, one `Open:` line (`§13`).
+7. **Band file** — `## Active` row state, and a `## Next` line if the next step changed.
+8. **Report to the user in the chat language, four things and no more:** what changed (paths),
+   what was proved (command → number), what was **not** proved, and the single next action. End
+   with "silakan compact / buka chat baru".
+9. **Drop the claim row.** A stale row blocks the next session.
+
+Never at handoff: a CP without its commit; prose in memory; a card pointing at a file the commit
+removed; a fourth CP line; "done" with an unrun gate.
+
+## 15. Commit & git log protocol
+
+`git log` is the only artifact that survives compaction, so a commit has to be readable on its own
+by an agent with no context.
+
+```
+<type>(<scope>): <imperative summary, ≤ 72 chars, no trailing period>
+
+- <finding> → <fix> → <evidence, one bullet per change, max 6>
+```
+
+- **Types:** `feat` new capability · `fix` defect · `style` CSS/formatting only · `refactor` shape
+  without behaviour change · `docs` · `test` · `perf` · `chore` deps, config, generated maps.
+- **Scopes:** a package (`menu`, `core`, `fabmenu`), a band (`demo`, `generator`, `guidance`), or
+  `repo` when it crosses bands. Comma list only when the commit really is one change.
+- **Evidence in every bullet:** the command and its number (`npm run verify → 690 pass / 1 skip`),
+  or `path:symbol` plus the measured value (`Menu.css → panel 205×86 at 1280px`).
+- **Name the symptom, not the patch:** "hover closed at the seam → bridge `::before`".
+- **One commit per gate, per logical batch.** Never one mixed commit; never `wip`, `update`,
+  `fixes`, or a message that only repeats the diff.
+- **Separate the doc batch** when it is bookkeeping: `docs(status): record batch 38`.
+- **A logbook card must resolve in the commit that writes it** — `git show --stat` is the check.
+- **Never rewrite published history**, never force-move a tag jsDelivr already served (see
+  `docs/live-cdn-repo.md`). `main` is the only branch that carries work; `cdn` is generated.
+- **The first line is the logbook's raw material:** if the summary line alone cannot tell the next
+  agent what changed, the logbook card will be blind too.

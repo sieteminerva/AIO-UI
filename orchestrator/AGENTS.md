@@ -5,7 +5,8 @@
 > only **after** the user picks. Then read the claim board `.guidance/project/AGENTS.md` and take
 > your row **before the first edit** — overlapping a live row is a stop-and-ask, not an override.
 > Every finished action category leaves **3 pointer lines** (`CHANGED →`, `PROVED →`, `NEXT →`);
-> see `.guidance/AGENT_RULES.md` §10 (checkpoint), §11 (claims), §13 (logbook).
+> see `.guidance/AGENT_RULES.md` §10 (checkpoint), §11 (claims), §13 (logbook), §14 (pre-compact
+> handoff at ~80k) and §15 (commit message shape).
 
 # AGENTS.md — Generator band (`orchestrator/**`)
 

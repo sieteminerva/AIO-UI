@@ -26,15 +26,15 @@ lightbox and re-renders it per open. Shipped; the column distribution is still o
 
 ## Where everything else lives
 
-| Need                                | File                                        |
-| ----------------------------------- | ------------------------------------------- |
-| Framework queue + landed            | `.guidance/project/framework.md`            |
-| Gallery queue + landed              | `.guidance/project/gallery.md`              |
-| Generator queue + landed            | `.guidance/project/generator.md`            |
-| Rules — process                     | `.guidance/AGENT_RULES.md`                  |
-| Rules — component + environment     | `docs/framework/COMPONENT-CONVENTIONS.md`   |
-| Live writers (lock)                 | `.guidance/project/AGENTS.md`               |
-| Architecture decisions              | `.guidance/project/DECISIONS.md`            |
+| Need                            | File                                      |
+| ------------------------------- | ----------------------------------------- |
+| Framework queue + landed        | `.guidance/project/framework.md`          |
+| Gallery queue + landed          | `.guidance/project/gallery.md`            |
+| Generator queue + landed        | `.guidance/project/generator.md`          |
+| Rules — process                 | `.guidance/AGENT_RULES.md`                |
+| Rules — component + environment | `docs/framework/COMPONENT-CONVENTIONS.md` |
+| Live writers (lock)             | `.guidance/project/AGENTS.md`             |
+| Architecture decisions          | `.guidance/project/DECISIONS.md`          |
 
 Last updated: 2026-11-16
 

@@ -5,9 +5,9 @@ Index: `STATUS.md`.
 
 ## Active (max 3)
 
-| #   | Task                         | State | Gate                                                                                                    |
-| --- | ---------------------------- | ----- | ------------------------------------------------------------------------------------------------------- |
-| 1   | `mount()` emits `isRoot: true` | next  | `gallery` + `store` probed in a browser: one wrapper per block, metadata tree walks, `onDestroy` runs  |
+| #   | Task                           | State | Gate                                                                                                  |
+| --- | ------------------------------ | ----- | ----------------------------------------------------------------------------------------------------- |
+| 1   | `mount()` emits `isRoot: true` | next  | `gallery` + `store` probed in a browser: one wrapper per block, metadata tree walks, `onDestroy` runs |
 
 ## Next
 

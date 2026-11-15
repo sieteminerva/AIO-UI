@@ -6,9 +6,9 @@ Why / stages: `.guidance/plan-framework.md`. Engineering rules:
 
 ## Active (max 3)
 
-| #   | Task                      | State       | Gate                                                                                              |
-| --- | ------------------------- | ----------- | ------------------------------------------------------------------------------------------------- |
-| 1   | Theme console view (fab)  | in progress | `examples/demo/src/ThemeConsole/TASKS.md` — panels compose inside a 24rem popover; ≤380px no overflow |
+| #   | Task                     | State       | Gate                                                                                                  |
+| --- | ------------------------ | ----------- | ----------------------------------------------------------------------------------------------------- |
+| 1   | Theme console view (fab) | in progress | `examples/demo/src/ThemeConsole/TASKS.md` — panels compose inside a 24rem popover; ≤380px no overflow |
 
 ## Next
 

@@ -190,7 +190,9 @@ export function apiPanel(entry: iDemoEntry, build: BuildFn): HTMLElement {
  * they are not a second component, and `onNavigate` swallows their click.
  */
 export function mountSidebar(host: HTMLElement, build: BuildFn, activeName: string): void {
-  const navigations: Record<string, string>[] = [{ label: "Components", href: "#kitchen" }];
+  const navigations: Record<string, string>[] = [];
+
+  const brand = { label: "Components", href: "#kitchen" };
 
   for (const group of tierGroups()) {
     navigations.push({ label: group.label, href: "#kitchen", className: "group" });
@@ -206,7 +208,7 @@ export function mountSidebar(host: HTMLElement, build: BuildFn, activeName: stri
   mountInto(
     host,
     build("menu", {
-      content: { navigations },
+      content: { brand, navigations },
       config: {
         type: "sidebar",
         // `#kitchen` is the brand and the tier headings, not a destination to jump to.

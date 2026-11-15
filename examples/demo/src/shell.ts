@@ -62,7 +62,12 @@ export function shellPage({ main, aside }: iShellPage): iPageContent {
   };
 
   if (aside) {
-    body[".docs"] = { content: { ".docs-aside": aside, "main.docs-main": main } };
+    body[".docs"] = {
+      content: {
+        "aside.docs-aside": aside,
+        "main.docs-main": main
+      }
+    };
   } else {
     body["main.docs-main"] = main;
   }

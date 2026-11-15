@@ -42,7 +42,7 @@ function mountMain(host: HTMLElement, entry: iDemoEntry, build: BuildFn): void {
           { id: "panel-api", content: apiPanel(entry, build) },
         ],
       },
-      config: { menuPosition: "top" },
+      config: { menuPosition: "top", tabStyle: "folder" },
     }),
   );
 
@@ -55,6 +55,7 @@ function mountMain(host: HTMLElement, entry: iDemoEntry, build: BuildFn): void {
 function kitchenContent(entry: iDemoEntry): iPageContent {
   return shellPage({
     aside: {
+      isRoot: true, // should be in root
       onCreated: (element: HTMLElement, _render: any, build: BuildFn) =>
         mountSidebar(element, build, entry.name),
     },

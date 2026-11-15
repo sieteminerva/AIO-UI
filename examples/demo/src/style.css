@@ -11,7 +11,12 @@
  * children addressed with `&`. Media queries stay at the top level on purpose — a flat
  * breakpoint block is easier to hand-edit than a nested one.
  */
-
+html,
+html * {
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: var(--app-accent-color) color-mix(in srgb, grey 10%, var(--app-primary-color) 5%);
+}
 body {
   margin: 0;
   font-family: system-ui, sans-serif;

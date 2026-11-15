@@ -62,6 +62,14 @@ header.docs-head {
   text-align: start;
 
   /*
+   * The bar is in the flow, so it needs a stacking context of its own: a dropdown hung off
+   * it is painted inside this box, and `aside.docs-aside` comes later in the DOM. Without
+   * this, a static bar's `z-index` is inert and the sidebar covers the open submenu.
+   */
+  position: relative;
+  z-index: 20;
+
+  /*
    * Demo-only: `Menu.css` pins `.nav` to the viewport (`position: fixed`), which in a docs
    * shell would float over the content. The top bar sits in the flow instead. Its width is
    * `100%` of this column and the sheet is `border-box`, so it can never overflow the page.
@@ -99,6 +107,15 @@ header.docs-head {
  * `--app-*` tokens, so the shell no longer bridges a private namespace from here.
  */
 .docs-aside {
+  /*
+   * The aside paints *under* `.docs-main` by DOM order, and in the compact view the open
+   * strip is a card that overflows its own column — so the first section of the page used to
+   * sit on top of it. One stacking context here keeps the panel above the content it covers,
+   * without touching the bar's own `z-index`.
+   */
+  position: relative;
+  z-index: 2;
+
   & .nav {
     position: sticky;
     top: var(--app-gap);
@@ -117,15 +134,19 @@ header.docs-head {
     box-shadow: var(--app-shadow-soft, none);
   }
 
-  /* Tier labels are headings inside the list, not destinations (`onNavigate` blocks them). */
-  & .navigations > .item > a.group {
+  /* A tier is a disclosure now: the heading is the control, its children are the list.
+     Small caps keep it reading as a heading instead of as one more destination. */
+  & .navigations > .item.submenu > a {
     margin-top: 0.5rem;
     font-size: 0.68rem;
     letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--app-text-accent-color, #5b5b63);
-    cursor: default;
-    pointer-events: none;
+  }
+
+  /* The sheet already indents the inset list; pull its rows onto the same rail. */
+  & .navigations .menus .item > a {
+    padding-left: 0.6rem;
   }
 }
 

@@ -181,37 +181,35 @@ export function apiPanel(entry: iDemoEntry, build: BuildFn): HTMLElement {
 /**
  * The one sidebar.
  *
- * One `menu` with `type: "sidebar"` — the loop belongs inside the list
- * (`aside > .navigations > .item`), not around the aside: three menus would nest three
+ * One `menu` with `position: "left sticky"` — the loop belongs inside the list
+ * (`aside > .menus > .item`), not around the aside: three menus would nest three
  * `<aside class="sidebar">` and repeat `id="primary-navigations"` three times.
  *
- * `splitMenuContent` treats the first navigation as the brand, so the brand is the sidebar
- * title. Tier labels are plain items marked `.group`: they are headings inside the list, so
- * they are not a second component, and `onNavigate` swallows their click.
+ * The tier heading is no longer a fake link marked `.group`: it is an `li[data-submenu]`
+ * whose children are the components of that tier, so the heading is the control and
+ * `config.multilevel.property` says which key holds them. `activation: "always"` — a docs
+ * column reads better with every tier open; the sheet still knows how to collapse it.
  */
 export function mountSidebar(host: HTMLElement, build: BuildFn, activeName: string): void {
-  const navigations: Record<string, string>[] = [];
-
   const brand = { label: "Components", href: "#kitchen" };
 
-  for (const group of tierGroups()) {
-    navigations.push({ label: group.label, href: "#kitchen", className: "group" });
-    for (const row of group.rows) {
-      navigations.push({
-        label: row.name,
-        href: entryHash(row.name),
-        className: `tier-${group.tier}${row.name === activeName ? " is-active" : ""}`,
-      });
-    }
-  }
+  const navigations = tierGroups().map((group) => ({
+    label: group.label,
+    children: group.rows.map((row) => ({
+      label: row.name,
+      href: entryHash(row.name),
+      className: `tier-${group.tier}${row.name === activeName ? " is-active" : ""}`,
+    })),
+  }));
 
   mountInto(
     host,
     build("menu", {
       content: { brand, navigations },
       config: {
-        type: "sidebar",
-        // `#kitchen` is the brand and the tier headings, not a destination to jump to.
+        position: "left sticky",
+        multilevel: { activation: "always", property: "children", multicolumn: false },
+        // `#kitchen` is the brand, not a destination to jump to.
         onNavigate: (href?: string) => href === "kitchen",
       },
     }),

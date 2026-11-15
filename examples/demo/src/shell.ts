@@ -19,30 +19,49 @@ export function currentRoute(): string {
   return location.hash.replace(/^#/, "").split("?")[0].split("/")[0] || "kitchen";
 }
 
-/** Brand first (the menu splits its flat list that way), then one link per route. */
+/** Brand on its own key, then the bar as a reader sees it: two groups, not six links. */
+const TOP_BRAND = { label: "@aio demo", href: "#kitchen" };
+
 const TOP_NAV = [
-  { label: "@aio demo", href: "#kitchen", route: "" },
-  { label: "Getting Started", href: "#getting-started", route: "getting-started" },
-  { label: "Modules", href: "#modules", route: "modules" },
-  { label: "Elements", href: "#kitchen", route: "kitchen" },
-  { label: "Product", href: "#product", route: "product" },
-  { label: "Article", href: "#article", route: "article" },
-  { label: "Form", href: "#form", route: "form" },
+  {
+    label: "Guide",
+    children: [
+      { label: "Getting Started", href: "#getting-started", route: "getting-started" },
+      { label: "Modules", href: "#modules", route: "modules" },
+    ],
+  },
+  {
+    label: "Display",
+    children: [
+      { label: "Elements", href: "#kitchen", route: "kitchen" },
+      { label: "Product", href: "#product", route: "product" },
+      { label: "Article", href: "#article", route: "article" },
+      { label: "Form", href: "#form", route: "form" },
+    ],
+  },
 ];
 
 function mountTopMenu(host: HTMLElement, build: BuildFn): void {
   const route = currentRoute();
-  const navigations = TOP_NAV.map(({ label, href, route: id }) => ({
-    label,
-    href,
-    ...(id && id === route ? { className: "is-active" } : {}),
+  // The route lives under a branch, so the branch carries the mark and lights up for it.
+  const navigations = TOP_NAV.map((group) => ({
+    label: group.label,
+    children: group.children.map(({ label, href, route: id }) => ({
+      label,
+      href,
+      ...(id && id === route ? { className: "is-active" } : {}),
+    })),
   }));
 
   const child = build("menu", {
-    content: { navigations },
+    content: { brand: TOP_BRAND, navigations },
     // `menu` swallows clicks by default; here its own navigation is exactly right — it
     // sets the hash and the router follows.
-    config: { type: "top", onNavigate: () => false },
+    config: {
+      position: "top",
+      multilevel: { activation: "hover", property: "children", multicolumn: false },
+      onNavigate: () => false,
+    },
   });
   host.appendChild(child instanceof HTMLElement ? child : (child as any).element);
 }

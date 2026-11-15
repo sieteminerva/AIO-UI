@@ -7,8 +7,8 @@ architecture docs under `docs/`. The system guide is `.guidance/RAJUTAN.md`.
 
 Last updated: 2026-11-11
 
-Tracking pipeline: this file = **why / long-term**. Next actions live in
-`.guidance/project/NEXT_TASKS.md` (queue); the 3 items being worked live in
+Tracking pipeline: this file = **why / long-term**. Next actions and what is running live in the
+project's own file — `.guidance/project/{framework,gallery,generator}.md` — indexed by
 `.guidance/project/STATUS.md`. One item lives in exactly one file (`AGENT_RULES.md` §9).
 
 ---
@@ -136,7 +136,7 @@ Open design decisions:
   decided before record pages are built.
 - **Content model** — blog plus EN/ID pairs must exist before a language switcher means anything.
 
-Queue: `NEXT_TASKS.md` → Gallery lane. No other project is blocked on gallery.
+Queue: `.guidance/project/gallery.md` → `## Next`. No other project is blocked on gallery.
 
 ## 3. Project: generator — Rajutan (`.draft/preset/`, orchestrator)
 

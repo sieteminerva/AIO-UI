@@ -1,6 +1,7 @@
 > **STEP 0 — memory recovery + claim (mandatory, first action of any session):** `git log --oneline -12`,
-> then `git status --short`, then open the active checkpoint — `/memories/session/<task>.md`,
-> falling back to `.guidance/project/STATUS.md`. **Then read the claim board
+> then `git status --short`, then open your project's status file —
+> `.guidance/project/{framework,gallery,generator}.md`, indexed by `.guidance/project/STATUS.md`
+> — and the active checkpoint `/memories/session/<task>.md`. **Then read the claim board
 > `.guidance/project/AGENTS.md` and take your row before the first edit** — overlapping a live row
 > is a stop-and-ask, not an override. Only then plan. Every finished action category leaves
 > **3 pointer lines** (`CHANGED →`, `PROVED →`, `NEXT →`); see `.guidance/AGENT_RULES.md` §10
@@ -41,8 +42,8 @@ npm run build    # gallery build (from repo root)
 ## Active roadmap
 
 `store` (in progress) → `profile` → `blog` manual model references. See
-`.guidance/project/NEXT_TASKS.md` (Gallery lane) and `.guidance/project/STATUS.md`. Official
-release waits for all four models (`gallery`, `store`, `profile`, `blog`).
+`.guidance/project/gallery.md`. Official release waits for all four models (`gallery`, `store`,
+`profile`, `blog`).
 
 ## Do NOT read by default
 

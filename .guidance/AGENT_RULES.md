@@ -61,16 +61,21 @@ Long transcripts and VS Code auto-compaction trigger massive cache-miss penaltie
 
 One item lives in **exactly one** file. Never duplicate, never append history.
 
-| File                              | Holds                                                   | Shape                                                                  |
-| --------------------------------- | ------------------------------------------------------- | ---------------------------------------------------------------------- |
-| `.guidance/plan*.md`              | **why** — objective, decisions, stages, long-term order | `plan.md` index (§0/§4) + `plan-{framework,gallery,generator}.md`      |
-| `.guidance/project/NEXT_TASKS.md` | **what next** — one queue shared by all projects        | `## Framework` / `## Gallery` / `## Generator` lanes, top line = first |
-| `.guidance/project/STATUS.md`     | **what now** — at most **3** active items               | overwritten every session, ≤ 80 lines                                  |
+| File                             | Holds                                                    | Shape                                                                                       |
+| -------------------------------- | -------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| `.guidance/plan*.md`             | **why** — objective, decisions, stages, long-term order  | `plan.md` index (§0/§4) + `plan-{framework,gallery,generator}.md`                           |
+| `.guidance/project/<project>.md` | **what now + what next**, one file per project           | `## Active` (max 3) / `## Next` / `## Landed` — `framework.md`, `gallery.md`, `generator.md` |
+| `.guidance/project/STATUS.md`    | **index only** — which file to read for your band        | ≤ 30 lines, one table                                                                       |
 
-- **Promote:** plan item → queue line when it is the next thing; queue line → `STATUS.md` when work starts.
-- **Done = delete the line.** Evidence goes to the commit message (`finding → fix → evidence`) or `DECISIONS.md`; there is no "Completed" section.
-- **Blocked:** stays in `STATUS.md` only while the blocker fits in one line, then returns to the queue.
-- **Edit one file per state change.** Touch all three only when all three states really changed.
+- **One project, one file.** A session reads its own project file plus its band's `AGENTS.md`;
+  nothing else. Shared files are `AGENTS.md` (claim board) and `STATUS.md` (index).
+- **Promote:** plan item → a `## Next` line when it is the next thing; `## Next` line → an
+  `## Active` row when work starts.
+- **Done = delete the line.** Evidence goes to the commit message (`finding → fix → evidence`) or
+  `DECISIONS.md`; there is no "Completed" section.
+- **Blocked:** stays in `## Active` only while the blocker fits in one line, then returns to
+  `## Next`.
+- **Edit one file per state change.** Touch the index only when the project list changes.
 
 ## 10. Checkpoint protocol (CP-3)
 
@@ -168,8 +173,8 @@ history, no prose. Those are repo artifacts:
 | What                                    | Where                                                              |
 | --------------------------------------- | ------------------------------------------------------------------ |
 | why / objective / stages                | `.guidance/plan.md` + `.guidance/plan-<project>.md`                |
-| what next                               | `.guidance/project/NEXT_TASKS.md`                                  |
-| what now (≤ 80 lines, overwritten)      | `.guidance/project/STATUS.md`                                      |
+| what now + what next (per project)      | `.guidance/project/<project>.md`                                   |
+| which project file to read              | `.guidance/project/STATUS.md` (index, ≤ 30 lines)                  |
 | the live task's detail, traps, gotchas  | `docs/<band>/TASK-<name>.md`                                       |
 | durable engineering + environment rules | `docs/framework/COMPONENT-CONVENTIONS.md` (§12/§13/§15)            |
 | architecture decisions                  | `.guidance/project/DECISIONS.md`                                   |

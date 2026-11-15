@@ -14,5 +14,5 @@ Open design decisions:
   decided before record pages are built.
 - **Content model** — blog plus EN/ID pairs must exist before a language switcher means anything.
 
-Queue: `NEXT_TASKS.md` → Gallery lane. No other project is blocked on gallery.
+Queue: `.guidance/project/gallery.md` → `## Next`. No other project is blocked on gallery.
 

@@ -85,13 +85,15 @@ npm run verify         # the full gate — run before claiming anything works
     │                       mechanism, outputs, status, roadmap, agent playbook
     ├── rules.md            house conventions (markup, CSS, tokens)
     ├── mandatory/          architecture, coding principles, design, docs, style
-    └── project/            per-project decisions + the two moving lists
-        ├── NEXT_TASKS.md   queue: one lane per project, top line = next
-        └── STATUS.md       now: max 3 active items, overwritten each session
+    └── project/            per-project decisions + one status file per project
+        ├── STATUS.md       index: which project file to read (≤ 30 lines)
+        ├── framework.md    active / next / landed — packages + examples/demo
+        ├── gallery.md      active / next / landed — examples/gallery
+        └── generator.md    active / next / landed — orchestrator
 ```
 
 Work tracking is a pipeline, and **one item lives in exactly one file**:
-`plan.md` (why) → `NEXT_TASKS.md` (what next) → `STATUS.md` (what now).
+`plan.md` (why) → `## Next` in the project's own file (what next) → `## Active` there (what now).
 Done = delete the line; proof goes to the commit message or `DECISIONS.md`.
 
 Working areas — `orchestrator/` is tracked; `.draft/` and `.archives/` are local-only:
@@ -109,8 +111,7 @@ Working areas — `orchestrator/` is tracked; `.draft/` and `.archives/` are loc
 | Product vision, market framing              | `docs/generator/presentation0.md`                                                                                     |
 | How generated sites are produced (Rajutan)  | `.guidance/RAJUTAN.md`                                                                                                |
 | Why / long-term order                       | `.guidance/plan.md`                                                                                                   |
-| What is next (queue)                        | `.guidance/project/NEXT_TASKS.md`                                                                                     |
-| What is running right now                   | `.guidance/project/STATUS.md`                                                                                         |
+| What is next + what is running (per band)   | `.guidance/project/framework.md`, `gallery.md`, `generator.md`                                                        |
 | Rules an agent must follow                  | `.guidance/AGENT_RULES.md`, `.guidance/mandatory/`                                                                    |
 | Renderer internals                          | `docs/framework/DOMRenderer.md`                                                                                       |
 | Component conventions / template / data     | `docs/framework/COMPONENT-CONVENTIONS.md`, `docs/framework/COMPONENT-TEMPLATE.md`, `docs/framework/COMPONENT-DATA.md` |

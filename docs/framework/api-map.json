@@ -96,7 +96,9 @@
         "Builder",
         "GLOBAL_INSTANCE_COUNTER"
       ],
-      "types": []
+      "types": [
+        "iBuilderInspection"
+      ]
     },
     "@aio-ui/carousel": {
       "kind": "package",
@@ -136,6 +138,7 @@
         "getBuilderAdapter",
         "getTemplates",
         "injectLazyCss",
+        "inspectPage",
         "isStyleInjected",
         "isStylesheetPending",
         "mergeBuildConfig",
@@ -162,6 +165,7 @@
         "iEventCallback",
         "iEventEmit",
         "iPageEvents",
+        "iPageInspection",
         "iPagePhase",
         "iRegistryEntry",
         "iRegistryErrorDetails",

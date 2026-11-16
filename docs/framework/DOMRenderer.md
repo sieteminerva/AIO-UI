@@ -248,7 +248,50 @@ document.getElementById("app")?.appendChild(compiledWebsiteDOM);
 console.log("🏆 Static Web App completed and painted successfully under 0 milliseconds!");
 ```
 
-## 🔒 Memory Management & Unmounting Evacuation
+## � Inspecting a built tree (snapshots without a screen)
+
+`render()` already records every node it builds. Two exported helpers read that recording
+back as **data**, so a test, a generator or an agent can prove what a page is without
+looking at it:
+
+```typescript
+import { inspectPage } from "@aio-ui/core";
+import { SectionBuilder } from "@aio-ui/section";
+
+// Page level — markup plus the complete record pool.
+const root = renderer.render(page, renderFn, buildFn, { scopeId: "home" });
+const { html, records, nodeCount } = inspectPage(root);
+
+// Component level — markup, keys, per-key relations and the identity namespace.
+const builder = new SectionBuilder(config);
+builder.create(payload);
+const { html, keys, hierarchy } = builder.inspect();
+```
+
+Both are synchronous and side-effect free: no waiting, no stylesheet loader, no
+`document` writes. Four rules make the result trustworthy, and each is pinned by a test.
+
+| Rule | Why |
+| --- | --- |
+| **Deterministic** | The identity seed comes from the payload with keys sorted (`buildNamespace`), never from an instance counter — the same payload renders the same markup twice. |
+| **Idempotent** | `hierarchy.elements` is rebuilt from the live tree on every walk, so reading twice returns the same data. |
+| **Root, never a child** | `setMetadata` copies the pool at call time and a node is stamped before its siblings exist, so only the root holds the complete page graph. `inspectPage(child)` returns a partial snapshot. |
+| **Hierarchy before records** | A builder root carries **one** record (its own). `inspect()` therefore reports `keys` and `hierarchy` first; `records` is the thin half. |
+
+`html` is deliberately **raw**: attribute order is the renderer's, and the anti-FOUC markers
+a builder paints (`data-loaded`, `--is-loading`) are left in place. Normalising here would
+hide a regression from the caller — a caller that wants a diffable form normalises it itself.
+
+Two boundaries worth knowing:
+
+- A namespace is **not a unique key**. `buildNamespace` summarises arrays from their first
+  three items and objects from their first five keys, so two different payloads can share a
+  namespace. Equal ids mean "same seed", not "same content".
+- Reuse and determinism conflict. The historical `ElementCreatedEventBus.relay` path returned
+  a *living* element instead of building a new one, which made a render depend on history
+  rather than on the payload. It is gone, and snapshotting depends on it staying gone.
+
+## �🔒 Memory Management & Unmounting Evacuation
 
 To fortify the web application against catastrophic RAM accumulation over long browsing sessions, purging older elements must **strictly** pass through the centralized `.unmount()` gateway of `DOMRenderer` [SME].
 

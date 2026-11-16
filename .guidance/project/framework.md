@@ -9,9 +9,14 @@ Why / stages: `.guidance/plan-framework.md`. Engineering rules:
 | #   | Task                     | State       | Gate                                                                                                           |
 | --- | ------------------------ | ----------- | -------------------------------------------------------------------------------------------------------------- |
 | 1   | Theme console view (fab) | in progress | `examples/demo/src/ThemeConsole/TASKS.md` — view composed, gate green; open: page-only sections in the popover |
+| 2   | Inspect surface (b43)    | in progress | `inspect()` + `inspectPage()` landed and green; open: dead relay removal, `#cleanupMap` reset, Topik A (`iComponentInput`) |
 
 ## Next
 
+- Retire the dead `ElementCreatedEventBus.relay` call in `DOMRenderer.buildStructure` and the
+  two leftover `console.log` calls in `attachMetadata` / `mountHandler` — the relay has had no
+  writer since `AioApp` replaced `LandingPageBuilder`, and a snapshot surface must stay quiet.
+- Reset `#cleanupMap` per `render()`, not only on `unmount()`.
 - Observe the mockup path in a real browser (cold sheet): throttled network or a disabled HTTP
   cache — Vite resolves the loader in one microtask, so dev never shows the hold.
 - Masonry column distribution.
@@ -25,6 +30,13 @@ Why / stages: `.guidance/plan-framework.md`. Engineering rules:
 
 ## Landed
 
+- **Batch 43** — inspection surface, proved before built: five probes (`Base.inspect.test.ts`,
+  `DOMRenderer.metadata.test.ts`) pinned determinism, the one-record builder root, the
+  idempotent key inventory and a skeleton-free hold, all green on the first run. Then
+  `Builder.inspect()` + `inspectPage()` landed with their own tests. Findings: the anti-FOUC
+  markers are builder-only (the renderer never holds), `getMetadata()` context is optional
+  by implementation and is now optional in the type, and `dist/*.d.ts` must be rebuilt before
+  typecheck reads a changed global augmentation.
 - **Batch 39** — theme console composed: mode row + evenly spread rail + one drawer at a time, drawers
   flattened onto the popover, one persisted theme config (`theme-config.ts`) so page and panel agree;
   `--fab-*` token layer; `#form`/`#modules` sidebars use `position: "left sticky"` + branch headings.

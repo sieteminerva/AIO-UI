@@ -63,7 +63,7 @@ const hero = renderer.render(
   {
     "section#hero.hero": {
       content: {
-        "h1": { content: "Plain HTML, arranged" },
+        h1: { content: "Plain HTML, arranged" },
         "p.lead": { content: "No build step, no runtime." },
       },
     },
@@ -86,13 +86,13 @@ engine, not a mockup. Everything you touch repaints the page you are standing on
 
 **Mixer** — the design work:
 
-| Control | What it does |
-| --- | --- |
-| Preset | Five built-in palettes (`chocolaris`, `gum`, `green-bliss`, `Pomegrade`, `Violaris`) plus **save your own** |
-| Primary / accent | Two base colours; every other token is derived from them |
-| Ramps & palette | The 50→900 ramp and the `hover` / `strong` / `text` / `subtle` / `border` swatches, recomputed instantly |
-| Colour mixer | Interpolation in OKLCH, OKLAB, SRGB or HSL (plus the wide-range variants), and **per token**: which colour it blends into, by how much, rotated how far round the hue wheel |
-| Light / dark | One switch; every value is emitted as a `light-dark()` pair, so both modes stay correct |
+| Control          | What it does                                                                                                                                                                |
+| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Preset           | Five built-in palettes (`chocolaris`, `gum`, `green-bliss`, `Pomegrade`, `Violaris`) plus **save your own**                                                                 |
+| Primary / accent | Two base colours; every other token is derived from them                                                                                                                    |
+| Ramps & palette  | The 50→900 ramp and the `hover` / `strong` / `text` / `subtle` / `border` swatches, recomputed instantly                                                                    |
+| Colour mixer     | Interpolation in OKLCH, OKLAB, SRGB or HSL (plus the wide-range variants), and **per token**: which colour it blends into, by how much, rotated how far round the hue wheel |
+| Light / dark     | One switch; every value is emitted as a `light-dark()` pair, so both modes stay correct                                                                                     |
 
 **Report** — the audit:
 

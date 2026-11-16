@@ -28,6 +28,7 @@ it in the same commit as a flag or an output path.
 | `bounds.mjs`        | dependency-boundary check (`check:bounds`)                                                                                                                 |
 | `api.mjs`           | public-API surface check (`check:api`); `--write` regenerates `docs/framework/api-map.json`                                                                |
 | `catalogue.mjs`     | compile `packages/components/**/README.md` into `docs/framework/catalogue.json` (`--apply`); `--check` fails on drift |
+| `session.mjs`       | run the session rituals instead of reading them: `start` (STEP 0), `cp` (CP-3), `end` (§14). Read-only; prompts on a TTY, takes flags otherwise |
 | `new-component.mjs` | scaffold a component from `templates/component/`                                                                                                           |
 
 Package count: the workspace is **39 packages** (5 core + 22 components + 6 modules + 3 themes

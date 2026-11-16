@@ -33,6 +33,13 @@ Why / stages: `.guidance/plan-framework.md`. Engineering rules:
 
 ## Landed
 
+- **Batch 49** — `scripts/session.mjs` freezes the session rituals into an order of operations
+  instead of prose an agent re-reads: `start` (STEP 0 — tree, last 8 commits, the three cards, live
+  claims, and what to report versus what not to read yet), `cp` (CP-3, auto-numbered), `end` (§14's
+  nine steps gathered and printed with the report, memory skeleton, logbook skeleton and §15 commit
+  shape). Prompts on a TTY, takes flags otherwise, never writes. Two output bugs found and fixed
+  while testing: card headings carried their own ordinal (`1. 1. …`) and porcelain status codes
+  leaked into the report.
 - **Batch 48** — the gates are tiered by cost, not run by habit: `check` (~12 s: typecheck + bounds +
   api + catalogue + version), `verify` (~54 s: `check` + tests), `verify:pkgs` (~2 m 23 s: + build +
   example builds), and the inner loop is `dev`/`build` with no gate at all. Measured per step before

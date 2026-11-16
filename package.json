@@ -32,7 +32,8 @@
     "check:api": "node scripts/api.mjs --check",
     "check:catalogue": "node scripts/catalogue.mjs --check",
     "catalogue": "node scripts/catalogue.mjs",
-    "catalogue:apply": "node scripts/catalogue.mjs --apply"
+    "catalogue:apply": "node scripts/catalogue.mjs --apply",
+    "session": "node scripts/session.mjs"
   },
   "devDependencies": {
     "happy-dom": "^21.0.4",

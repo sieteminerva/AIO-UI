@@ -9,7 +9,8 @@ Short, copy-paste. The repo carries the rest: `.guidance/AGENT_RULES.md` §13 (l
 Status kita sekarang?
 ```
 
-That is enough — STEP 0 reads the logbook and answers with three cards. Then pick one:
+That is enough — STEP 0 reads the logbook and answers with three cards. `node scripts/session.mjs start`
+prints exactly what to report. Then pick one:
 
 ```
 Lanjut #2.

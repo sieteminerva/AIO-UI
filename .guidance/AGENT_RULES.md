@@ -120,6 +120,9 @@ NEXT    → <one action> | blocks: <none|item>
 | `verify` / test gate    | git commit of the batch (§15) + the `Gate` cell in the band file |
 | handoff / pre-compact   | run §14 in full — the CP alone is not a handoff                  |
 
+> `node scripts/session.mjs cp` fills the block below and numbers it. The ritual is frozen there;
+> this section is why it exists.
+
 - **Never add a fourth line.** If it matters and does not fit, it belongs in a file — write
   the pointer instead.
 - **Keep only the last 3 CPs** in the memory file (overwrite, do not append); older history
@@ -263,6 +266,10 @@ orientation, tiny) or **detail** (opened only for the thing being worked on).
 
 Trigger: the footer crosses ~80k, or the user says "compact" / "pre-compact" / "new chat". From
 that moment **no new editing starts** — this list runs in order and nothing else.
+
+> Run it: `node scripts/session.mjs end`. It gathers the facts this list asks for (tree, HEAD, the
+> three cards, live claims), prints the nine steps as a checklist, and assembles the report, the
+> memory skeleton and the logbook skeleton. Read-only — writing them stays your decision.
 
 1. **Stop clean.** Finish or revert the edit in flight; never leave a half-written file.
 2. **Gate.** If code changed, run the narrowest gate that proves it (`npm run verify` for a whole

@@ -1,5 +1,7 @@
-> **STEP 0 — logbook, then claim (mandatory, first action of any session):** `git log --oneline -8`,
-> then `git status --short`, then read **only** `.guidance/project/STATUS.md` — the logbook: three
+> **STEP 0 — logbook, then claim (mandatory, first action of any session):** `node scripts/session.mjs
+> start` gathers it in one command (`git log --oneline -8`, `git status --short`, the three logbook
+> cards, live claims); run the commands by hand if you prefer. Then read **only**
+> `.guidance/project/STATUS.md` — the logbook: three
 > cards, each a one-line summary plus the link to the real detail. Report the three, say the detail
 > is **not** read yet, and ask which card to continue. Open `TASKS.md`, `TASK-*.md` or a band file
 > only **after** the user picks. Then read the claim board `.guidance/project/AGENTS.md` and take

@@ -6,9 +6,7 @@
 
 ## Live claims
 
-| Agent         | Band    | Task                                                            | Write scope                                                                    | Started    | Checkpoint                       | State  |
-| ------------- | ------- | --------------------------------------------------------------- | ------------------------------------------------------------------------------ | ---------- | -------------------------------- | ------ |
-| `copilot b46` | Tooling | `scripts/catalogue.mjs` — compile component READMEs to one JSON | `scripts/**`, `docs/framework/catalogue.json`, `docs/agent/**`, `package.json` | 2026-11-16 | `.guidance/project/framework.md` | active |
+_No live writer. Add a row here before your first edit — see the rules below._
 
 ## Row shape
 

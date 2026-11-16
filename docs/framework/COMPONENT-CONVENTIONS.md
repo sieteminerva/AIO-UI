@@ -572,9 +572,11 @@ by measuring, and each has cost at least one session.
 
 ### Gates
 
-- `npm run verify` = build:pkgs (39 of 40 built; `styles` is CSS-only) → typecheck → check:bounds →
-  check:api → version (40) → test → examples build. Once per batch; markdown-only edits after it do
-  not invalidate it.
+- `npm run verify` = typecheck → check:bounds → check:catalogue → check:api → version (40) → test.
+  Source only, no build. Once per batch; markdown-only edits after it do not invalidate it.
+- `npm run verify:pkgs` = build 40 packages → `verify` → example builds. Before a release, or any
+  time the work depends on `dist/` (the examples' production build resolves the `default`
+  condition, which points at `dist/`).
 - **`orchestrator/layout.json` drifts silently** — neither `check:bounds` nor `check:api` sees a
   package missing from the map. Regenerate:
   `node orchestrator/layout.mjs --out orchestrator/layout.json` (prints "stdout is not a tty" but

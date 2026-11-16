@@ -28,7 +28,8 @@ npm run build:pkgs       # build all 37 packages (scripts/build-pack.mjs)
 npm run test             # vitest run
 npm run new:component <name>   # scaffold from templates/component/
 npm run dev:demo         # run the showcase demo
-npm run verify           # full gate — run once per batch, not per step
+npm run verify           # gate, source only (no build) — once per batch
+npm run verify:pkgs      # + build 40 packages + example builds — before a release
 ```
 
 ## Conventions (non-obvious)
@@ -96,6 +97,8 @@ Mechanics: `docs/framework/DOMRenderer.md` § *Inspecting a built tree*.
 
 ## Verify
 
-`npm run verify` at the end of a batch. For UI geometry claims, measure
+`npm run verify` at the end of a batch — it type-checks and tests source, so no build is needed.
+`npm run verify:pkgs` adds `build:pkgs` and the example builds; reach for it when the change depends
+on emitted `dist/`. For UI geometry claims, measure
 `getBoundingClientRect`/`getComputedStyle` and report exact numbers — never claim UI behaviour
 without measuring.

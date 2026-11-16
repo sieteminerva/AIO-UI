@@ -5,8 +5,8 @@ orchestrator that turns a business profile into a generated website). One reposi
 two roles, one source of truth.
 
 - **Version:** `0.2.1` — fixed versioning across all packages.
-- **Gate:** `npm run verify` (build 40 packages → typecheck → boundaries → version check →
-  tests → example builds).
+- **Gate:** `npm run verify` (typecheck → boundaries → api → catalogue → version → tests, source
+  only) and `npm run verify:pkgs` (+ build 40 packages and the example builds) before a release.
 - **Distribution:** GitHub releases only. No npm registry.
 
 ## Why this exists

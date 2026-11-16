@@ -11,6 +11,18 @@
 
     /* Bundler mode */
     "moduleResolution": "bundler",
+    /**
+     * Resolve the `development` condition that every package `exports` map puts first, so tsc
+     * type-checks against `src/**` instead of `dist/**\/*.d.ts`. Two consequences, both wanted:
+     *
+     * - `typecheck` no longer needs a build first (it used to read stale declarations, which is
+     *   what produced "Subsequent property declarations must have the same type" after a global
+     *   type change),
+     * - a stale `dist/` can never make the gate lie, because the gate never reads it.
+     *
+     * Vitest and Vite already resolve this condition, so the whole toolchain now reads one source.
+     */
+    "customConditions": ["development"],
     "allowImportingTsExtensions": true,
     "verbatimModuleSyntax": true,
     "moduleDetection": "force",

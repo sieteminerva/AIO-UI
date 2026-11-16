@@ -26,7 +26,9 @@ Every single tool turn re-sends the entire prompt history. Minimize round-trips:
 
 ## 4. Verify once per batch
 
-- Run the narrowest single test file while iterating; run `npm run verify` **once** at the end of a batch.
+- Run the narrowest single test file while iterating; run `npm run verify` **once** at the end of a
+  batch. It reads source only (`customConditions: development`), so it needs no build — `verify:pkgs`
+  is the pre-release gate that also builds `dist/` and the examples.
 - Never re-run a gate that already passed without code changes.
 
 ## 5. Write only what was asked

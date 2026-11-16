@@ -106,7 +106,7 @@ git clone https://github.com/sieteminerva/AIO-UI.git aio-ui
 cd aio-ui
 npm install          # workspace install: 40 packages + 2 examples
 npm run build:pkgs   # writes dist/ (JS + .d.ts + copied CSS) for every TS package
-npm run verify       # optional gate: typecheck → bounds → api → version → tests → examples
+npm run verify:pkgs  # the release gate: build → typecheck → bounds → api → catalogue → version → tests → examples
 ```
 
 `npm run build:pkgs` builds **39** of the 40: `@aio-ui/styles` is CSS-only and has no build
@@ -253,8 +253,8 @@ The CDN URL of any row is the tag base + `Directory` + the file, e.g.
    npm run version:report
    npm run version:check
    ```
-7. **Green gate.** `npm run verify` must pass (build 39 TS packages → typecheck → bounds → api →
-   version → tests → example builds; `@aio-ui/styles` is CSS-only).
+7. **Green gate.** `npm run verify:pkgs` must pass (build 39 TS packages → typecheck → bounds → api →
+   catalogue → version → tests → example builds; `@aio-ui/styles` is CSS-only).
 8. **Fresh layout.** `layout.json` describes packages by directory and exports; regenerate it
    before packaging so a moved package cannot produce a stale map.
 9. **Coordinates.** `scripts/release.mjs` defaults to `sieteminerva/AIO-UI`. Override with

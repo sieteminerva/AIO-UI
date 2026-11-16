@@ -58,7 +58,7 @@ artefacts describe a tree that never existed.
 
 1. `node scripts/version.mjs --apply --version <x.y.z>`, then `npm install --package-lock-only`
    (the lockfile carries the versions too, and CI installs with `npm ci`).
-2. `npm run verify`.
+2. `npm run verify:pkgs` — build, then the source gate, then the example builds.
 3. `node scripts/release.mjs --version <x.y.z> --apply` → `.draft/release/v<x.y.z>/` (40 tarballs +
    `registry.json` + `layout.json` + `checksums.txt`).
 4. `node scripts/publish-cdn.mjs --apply` → assembles the orphan `cdn` branch, force-tags

@@ -33,6 +33,14 @@ Why / stages: `.guidance/plan-framework.md`. Engineering rules:
 
 ## Landed
 
+- **Batch 47** — the gate is split by what it reads. `verify` = typecheck → bounds → api → catalogue
+  → version → tests, **source only**: measured 55 s (`npm run verify`) against 2 m 23 s
+  (`verify:pkgs`, of which `build:pkgs` is 1 m 25 s). The build left the dev loop, not the release.
+  This was only safe after one root fix: `tsc` was resolving `@aio-ui/*` through the `types`
+  condition, i.e. reading `dist/*.d.ts`, which is why a global type change used to need a rebuild
+  (and why the duplicate-augmentation error appeared). `tsconfig.base.json` now sets
+  `customConditions: ["development"]`, so tsc reads `src/**` like Vitest and Vite already did —
+  proven with `--traceResolution`: `@aio-ui/core` → `packages/core/src/index.ts`.
 - **Batch 46** — `scripts/catalogue.mjs` compiles all 23 component READMEs into
   `docs/framework/catalogue.json` (217.6 kB): title, lead, and every H2 with its prose, fenced
   examples and **every table** as `columns` + `rows`, keyed by camelCase of the header. Dry-run by

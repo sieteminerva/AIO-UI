@@ -46,8 +46,9 @@ One monorepo, four working bands. **Start here, then open the band's `AGENTS.md`
   `builder.inspect()` or `inspectPage(root)` in a test, or a measured browser number
   (`.guidance/AGENT_RULES.md` §16). "It looks right" is not a proof, and a gate that was
   already green proves nothing about a feature that did not exist when it ran.
-- Gate before finishing: `npm run verify`
-  (build 39 pkgs — `styles` is CSS-only → typecheck → bounds → api → version → tests → examples).
+- Gate before finishing: `npm run verify` — typecheck → bounds → api → catalogue → version → tests.
+  It reads **source** only, so it needs no build. Run `npm run verify:pkgs` (build 40 pkgs → verify →
+  example builds) before a release, or whenever the work depends on `dist/`.
 - Answer in **Bahasa Indonesia**; repo artifacts (code, comments, docs, copy) stay **English**.
 
 ## Where the "why" lives

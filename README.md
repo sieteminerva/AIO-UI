@@ -41,7 +41,7 @@ ordinary website.
 - **Prototyping is instant, and the style stays yours.** Take a markup snippet you already like,
   split it into `@templateKey` selectors, and you have a component.
 
-*Author: YMGH.*
+_Author: YMGH._
 
 ---
 
@@ -185,7 +185,7 @@ Working: 37 packages build and are tested (428 tests, 100 of them the orchestrat
 the form family (module registry,
 messages, animations, address adapters) runs, the generator produces real files
 (`.draft/results/`), versioning is fixed at `0.1.0`, and **tag `v0.1.0` is live** on
-`sieteminerva/-aio-ui-dev`: jsDelivr serves every import-map URL from the `cdn` branch, and both
+`sieteminerva/AIO-UI`: jsDelivr serves every import-map URL from the `cdn` branch, and both
 generated sites paint from that tag with a clean console.
 
 Open: the **official** release waits until all four webapp models exist as manual references —

@@ -87,7 +87,7 @@ Decided direction: **GitHub as the only origin**, two doors from one build.
 - 1.2.2 **Release pipeline.** ✅ local half: `scripts/release.mjs` writes 37 tarballs +
   `registry.json` + `layout.json` + `checksums.txt` into `.draft/release/v<ver>/`
   (dry-run by default), verified by `.draft/preset/release.test.ts`. ✅ **Published:** tag
-  `v0.1.0` on `sieteminerva/-aio-ui-dev` points at the orphan `cdn` branch built by
+  `v0.1.0` on `sieteminerva/AIO-UI` points at the orphan `cdn` branch built by
   `scripts/publish-cdn.mjs` (it unpacks the tarballs so jsDelivr serves the import map); 40
   release assets uploaded. ⏳ GitHub Actions on tag still to write.
 - 1.2.3 **Import-map build target.** ✅ Delivered 2026-11-11: emitted JS names `.js`, drops CSS
@@ -97,7 +97,7 @@ Decided direction: **GitHub as the only origin**, two doors from one build.
   `ComponentRegistry.loadModule` only warns when missing, so a typo silently falls back to the
   built-in preset. Derive loaders from `import.meta.glob` or generate a virtual module.
   `scope` must never be derived — it is a component decision.
-- 1.2.5 **Scope vs repo owner.** `github.com/sieteminerva/-aio-ui-dev` ≠ `@aio-ui/*`. Irrelevant for
+- 1.2.5 **Scope vs repo owner.** `github.com/sieteminerva/AIO-UI` ≠ `@aio-ui/*`. Irrelevant for
   tarball/CDN installs; only GitHub Packages would require renaming the scope. Keep the scope.
   `scripts/release.mjs` defaults to that repository; `GITHUB_REPOSITORY` overrides it for a fork.
 - 1.2.6 **Pin what a site was built with.** Every preset carries

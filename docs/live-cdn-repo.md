@@ -14,13 +14,20 @@ as a **new version** (§8). Installing from a clone is §3, the branch README is
 
 ## 1. What is live
 
+> **Repository rename (2026-11-16).** The project moved from `sieteminerva/-aio-ui-dev` to
+> `sieteminerva/AIO-UI`; branches and tags moved with it. Two things still point at the old
+> repository: the **GitHub release assets** of `v0.2.0` (they are attachments, not git objects) and
+> therefore the `tarball` entries inside the published `registry.json`. jsDelivr is unaffected — it
+> serves the `cdn` branch, which moved. Re-run `scripts/publish-cdn.mjs` to re-create the assets
+> under the new name.
+
 | Piece          | Value                                                                                           |
 | -------------- | ----------------------------------------------------------------------------------------------- |
-| Repository     | `https://github.com/sieteminerva/-aio-ui-dev` (public)                                          |
+| Repository     | `https://github.com/sieteminerva/AIO-UI` (public)                                               |
 | Default branch | `main` — source only; `dist/` is gitignored                                                     |
 | CDN branch     | `cdn` — orphan branch, contains the unpacked tarballs (`packages/**/dist`, CSS, `package.json`) |
 | Version tag    | `v0.2.0` at `5251e20` — points at the `cdn` commit, **not** at `main`                           |
-| CDN base       | `https://cdn.jsdelivr.net/gh/sieteminerva/-aio-ui-dev@v0.2.0/`                                  |
+| CDN base       | `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.0/`                                       |
 | Branch README  | `…@v0.2.0/README.md` — generated at publish time, see §2.1                                      |
 | Release assets | 43 files: 40 `aio-ui-<name>-0.2.0.tgz` + `registry.json` + `layout.json` + `checksums.txt`      |
 | Packages       | 40 (base/core/app/styles/utilities, 23 components, 6 modules, 3 themes, 3 kits)                 |
@@ -38,10 +45,10 @@ the browser import map.
 ## 2. Live URLs
 
 ```text
-registry     https://cdn.jsdelivr.net/gh/sieteminerva/-aio-ui-dev@v0.2.0/registry.json
-layout       https://cdn.jsdelivr.net/gh/sieteminerva/-aio-ui-dev@v0.2.0/layout.json
-checksums    https://cdn.jsdelivr.net/gh/sieteminerva/-aio-ui-dev@v0.2.0/checksums.txt
-readme       https://cdn.jsdelivr.net/gh/sieteminerva/-aio-ui-dev@v0.2.0/README.md
+registry     https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.0/registry.json
+layout       https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.0/layout.json
+checksums    https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.0/checksums.txt
+readme       https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.0/README.md
 
 # bare package root → <dir>/<entry>
 @aio-ui/frameworks   …@v0.2.0/packages/kits/frameworks/dist/index.js
@@ -89,7 +96,7 @@ project consumes the framework from this repository. Two facts follow from that:
 ### 3.1 Clone and build once
 
 ```bash
-git clone https://github.com/sieteminerva/-aio-ui-dev.git aio-ui
+git clone https://github.com/sieteminerva/AIO-UI.git aio-ui
 cd aio-ui
 npm install          # workspace install: 40 packages + 2 examples
 npm run build:pkgs   # writes dist/ (JS + .d.ts + copied CSS) for every TS package
@@ -226,7 +233,7 @@ The CDN URL of any row is the tag base + `Directory` + the file, e.g.
 2. **Right remote.** `origin` must be the publish repository:
    ```bash
    git remote -v
-   # origin  https://github.com/sieteminerva/-aio-ui-dev.git
+   # origin  https://github.com/sieteminerva/AIO-UI.git
    # rajutan https://github.com/sieteminerva/rajutan.git   ← older repo, never push main here
    ```
 3. **Credentials.** Git Credential Manager (browser login) or a PAT with `repo` scope. CI must use
@@ -244,7 +251,7 @@ The CDN URL of any row is the tag base + `Directory` + the file, e.g.
    version → tests → example builds; `@aio-ui/styles` is CSS-only).
 8. **Fresh layout.** `layout.json` describes packages by directory and exports; regenerate it
    before packaging so a moved package cannot produce a stale map.
-9. **Coordinates.** `scripts/release.mjs` defaults to `sieteminerva/-aio-ui-dev`. Override with
+9. **Coordinates.** `scripts/release.mjs` defaults to `sieteminerva/AIO-UI`. Override with
    `GITHUB_REPOSITORY=<owner>/<repo>` when publishing a fork; the base URL is written into
    `registry.json` and into every generated import map.
 
@@ -335,13 +342,13 @@ returns `422 already_exists`), then upload the new set. With the REST API:
 ```bash
 # requires GITHUB_TOKEN in the environment (never paste tokens into chat)
 curl -s -H "Authorization: Bearer $GITHUB_TOKEN" \
-  "https://api.github.com/repos/sieteminerva/-aio-ui-dev/releases/<release-id>/assets?per_page=100"
+  "https://api.github.com/repos/sieteminerva/AIO-UI/releases/<release-id>/assets?per_page=100"
 ```
 
 ### Step 7 — purge and verify jsDelivr
 
 ```bash
-curl -s "https://purge.jsdelivr.net/gh/sieteminerva/-aio-ui-dev@v$V/registry.json" > /dev/null
+curl -s "https://purge.jsdelivr.net/gh/sieteminerva/AIO-UI@v$V/registry.json" > /dev/null
 sleep 3
 
 for u in registry.json \
@@ -351,7 +358,7 @@ for u in registry.json \
   packages/components/input/dist/Dropdown/Dropdown.InputModule.js \
   packages/modules/animations/dist/Animations.css \
   packages/components/form/dist/Form.css; do
-  printf '%s %s\n' "$(curl -s -o /dev/null -w '%{http_code}' "https://cdn.jsdelivr.net/gh/sieteminerva/-aio-ui-dev@v$V/$u")" "$u"
+  printf '%s %s\n' "$(curl -s -o /dev/null -w '%{http_code}' "https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v$V/$u")" "$u"
 done
 ```
 
@@ -362,7 +369,7 @@ Every line must be `200`.
 Generate copies whose import map points at the published tag, then serve the files locally:
 
 ```bash
-SMOKE_BASE=https://cdn.jsdelivr.net/gh/sieteminerva/-aio-ui-dev@v$V/ \
+SMOKE_BASE=https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v$V/ \
   npx vitest run orchestrator/release.test.ts
 
 node .draft/smoke/serve.mjs 5300
@@ -399,7 +406,7 @@ Never push `main` to the old `rajutan` remote.
   cannot be repaired once jsDelivr has served it — publish a new version instead.
   ```bash
   git push origin <old-cdn-commit>:refs/heads/cdn --force
-  curl -s "https://purge.jsdelivr.net/gh/sieteminerva/-aio-ui-dev@cdn/registry.json" > /dev/null
+  curl -s "https://purge.jsdelivr.net/gh/sieteminerva/AIO-UI@cdn/registry.json" > /dev/null
   ```
 - **Remove local artefacts:** `rm -rf .draft/release .draft/cdn-tree .draft/cdn-worktree`.
 - **Undo a version bump:** `git restore packages package.json package-lock.json`.
@@ -426,7 +433,7 @@ Never push `main` to the old `rajutan` remote.
 Last release: **`v0.2.0`** — 2026-11-14, `cdn` branch and tag at `5251e20`, 40 packages, 43 assets.
 
 ```text
-[ ] origin → sieteminerva/-aio-ui-dev (rajutan is only the legacy remote)
+[ ] origin → sieteminerva/AIO-UI (rajutan is only the legacy remote)
 [ ] working tree committed
 [ ] npm run verify  → exit 0
 [ ] npm run build:pkgs

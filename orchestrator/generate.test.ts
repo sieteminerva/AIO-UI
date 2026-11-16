@@ -22,7 +22,7 @@ const RESULTS = join(HERE, "..", ".draft", "results");
 
 const layout = JSON.parse(readFileSync(join(HERE, "layout.json"), "utf8")) as PackageLayout;
 const resolver = createCdnResolver({
-  base: "https://cdn.jsdelivr.net/gh/sieteminerva/-aio-ui-dev@v0.1.3/",
+  base: "https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.1.3/",
   layout,
 });
 
@@ -131,7 +131,7 @@ describe("generated site — dynamic", () => {
 
   it("pins every asset URL to the engine release", () => {
     const html = generated.files["index.html"];
-    expect(html).toContain("cdn.jsdelivr.net/gh/sieteminerva/-aio-ui-dev@v0.1.3/");
+    expect(html).toContain("cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.1.3/");
   });
 });
 

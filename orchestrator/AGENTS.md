@@ -58,7 +58,7 @@ npx vitest run orchestrator                 # engine suite
 node orchestrator/layout.mjs --out orchestrator/layout.json
 node scripts/release.mjs --version 0.1.0 --apply
 node scripts/publish-cdn.mjs --apply         # cdn branch + move tag (push)
-SMOKE_BASE=https://cdn.jsdelivr.net/gh/sieteminerva/-aio-ui-dev@v0.1.0/ \
+SMOKE_BASE=https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.1.0/ \
   npx vitest run orchestrator/release.test.ts
 node .draft/smoke/serve.mjs 5300             # open /.draft/cdn-smoke/store/#checkout
 ```

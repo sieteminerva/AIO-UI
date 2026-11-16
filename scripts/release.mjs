@@ -44,7 +44,7 @@ const valueOf = (name) => {
 
 const version = valueOf("--version");
 const apply = flag("--apply");
-const repository = process.env.GITHUB_REPOSITORY || "sieteminerva/-aio-ui-dev";
+const repository = process.env.GITHUB_REPOSITORY || "sieteminerva/AIO-UI";
 const outDir = version ? join(ROOT, ".draft", "release", `v${version}`) : null;
 
 if (!version || !/^\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?$/.test(version)) {

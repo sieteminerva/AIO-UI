@@ -2,7 +2,7 @@ import { defineConfig } from 'vite';
 import { lazyCss } from '../vite.lazy-css.mjs';
 
 export default defineConfig({
-  // Dev serves under `/demo/`; the GitHub Pages build passes `DEMO_BASE=/-aio-ui-dev/`
+  // Dev serves under `/demo/`; the GitHub Pages build passes `DEMO_BASE=/AIO-UI/`
   // because a project page lives under the repository name.
   base: process.env.DEMO_BASE ?? "/demo/",
   // Component sheets are injected by the host, not by Vite: dev edits swap the

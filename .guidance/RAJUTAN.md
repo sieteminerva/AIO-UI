@@ -48,7 +48,7 @@ The AI never names a package, and generated sites never need a build step.
 | Template spreadsheet | one master file, duplicated per site                       | schemas managed by `TableBuilderService`                   |
 | Gemini               | `gemini-2.5-flash`, `temperature 0.2`, JSON output         | prompt: `.draft/preset/prompt.content.md`                  |
 | Drive                | temporary custody of the duplicate                         | ownership transferred to the client, then detached         |
-| GitHub               | one repo per site from a template; releases hold artefacts | framework releases: `sieteminerva/-aio-ui-dev`             |
+| GitHub               | one repo per site from a template; releases hold artefacts | framework releases: `sieteminerva/AIO-UI`             |
 | Hosting              | GitHub Pages atau Cloudflare Pages (belum diputuskan)      | build-free: lima file statis per situs                     |
 | Actions (opsional)   | build dari `dev/` untuk klien yang meminta source          | bukan jalur kritis; tidak dipakai oleh generator           |
 | CDN                  | jsDelivr `gh` paths or the release folder                  | assets immutable per tag                                   |
@@ -230,7 +230,7 @@ cd .draft/results/gallery-static_v1/dev && npx vite --port 5199
 - Generator: parse → assemble → plan → emit → runtime → **physical files**, with 100 tests
   (99 run, 1 opt-in CDN smoke).
 - Semver fixed at `0.1.0`; peers checked by `version:check` inside `verify`.
-- **Tag `v0.1.0` published** on `sieteminerva/-aio-ui-dev` (pre-release) with 40 assets. The tag
+- **Tag `v0.1.0` published** on `sieteminerva/AIO-UI` (pre-release) with 40 assets. The tag
   points at the orphan `cdn` branch: `scripts/publish-cdn.mjs` unpacks the 37 tarballs there, so
   jsDelivr serves every import-map URL while `main` stays source-only.
 - **Real-CDN smoke passed**: both generated sites load `@aio-ui/*` from jsDelivr with a clean

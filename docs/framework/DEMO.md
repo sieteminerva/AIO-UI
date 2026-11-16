@@ -18,9 +18,9 @@ methods. `#modules` selects in the fragment (`#modules/router`), like `#kitchen/
 
 ## Deployed copy
 
-`https://sieteminerva.github.io/-aio-ui-dev/` — the demo, rebuilt from `main` by
+`https://sieteminerva.github.io/AIO-UI/` — the demo, rebuilt from `main` by
 `.github/workflows/deploy.yml` (`npm ci` → `npm run build:pkgs` → demo build → Pages). The
-workflow sets `DEMO_BASE=/-aio-ui-dev/` because a project page lives under the repository name;
+workflow sets `DEMO_BASE=/AIO-UI/` because a project page lives under the repository name;
 local dev keeps the default `/demo/`. Routing is hash-only, so the site needs no 404 fallback.
 
 ## Element components (`#kitchen`)

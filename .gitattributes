@@ -1,0 +1,21 @@
+# Normalise line endings in the repository, keep one convention in the worktree.
+#
+# Without this, `git status` reports whole files as modified after an editor rewrites them with
+# the platform line ending, and a formatter pass on Windows (CRLF) fights the tree (LF).
+* text=auto eol=lf
+
+# Binary: never converted, never diffed as text.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.pdf binary
+*.tgz binary
+
+# Generated, but worth a readable diff when it does change.
+package-lock.json text eol=lf

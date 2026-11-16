@@ -38,7 +38,7 @@ jobs:
       - name: Build the demo for a project page
         working-directory: examples/demo
         env:
-          DEMO_BASE: /-aio-ui-dev/
+          DEMO_BASE: /AIO-UI/
         run: npm run build
 
       - name: Upload artifact

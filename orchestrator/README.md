@@ -144,7 +144,7 @@ real browser could expose:
 All five are fixed and guarded mechanically: every URL in the map must exist on disk, and every
 bare import reachable from a mapped module must have an exact key.
 
-**Published:** tag `v0.1.0` on `sieteminerva/-aio-ui-dev` points at the orphan `cdn` branch built
+**Published:** tag `v0.1.0` on `sieteminerva/AIO-UI` points at the orphan `cdn` branch built
 by `scripts/publish-cdn.mjs`; jsDelivr serves the import map. `SMOKE_BASE=<cdn>` writes
 `.draft/cdn-smoke/`, and both sites paint from the real tag with a clean console (store form =
 1 fieldset + 3 fields; gallery masonry = 4, carousel = 1, hosts `div#masonry`/`div#carousel`).

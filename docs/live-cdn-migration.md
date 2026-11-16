@@ -10,7 +10,7 @@ and §3 (clone, `file:` deps, workspace link, import map, and the 40-row package
 This document does not repeat them — it maps **your copied files onto those packages**.
 
 - Target: `@aio-ui` **0.2.0** / tag **`v0.2.0`** (40 packages, 23 components).
-- Repo: `https://github.com/sieteminerva/-aio-ui-dev`.
+- Repo: `https://github.com/sieteminerva/AIO-UI`.
 - Assumes a bundler (Vite/webpack) unless you take §2C, the browser import map.
 
 ## 1. Inventory — what to delete, what replaces it
@@ -97,10 +97,10 @@ Path C shape (all entries from §2 of the CDN guide; `@v0.2.0` is the current ta
 <script type="importmap">
   {
     "imports": {
-      "@aio-ui/core": "https://cdn.jsdelivr.net/gh/sieteminerva/-aio-ui-dev@v0.2.0/packages/core/dist/index.js",
-      "@aio-ui/core/interface": "https://cdn.jsdelivr.net/gh/sieteminerva/-aio-ui-dev@v0.2.0/packages/core/dist/interface.js",
-      "@aio-ui/form": "https://cdn.jsdelivr.net/gh/sieteminerva/-aio-ui-dev@v0.2.0/packages/components/form/dist/index.js",
-      "@aio-ui/form/Form.css": "https://cdn.jsdelivr.net/gh/sieteminerva/-aio-ui-dev@v0.2.0/packages/components/form/dist/Form.css"
+      "@aio-ui/core": "https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.0/packages/core/dist/index.js",
+      "@aio-ui/core/interface": "https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.0/packages/core/dist/interface.js",
+      "@aio-ui/form": "https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.0/packages/components/form/dist/index.js",
+      "@aio-ui/form/Form.css": "https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.0/packages/components/form/dist/Form.css"
     }
   }
 </script>

@@ -20,7 +20,7 @@ Lanjut #2.
 ```
 Batch baru: <one-line goal>. Band: <Framework|Gallery|Generator|Tooling>.
 Jadikan kartu #1 dan sebutkan kartu mana yang keluar dari logbook.
-Ambil claim row dulu, lalu kerjakan. Gate: tsc saja; verify di akhir batch.
+Ambil claim row dulu, lalu kerjakan. Gate: `npm run check` (~12 s) sebelum commit; `verify` sekali di akhir batch.
 ```
 
 A second pass on work that already has a card:

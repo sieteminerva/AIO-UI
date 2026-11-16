@@ -572,8 +572,9 @@ by measuring, and each has cost at least one session.
 
 ### Gates
 
-- `npm run verify` = typecheck → check:bounds → check:catalogue → check:api → version (40) → test.
-  Source only, no build. Once per batch; markdown-only edits after it do not invalidate it.
+- `npm run check` = typecheck → check:bounds → check:api → check:catalogue → version (40), about 12 s.
+  `npm run verify` = `check` + the test suite, about 54 s, once per batch. Both read source only;
+  markdown-only edits after a green run do not invalidate it.
 - `npm run verify:pkgs` = build 40 packages → `verify` → example builds. Before a release, or any
   time the work depends on `dist/` (the examples' production build resolves the `default`
   condition, which points at `dist/`).

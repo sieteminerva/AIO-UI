@@ -33,6 +33,12 @@ Why / stages: `.guidance/plan-framework.md`. Engineering rules:
 
 ## Landed
 
+- **Batch 48** — the gates are tiered by cost, not run by habit: `check` (~12 s: typecheck + bounds +
+  api + catalogue + version), `verify` (~54 s: `check` + tests), `verify:pkgs` (~2 m 23 s: + build +
+  example builds), and the inner loop is `dev`/`build` with no gate at all. Measured per step before
+  splitting: typecheck 7.3 s, the four contract scripts ~1.1 s each, the suite ~43 s. §4 of
+  `AGENT_RULES.md` now carries the table, and CI runs `npm run verify` on every push — it previously
+  ran no test at all.
 - **Batch 47** — the gate is split by what it reads. `verify` = typecheck → bounds → api → catalogue
   → version → tests, **source only**: measured 55 s (`npm run verify`) against 2 m 23 s
   (`verify:pkgs`, of which `build:pkgs` is 1 m 25 s). The build left the dev loop, not the release.

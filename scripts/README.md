@@ -6,8 +6,9 @@ beyond Node 20 — every file is a single `.mjs` with a usage block at the top.
 **Everything is dry-run by default; `--apply` (or `--write`) is what touches the disk or the
 remote.** Keep that guarantee when adding a script.
 
-Two gates: `npm run verify` reads source only (no build), `npm run verify:pkgs` adds
-`build:pkgs` and the example builds. Anything that inspects emitted `dist/` belongs to the second.
+Three tiers, split by what they read: `npm run check` (~12 s, typecheck + the four contract
+scripts), `npm run verify` (+ tests, ~54 s), `npm run verify:pkgs` (+ `build:pkgs` and the example
+builds, ~2 m). Everything that inspects emitted `dist/` belongs to the last one.
 
 ## Commands
 

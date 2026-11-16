@@ -201,8 +201,9 @@ Uploading that folder as a GitHub Release asset turns it into the install source
 ## 8. Commands
 
 ```bash
-npm run verify                     # typecheck → bounds → api → catalogue → version → tests (source)
-npm run verify:pkgs                # + build:pkgs and the example builds — before a release
+npm run check                      # ~12 s: typecheck → bounds → api → catalogue → version
+npm run verify                     # ~54 s: check + tests — once per batch
+npm run verify:pkgs                # ~2 m 23 s: + build:pkgs and the example builds — pre-release
 npm run version:report             # versions + peer ranges
 npm run version:check              # exit 1 on drift or non-semver peers
 node scripts/version.mjs --apply --version 0.1.1

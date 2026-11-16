@@ -24,12 +24,28 @@ Every single tool turn re-sends the entire prompt history. Minimize round-trips:
 - **CLI over browser tools:** Run Playwright via terminal (`npx playwright test <file> --reporter=line`) instead of interactive browser tools, which inject ~10 KB DOM snapshots per turn. Use browser tools only for explicit visual/geometry claims.
 - **Minimal stdout:** Use `git --no-pager`, `| head`, or `| tail`. Never read lockfiles (`*-lock.*`), `dist/`, or generated artifacts.
 
-## 4. Verify once per batch
+## 4. Gates run at the tier that needs them
 
-- Run the narrowest single test file while iterating; run `npm run verify` **once** at the end of a
-  batch. It reads source only (`customConditions: development`), so it needs no build — `verify:pkgs`
-  is the pre-release gate that also builds `dist/` and the examples.
-- Never re-run a gate that already passed without code changes.
+Four tiers. **Run the one the moment deserves, not the biggest one every time** — waiting for output
+nobody reads is the most expensive habit in this repo.
+
+| Tier | Command | Cost | Run it when |
+| --- | --- | --- | --- |
+| **Inner loop** | `npm run dev:demo`, `npm run build` | — | while editing. Nothing else. A dev server is already the feedback loop. |
+| **Contract** | `npm run check` | **~12 s** | after touching a type, an `exports` map, an API surface, or a README table — i.e. before a commit |
+| **Batch** | `npm run verify` | **~54 s** | **once**, at the end of a batch (`check` + the full test suite) |
+| **Release** | `npm run verify:pkgs` | **~2 m 23 s** | before a release, or when the work depends on emitted `dist/` |
+
+Split by what each tier reads, not by importance: `check` is typecheck + `bounds` + `api` +
+`catalogue` + `version` (4 of those 5 finish in about a second), `verify` adds the tests — which are
+~43 s of the 54 — and `verify:pkgs` adds `build:pkgs` (~85 s) and the example builds.
+
+- **Single test file while iterating**, never the whole suite: `npx vitest run <path>`.
+- **Never re-run a tier that already passed** without a code change. Markdown-only edits after a
+  green `verify` do not invalidate it.
+- **All four read source**, so none needs a prior build. `dist/` matters only to the example
+  production build, and only `verify:pkgs` runs that.
+- CI runs `npm run verify` on every push (`.github/workflows/deploy.yml`).
 
 ## 5. Write only what was asked
 

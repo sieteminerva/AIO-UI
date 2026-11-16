@@ -30,6 +30,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # The contract gate plus the test suite. It reads source only
+      # (`customConditions: development`), so it runs before any build — and it is
+      # the only check this workflow makes on the framework itself.
+      - name: Verify
+        run: npm run verify
+
       # The examples import the packages through the workspace symlinks, so dist/
       # must exist before Vite resolves a single specifier.
       - name: Build the packages

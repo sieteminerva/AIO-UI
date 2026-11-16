@@ -1,4 +1,4 @@
-# Rajutan · AIO UI
+# AIO UI
 
 Monorepo for **AIO UI** (the `@aio-ui/*` frontend framework) and **Rajutan** (the
 orchestrator that turns a business profile into a generated website). One repository,
@@ -8,6 +8,40 @@ two roles, one source of truth.
 - **Gate:** `npm run verify` (build 37 packages → typecheck → boundaries → version check →
   tests → example builds).
 - **Distribution:** GitHub releases only. No npm registry.
+
+## Why this exists
+
+AIO UI is a UI framework written in plain JavaScript — no third-party dependency at runtime, no
+framework layer, nothing standing between your code and the browser.
+
+It exists because I grew tired of where front-end frameworks have ended up. The setup alone eats
+weeks before a single feature is written. Then comes the part that really hurts: you spend months
+on custom templates, custom components and clever logic, and one day the framework is outdated —
+it no longer supports the Node you have, its dependencies are abandoned, its APIs are deprecated —
+and the work is junk. Trapped behind a version you cannot move, or rewritten from scratch.
+
+Web components were supposed to solve that. They do give you isolation, but they bring their own
+trouble as an application grows: state management gets harder, and CSS keeps failing to reach the
+element it is meant for. You end up inventing long chains of classes and attributes to poke at
+internals, and the markup turns ugly.
+
+So this framework keeps everything where it belongs: HTML, CSS and JavaScript, arranged like an
+ordinary website.
+
+## What makes it different
+
+- **A component is a plain JavaScript library.** It runs on its own; no wrapper required. The
+  `AioApp` shell adds routing, preloading and module slots — it is not what makes a component
+  work.
+- **Shallow markup, clean selectors.** One word on average, modifiers carried by `data-*`
+  attributes, and every selector can be overridden to your own taste.
+- **Theme switching that can overhaul a page.** A selector stands for a `@templateKey`, so one
+  theme swap repaints everything — no per-component theming API to learn.
+- **A static site needs nothing but `DOMRenderer`.** Write HTML, JavaScript and CSS selectors.
+- **Prototyping is instant, and the style stays yours.** Take a markup snippet you already like,
+  split it into `@templateKey` selectors, and you have a component.
+
+*Author: YMGH.*
 
 ---
 

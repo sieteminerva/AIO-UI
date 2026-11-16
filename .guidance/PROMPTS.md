@@ -47,8 +47,35 @@ Lanjutkan batch yang belum selesai: <folder>/TASKS.md (`## Next`) + /memories/se
 Commit terakhir <sha>; `git status --short` harus bersih sebelum edit pertama.
 ```
 
+## 4. Cut a release
+
+```
+Rilis <x.y.z>: bump, gate, release, cdn, assets.
+```
+
+The chain, in order. Every step is dry-run by default and reversible; run them in this order or the
+artefacts describe a tree that never existed.
+
+1. `node scripts/version.mjs --apply --version <x.y.z>`, then `npm install --package-lock-only`
+   (the lockfile carries the versions too, and CI installs with `npm ci`).
+2. `npm run verify`.
+3. `node scripts/release.mjs --version <x.y.z> --apply` → `.draft/release/v<x.y.z>/` (40 tarballs +
+   `registry.json` + `layout.json` + `checksums.txt`).
+4. `node scripts/publish-cdn.mjs --apply` → assembles the orphan `cdn` branch, force-tags
+   `v<x.y.z>`, pushes branch + tag to `origin`.
+5. Upload `.draft/release/v<x.y.z>/` (43 files) as the release assets for that tag. `gh` is absent
+   here, so it is a REST call or the web UI — skip it and every `tarball` URL in `registry.json`
+   404s, even though the import-map URLs keep working.
+6. Verify live: `registry.json` names the right repository and `@v<x.y.z>`, and one
+   `packages/*/dist/*.js` returns `200`.
+
+Never re-tag a version jsDelivr has already served — it pins the content it first saw, so a fix
+ships as a new patch (`docs/live-cdn-repo.md` §8).
+
 ## Notes
 
 - One line of intent beats a paragraph of history — the history is `git log` (§15).
 - Never paste the logbook into the prompt; ask for it (§13).
 - If an answer starts with "sepertinya…", the agent is guessing — point it at the detail doc.
+- Remotes: **`origin`** is `sieteminerva/AIO-UI` — push here. `legacy` is the old repository and
+  `rajutan` is a different project; push to neither.

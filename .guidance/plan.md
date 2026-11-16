@@ -87,7 +87,7 @@ Decided direction: **GitHub as the only origin**, two doors from one build.
 - 1.2.2 **Release pipeline.** ✅ local half: `scripts/release.mjs` writes 37 tarballs +
   `registry.json` + `layout.json` + `checksums.txt` into `.draft/release/v<ver>/`
   (dry-run by default), verified by `.draft/preset/release.test.ts`. ✅ **Published:** tag
-  `v0.1.0` on `sieteminerva/AIO-UI` points at the orphan `cdn` branch built by
+  `v0.2.1` on `sieteminerva/AIO-UI` points at the orphan `cdn` branch built by
   `scripts/publish-cdn.mjs` (it unpacks the tarballs so jsDelivr serves the import map); 40
   release assets uploaded. ⏳ GitHub Actions on tag still to write.
 - 1.2.3 **Import-map build target.** ✅ Delivered 2026-11-11: emitted JS names `.js`, drops CSS
@@ -118,7 +118,7 @@ Decided direction: **GitHub as the only origin**, two doors from one build.
 
 ### 1.4 Order here
 
-1. **Test tag** ✅ (1.2.2) — `v0.1.0` published (tag on the `cdn` branch) dan CDN import map
+1. **Test tag** ✅ (1.2.2) — `v0.2.1` published (tag on the `cdn` branch) dan CDN import map
    terbukti di browser. Berikutnya: otomatiskan langkah yang sama di GitHub Actions.
    **Official release** menunggu empat referensi model manual (§3.5, §3.10).
 2. **Model references** — `store`, `profile`, `blog` (§3.5); the official-release gate.

@@ -1,7 +1,7 @@
 # *Your All-in-One CLI for AIO Masterpieces*
 
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE) <!-- Add your license badge here -->
-[![Version](https://img.shields.io/badge/version-v0.1.0-brightgreen)](CHANGELOG.md) <!-- Add your version badge here -->
+[![Version](https://img.shields.io/badge/version-v0.2.1-brightgreen)](CHANGELOG.md) <!-- Add your version badge here -->
 
 **AIO Kit** is an interactive command-line interface (CLI) designed to streamline and simplify the creation of "AIO masterpieces."  Whether you're starting a new project, generating data, manipulating files, processing text, or publishing your work, AIO Kit provides a unified and efficient workflow.
 

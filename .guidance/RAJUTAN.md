@@ -230,7 +230,7 @@ cd .draft/results/gallery-static_v1/dev && npx vite --port 5199
 - Generator: parse → assemble → plan → emit → runtime → **physical files**, with 100 tests
   (99 run, 1 opt-in CDN smoke).
 - Semver fixed at `0.1.0`; peers checked by `version:check` inside `verify`.
-- **Tag `v0.1.0` published** on `sieteminerva/AIO-UI` (pre-release) with 40 assets. The tag
+- **Tag `v0.2.1` published** on `sieteminerva/AIO-UI` (pre-release) with 43 assets. The tag
   points at the orphan `cdn` branch: `scripts/publish-cdn.mjs` unpacks the 37 tarballs there, so
   jsDelivr serves every import-map URL while `main` stays source-only.
 - **Real-CDN smoke passed**: both generated sites load `@aio-ui/*` from jsDelivr with a clean

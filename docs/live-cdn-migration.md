@@ -9,7 +9,7 @@ Published surface, tag and URL shapes: [`live-cdn-repo.md`](./live-cdn-repo.md) 
 and §3 (clone, `file:` deps, workspace link, import map, and the 40-row package table in §3.4).
 This document does not repeat them — it maps **your copied files onto those packages**.
 
-- Target: `@aio-ui` **0.2.0** / tag **`v0.2.0`** (40 packages, 23 components).
+- Target: `@aio-ui` **0.2.1** / tag **`v0.2.1`** (40 packages, 23 components).
 - Repo: `https://github.com/sieteminerva/AIO-UI`.
 - Assumes a bundler (Vite/webpack) unless you take §2C, the browser import map.
 
@@ -91,16 +91,16 @@ Detail (exact commands, `npm install` behaviour, rebuild rules) is in
    copy the specifier set from the generated site's `importMap` — it is already closed over
    every bare import reachable from the mapped files, which is what `release.test.ts` proves.
 
-Path C shape (all entries from §2 of the CDN guide; `@v0.2.0` is the current tag):
+Path C shape (all entries from §2 of the CDN guide; `@v0.2.1` is the current tag):
 
 ```html
 <script type="importmap">
   {
     "imports": {
-      "@aio-ui/core": "https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.0/packages/core/dist/index.js",
-      "@aio-ui/core/interface": "https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.0/packages/core/dist/interface.js",
-      "@aio-ui/form": "https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.0/packages/components/form/dist/index.js",
-      "@aio-ui/form/Form.css": "https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.0/packages/components/form/dist/Form.css"
+      "@aio-ui/core": "https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.1/packages/core/dist/index.js",
+      "@aio-ui/core/interface": "https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.1/packages/core/dist/interface.js",
+      "@aio-ui/form": "https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.1/packages/components/form/dist/index.js",
+      "@aio-ui/form/Form.css": "https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.1/packages/components/form/dist/Form.css"
     }
   }
 </script>

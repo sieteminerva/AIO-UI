@@ -306,7 +306,9 @@ make a built tree readable, synchronously, with no browser and no stylesheet wai
 Mechanics and the four guarantees live in `docs/framework/DOMRenderer.md` § *Inspecting a built
 tree*. **This section is the ritual built on top of them** — the part an agent must actually do.
 
-### 16.1 When it applies
+> **Two audiences, two documents.** This section is for an agent **changing this repository**. An
+> agent **building a web app with the framework** follows `docs/agent/handbook.md` instead (same
+> read-back tools, different loop: plan → content → payload → render → report).
 
 Any batch that changes **what gets rendered**:
 

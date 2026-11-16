@@ -35,6 +35,7 @@ lightbox and re-renders it per open. Shipped; the column distribution is still o
 | Rules — process                 | `.guidance/AGENT_RULES.md`                |
 | Rules — component + environment | `docs/framework/COMPONENT-CONVENTIONS.md` |
 | Live writers (lock)             | `.guidance/project/AGENTS.md`             |
+| An agent building WITH it       | `docs/agent/handbook.md`                  |
 | Release + publish               | `docs/live-cdn-repo.md`                   |
 | Live demo / Pages               | `docs/framework/DEMO.md`                  |
 | Architecture decisions          | `.guidance/project/DECISIONS.md`          |

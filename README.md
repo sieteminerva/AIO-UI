@@ -47,6 +47,10 @@ ordinary website.**
 - **Prototyping is instant, and the style stays yours** — take a markup snippet you already like,
   split it into `@templateKey` selectors, and you have a component.
   → [`docs/framework/COMPONENT-TEMPLATE.md`](docs/framework/COMPONENT-TEMPLATE.md)
+- **An agent can build with it unattended** — a page is data, and the built tree can be read back
+  (`inspectPage` / `inspect`) instead of eyeballed. The loop, the builder table and the failure
+  table live in one file written for that agent.
+  → [`docs/agent/handbook.md`](docs/agent/handbook.md)
 
 _Author: YMGH._
 
@@ -215,6 +219,7 @@ Working areas — `orchestrator/` is tracked; `.draft/` and `.archives/` are loc
 | Why / long-term order                        | `.guidance/plan.md`                                                                                                   |
 | What is next + what is running (per band)    | `.guidance/project/STATUS.md` (logbook) → `framework.md`, `gallery.md`, `generator.md`                                |
 | Rules an agent must follow                   | `.guidance/AGENT_RULES.md`, `.guidance/mandatory/`                                                                    |
+| **An agent building WITH the framework**     | `docs/agent/handbook.md` — loop, builder table, verification, failure → action                                        |
 | Prompt templates — session / batch / handoff | `.guidance/PROMPTS.md`                                                                                                |
 | Renderer internals                           | `docs/framework/DOMRenderer.md`                                                                                       |
 | Component conventions / template / data      | `docs/framework/COMPONENT-CONVENTIONS.md`, `docs/framework/COMPONENT-TEMPLATE.md`, `docs/framework/COMPONENT-DATA.md` |

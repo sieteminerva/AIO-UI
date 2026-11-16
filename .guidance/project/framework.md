@@ -33,6 +33,12 @@ Why / stages: `.guidance/plan-framework.md`. Engineering rules:
 
 ## Landed
 
+- **Batch 45** — `docs/agent/handbook.md`: the **consumer** loop, written for an agent building a
+  web app *with* the framework rather than changing it — preconditions, five steps (plan → content →
+  payload → render → report), the AST grammar with its three failure rules, a 23-word builder table
+  marked by whether the payload shape is verified or README-only, verification recipes, a
+  failure → action table, seven hard rules, and a "known gaps" table so nobody assumes an automation
+  that does not exist. §16 gained a two-audience note; README and the STATUS pointer table link it.
 - **Batch 44** — the inspection ritual is now protocol, not advice: `AGENT_RULES.md` §16
   (trigger, the three proof levels, the cheapest-sufficient-fact rule, the negative case, what does
   **not** count, and the two boundaries to say out loud); a hard-rule line in the root router; a

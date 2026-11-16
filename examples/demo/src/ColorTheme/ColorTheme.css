@@ -198,22 +198,22 @@
 .colorizer .configurator,
 .editor [data-slot="color-configurator"],
 .theme-console [data-slot="color-configurator"] {
+  --input-border-color: var(--app-border-color);
+  --input-min-height: 0.8lh;
+  --input-font-size: 0.8rem;
   & select,
   & input[type="range"] {
-    --input-border-color: var(--app-border-color);
-    --input-min-height: 1.1lh;
-
     /* accent-color: var(--app-primary-color, #925408); */
     font: inherit;
   }
 
   & select::picker-icon {
-    --input-icon-size: 16px;
+    --input-icon-size: 20px;
     bottom: calc(var(--input-min-height) * 0.75) !important;
   }
 
   & select:is([name="preset"])::picker-icon {
-    --input-icon-size: 24px;
+    --input-icon-size: 20px;
     bottom: calc(var(--input-min-height) * 0.75) !important;
   }
 
@@ -290,7 +290,7 @@
     & > .mixer-item {
       position: relative;
       display: grid;
-      grid-template-columns: minmax(44px, auto) minmax(100px, 0.7fr) minmax(0, auto) minmax(0, auto);
+      grid-template-columns: minmax(44px, auto) minmax(70px, 0.6fr) minmax(0, auto) minmax(0, auto);
       align-items: center;
       gap: 0.45rem;
       font-size: 0.85rem;
@@ -309,7 +309,13 @@
         margin-bottom: 0;
         min-inline-size: 0;
         --input-primary-color: var(--app-primary-color);
-
+        &:has(select) {
+          max-width: 70px;
+          flex-grow: 0;
+          select {
+            padding: 0 0.5em;
+          }
+        }
         &:has(input[type="range"]) {
           display: flex;
           flex-direction: row;
@@ -335,7 +341,7 @@
         color: var(--app-text-color);
         font-variant-numeric: tabular-nums;
         font-size: 0.8rem;
-        min-width: 2.6rem;
+        min-width: 2rem;
       }
     }
   }

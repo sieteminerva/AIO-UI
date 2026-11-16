@@ -26,76 +26,107 @@
     "Segoe UI",
     Roboto,
     sans-serif;
-}
+  /* Coordinate Position */
+  &:is(.top-left) {
+    top: 20px;
+    left: 20px;
+    align-items: flex-start;
+  }
+  &:is(.top-right) {
+    top: 20px;
+    right: 20px;
+    align-items: flex-end;
+  }
+  &:is(.bottom-right) {
+    bottom: 20px;
+    right: 20px;
+    align-items: flex-end;
+  }
+  &:is(.bottom-left) {
+    bottom: 20px;
+    left: 20px;
+    align-items: flex-start;
+  }
 
-/* Coordinate Position */
-.fab.top-left {
-  top: 20px;
-  left: 20px;
-  align-items: flex-start;
-}
-.fab.top-right {
-  top: 20px;
-  right: 20px;
-  align-items: flex-end;
-}
-.fab.bottom-right {
-  bottom: 20px;
-  right: 20px;
-  align-items: flex-end;
-}
-.fab.bottom-left {
-  bottom: 20px;
-  left: 20px;
-  align-items: flex-start;
-}
+  /* (FAB Rounded Button) */
+  & .trigger {
+    width: 48px;
+    height: 48px;
+    line-height: 1em;
+    border-radius: 50%;
+    border: 1px solid var(--fab-accent-color);
+    background: var(--fab-accent-color);
+    color: var(--fab-accent-text);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+    box-shadow: var(--fab-shadow);
+    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    /* The hover state is a shade of the same accent, so it follows a themed accent too. */
+    &:hover {
+      transform: scale(1.05);
+      background: color-mix(in srgb, var(--fab-accent-color) 85%, #000000);
+    }
+  }
 
-/* (FAB Rounded Button) */
-.fab .trigger {
-  width: 48px;
-  height: 48px;
-  line-height: 1em;
-  border-radius: 50%;
-  border: 1px solid var(--fab-accent-color);
-  background: var(--fab-accent-color);
-  color: var(--fab-accent-text);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 20px;
-  flex-shrink: 0;
-  box-shadow: var(--fab-shadow);
-  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-/* The hover state is a shade of the same accent, so it follows a themed accent too. */
-.fab .trigger:hover {
-  transform: scale(1.05);
-  background: color-mix(in srgb, var(--fab-accent-color) 85%, #000000);
-}
-
-/* (Panel State open) */
-.fab .panel {
-  display: none; /* Dikontrol via JS */
-  flex-direction: column;
-  gap: 6px;
-  /* `border-box`, or a host that sizes the panel with `inline-size` gets the padding and the
+  /* (Panel State open) */
+  & .panel {
+    display: none; /* Dikontrol via JS */
+    flex-direction: column;
+    gap: 6px;
+    /* `border-box`, or a host that sizes the panel with `inline-size` gets the padding and the
      border added on top — at 380px that pushed the panel off the left edge of the screen. */
-  box-sizing: border-box;
-  background: var(--fab-surface);
-  color: var(--fab-text-color);
-  padding: 12px;
-  border-radius: var(--app-component-border-radius, 12px);
-  box-shadow: var(--fab-shadow);
-  border: 1px solid var(--fab-border-color);
-  min-width: 180px;
-  backdrop-filter: blur(8px);
-  animation: themeWidgetFadeInSlide 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
+    box-sizing: border-box;
+    overflow-x: hidden;
+    background: var(--fab-surface);
+    color: var(--fab-text-color);
+    padding: 12px;
+    border-radius: var(--app-component-border-radius, 12px);
+    box-shadow: var(--fab-shadow);
+    border: 1px solid var(--fab-border-color);
+    min-width: 180px;
+    backdrop-filter: blur(8px);
+    animation: themeWidgetFadeInSlide 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    &.is-open {
+      display: flex;
+    }
 
-.fab .panel.is-open {
-  display: flex;
+    & .title {
+      font-size: 10px;
+      font-weight: bold;
+      color: var(--fab-muted-color);
+      letter-spacing: 0.8px;
+      margin-bottom: 4px;
+      display: block;
+    }
+
+    /* Panel Menu. The row tints the panel's own text colour instead of naming a grey, so one
+       row renders correctly on a light and on a dark surface. */
+    & .item.option {
+      padding: 8px 12px;
+      font-size: 12px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.2s ease;
+      font-weight: 500;
+      background: color-mix(in srgb, var(--fab-text-color) 6%, transparent);
+      color: var(--fab-text-color);
+
+      &:hover {
+        background: color-mix(in srgb, var(--fab-text-color) 12%, transparent);
+      }
+
+      &.active {
+        background: var(--fab-accent-color);
+        color: var(--fab-accent-text);
+      }
+    }
+  }
 }
 
 /* The entry animation must not own visibility: when frames are frozen (background tab,
@@ -108,39 +139,6 @@
   to {
     transform: translateY(0) scale(1);
   }
-}
-
-.fab .panel .title {
-  font-size: 10px;
-  font-weight: bold;
-  color: var(--fab-muted-color);
-  letter-spacing: 0.8px;
-  margin-bottom: 4px;
-  display: block;
-}
-
-/* Panel Menu. The row tints the panel's own text colour instead of naming a grey, so one
-   row renders correctly on a light and on a dark surface. */
-.fab .panel .item.option {
-  padding: 8px 12px;
-  font-size: 12px;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  text-align: left;
-  transition: all 0.2s ease;
-  font-weight: 500;
-  background: color-mix(in srgb, var(--fab-text-color) 6%, transparent);
-  color: var(--fab-text-color);
-}
-
-.fab .panel .item.option:hover {
-  background: color-mix(in srgb, var(--fab-text-color) 12%, transparent);
-}
-
-.fab .panel .item.option.active {
-  background: var(--fab-accent-color);
-  color: var(--fab-accent-text);
 }
 
 /* Animation */

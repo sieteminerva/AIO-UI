@@ -57,7 +57,7 @@ Fields are prompted when stdin is a TTY; pass them as flags otherwise:
 `;
 
 if (flag("--help") || command === "help") {
-  console.log(USAGE);
+  process.stdout.write(USAGE + "\n");
   process.exit(0);
 }
 
@@ -84,6 +84,17 @@ const dim = (s) => (useColour ? `\x1b[2m${s}\x1b[0m` : s);
 const bold = (s) => (useColour ? `\x1b[1m${s}\x1b[0m` : s);
 
 const lines = (value, count) => value.split("\n").filter(Boolean).slice(0, count);
+
+/**
+ * `--json` turns every door into a pure data emitter: the same gathering and the same prompts,
+ * but one JSON document on stdout instead of the human report. That is the integration door for
+ * `aio-kit` (or any wrapper): parse the document, act on it, never scrape the pretty output.
+ */
+const asJson = flag("--json");
+const say = (...args) => {
+  if (!asJson) console.log(...args);
+};
+const emit = (payload) => process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
 
 /** Everything the three doors need, gathered once. */
 function facts() {
@@ -156,40 +167,57 @@ function start(f) {
     ? "code may have changed — `npm run check` (~12 s) before the next commit"
     : "tree clean; a gate was probably already run — do not repeat it";
 
-  console.log(bold(`\nAIO session start — ${f.stamp}`));
-  console.log(dim(`  branch ${f.branch} · HEAD ${f.head}\n`));
+  say(bold(`\nAIO session start — ${f.stamp}`));
+  say(dim(`  branch ${f.branch} · HEAD ${f.head}\n`));
 
-  console.log(bold("TREE    "), f.dirty ? `${f.changed.length} change(s)` : "clean");
-  for (const line of f.changed) console.log(`  ${line}`);
+  say(bold("TREE    "), f.dirty ? `${f.changed.length} change(s)` : "clean");
+  for (const line of f.changed) say(`  ${line}`);
 
-  console.log(bold("\nRECENT  "), `${f.recent.length} commit(s)`, dim("(read: these are the log)"));
-  for (const line of f.recent) console.log(`  ${line}`);
+  say(bold("\nRECENT  "), `${f.recent.length} commit(s)`, dim("(read: these are the log)"));
+  for (const line of f.recent) say(`  ${line}`);
 
-  console.log(bold("\nLOGBOOK "), `${STATUS} — ${f.cards.length} card(s)`);
-  f.cards.forEach((card, index) => console.log(`  ${index + 1}. ${card}`));
+  say(bold("\nLOGBOOK "), `${STATUS.replace(/\\/g, "/")} — ${f.cards.length} card(s)`);
+  f.cards.forEach((card, index) => say(`  ${index + 1}. ${card}`));
 
-  console.log(bold("\nCLAIMS  "), f.claims.length ? `${f.claims.length} live writer(s)` : "no live writer");
-  for (const row of f.claims) console.log(`  ${row}`);
+  say(bold("\nCLAIMS  "), f.claims.length ? `${f.claims.length} live writer(s)` : "no live writer");
+  for (const row of f.claims) say(`  ${row}`);
 
-  console.log(bold("\nGATE    "), gate);
+  say(bold("\nGATE    "), gate);
 
-  console.log(`\n${bold("REPORT THIS, then stop and ask which card:")}`);
-  f.cards.forEach((card, index) => console.log(`  ${index + 1}. ${card}`));
-  console.log(dim("  Say the detail is NOT read yet, and that the git commands are unavailable if they are."));
+  say(`\n${bold("REPORT THIS, then stop and ask which card:")}`);
+  f.cards.forEach((card, index) => say(`  ${index + 1}. ${card}`));
+  say(dim("  Say the detail is NOT read yet, and that the git commands are unavailable if they are."));
 
-  console.log(`\n${bold("DO NOT read yet:")} the cards' detail docs, plan*.md, other bands, .archives/`);
-  console.log(
+  say(`\n${bold("DO NOT read yet:")} the cards' detail docs, plan*.md, other bands, .archives/`);
+  say(
     dim("  Open a TASKS.md / TASK-*.md / band AGENTS.md only after the user picks a card.\n" +
         "  Take a claim row (this board) before the first edit.\n"),
   );
+
+  if (asJson) {
+    emit({
+      door: "start",
+      stamp: f.stamp,
+      branch: f.branch,
+      head: f.head,
+      tree: { clean: !f.dirty, changed: f.changed },
+      recent: f.recent,
+      logbook: { file: STATUS.replace(/\\/g, "/"), cards: f.cards },
+      claims: f.claims,
+      gate,
+      report: f.cards,
+      doNotRead: ["detail docs", "plan*.md", "other bands", ".archives/"],
+      next: "ask which card to continue",
+    });
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
 // cp — the checkpoint
 // ─────────────────────────────────────────────────────────────────────────────
 async function checkpoint(f, rl) {
-  console.log(bold(`\nCP-3 — ${f.stamp}`));
-  console.log(dim("  Three pointer lines. No prose — prose belongs in a file.\n"));
+  say(bold(`\nCP-3 — ${f.stamp}`));
+  say(dim("  Three pointer lines. No prose — prose belongs in a file.\n"));
 
   const band = await ask(rl, "Band (Framework|Gallery|Generator|Tooling):", "--band", "Framework");
   const changedIn = await ask(rl, "CHANGED → <path>:<symbol> (<test|command>):", "--changed", f.changed[0] ?? "");
@@ -206,23 +234,39 @@ async function checkpoint(f, rl) {
     `NEXT    → ${next || "<one action>"} | blocks: ${blocks}`,
   ].join("\n");
 
-  console.log(`\n${bold("paste into /memories/session/<task>.md (keep the last 3 only):")}\n`);
-  console.log(block);
-  console.log("");
+  say(`\n${bold("paste into /memories/session/<task>.md (keep the last 3 only):")}\n`);
+  say(block);
+  say("");
+
+  if (asJson) {
+    emit({
+      door: "cp",
+      checkpoint: {
+        n: Number.isFinite(n) ? n : null,
+        stamp: f.stamp,
+        band,
+        changed: changedIn,
+        proved,
+        next,
+        blocks,
+      },
+      block,
+    });
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
 // end — the pre-compact handoff (§14, nine steps)
 // ─────────────────────────────────────────────────────────────────────────────
 async function end(f, rl) {
-  console.log(bold(`\nPre-compact handoff — ${f.stamp}`));
-  console.log(dim(`  HEAD ${f.head}\n`));
+  say(bold(`\nPre-compact handoff — ${f.stamp}`));
+  say(dim(`  HEAD ${f.head}\n`));
 
   const dirty = f.dirty && !flag("--ignore-dirty");
-  const step = (n, title, state) => console.log(`${String(n).padStart(2)}. ${title} — ${state}`);
+  const step = (n, title, state) => say(`${String(n).padStart(2)}. ${title} — ${state}`);
 
   step(1, "Stop clean", dirty ? `${f.changed.length} uncommitted change(s)` : "nothing in flight");
-  if (dirty) for (const line of f.changed) console.log(`      ${line}`);
+  if (dirty) for (const line of f.changed) say(`      ${line}`);
 
   const gate = await ask(rl, "2. Gate result (or `md-only`):", "--gate", "");
   step(2, "Gate", gate || "NOT RECORDED");
@@ -235,7 +279,7 @@ async function end(f, rl) {
   const task = await ask(rl, "5. Session memory file (/memories/session/<task>.md):", "--task", "");
   step(5, "Memory", task ? `${task} — task path + 2 lines + last 3 CPs` : "no memory file");
 
-  step(6, "Logbook", `${f.cards.length} card(s) in ${STATUS} — rewrite, newest on top`);
+  step(6, "Logbook", `${f.cards.length} card(s) in ${STATUS.replace(/\\/g, "/")} — rewrite, newest on top`);
   step(7, "Band file", "## Active row state; a ## Next line if the next step changed");
   step(8, "Report", "four things, in the chat language");
   step(9, "Claim row", f.claims.length ? "LIVE — drop it" : "already empty");
@@ -244,28 +288,54 @@ async function end(f, rl) {
   const unproved = await ask(rl, "NOT PROVED:", "--unproved", "nothing outstanding");
   const next = await ask(rl, "NEXT → <single action>:", "--next", "");
 
-  console.log(`\n${bold("── report to the user ──")}`);
-  console.log(`Sampai di sini.`);
-  console.log(`\nCHANGED → ${f.changed.length ? f.changed.slice(0, 6).join(", ") : "nothing pending"}`);
-  console.log(`PROVED  → ${proved || "<command> → <number>"}`);
-  console.log(`NOT PROVED → ${unproved}`);
-  console.log(`NEXT    → ${next || "<one action>"}`);
-  console.log(`\nSilakan compact / buka chat baru.`);
+  say(`\n${bold("── report to the user ──")}`);
+  say(`Sampai di sini.`);
+  say(`\nCHANGED → ${f.changed.length ? f.changed.slice(0, 6).join(", ") : "nothing pending"}`);
+  say(`PROVED  → ${proved || "<command> → <number>"}`);
+  say(`NOT PROVED → ${unproved}`);
+  say(`NEXT    → ${next || "<one action>"}`);
+  say(`\nSilakan compact / buka chat baru.`);
 
-  console.log(`\n${bold("── memory skeleton (overwrite, do not append) ──")}`);
-  console.log(`Task: ${doc || "<detail doc>"}`);
-  console.log(`State: ${f.head}`);
-  console.log(`Next: ${next || "<one action>"}`);
+  say(`\n${bold("── memory skeleton (overwrite, do not append) ──")}`);
+  say(`Task: ${doc || "<detail doc>"}`);
+  say(`State: ${f.head}`);
+  say(`Next: ${next || "<one action>"}`);
 
-  console.log(`\n${bold("── logbook skeleton ──")}`);
-  console.log(`### 1. <newest — one line from the last commit>`);
-  console.log(`**Open:** ${next || "<what is left>"}`);
-  console.log("→ " + (doc || "<detail doc>"));
-  console.log(dim("  Cards 2 and 3: the previous #1 and #2, demoted. The old #3 leaves the logbook."));
+  say(`\n${bold("── logbook skeleton ──")}`);
+  say(`### 1. <newest — one line from the last commit>`);
+  say(`**Open:** ${next || "<what is left>"}`);
+  say("→ " + (doc || "<detail doc>"));
+  say(dim("  Cards 2 and 3: the previous #1 and #2, demoted. The old #3 leaves the logbook."));
 
-  console.log(`\n${bold("── commit shape (§15) ──")}`);
-  console.log("<type>(<scope>): <imperative summary, <= 72 chars>\n\n- <finding> → <fix> → <evidence>\n");
-  if (dirty) console.log(dim("  Uncommitted work is blocking this handoff — commit or revert first.\n"));
+  say(`\n${bold("── commit shape (§15) ──")}`);
+  say("<type>(<scope>): <imperative summary, <= 72 chars>\n\n- <finding> → <fix> → <evidence>\n");
+  if (dirty) say(dim("  Uncommitted work is blocking this handoff — commit or revert first.\n"));
+  if (asJson) {
+    emit({
+      door: "end",
+      stamp: f.stamp,
+      head: f.head,
+      steps: {
+        stopClean: dirty ? "uncommitted" : "clean",
+        changed: f.changed,
+        gate: gate || null,
+        commit: dirty && !flag("--committed") ? "uncommitted" : "committed",
+        detailDoc: doc || null,
+        memory: task || null,
+        logbook: { file: STATUS.replace(/\\/g, "/"), cards: f.cards },
+        claimRow: f.claims.length ? "drop" : "empty",
+      },
+      report: {
+        changed: f.changed.slice(0, 6),
+        proved: proved || null,
+        notProved: unproved,
+        next: next || null,
+      },
+      memorySkeleton: { task: doc || null, state: f.head, next: next || null },
+      commitShape: "<type>(<scope>): <imperative summary, <= 72 chars>",
+      blocked: dirty && !flag("--committed"),
+    });
+  }
 }
 
 const f = facts();

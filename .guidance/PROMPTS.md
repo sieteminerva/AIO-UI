@@ -10,7 +10,7 @@ Status kita sekarang?
 ```
 
 That is enough — STEP 0 reads the logbook and answers with three cards. `node scripts/session.mjs start`
-prints exactly what to report. Then pick one:
+prints exactly what to report; `--json` returns the same facts as one document. Then pick one:
 
 ```
 Lanjut #2.
@@ -99,5 +99,7 @@ is `parsePreset()` + `plan()` reporting **zero** issues on the changed fixture.
 - Never paste the logbook into the prompt; ask for it (§13).
 - If an answer starts with "sepertinya…", the agent is guessing — point it at the detail doc.
 - "It works" needs a number beside it — `inspect()` output, a test name, or a measured pixel (§16).
+- Every `session.mjs` door takes `--json` (`start` · `cp` · `end`): the prose is for reading, the
+  document is for wiring — a wrapper such as `aio-kit` parses it instead of scraping the report.
 - Remotes: **`origin`** is `sieteminerva/AIO-UI` — push here. `legacy` is the old repository and
   `rajutan` is a different project; push to neither.

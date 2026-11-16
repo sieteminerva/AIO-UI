@@ -6,9 +6,7 @@
 
 ## Live claims
 
-| Agent         | Band      | Task                                                            | Write scope                                                                    | Started    | Checkpoint                       | State  |
-| ------------- | --------- | --------------------------------------------------------------- | ------------------------------------------------------------------------------ | ---------- | -------------------------------- | ------ |
-| `copilot b47` | Tooling   | Split `verify` (fast, source) from `verify:pkgs` (full, built)   | `package.json`, `tsconfig.base.json`, `scripts/README.md`, band files, `.guidance` | 2026-11-16 | `.guidance/project/framework.md` | active |
+_No live writer. Add a row here before your first edit — see the rules below._
 
 ## Row shape
 

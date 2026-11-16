@@ -6,9 +6,7 @@
 
 ## Live claims
 
-| Agent       | Band    | Task                                                            | Write scope                                                          | Started    | Checkpoint                               | State  |
-| ----------- | ------- | --------------------------------------------------------------- | -------------------------------------------------------------------- | ---------- | ---------------------------------------- | ------ |
-| copilot b41 | Tooling | Rebuild the release artefacts + `cdn` branch under the new slug | `.draft/release/**`, `scripts/**` (read), `cdn` branch, tag `v0.2.0` | 2026-11-16 | `/memories/session/color-theme-route.md` | active |
+_No live writer. Add a row here before your first edit — see the rules below._
 
 ## Row shape
 

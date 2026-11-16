@@ -11,37 +11,101 @@ two roles, one source of truth.
 
 ## Why this exists
 
-AIO UI is a UI framework written in plain JavaScript — no third-party dependency at runtime, no
-framework layer, nothing standing between your code and the browser.
+AIO UI is a UI framework written in plain JavaScript. No third-party dependency at runtime, no
+framework layer — nothing standing between your code and the browser.
 
-It exists because I grew tired of where front-end frameworks have ended up. The setup alone eats
-weeks before a single feature is written. Then comes the part that really hurts: you spend months
-on custom templates, custom components and clever logic, and one day the framework is outdated —
-it no longer supports the Node you have, its dependencies are abandoned, its APIs are deprecated —
-and the work is junk. Trapped behind a version you cannot move, or rewritten from scratch.
+It exists because I grew tired of where front-end frameworks have ended up. Setup alone eats weeks
+before a single feature is written. Then comes the part that really hurts: you spend months on
+custom templates, custom components and clever logic, and one day the framework is outdated — it no
+longer supports the Node you have, its dependencies are abandoned, its APIs are deprecated — and
+the work is junk. Trapped behind a version you cannot move, or rewritten from scratch.
 
-Web components were supposed to solve that. They do give you isolation, but they bring their own
-trouble as an application grows: state management gets harder, and CSS keeps failing to reach the
-element it is meant for. You end up inventing long chains of classes and attributes to poke at
-internals, and the markup turns ugly.
+Web components were supposed to solve that. They do give you isolation, and they charge for it as
+an application grows: state management gets harder, and CSS keeps failing to reach the element it
+is meant for. You end up inventing long chains of classes and attributes to poke at internals, and
+the markup turns ugly.
 
-So this framework keeps everything where it belongs: HTML, CSS and JavaScript, arranged like an
-ordinary website.
+So this framework keeps everything where it belongs: **HTML, CSS and JavaScript, arranged like an
+ordinary website.**
 
 ## What makes it different
 
-- **A component is a plain JavaScript library.** It runs on its own; no wrapper required. The
-  `AioApp` shell adds routing, preloading and module slots — it is not what makes a component
-  work.
-- **Shallow markup, clean selectors.** One word on average, modifiers carried by `data-*`
-  attributes, and every selector can be overridden to your own taste.
-- **Theme switching that can overhaul a page.** A selector stands for a `@templateKey`, so one
-  theme swap repaints everything — no per-component theming API to learn.
-- **A static site needs nothing but `DOMRenderer`.** Write HTML, JavaScript and CSS selectors.
-- **Prototyping is instant, and the style stays yours.** Take a markup snippet you already like,
+- **A component is a plain JavaScript library** — it runs on its own; no wrapper required. The
+  `AioApp` shell adds routing, preloading and module slots; it is not what makes a component work.
+  → [`docs/framework/APP.md`](docs/framework/APP.md)
+- **Shallow markup, clean selectors** — every selector maps to a `@templateKey`, class names are a
+  single word, and modifiers ride on `data-*` attributes instead of class soup. All of it is
+  overridable through `config.selectors`.
+  → [`docs/framework/COMPONENT-CONVENTIONS.md`](docs/framework/COMPONENT-CONVENTIONS.md)
+- **Theming that overhauls a page, not a component** — a theme is a set of `--app-*` tokens on one
+  selector, and every component already reads those tokens. Swap the theme and the whole page
+  repaints; no per-component theming API to learn.
+  → [`docs/framework/APP-TOKENS.md`](docs/framework/APP-TOKENS.md)
+- **A static site needs nothing but `DOMRenderer`** — describe the tree as an object, get native
+  HTML back. No build step, no runtime.
+  → [`docs/framework/DOMRenderer.md`](docs/framework/DOMRenderer.md)
+- **Prototyping is instant, and the style stays yours** — take a markup snippet you already like,
   split it into `@templateKey` selectors, and you have a component.
+  → [`docs/framework/COMPONENT-TEMPLATE.md`](docs/framework/COMPONENT-TEMPLATE.md)
 
 _Author: YMGH._
+
+## Sixty seconds of it
+
+The whole static path, with nothing installed but this package:
+
+```ts
+import { DOMRenderer } from "@aio-ui/core";
+
+const renderer = new DOMRenderer();
+
+const hero = renderer.render(
+  {
+    "section#hero.hero": {
+      content: {
+        "h1": { content: "Plain HTML, arranged" },
+        "p.lead": { content: "No build step, no runtime." },
+      },
+    },
+  },
+  undefined, // no render override
+  undefined, // no builder proxy — pure markup
+);
+```
+
+Every element in that tree is native HTML; `#id`, `.class` and nested `content` are the only syntax.
+A component is the same idea one level up: a `Builder` owns a `@templateKey` → selector map and
+returns an `HTMLElement`, so it drops into a plain page with `document.body.append(...)`.
+→ [`docs/framework/COMPONENT-DATA.md`](docs/framework/COMPONENT-DATA.md) ·
+[`docs/framework/PUBLIC-API.md`](docs/framework/PUBLIC-API.md)
+
+## The theme editor is part of the demo
+
+Open the demo, click the **🎨** button in the bottom-right corner — that widget is the real colour
+engine, not a mockup. Everything you touch repaints the page you are standing on, live.
+
+**Mixer** — the design work:
+
+| Control | What it does |
+| --- | --- |
+| Preset | Five built-in palettes (`chocolaris`, `gum`, `green-bliss`, `Pomegrade`, `Violaris`) plus **save your own** |
+| Primary / accent | Two base colours; every other token is derived from them |
+| Ramps & palette | The 50→900 ramp and the `hover` / `strong` / `text` / `subtle` / `border` swatches, recomputed instantly |
+| Colour mixer | Interpolation in OKLCH, OKLAB, SRGB or HSL (plus the wide-range variants), and **per token**: which colour it blends into, by how much, rotated how far round the hue wheel |
+| Light / dark | One switch; every value is emitted as a `light-dark()` pair, so both modes stay correct |
+
+**Report** — the audit:
+
+- Six WCAG contrast checks (body, heading, muted, primary, accent, button label) with their target
+  ratios and a pass/fail mark that updates as you drag a slider.
+- The generated `:root` block, ready to paste into your own `variables.css` — **Copy CSS**, and
+  **Reset** back to the preset.
+
+Your choices persist in `localStorage`, so they survive a route change and a reload; `Default` /
+`Cyberpunk` in the same panel switch the design system underneath. The widget is the `ThemeConsole`
+builder dogfooding the framework — `fab-menu` mounts it as a plain `HTMLElement`, and the colour
+engine behind it ships in `examples/demo/src/ColorTheme/`.
+→ [`examples/demo/src/ThemeConsole/TASKS.md`](examples/demo/src/ThemeConsole/TASKS.md)
 
 ---
 

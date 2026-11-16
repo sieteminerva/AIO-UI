@@ -18,7 +18,7 @@ Index: `STATUS.md`.
 
 ## Landed
 
-- **v0.2.0 pre-release (2026-11-14)** — tag `v0.2.0` on the orphan `cdn` branch of
+- **v0.2.1 patch (2026-11-16)** — tag `v0.2.1` on the orphan `cdn` branch of
   `sieteminerva/AIO-UI`, 43 release assets, CDN base
-  `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.0/`. Release order and the `gh`-absent
+  `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.1/`. Release order and the `gh`-absent
   workaround: `docs/live-cdn-repo.md`.

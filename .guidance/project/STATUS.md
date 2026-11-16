@@ -42,7 +42,7 @@ Last updated: 2026-11-16
 ## Cross-project
 
 - **Official release** waits for all four manual model references (`gallery` exists; `store`,
-  `profile`, `blog` do not). The tree is at `0.2.0`; the last published tag is `v0.2.0`
+  `profile`, `blog` do not). The tree is at `0.2.1`; the last published tag is `v0.2.1`
   (pre-release, 2026-11-14). Lane: `gallery.md`.
 - **Rules**: process `.guidance/AGENT_RULES.md`; engineering + environment
   `docs/framework/COMPONENT-CONVENTIONS.md` (§12 CSS, §13 anti-patterns, §15 env/gates/harness).

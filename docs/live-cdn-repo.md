@@ -3,11 +3,11 @@
 Operational guide for the published `@aio-ui/*` packages: what is live, which repository and tag
 serve it, the commands that publish it, and the checks that must pass before anything is pushed.
 
-Last verified: **2026-11-14** — `v0.2.0` is the current tag (`5251e20`, the same commit as the
-`cdn` branch): 10/10 sampled CDN URLs return `200`, `@v0.2.0` and `@cdn` both report **40**
+Last verified: **2026-11-16** — `v0.2.1` is the current tag (`346fac7`, the same commit as the
+`cdn` branch): 10/10 sampled CDN URLs return `200`, `@v0.2.1` and `@cdn` both report **40**
 packages with an identical registry, the CDN `checksums.txt` is byte-identical to the local one,
 `release.test.ts` passes **15/15** against the published tag, and the GitHub release holds **43**
-assets (40 `aio-ui-<name>-0.2.0.tgz` + `registry.json` + `layout.json` + `checksums.txt`). Older
+assets (40 `aio-ui-<name>-0.2.1.tgz` + `registry.json` + `layout.json` + `checksums.txt`). Older
 tags stay frozen at the commit jsDelivr first served (`v0.1.1` → 39 packages at `5a7fc27`,
 `v0.1.0` → 37) — expected, not a defect: jsDelivr pins a served tag permanently, so a fix ships
 as a **new version** (§8). Installing from a clone is §3, the branch README is §2.1.
@@ -15,21 +15,26 @@ as a **new version** (§8). Installing from a clone is §3, the branch README is
 ## 1. What is live
 
 > **Repository rename (2026-11-16).** The project moved from `sieteminerva/-aio-ui-dev` to
-> `sieteminerva/AIO-UI`; branches and tags moved with it. Two things still point at the old
-> repository: the **GitHub release assets** of `v0.2.0` (they are attachments, not git objects) and
-> therefore the `tarball` entries inside the published `registry.json`. jsDelivr is unaffected — it
-> serves the `cdn` branch, which moved. Re-run `scripts/publish-cdn.mjs` to re-create the assets
-> under the new name.
+> `sieteminerva/AIO-UI`; branches and tags moved with it, and `v0.2.1` is the first release built
+> under the new name — its `registry.json` names it throughout. Two facts worth keeping straight:
+>
+> - `@v0.2.0` stays **pinned** at jsDelivr against the content it first served, which named the old
+>   repository. That is why the rename shipped as `0.2.1` and not as a re-tag: a purge does not move
+>   a pinned version.
+> - The **release assets** (the `.tgz` files) are attachments, not git objects, so they do not travel
+>   with a clone or a push. `v0.2.1` has none yet: the `tarball` URLs inside `registry.json` resolve
+>   only after `.draft/release/v0.2.1/` is uploaded as a release (`gh` is absent on this machine, so
+>   that step is manual). Import-map URLs are unaffected — they come from the `cdn` branch.
 
 | Piece          | Value                                                                                           |
 | -------------- | ----------------------------------------------------------------------------------------------- |
 | Repository     | `https://github.com/sieteminerva/AIO-UI` (public)                                               |
 | Default branch | `main` — source only; `dist/` is gitignored                                                     |
 | CDN branch     | `cdn` — orphan branch, contains the unpacked tarballs (`packages/**/dist`, CSS, `package.json`) |
-| Version tag    | `v0.2.0` at `5251e20` — points at the `cdn` commit, **not** at `main`                           |
-| CDN base       | `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.0/`                                       |
-| Branch README  | `…@v0.2.0/README.md` — generated at publish time, see §2.1                                      |
-| Release assets | 43 files: 40 `aio-ui-<name>-0.2.0.tgz` + `registry.json` + `layout.json` + `checksums.txt`      |
+| Version tag    | `v0.2.1` at `346fac7` — points at the `cdn` commit, **not** at `main`                           |
+| CDN base       | `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.1/`                                       |
+| Branch README  | `…@v0.2.1/README.md` — generated at publish time, see §2.1                                      |
+| Release assets | 43 files: 40 `aio-ui-<name>-0.2.1.tgz` + `registry.json` + `layout.json` + `checksums.txt`      |
 | Packages       | 40 (base/core/app/styles/utilities, 23 components, 6 modules, 3 themes, 3 kits)                 |
 
 Why the split: jsDelivr serves **repository files**, and `dist/` is not committed on `main`.
@@ -45,31 +50,31 @@ the browser import map.
 ## 2. Live URLs
 
 ```text
-registry     https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.0/registry.json
-layout       https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.0/layout.json
-checksums    https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.0/checksums.txt
-readme       https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.0/README.md
+registry     https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.1/registry.json
+layout       https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.1/layout.json
+checksums    https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.1/checksums.txt
+readme       https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.1/README.md
 
 # bare package root → <dir>/<entry>
-@aio-ui/frameworks   …@v0.2.0/packages/kits/frameworks/dist/index.js
-@aio-ui/form         …@v0.2.0/packages/components/form/dist/index.js
+@aio-ui/frameworks   …@v0.2.1/packages/kits/frameworks/dist/index.js
+@aio-ui/form         …@v0.2.1/packages/components/form/dist/index.js
 
 # exact export subpath → <dir>/<real file>
 @aio-ui/form/Input.FormAdapter
-    …@v0.2.0/packages/components/form/dist/Input.FormAdapter.js
+    …@v0.2.1/packages/components/form/dist/Input.FormAdapter.js
 @aio-ui/input/dropdown/module
-    …@v0.2.0/packages/components/input/dist/Dropdown/Dropdown.InputModule.js
+    …@v0.2.1/packages/components/input/dist/Dropdown/Dropdown.InputModule.js
 
 # stylesheet → dist/ (never the source root)
 @aio-ui/form/Form.css
-    …@v0.2.0/packages/components/form/dist/Form.css
+    …@v0.2.1/packages/components/form/dist/Form.css
 ```
 
 URL = `base` + `layout[pkg].dir` + the file from that package's `exports` map. Prefixes alone
 (`@aio-ui/utilities/` → `…/utilities/dist/`) cannot add `.js`; the import map therefore carries
 every exact subpath too (`emit.ts` → `createCdnResolver().exact()`).
 
-`@v0.2.0` is the current tag. jsDelivr also accepts `@0.2.0` (it normalises), but generated sites
+`@v0.2.1` is the current tag. jsDelivr also accepts `@0.2.1` (it normalises), but generated sites
 always use the tag name recorded as `engine.resolved`.
 
 ### 2.1 Branch README
@@ -80,7 +85,7 @@ package table is generated from `registry.json` at publish time (name, directory
 release asset), so it cannot go stale; the rest covers import-map refs, offline install from the
 release assets with the peer closure, updates, and tag immutability.
 
-Verified: `curl -sI …@v0.2.0/README.md` → `200`, body reports `Version 0.2.0` / `Packages 40`.
+Verified: `curl -sI …@v0.2.1/README.md` → `200`, body reports `Version 0.2.1` / `Packages 40`.
 
 ## 3. Installing locally (the packages are not on npm)
 
@@ -181,7 +186,7 @@ any package that did not exist before.
 
 Generated from `orchestrator/layout.json`, so it matches what the resolver and the CDN serve.
 The CDN URL of any row is the tag base + `Directory` + the file, e.g.
-`…@v0.2.0/packages/components/code-block/dist/index.js`.
+`…@v0.2.1/packages/components/code-block/dist/index.js`.
 
 | Package                    | Directory                          | Entry (`exports["."]`) | Stylesheet subpath                                                                                                                                                                                 |
 | -------------------------- | ---------------------------------- | ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -430,7 +435,7 @@ Never push `main` to the old `rajutan` remote.
 
 ## 9. Pre-flight checklist
 
-Last release: **`v0.2.0`** — 2026-11-14, `cdn` branch and tag at `5251e20`, 40 packages, 43 assets.
+Last release: **`v0.2.1`** — 2026-11-14, `cdn` branch and tag at `346fac7`, 40 packages, 43 assets.
 
 ```text
 [ ] origin → sieteminerva/AIO-UI (rajutan is only the legacy remote)

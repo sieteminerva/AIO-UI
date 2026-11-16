@@ -4,8 +4,8 @@ Monorepo for **AIO UI** (the `@aio-ui/*` frontend framework) and **Rajutan** (th
 orchestrator that turns a business profile into a generated website). One repository,
 two roles, one source of truth.
 
-- **Version:** `0.1.0` — fixed versioning across all packages.
-- **Gate:** `npm run verify` (build 37 packages → typecheck → boundaries → version check →
+- **Version:** `0.2.1` — fixed versioning across all packages.
+- **Gate:** `npm run verify` (build 40 packages → typecheck → boundaries → version check →
   tests → example builds).
 - **Distribution:** GitHub releases only. No npm registry.
 
@@ -181,10 +181,10 @@ Working areas — `orchestrator/` is tracked; `.draft/` and `.archives/` are loc
 
 ## Status snapshot
 
-Working: 37 packages build and are tested (428 tests, 100 of them the orchestrator generator suite),
+Working: 40 packages build and are tested (690 tests, 100 of them the orchestrator generator suite),
 the form family (module registry,
 messages, animations, address adapters) runs, the generator produces real files
-(`.draft/results/`), versioning is fixed at `0.1.0`, and **tag `v0.1.0` is live** on
+(`.draft/results/`), versioning is fixed at `0.2.1`, and **tag `v0.2.1` is live** on
 `sieteminerva/AIO-UI`: jsDelivr serves every import-map URL from the `cdn` branch, and both
 generated sites paint from that tag with a clean console.
 

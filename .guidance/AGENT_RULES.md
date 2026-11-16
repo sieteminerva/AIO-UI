@@ -309,6 +309,9 @@ by an agent with no context.
 - **Evidence in every bullet:** the command and its number (`npm run verify → 690 pass / 1 skip`),
   or `path:symbol` plus the measured value (`Menu.css → panel 205×86 at 1280px`).
 - **Name the symptom, not the patch:** "hover closed at the seam → bridge `::before`".
+- **Write the message with `-F <file>`, never with `-m "…"`.** Backticks, `$` and em dashes in a
+  double-quoted `-m` are shell syntax: `/`-separated became `-separated` and every dash became
+  mojibake in commit `8433a7c`. The file route has no shell in it.
 - **One commit per gate, per logical batch.** Never one mixed commit; never `wip`, `update`,
   `fixes`, or a message that only repeats the diff.
 - **Separate the doc batch** when it is bookkeeping: `docs(status): record batch 38`.

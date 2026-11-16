@@ -24,7 +24,7 @@ class PanelBuilder extends Builder<"@panel" | "@panel>row" | "@panel>foot", any>
       {
         themeId: "default",
         namespace: null,
-        emit: () => {},
+        emit: () => { },
         selectors: {
           "@panel": { tagName: "section", className: "panel" },
           "@panel>row": { tagName: "p", className: "row" },
@@ -49,7 +49,7 @@ class PanelBuilder extends Builder<"@panel" | "@panel>row" | "@panel>foot", any>
     if (typeKey === "@panel>foot") el.textContent = "end";
   }
 
-  public initialize(): void {}
+  public initialize(): void { }
 }
 
 function payload() {

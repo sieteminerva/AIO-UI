@@ -6,7 +6,8 @@
 > your row **before the first edit** — overlapping a live row is a stop-and-ask, not an override.
 > Every finished action category leaves **3 pointer lines** (`CHANGED →`, `PROVED →`, `NEXT →`);
 > see `.guidance/AGENT_RULES.md` §10 (checkpoint), §11 (claims), §13 (logbook), §14 (pre-compact
-> handoff at ~80k) and §15 (commit message shape).
+> handoff at ~80k), §15 (commit message shape) and §16 (**proof of render** — the inspection
+> ritual every batch that changes output must run).
 
 # AGENTS.md — Demo showcase (part of the Framework band)
 

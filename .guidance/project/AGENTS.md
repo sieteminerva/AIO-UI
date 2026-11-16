@@ -6,7 +6,9 @@
 
 ## Live claims
 
-_No live writer. Add a row here before your first edit — see the rules below._
+| Agent         | Band      | Task                                                          | Write scope                                                                       | Started    | Checkpoint                       | State  |
+| ------------- | --------- | ------------------------------------------------------------- | --------------------------------------------------------------------------------- | ---------- | -------------------------------- | ------ |
+| `copilot b44` | Framework | Write the inspection ritual into the agent protocol (§16)      | `.guidance/AGENT_RULES.md`, `.guidance/PROMPTS.md`, `AGENTS.md`, `packages/AGENTS.md` | 2026-11-16 | `.guidance/project/framework.md` | active |
 
 ## Row shape
 

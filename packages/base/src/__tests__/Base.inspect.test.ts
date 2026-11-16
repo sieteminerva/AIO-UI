@@ -35,7 +35,7 @@ class ProbeBuilder extends Builder<"@probe" | "@probe>item", any> {
       {
         themeId: "default",
         namespace: null,
-        emit: () => {},
+        emit: () => { },
         selectors: {
           "@probe": { tagName: "div", className: "probe" },
           "@probe>item": { tagName: "p", className: "item" },
@@ -57,7 +57,7 @@ class ProbeBuilder extends Builder<"@probe" | "@probe>item", any> {
     if (typeKey === "@probe>item") el.textContent = String(payload?.title ?? "");
   }
 
-  public initialize(): void {}
+  public initialize(): void { }
 
   protected loading(): HTMLElement {
     loadingCalls.count += 1;

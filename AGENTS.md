@@ -6,7 +6,8 @@
 > your row **before the first edit** — overlapping a live row is a stop-and-ask, not an override.
 > Every finished action category leaves **3 pointer lines** (`CHANGED →`, `PROVED →`, `NEXT →`);
 > see `.guidance/AGENT_RULES.md` §10 (checkpoint), §11 (claims), §13 (logbook), §14 (pre-compact
-> handoff at ~80k) and §15 (commit message shape).
+> handoff at ~80k), §15 (commit message shape) and §16 (**proof of render** — the inspection
+> ritual every batch that changes output must run).
 
 # AGENTS.md — Rajutan / AIO UI (root router)
 
@@ -41,6 +42,10 @@ One monorepo, four working bands. **Start here, then open the band's `AGENTS.md`
   `.bone` → `&.bone`); a `-` join (`skeleton-bone`) is only for a modifier that must
   stand alone as its own class, and never more than two words.
   Component tokens are `--<component>-*` and must derive from an `--app-*` token.
+- **Proof of render:** a batch that changes what gets rendered states what it built —
+  `builder.inspect()` or `inspectPage(root)` in a test, or a measured browser number
+  (`.guidance/AGENT_RULES.md` §16). "It looks right" is not a proof, and a gate that was
+  already green proves nothing about a feature that did not exist when it ran.
 - Gate before finishing: `npm run verify`
   (build 39 pkgs — `styles` is CSS-only → typecheck → bounds → api → version → tests → examples).
 - Answer in **Bahasa Indonesia**; repo artifacts (code, comments, docs, copy) stay **English**.

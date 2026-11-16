@@ -72,10 +72,31 @@ artefacts describe a tree that never existed.
 Never re-tag a version jsDelivr has already served — it pins the content it first saw, so a fix
 ships as a new patch (`docs/live-cdn-repo.md` §8).
 
+## 5. Prove what you built (ritual §16)
+
+```
+Batch ini mengubah output. Jalankan ritual §16: satu assertion inspect()/inspectPage()
+di test paketnya, lalu sebutkan angkanya di commit. Jangan klaim "sudah jalan".
+```
+
+For component work the shape is fixed — presence, shape, one value, plus the negative:
+
+```ts
+const { keys, hierarchy, html } = builder.inspect();   // @aio-ui/base
+expect(keys).toContain("@mine>row");                   // presence
+expect(hierarchy["@mine"].elements).toEqual(["p.row"]); // shape
+expect(html).toContain("alpha");                        // value
+expect(html).not.toContain("data-skeleton");            // the negative
+```
+
+For page work, `inspectPage(root)` and assert `nodeCount` + one record key. For a preset, the proof
+is `parsePreset()` + `plan()` reporting **zero** issues on the changed fixture.
+
 ## Notes
 
 - One line of intent beats a paragraph of history — the history is `git log` (§15).
 - Never paste the logbook into the prompt; ask for it (§13).
 - If an answer starts with "sepertinya…", the agent is guessing — point it at the detail doc.
+- "It works" needs a number beside it — `inspect()` output, a test name, or a measured pixel (§16).
 - Remotes: **`origin`** is `sieteminerva/AIO-UI` — push here. `legacy` is the old repository and
   `rajutan` is a different project; push to neither.

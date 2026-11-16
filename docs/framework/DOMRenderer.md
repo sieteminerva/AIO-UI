@@ -271,12 +271,12 @@ const { html, keys, hierarchy } = builder.inspect();
 Both are synchronous and side-effect free: no waiting, no stylesheet loader, no
 `document` writes. Four rules make the result trustworthy, and each is pinned by a test.
 
-| Rule | Why |
-| --- | --- |
-| **Deterministic** | The identity seed comes from the payload with keys sorted (`buildNamespace`), never from an instance counter — the same payload renders the same markup twice. |
-| **Idempotent** | `hierarchy.elements` is rebuilt from the live tree on every walk, so reading twice returns the same data. |
-| **Root, never a child** | `setMetadata` copies the pool at call time and a node is stamped before its siblings exist, so only the root holds the complete page graph. `inspectPage(child)` returns a partial snapshot. |
-| **Hierarchy before records** | A builder root carries **one** record (its own). `inspect()` therefore reports `keys` and `hierarchy` first; `records` is the thin half. |
+| Rule                         | Why                                                                                                                                                                                          |
+| ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Deterministic**            | The identity seed comes from the payload with keys sorted (`buildNamespace`), never from an instance counter — the same payload renders the same markup twice.                               |
+| **Idempotent**               | `hierarchy.elements` is rebuilt from the live tree on every walk, so reading twice returns the same data.                                                                                    |
+| **Root, never a child**      | `setMetadata` copies the pool at call time and a node is stamped before its siblings exist, so only the root holds the complete page graph. `inspectPage(child)` returns a partial snapshot. |
+| **Hierarchy before records** | A builder root carries **one** record (its own). `inspect()` therefore reports `keys` and `hierarchy` first; `records` is the thin half.                                                     |
 
 `html` is deliberately **raw**: attribute order is the renderer's, and the anti-FOUC markers
 a builder paints (`data-loaded`, `--is-loading`) are left in place. Normalising here would
@@ -288,7 +288,7 @@ Two boundaries worth knowing:
   three items and objects from their first five keys, so two different payloads can share a
   namespace. Equal ids mean "same seed", not "same content".
 - Reuse and determinism conflict. The historical `ElementCreatedEventBus.relay` path returned
-  a *living* element instead of building a new one, which made a render depend on history
+  a _living_ element instead of building a new one, which made a render depend on history
   rather than on the payload. It is gone, and snapshotting depends on it staying gone.
 
 ## �🔒 Memory Management & Unmounting Evacuation

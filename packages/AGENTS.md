@@ -6,7 +6,8 @@
 > your row **before the first edit** — overlapping a live row is a stop-and-ask, not an override.
 > Every finished action category leaves **3 pointer lines** (`CHANGED →`, `PROVED →`, `NEXT →`);
 > see `.guidance/AGENT_RULES.md` §10 (checkpoint), §11 (claims), §13 (logbook), §14 (pre-compact
-> handoff at ~80k) and §15 (commit message shape).
+> handoff at ~80k), §15 (commit message shape) and §16 (**proof of render** — the inspection
+> ritual every batch that changes output must run).
 
 # AGENTS.md — Framework band (`packages/**` + `examples/demo/**`)
 
@@ -73,6 +74,25 @@ npm run verify           # full gate — run once per batch, not per step
 component as the block instead of nesting it. Decided against: a helper or a new renderer
 parameter — `buildStructure` already holds `builderFn`, and `attachMetadata` recognises a builder
 root by its `getMetadata`. A node with `builder` and no `isRoot` keeps the host.
+
+## Proof of render (mandatory — `AGENT_RULES.md` §16)
+
+A builder is not done when its code compiles. It is done when a test says what it built:
+
+```ts
+const builder = new MyBuilder(config);
+builder.create(payload);
+
+const { keys, hierarchy, html } = builder.inspect(); // @aio-ui/base
+expect(keys).toContain("@mine>row");
+expect(hierarchy["@mine"].elements).toEqual(["p.row"]);
+expect(html).toContain("alpha");
+```
+
+`inspect()` is synchronous, deterministic and needs no stylesheet loader — the same payload
+inspects to the same data twice. Assert the cheapest sufficient fact (presence, shape, one
+value), and prove the negative for a hold or a fallback (`[data-skeleton]` must be absent).
+Mechanics: `docs/framework/DOMRenderer.md` § *Inspecting a built tree*.
 
 ## Verify
 

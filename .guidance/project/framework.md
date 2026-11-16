@@ -6,13 +6,16 @@ Why / stages: `.guidance/plan-framework.md`. Engineering rules:
 
 ## Active (max 3)
 
-| #   | Task                     | State       | Gate                                                                                                           |
-| --- | ------------------------ | ----------- | -------------------------------------------------------------------------------------------------------------- |
-| 1   | Theme console view (fab) | in progress | `examples/demo/src/ThemeConsole/TASKS.md` — view composed, gate green; open: page-only sections in the popover |
+| #   | Task                     | State       | Gate                                                                                                                       |
+| --- | ------------------------ | ----------- | -------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Theme console view (fab) | in progress | `examples/demo/src/ThemeConsole/TASKS.md` — view composed, gate green; open: page-only sections in the popover             |
 | 2   | Inspect surface (b43)    | in progress | `inspect()` + `inspectPage()` landed and green; open: dead relay removal, `#cleanupMap` reset, Topik A (`iComponentInput`) |
 
 ## Next
 
+- `scripts/proof.mjs --report`: list every component package and whether it carries an `inspect()`
+  assertion. Report-only at first (the gap list is the ratchet); make it a `verify` gate once the 20
+  packages are covered, so §16 stops depending on discipline.
 - Retire the dead `ElementCreatedEventBus.relay` call in `DOMRenderer.buildStructure` and the
   two leftover `console.log` calls in `attachMetadata` / `mountHandler` — the relay has had no
   writer since `AioApp` replaced `LandingPageBuilder`, and a snapshot surface must stay quiet.
@@ -30,6 +33,11 @@ Why / stages: `.guidance/plan-framework.md`. Engineering rules:
 
 ## Landed
 
+- **Batch 44** — the inspection ritual is now protocol, not advice: `AGENT_RULES.md` §16
+  (trigger, the three proof levels, the cheapest-sufficient-fact rule, the negative case, what does
+  **not** count, and the two boundaries to say out loud); a hard-rule line in the root router; a
+  worked example in `packages/AGENTS.md`; §16 added to the STEP 0 pointer list of all six band
+  files; `PROMPTS.md` §5 for "prove what you built".
 - **Batch 43** — inspection surface, proved before built: five probes (`Base.inspect.test.ts`,
   `DOMRenderer.metadata.test.ts`) pinned determinism, the one-record builder root, the
   idempotent key inventory and a skeleton-free hold, all green on the first run. Then

@@ -292,3 +292,80 @@ by an agent with no context.
   `docs/live-cdn-repo.md`). `main` is the only branch that carries work; `cdn` is generated.
 - **The first line is the logbook's raw material:** if the summary line alone cannot tell the next
   agent what changed, the logbook card will be blind too.
+
+## 16. Proof of render — the inspection ritual
+
+A framework that can build but cannot be **read** turns every agent claim into a guess. Two doors
+make a built tree readable, synchronously, with no browser and no stylesheet wait:
+
+| Door | Returns | Package |
+| --- | --- | --- |
+| `builder.inspect()` | `{ html, keys, hierarchy, namespace, records }` | `@aio-ui/base` |
+| `inspectPage(root)` | `{ html, records, nodeCount }` | `@aio-ui/core` |
+
+Mechanics and the four guarantees live in `docs/framework/DOMRenderer.md` § *Inspecting a built
+tree*. **This section is the ritual built on top of them** — the part an agent must actually do.
+
+### 16.1 When it applies
+
+Any batch that changes **what gets rendered**:
+
+- a builder (`packages/components/**`),
+- page content or a route (`examples/**`),
+- a preset fixture (`orchestrator/fixtures.ts`, `orchestrator/scenarios.ts`),
+- a selector map or a `template()` body.
+
+A refactor that provably does not touch output is exempt — and says so in the commit.
+
+### 16.2 The rule
+
+> **No rendered change ships without a statement of what it built.**
+
+One line of proof, in the batch's own commit:
+
+| Level | Proof | Command |
+| --- | --- | --- |
+| Component | an `inspect()` assertion in the package's `__tests__` | `npx vitest run packages/components/<name>` |
+| Page | an `inspectPage()` assertion on the rendered root | `npx vitest run <file>` |
+| Preset | `parsePreset()` + `plan()` with **zero** issues on the changed fixture | `npx vitest run orchestrator` |
+
+The proof is one test, not a suite. The ritual is cheap on purpose: a ritual that costs an hour is
+a ritual that gets skipped.
+
+### 16.3 What the assertion must contain
+
+Assert the **cheapest sufficient fact**, never the whole document by reflex:
+
+1. **Presence** — the key that must exist: `expect(keys).toContain("@panel>row")`.
+2. **Shape** — a count that breaks if the structure does: `nodeCount`, `elements.length`.
+3. **Value** — one rendered text: `expect(html).toContain("alpha")`.
+
+A whole-string golden is allowed only when **the shape itself is the contract**, and it lands in its
+own commit so a later batch can point at it as the diff.
+
+### 16.4 Prove the negative too
+
+A hold, a fallback or a degradation is only proven by what it must **not** do:
+
+```ts
+expect(root.querySelector("[data-skeleton]")).toBeNull();
+expect(loadingCalls.count).toBe(0);
+```
+
+`packages/base/src/__tests__/Base.inspect.test.ts` is the pattern: four probes that proved a surface
+before a line of it existed.
+
+### 16.5 What does **not** count
+
+- "the demo looks right" with no number beside it.
+- A screenshot without a selector or count quoted next to it.
+- Reading the code and concluding. `git log` cannot tell the next agent you were right.
+- A gate that was already green **before** your change. `verify` proves nothing regressed; it does
+  not prove your feature exists.
+
+### 16.6 Two boundaries to say out loud
+
+- `inspect()` proves **structure**, not appearance. Layout, colour and contrast need a browser and a
+  measured number (`getComputedStyle`, `getBoundingClientRect`).
+- A namespace is **not** a unique key — `buildNamespace` summarises arrays from three items and
+  objects from five keys. Equal ids mean "same seed", not "same content".

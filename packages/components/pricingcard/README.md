@@ -1,4 +1,4 @@
-# PricingCard (`@aio-ui/pricing-card`)
+# PricingCard (`@aio-ui/pricingcard`)
 
 PricingCard renders one card per record: a header with a divider, a feature list, a price line and an
 action button. Because it is a card **group**, its root is a `div.row` and each card is wrapped in a

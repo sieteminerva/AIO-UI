@@ -23,11 +23,14 @@
     "version:check": "node scripts/version.mjs --check",
     "release:plan": "node scripts/release.mjs",
     "new:component": "node scripts/new-component.mjs",
-    "verify": "npm run build:pkgs && npm run typecheck && npm run check:bounds && npm run check:api && npm run version:check && npm run test && npm run build",
+    "verify": "npm run build:pkgs && npm run typecheck && npm run check:bounds && npm run check:api && npm run check:catalogue && npm run version:check && npm run test && npm run build",
     "test": "vitest run",
     "test:watch": "vitest",
     "build:pkgs": "node scripts/build-pack.mjs --build",
-    "check:api": "node scripts/api.mjs --check"
+    "check:api": "node scripts/api.mjs --check",
+    "check:catalogue": "node scripts/catalogue.mjs --check",
+    "catalogue": "node scripts/catalogue.mjs",
+    "catalogue:apply": "node scripts/catalogue.mjs --apply"
   },
   "devDependencies": {
     "happy-dom": "^21.0.4",

@@ -33,8 +33,16 @@ Why / stages: `.guidance/plan-framework.md`. Engineering rules:
 
 ## Landed
 
+- **Batch 46** — `scripts/catalogue.mjs` compiles all 23 component READMEs into
+  `docs/framework/catalogue.json` (217.6 kB): title, lead, and every H2 with its prose, fenced
+  examples and **every table** as `columns` + `rows`, keyed by camelCase of the header. Dry-run by
+  default, `--apply` writes, `--check` runs inside `verify`. The staleness test compares **content**,
+  not bytes, so a formatter pass cannot red the gate; proven both ways (clean → pass, mutated title →
+  exit 1). It immediately found two real doc bugs: `fabmenu` and `pricingcard` READMEs named
+  `@aio-ui/fab-menu` / `@aio-ui/pricing-card`, packages that do not exist — both H1s fixed, and the
+  compiler now takes `package.json` as the authority and warns on disagreement.
 - **Batch 45** — `docs/agent/handbook.md`: the **consumer** loop, written for an agent building a
-  web app *with* the framework rather than changing it — preconditions, five steps (plan → content →
+  web app _with_ the framework rather than changing it — preconditions, five steps (plan → content →
   payload → render → report), the AST grammar with its three failure rules, a 23-word builder table
   marked by whether the payload shape is verified or README-only, verification recipes, a
   failure → action table, seven hard rules, and a "known gaps" table so nobody assumes an automation

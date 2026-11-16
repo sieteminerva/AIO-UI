@@ -298,13 +298,13 @@ by an agent with no context.
 A framework that can build but cannot be **read** turns every agent claim into a guess. Two doors
 make a built tree readable, synchronously, with no browser and no stylesheet wait:
 
-| Door | Returns | Package |
-| --- | --- | --- |
+| Door                | Returns                                         | Package        |
+| ------------------- | ----------------------------------------------- | -------------- |
 | `builder.inspect()` | `{ html, keys, hierarchy, namespace, records }` | `@aio-ui/base` |
-| `inspectPage(root)` | `{ html, records, nodeCount }` | `@aio-ui/core` |
+| `inspectPage(root)` | `{ html, records, nodeCount }`                  | `@aio-ui/core` |
 
-Mechanics and the four guarantees live in `docs/framework/DOMRenderer.md` § *Inspecting a built
-tree*. **This section is the ritual built on top of them** — the part an agent must actually do.
+Mechanics and the four guarantees live in `docs/framework/DOMRenderer.md` § _Inspecting a built
+tree_. **This section is the ritual built on top of them** — the part an agent must actually do.
 
 > **Two audiences, two documents.** This section is for an agent **changing this repository**. An
 > agent **building a web app with the framework** follows `docs/agent/handbook.md` instead (same
@@ -325,11 +325,11 @@ A refactor that provably does not touch output is exempt — and says so in the 
 
 One line of proof, in the batch's own commit:
 
-| Level | Proof | Command |
-| --- | --- | --- |
-| Component | an `inspect()` assertion in the package's `__tests__` | `npx vitest run packages/components/<name>` |
-| Page | an `inspectPage()` assertion on the rendered root | `npx vitest run <file>` |
-| Preset | `parsePreset()` + `plan()` with **zero** issues on the changed fixture | `npx vitest run orchestrator` |
+| Level     | Proof                                                                  | Command                                     |
+| --------- | ---------------------------------------------------------------------- | ------------------------------------------- |
+| Component | an `inspect()` assertion in the package's `__tests__`                  | `npx vitest run packages/components/<name>` |
+| Page      | an `inspectPage()` assertion on the rendered root                      | `npx vitest run <file>`                     |
+| Preset    | `parsePreset()` + `plan()` with **zero** issues on the changed fixture | `npx vitest run orchestrator`               |
 
 The proof is one test, not a suite. The ritual is cheap on purpose: a ritual that costs an hour is
 a ritual that gets skipped.

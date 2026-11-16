@@ -3,7 +3,7 @@
 > **Audience:** an agent that must build a working web app **using** `@aio-ui`, measured and
 > repeatable, with no human reviewing every screen.
 >
-> **Not this document:** the protocol for *changing* this repository (logbook, claim board, commit
+> **Not this document:** the protocol for _changing_ this repository (logbook, claim board, commit
 > shape, proof of render). That is `AGENTS.md` and `.guidance/AGENT_RULES.md`. This file is for the
 > agent on the other side — the one consuming the framework.
 
@@ -14,11 +14,11 @@ a claim: every step ends with something you can print.
 
 ## 0. Get the files
 
-| What | Where |
-| --- | --- |
-| This handbook | `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@main/docs/agent/handbook.md` |
-| Import map + package table | `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v<x.y.z>/registry.json` |
-| How a release is published | `docs/live-cdn-repo.md` |
+| What                       | Where                                                                         |
+| -------------------------- | ----------------------------------------------------------------------------- |
+| This handbook              | `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@main/docs/agent/handbook.md` |
+| Import map + package table | `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v<x.y.z>/registry.json`      |
+| How a release is published | `docs/live-cdn-repo.md`                                                       |
 
 Pin the **exact** version in the import map. A site loads the release it was generated against, so a
 later release can never break it.
@@ -38,13 +38,13 @@ later release can never break it.
 
 ## 2. Preconditions — check these before writing anything
 
-| # | Precondition | If missing |
-| --- | --- | --- |
-| 1 | A pinned `@aio-ui` version and an import map built from its `registry.json` | stop; do not invent URLs |
-| 2 | The list of builder words you will use (Reference B) | read the package README, do not guess |
-| 3 | A route per page, all starting with `/`, all unique | the app refuses to render |
-| 4 | The payload shape for **each** builder you named (Reference B / package README) | validation catches it — do not proceed on a guess |
-| 5 | A way to run the app (`vite`, a static server, or a test with a DOM) | you cannot verify, so you cannot claim |
+| #   | Precondition                                                                    | If missing                                        |
+| --- | ------------------------------------------------------------------------------- | ------------------------------------------------- |
+| 1   | A pinned `@aio-ui` version and an import map built from its `registry.json`     | stop; do not invent URLs                          |
+| 2   | The list of builder words you will use (Reference B)                            | read the package README, do not guess             |
+| 3   | A route per page, all starting with `/`, all unique                             | the app refuses to render                         |
+| 4   | The payload shape for **each** builder you named (Reference B / package README) | validation catches it — do not proceed on a guess |
+| 5   | A way to run the app (`vite`, a static server, or a test with a DOM)            | you cannot verify, so you cannot claim            |
 
 **Do not** proceed with a precondition missing. A wrong package name is not a small mistake: the
 import map resolves to a 404 and the page renders blank with one console line.
@@ -55,13 +55,13 @@ import map resolves to a 404 and the page renders blank with one console line.
 
 Five steps, in order. Each has a **produce** and a **verify** — never skip the verify.
 
-| # | Step | Produce | Verify | Pass looks like |
-| --- | --- | --- | --- | --- |
-| 1 | **Plan** | table: route → builder words → capability | every word exists in Reference B | 0 unknown words |
-| 2 | **Write content** | one AST per page (§4) | every `builder` word was declared in step 1 | 0 undeclared words |
-| 3 | **Write payloads** | one payload per builder, matching its shape | package README `## Payload` | shape matches, no wrapper guessing |
-| 4 | **Render** | the app, or a test with a DOM | `inspectPage(root)` | `nodeCount > 0`, expected keys present |
-| 5 | **Report** | what you built, with the numbers | quote the actual counts | a reader can re-run it |
+| #   | Step               | Produce                                     | Verify                                      | Pass looks like                        |
+| --- | ------------------ | ------------------------------------------- | ------------------------------------------- | -------------------------------------- |
+| 1   | **Plan**           | table: route → builder words → capability   | every word exists in Reference B            | 0 unknown words                        |
+| 2   | **Write content**  | one AST per page (§4)                       | every `builder` word was declared in step 1 | 0 undeclared words                     |
+| 3   | **Write payloads** | one payload per builder, matching its shape | package README `## Payload`                 | shape matches, no wrapper guessing     |
+| 4   | **Render**         | the app, or a test with a DOM               | `inspectPage(root)`                         | `nodeCount > 0`, expected keys present |
+| 5   | **Report**         | what you built, with the numbers            | quote the actual counts                     | a reader can re-run it                 |
 
 ### Why the loop is in this order
 
@@ -75,20 +75,20 @@ exactly the behaviour this loop removes.
 
 A node is one entry: `"<selector>": { …node }`.
 
-| Syntax | Meaning | Example |
-| --- | --- | --- |
-| `tag` | element name; omit for `div` | `main`, `section` |
-| `#id` | id | `div#hero` |
-| `.class` | one class per dot | `section.ui.wide` |
-| `[attr='v']` | attribute | `div[data-mode="dark"]` |
-| `a>b>c` | **flat lineage** — child keys written on one line, absorbed into the tree | `@section>content>title` |
-| `content` | child nodes, a string (HTML), or an element | `content: "<p>hi</p>"` |
-| `builder` | the component this node **is** (§5) | `builder: "accordion"` |
-| `isRoot` | the builder root replaces the host element | `isRoot: true` |
-| `attrs` | attribute dictionary | `attrs: { role: "region" }` |
-| `config` | per-instance configuration | `config: { emoji: false }` |
-| `onCreated` / `onDestroy` | lifecycle hooks | avoid in autopilot |
-| `isArray` | mark the parent of a repeating block | `isArray: true` |
+| Syntax                    | Meaning                                                                   | Example                     |
+| ------------------------- | ------------------------------------------------------------------------- | --------------------------- |
+| `tag`                     | element name; omit for `div`                                              | `main`, `section`           |
+| `#id`                     | id                                                                        | `div#hero`                  |
+| `.class`                  | one class per dot                                                         | `section.ui.wide`           |
+| `[attr='v']`              | attribute                                                                 | `div[data-mode="dark"]`     |
+| `a>b>c`                   | **flat lineage** — child keys written on one line, absorbed into the tree | `@section>content>title`    |
+| `content`                 | child nodes, a string (HTML), or an element                               | `content: "<p>hi</p>"`      |
+| `builder`                 | the component this node **is** (§5)                                       | `builder: "accordion"`      |
+| `isRoot`                  | the builder root replaces the host element                                | `isRoot: true`              |
+| `attrs`                   | attribute dictionary                                                      | `attrs: { role: "region" }` |
+| `config`                  | per-instance configuration                                                | `config: { emoji: false }`  |
+| `onCreated` / `onDestroy` | lifecycle hooks                                                           | avoid in autopilot          |
+| `isArray`                 | mark the parent of a repeating block                                      | `isArray: true`             |
 
 These keys are **reserved** and never become elements: `content`, `onCreated`, `onDestroy`,
 `builder`, `attrs`, `attributes`, `isRoot`, `isArray`, `config`, `selectors`, `options`.
@@ -109,31 +109,31 @@ These keys are **reserved** and never become elements: `content`, `onCreated`, `
 Payload shapes below are the ones **verified by rendering** in this repository. Where the shape is
 not listed, the package README `## Payload` is the only authority — read it, do not infer it.
 
-| Word | Package | Payload |
-| --- | --- | --- |
-| `accordion` | `@aio-ui/accordion` | `{ content: [{ title, description }] }` |
-| `article` | `@aio-ui/article` | see README |
-| `badge` | `@aio-ui/badge` | see README |
-| `carousel` | `@aio-ui/carousel` | `{ content: [{ title, description, image }] }` |
-| `dropdown` | `@aio-ui/input/dropdown/module` | see README |
-| `fab-menu` | `@aio-ui/fabmenu` | `{ title, actions: [{ label }] }` — **no** `content` wrapper |
-| `footer` | `@aio-ui/footer` | `{ content: { company, columns: [{ title?, description?, actions?: [{ label, href? }] }] } }` |
-| `form` | `@aio-ui/form` | `{ config: { fields: [...] } }` — see README for field types |
-| `input` | `@aio-ui/input` | see README |
-| `input-controls` | `@aio-ui/input/controls/module` | see README |
-| `masonry` | `@aio-ui/masonry` | see README |
-| `menu` | `@aio-ui/menu` | `{ content: { navigations: [{ href, label, title }] } }` |
-| `message` | `@aio-ui/message` | see README |
-| `modal` | `@aio-ui/modal` | `{ content }` + `config: { id, title }` |
-| `mode-switcher` | `@aio-ui/modeswitcher` | `{}` |
-| `pricing-card` | `@aio-ui/pricingcard` | **array** of `{ header, body: [{ title }], price, action: { label } }` |
-| `product-card` | `@aio-ui/product` | `{ uid, name, category, title, description, price, colors, artwork }` |
-| `product-card-grid` | `@aio-ui/product` | `{ content: { data: [<product-card payload>] } }` |
-| `product-detail` | `@aio-ui/product` | `{ uid, category, title, description, price, currency, colors, artwork }` |
-| `rating` | `@aio-ui/rating` | see README |
-| `section` | `@aio-ui/section` | `{ content: [{ content: [{ imageUrl?, eyebrow?, title?, description?, actions? }] }] }` |
-| `tab` | `@aio-ui/tab` | `{ content: { menu: string[], body: any[] } }` |
-| `table` | `@aio-ui/table` | see README |
+| Word                | Package                         | Payload                                                                                       |
+| ------------------- | ------------------------------- | --------------------------------------------------------------------------------------------- |
+| `accordion`         | `@aio-ui/accordion`             | `{ content: [{ title, description }] }`                                                       |
+| `article`           | `@aio-ui/article`               | see README                                                                                    |
+| `badge`             | `@aio-ui/badge`                 | see README                                                                                    |
+| `carousel`          | `@aio-ui/carousel`              | `{ content: [{ title, description, image }] }`                                                |
+| `dropdown`          | `@aio-ui/input/dropdown/module` | see README                                                                                    |
+| `fab-menu`          | `@aio-ui/fabmenu`               | `{ title, actions: [{ label }] }` — **no** `content` wrapper                                  |
+| `footer`            | `@aio-ui/footer`                | `{ content: { company, columns: [{ title?, description?, actions?: [{ label, href? }] }] } }` |
+| `form`              | `@aio-ui/form`                  | `{ config: { fields: [...] } }` — see README for field types                                  |
+| `input`             | `@aio-ui/input`                 | see README                                                                                    |
+| `input-controls`    | `@aio-ui/input/controls/module` | see README                                                                                    |
+| `masonry`           | `@aio-ui/masonry`               | see README                                                                                    |
+| `menu`              | `@aio-ui/menu`                  | `{ content: { navigations: [{ href, label, title }] } }`                                      |
+| `message`           | `@aio-ui/message`               | see README                                                                                    |
+| `modal`             | `@aio-ui/modal`                 | `{ content }` + `config: { id, title }`                                                       |
+| `mode-switcher`     | `@aio-ui/modeswitcher`          | `{}`                                                                                          |
+| `pricing-card`      | `@aio-ui/pricingcard`           | **array** of `{ header, body: [{ title }], price, action: { label } }`                        |
+| `product-card`      | `@aio-ui/product`               | `{ uid, name, category, title, description, price, colors, artwork }`                         |
+| `product-card-grid` | `@aio-ui/product`               | `{ content: { data: [<product-card payload>] } }`                                             |
+| `product-detail`    | `@aio-ui/product`               | `{ uid, category, title, description, price, currency, colors, artwork }`                     |
+| `rating`            | `@aio-ui/rating`                | see README                                                                                    |
+| `section`           | `@aio-ui/section`               | `{ content: [{ content: [{ imageUrl?, eyebrow?, title?, description?, actions? }] }] }`       |
+| `tab`               | `@aio-ui/tab`                   | `{ content: { menu: string[], body: any[] } }`                                                |
+| `table`             | `@aio-ui/table`                 | see README                                                                                    |
 
 Reserved-but-unimplemented words — using one is a defect, not a shortcut: `color-theme`, `editor`,
 `form-editor`.
@@ -141,6 +141,43 @@ Reserved-but-unimplemented words — using one is a defect, not a shortcut: `col
 > **The payload envelope is not uniform.** `fab-menu` reads `content.actions`; `product-card` reads
 > its record directly; `pricing-card` takes an array. This is the single largest source of agent
 > error, which is why the table exists and why a normalised envelope is planned.
+
+### The same table, machine-readable
+
+Don't want to read this file out of date? Fetch the compiled catalogue instead — it is generated
+from the 23 component READMEs, so it cannot drift from them:
+
+```
+https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@main/docs/framework/catalogue.json
+```
+
+Per package it carries the title, the lead paragraph, and **every H2** with its prose, its fenced
+examples and its tables as `columns` + `rows`. A `see README` cell above is a table row there.
+
+```jsonc
+{
+  "packages": {
+    "accordion": {
+      "package": "@aio-ui/accordion",
+      "sections": {
+        "Payload": { "examples": [{ "lang": "ts", "code": "[{ title: \"…\" }];" }], "tables": [] },
+        "Config": {
+          "tables": [
+            {
+              "columns": ["Option", "Default", "Meaning"],
+              "rows": [{ "option": "`selectors`", "meaning": "Per-key tag/class override" }],
+            },
+          ],
+        },
+      },
+    },
+  },
+}
+```
+
+**What it is not:** the catalogue is an _index_, not a schema. It tells you what the README says, in
+machine shape — it cannot tell you that a payload is valid. That needs a per-component contract
+(§9).
 
 ---
 
@@ -155,7 +192,10 @@ const root = renderer.render(page, renderFn, buildFn, { scopeId: "home" });
 const { html, records, nodeCount } = inspectPage(root);
 
 console.assert(nodeCount > 0, "the page built nothing");
-console.assert(records.some((r) => r.relations?.key === "div.hero"), "hero is missing");
+console.assert(
+  records.some((r) => r.relations?.key === "div.hero"),
+  "hero is missing",
+);
 ```
 
 ### Component level
@@ -175,11 +215,11 @@ console.assert(html.length > 0);
 
 ### What a pass is allowed to claim
 
-| Claim | Needs | Note |
-| --- | --- | --- |
-| "the structure is right" | `inspectPage` / `inspect` | synchronous, no browser needed |
-| "it is styled correctly" | a real browser + `getComputedStyle` | never infer it from markup |
-| "the colours meet contrast" | the theme report in the demo's theme editor | never eyeball it |
+| Claim                       | Needs                                       | Note                           |
+| --------------------------- | ------------------------------------------- | ------------------------------ |
+| "the structure is right"    | `inspectPage` / `inspect`                   | synchronous, no browser needed |
+| "it is styled correctly"    | a real browser + `getComputedStyle`         | never infer it from markup     |
+| "the colours meet contrast" | the theme report in the demo's theme editor | never eyeball it               |
 
 `inspect()` is deterministic: the same payload renders the same markup twice, so a diff is a real
 diff. A namespace is **not** a unique key (it summarises from the first few items of a value), so
@@ -189,15 +229,15 @@ equal ids mean "same seed", not "same content".
 
 ## 7. Failure → action
 
-| Symptom | Cause | Action |
-| --- | --- | --- |
-| Blank page, one console line | import map does not resolve | fix the specifier; every package root **and** exact subpath must be mapped |
-| `module was not preloaded` | a `builder` word used but never declared in the plan | add it to the plan, or remove the node |
-| `prepare() returned no valid DOM element` | payload shape wrong for that builder | re-read the package README `## Payload` |
-| `Unknown selector "@x"` | the builder's selector map has no such key | you are using another component's key names |
-| Node renders but is empty | `builder` set on a node that had children | move the declaration to an empty host |
-| Styles missing | stylesheet not loaded for that component | load the CSS subpath from the package |
-| Everything renders, nothing is styled | the base stylesheet is missing | link `@aio-ui/styles/index.css` |
+| Symptom                                   | Cause                                                | Action                                                                     |
+| ----------------------------------------- | ---------------------------------------------------- | -------------------------------------------------------------------------- |
+| Blank page, one console line              | import map does not resolve                          | fix the specifier; every package root **and** exact subpath must be mapped |
+| `module was not preloaded`                | a `builder` word used but never declared in the plan | add it to the plan, or remove the node                                     |
+| `prepare() returned no valid DOM element` | payload shape wrong for that builder                 | re-read the package README `## Payload`                                    |
+| `Unknown selector "@x"`                   | the builder's selector map has no such key           | you are using another component's key names                                |
+| Node renders but is empty                 | `builder` set on a node that had children            | move the declaration to an empty host                                      |
+| Styles missing                            | stylesheet not loaded for that component             | load the CSS subpath from the package                                      |
+| Everything renders, nothing is styled     | the base stylesheet is missing                       | link `@aio-ui/styles/index.css`                                            |
 
 ---
 
@@ -218,10 +258,10 @@ equal ids mean "same seed", not "same content".
 
 Stated so you do not assume automation that does not exist yet:
 
-| Gap | Today | Planned |
-| --- | --- | --- |
-| Machine-readable component contract | this table + 40 package READMEs | `catalogue.json` generated from the README tables |
-| Palette / payload validator as a CLI | the generator's `plan()` + `parsePreset()`, inside the repo | `check-preset` CLI printing coded issues |
-| Runtime error codes | prose messages (`module was not preloaded`) | `AIOP_nnn` codes with one table |
+| Gap                                  | Today                                                                 | Planned                                      |
+| ------------------------------------ | --------------------------------------------------------------------- | -------------------------------------------- |
+| Per-component payload **schema**     | `catalogue.json` (what the README says) + `inspect()` (what it built) | `static input` contracts validated in `base` |
+| Palette / payload validator as a CLI | the generator's `plan()` + `parsePreset()`, inside the repo           | `check-preset` CLI printing coded issues     |
+| Runtime error codes                  | prose messages (`module was not preloaded`)                           | `AIOP_nnn` codes with one table              |
 
 Until those land, a payload mistake costs a render cycle rather than a validator run. Budget for it.

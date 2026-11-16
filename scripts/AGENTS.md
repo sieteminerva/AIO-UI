@@ -27,6 +27,7 @@ it in the same commit as a flag or an output path.
 | `version.mjs`       | version report / `--check` (currently a fixed `0.1.1` across 39 packages)                                                                                  |
 | `bounds.mjs`        | dependency-boundary check (`check:bounds`)                                                                                                                 |
 | `api.mjs`           | public-API surface check (`check:api`); `--write` regenerates `docs/framework/api-map.json`                                                                |
+| `catalogue.mjs`     | compile `packages/components/**/README.md` into `docs/framework/catalogue.json` (`--apply`); `--check` fails on drift |
 | `new-component.mjs` | scaffold a component from `templates/component/`                                                                                                           |
 
 Package count: the workspace is **39 packages** (5 core + 22 components + 6 modules + 3 themes

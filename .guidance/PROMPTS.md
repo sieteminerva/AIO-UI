@@ -82,11 +82,11 @@ di test paketnya, lalu sebutkan angkanya di commit. Jangan klaim "sudah jalan".
 For component work the shape is fixed — presence, shape, one value, plus the negative:
 
 ```ts
-const { keys, hierarchy, html } = builder.inspect();   // @aio-ui/base
-expect(keys).toContain("@mine>row");                   // presence
+const { keys, hierarchy, html } = builder.inspect(); // @aio-ui/base
+expect(keys).toContain("@mine>row"); // presence
 expect(hierarchy["@mine"].elements).toEqual(["p.row"]); // shape
-expect(html).toContain("alpha");                        // value
-expect(html).not.toContain("data-skeleton");            // the negative
+expect(html).toContain("alpha"); // value
+expect(html).not.toContain("data-skeleton"); // the negative
 ```
 
 For page work, `inspectPage(root)` and assert `nodeCount` + one record key. For a preset, the proof

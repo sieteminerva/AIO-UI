@@ -101,6 +101,13 @@ works while the headings are predictable, so the H2 set is closed and its order 
 Any other H2 breaks the contract: `examples/demo/src/__tests__/readme.skeleton.test.ts` fails on it.
 H3s are free inside a section (`### Actions`, `### detail`, `### Built-in adapters`).
 
+**A README is compiled, so write it for a parser too.** `scripts/catalogue.mjs` turns every
+`packages/components/**/README.md` into `docs/framework/catalogue.json` (title, lead, and each H2's
+prose, code blocks and **every table**), and `npm run check:catalogue` fails when that file is stale.
+Three consequences: keep the H1's package id in backticks and equal to `package.json` `name`; keep
+the `## Payload` / `## Config` / `## Nodes` tables as real GFM tables (a prose list compiles into
+prose); and after editing a README run `npm run catalogue:apply`.
+
 **Pointers.** A heading can carry a marker on the line above it, so a consumer selects the
 section by identity instead of by heading text — that is what `markdown`'s `config.outline`
 reads:

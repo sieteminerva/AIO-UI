@@ -6,9 +6,7 @@
 
 ## Live claims
 
-| Agent         | Band    | Task                                                              | Write scope                                                             | Started    | Checkpoint                       | State  |
-| ------------- | ------- | ----------------------------------------------------------------- | ----------------------------------------------------------------------- | ---------- | -------------------------------- | ------ |
-| `copilot b48` | Tooling | Tiered gates: `check` (seconds) vs `verify` (tests), and CI runs it | `package.json`, `.github/workflows/deploy.yml`, band files, `.guidance` | 2026-11-16 | `.guidance/project/framework.md` | active |
+_No live writer. Add a row here before your first edit — see the rules below._
 
 ## Row shape
 

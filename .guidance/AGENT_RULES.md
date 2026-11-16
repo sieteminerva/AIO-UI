@@ -29,12 +29,12 @@ Every single tool turn re-sends the entire prompt history. Minimize round-trips:
 Four tiers. **Run the one the moment deserves, not the biggest one every time** — waiting for output
 nobody reads is the most expensive habit in this repo.
 
-| Tier | Command | Cost | Run it when |
-| --- | --- | --- | --- |
-| **Inner loop** | `npm run dev:demo`, `npm run build` | — | while editing. Nothing else. A dev server is already the feedback loop. |
-| **Contract** | `npm run check` | **~12 s** | after touching a type, an `exports` map, an API surface, or a README table — i.e. before a commit |
-| **Batch** | `npm run verify` | **~54 s** | **once**, at the end of a batch (`check` + the full test suite) |
-| **Release** | `npm run verify:pkgs` | **~2 m 23 s** | before a release, or when the work depends on emitted `dist/` |
+| Tier           | Command                             | Cost          | Run it when                                                                                       |
+| -------------- | ----------------------------------- | ------------- | ------------------------------------------------------------------------------------------------- |
+| **Inner loop** | `npm run dev:demo`, `npm run build` | —             | while editing. Nothing else. A dev server is already the feedback loop.                           |
+| **Contract**   | `npm run check`                     | **~12 s**     | after touching a type, an `exports` map, an API surface, or a README table — i.e. before a commit |
+| **Batch**      | `npm run verify`                    | **~54 s**     | **once**, at the end of a batch (`check` + the full test suite)                                   |
+| **Release**    | `npm run verify:pkgs`               | **~2 m 23 s** | before a release, or when the work depends on emitted `dist/`                                     |
 
 Split by what each tier reads, not by importance: `check` is typecheck + `bounds` + `api` +
 `catalogue` + `version` (4 of those 5 finish in about a second), `verify` adds the tests — which are

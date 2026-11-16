@@ -7,10 +7,11 @@ Last verified: **2026-11-16** — `v0.2.1` is the current tag (`346fac7`, the sa
 `cdn` branch): 10/10 sampled CDN URLs return `200`, `@v0.2.1` and `@cdn` both report **40**
 packages with an identical registry, the CDN `checksums.txt` is byte-identical to the local one,
 `release.test.ts` passes **15/15** against the published tag, and the GitHub release holds **43**
-assets (40 `aio-ui-<name>-0.2.1.tgz` + `registry.json` + `layout.json` + `checksums.txt`). Older
-tags stay frozen at the commit jsDelivr first served (`v0.1.1` → 39 packages at `5a7fc27`,
-`v0.1.0` → 37) — expected, not a defect: jsDelivr pins a served tag permanently, so a fix ships
-as a **new version** (§8). Installing from a clone is §3, the branch README is §2.1.
+assets (40 `aio-ui-<name>-0.2.1.tgz` + `registry.json` + `layout.json` + `checksums.txt`) —
+`releases/download/v0.2.1/aio-ui-app-0.2.1.tgz` returns `200`. **`v0.2.1` is the only tag**: the
+earlier ones (`v0.1.0`, `v0.1.1`, `v0.2.0`) were deleted when the repository was renamed, because
+their content named the old repository and jsDelivr pins a served tag permanently — a fix ships as
+a **new version** (§8). Installing from a clone is §3, the branch README is §2.1.
 
 ## 1. What is live
 
@@ -22,9 +23,9 @@ as a **new version** (§8). Installing from a clone is §3, the branch README is
 >   repository. That is why the rename shipped as `0.2.1` and not as a re-tag: a purge does not move
 >   a pinned version.
 > - The **release assets** (the `.tgz` files) are attachments, not git objects, so they do not travel
->   with a clone or a push. `v0.2.1` has none yet: the `tarball` URLs inside `registry.json` resolve
->   only after `.draft/release/v0.2.1/` is uploaded as a release (`gh` is absent on this machine, so
->   that step is manual). Import-map URLs are unaffected — they come from the `cdn` branch.
+>   with a clone or a push. `v0.2.1` carries all 43 of them, uploaded after the rename — that is what
+>   makes the `tarball` URLs inside `registry.json` resolve. Publishing a new version means repeating
+>   that upload (`gh` is absent on this machine, so it is a REST call or the web UI).
 
 | Piece          | Value                                                                                           |
 | -------------- | ----------------------------------------------------------------------------------------------- |

@@ -37,10 +37,13 @@ section:is(.masonry),
     column-count: var(--masonry-columns, 3);
     column-gap: 1.5rem;
     padding: 1rem 0;
-    & > .item {
-      /* `block`, not `inline-block`: an inline-level box is not fragmented between
-         columns, so every card piled up in column 1 and the remaining columns stayed
-         empty whenever the filter left fewer items than columns. */
+    & > .item,
+    & > figure {
+      /* The overlay is absolute inside the card, so the card must be its containing block.
+         (The `translate3d` would do it too, but a transform is an animation detail and this
+         is a layout fact — say it out loud.) */
+      position: relative;
+      margin: 0;
       display: block;
       width: 100%;
       height: fit-content;
@@ -48,29 +51,93 @@ section:is(.masonry),
       break-inside: avoid;
       margin-bottom: 1.5rem;
       cursor: pointer;
-      transition: transform 0.3s ease;
       border-radius: var(--masonry-card-radius);
       overflow: hidden;
       transform: translate3d(0, 0, 0);
       backface-visibility: hidden;
+      transition:
+        transform 0.3s ease,
+        box-shadow 0.3s ease;
 
-      &:hover {
-        transform: scale(1.02);
-        box-shadow: var(--masonry-card-hover-shadow);
-      }
+      /* Gambar dibuat full-size memenuhi .item tanpa ruang kosong */
       & img {
         width: 100%;
         height: auto;
         display: block;
-        position: relative;
-        object-fit: contain;
+        object-fit: cover; /* Mengisi penuh area kartu secara proporsional */
         min-height: 0;
+        z-index: 0;
+        transition: transform 0.4s ease;
       }
-      &:is(.fade-in) {
+
+      /* State Animasi Muncul */
+      &.is-fade-in {
         opacity: 0;
         transform: translateY(30px);
         animation: masonryFadeIn 0.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
         animation-delay: calc(var(--batch-index, 0) * 0.05s);
+      }
+
+      /* Pembungkus Teks Overlay (Melayang di atas gambar bagian bawah) */
+      & .caption,
+      & header.caption {
+        position: absolute;
+        inset: 0; /* Memenuhi seluruh area kartu */
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end; /* Teks rata bawah */
+        padding: 1.25rem;
+        background: linear-gradient(to top, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0) 60%);
+        opacity: 0;
+        transition: opacity 0.3s ease-in-out;
+        z-index: 1;
+      }
+
+      /* Teks Judul & Deskripsi */
+      & .title,
+      & h3 {
+        color: #ffffff;
+        margin: 0 0 0.25rem 0;
+        font-size: 1.1rem;
+        visibility: hidden;
+        transform: translateY(20px);
+        transition:
+          transform 0.3s ease-in-out,
+          visibility 0.3s ease-in-out;
+      }
+
+      & .desc,
+      & p {
+        color: #e2e8f0;
+        margin: 0;
+        font-size: 0.875rem;
+        visibility: hidden;
+        transform: translateY(20px);
+        transition:
+          transform 0.3s ease-in-out 0.05s,
+          visibility 0.3s ease-in-out 0.05s; /* Sedikit delay agar berurutan */
+      }
+
+      /* Efek Saat Di-Hover */
+      &:hover {
+        transform: scale(1.02);
+        box-shadow: var(--masonry-card-hover-shadow);
+
+        & img {
+          transform: scale(1.05); /* Efek zoom halus pada gambar saat hover */
+        }
+
+        & .caption {
+          opacity: 1;
+        }
+
+        & .title,
+        & h3,
+        & .desc,
+        & p {
+          visibility: visible;
+          transform: translateY(0);
+        }
       }
     }
   }
@@ -121,7 +188,9 @@ section:is(.masonry),
     pointer-events: none;
   }
 
-  & > .filter.menu {
+  & > .filter.menu,
+  & > nav.filter.menu {
+    background: transparent;
     position: relative;
     display: flex;
     gap: 0.75rem;
@@ -203,26 +272,68 @@ section:is(.masonry),
       visibility: hidden;
       pointer-events: none;
     }
+    /*
+     * The stage is the picture plus its caption. The grid is a preview — it only reveals the
+     * text on hover — so the lightbox has to show the whole record, not just the image.
+     */
+    & .stage {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.9rem;
+      margin: 0;
+      max-width: min(92vw, 1100px);
+      max-height: 92vh;
+      /* Room for the arrows, which are positioned against the overlay, not the stage. */
+      padding: 0 4rem;
+      box-sizing: border-box;
+    }
+
     & .img {
-      max-width: 90vw;
-      max-height: 90vh;
+      max-width: 100%;
+      /* Leave room for the caption inside the 92vh the stage is allowed. */
+      max-height: calc(92vh - 6rem);
       object-fit: contain;
       border-radius: var(--masonry-radius);
+    }
+
+    & .caption {
+      display: grid;
+      gap: 0.25rem;
+      max-width: 70ch;
+      text-align: center;
+      color: var(--masonry-lightbox-control-color);
+
+      & .title {
+        margin: 0;
+        font-size: 1.15rem;
+      }
+
+      & .desc {
+        margin: 0;
+        font-size: 0.9rem;
+        line-height: 1.6;
+        opacity: 0.85;
+      }
     }
 
     & .close,
     & .next,
     & .previous {
+      /* `box-sizing: border-box` plus zero padding: with the default content-box, a 3rem box
+         plus padding became an ellipse, which is why the arrows looked squeezed flat. */
+      box-sizing: border-box;
       display: flex;
       position: absolute;
       align-items: center;
       justify-content: center;
+      width: 3rem;
+      height: 3rem;
+      padding: 0;
       background: var(--masonry-lightbox-control-background);
       color: var(--masonry-lightbox-control-color);
       border: none;
       border-radius: 50%;
-      width: 3rem;
-      height: 3rem;
       text-align: center;
       cursor: pointer;
       transition: background 0.3s ease;
@@ -230,24 +341,24 @@ section:is(.masonry),
         background: var(--masonry-lightbox-control-hover-background);
       }
       & i.icon {
-        position: relative !important;
+        flex: 0 0 auto;
+        position: static;
         width: 24px;
         height: 24px;
       }
     }
 
-    & .close:not(i.close) {
-      top: 1.5rem !important;
-      right: 1.5rem !important;
+    & .close {
+      top: 1.5rem;
+      right: 1.5rem;
+      /* The × reads as destructive, so it keeps the error colour for its glyph only. */
       & i.icon {
-        background: red;
+        background-color: var(--app-status-error, #ff114d);
       }
-      /* line-height: 1rem; */
     }
 
     & .next,
     & .previous {
-      padding: 10px 2px;
       font-size: 1.3rem;
     }
 

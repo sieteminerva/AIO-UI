@@ -22,6 +22,14 @@
 }
 
 .accordion {
+  /*
+   * The drawer animates where the browser actually animates a `<details>`: its own content
+   * box (`::details-content`). Transitioning the sheet's `max-height` was never possible —
+   * the element has none — so the old sheet only animated its border and shadow, and the
+   * answer appeared in one frame. `allow-keywords` lets `block-size: auto` participate.
+   */
+  interpolate-size: allow-keywords;
+
   & details {
     background: var(--accordion-background);
     border: 1px solid var(--accordion-border-color);
@@ -33,6 +41,19 @@
       box-shadow 0.2s ease;
     margin-bottom: 1em;
 
+    /* The disclosure box itself: 0 while closed, `auto` when open, and both ends are
+       interpolable thanks to `interpolate-size` above. `content-visibility` is in the
+       transition list so the content can leave the box only after the slide finishes. */
+    &::details-content {
+      block-size: 0;
+      overflow: hidden;
+      opacity: 0;
+      transition:
+        block-size 240ms cubic-bezier(0.2, 0.7, 0.3, 1),
+        opacity 180ms ease,
+        content-visibility 240ms allow-discrete;
+    }
+
     &:hover {
       border-color: var(--accordion-accent-color);
     }
@@ -40,6 +61,11 @@
     &[open] {
       border-color: var(--accordion-border-focus);
       box-shadow: var(--accordion-shadow-open);
+
+      &::details-content {
+        block-size: auto;
+        opacity: 1;
+      }
 
       & summary::after {
         content: "−";

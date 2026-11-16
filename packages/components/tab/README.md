@@ -21,15 +21,16 @@ Each payload entry becomes one button and one panel; the panel body reads `eyebr
 
 ## Config
 
-| Option            | Default  | Meaning                                                         |
-| ----------------- | -------- | --------------------------------------------------------------- |
-| `menuPosition`    | `"top"`  | `top \| bottom \| left \| right` — which side the strip sits on |
-| `lazyload`        | `false`  | Build a panel only when it is first activated                   |
-| `destroyPrevious` | `false`  | Empty the previous panel on switch, forcing a fresh build       |
-| `container`       | `null`   | External element to host the tab instead of a built root        |
-| `name`            | `""`     | Namespace for the generated button/panel ids                    |
-| `minHeight`       | —        | Minimum body height, in any CSS length                          |
-| `selectors`       | defaults | Per-key tag/class override                                      |
+| Option            | Default     | Meaning                                                          |
+| ----------------- | ----------- | ---------------------------------------------------------------- |
+| `menuPosition`    | `"top"`     | `top \| bottom \| left \| right` — which side the strip sits on  |
+| `variant`         | `"default"` | `default \| folder` — folder tabs on a ruled edge (top position) |
+| `lazyload`        | `false`     | Build a panel only when it is first activated                    |
+| `destroyPrevious` | `false`     | Empty the previous panel on switch, forcing a fresh build        |
+| `container`       | `null`      | External element to host the tab instead of a built root         |
+| `name`            | `""`        | Namespace for the generated button/panel ids                     |
+| `minHeight`       | —           | Minimum body height, in any CSS length                           |
+| `selectors`       | defaults    | Per-key tag/class override                                       |
 
 ## Nodes
 

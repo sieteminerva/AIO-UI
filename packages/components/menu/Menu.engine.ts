@@ -22,14 +22,19 @@ import type { iMenuSplit } from "./Menu";
  * Exported and pure so the rule is testable without a DOM.
  */
 export function splitMenuContent(content: any): iMenuSplit {
+
   const navigations: iElementProperty[] = Array.isArray(content?.navigations)
     ? content.navigations
     : content?.navigations
       ? [content.navigations]
       : [];
 
-  const brand = navigations[0] ?? { label: "Brand", href: "#home" };
-  const rest = navigations.slice(1);
+  const brand: iElementProperty = content?.brand ? content.brand : navigations[0] ?? { label: "Brand", href: "#home" };
+
+  // Only the *guessed* brand is taken out of the list. When the host names the brand
+  // explicitly, every navigation is a navigation: slicing the first one anyway silently
+  // ate the first entry (the demo lost its first tier heading that way).
+  const rest = content?.brand ? navigations : navigations.slice(1);
 
   const isAction = (link: iElementProperty): boolean =>
     link?.className === "button" || Boolean(link?.href?.includes("tel:"));

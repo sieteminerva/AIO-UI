@@ -18,7 +18,7 @@ export declare class FabMenuBuilder extends Builder<FabMenuElementType, iFabMenu
     private isMenuOpen;
     private idleTimer;
     constructor(config?: Partial<iFabMenuConfig>);
-    prepare(content: iBasicNode, _config?: Partial<iFabMenuConfig>): HTMLElement;
+    prepare(content: iBasicNode | HTMLElement, _config?: Partial<iFabMenuConfig>): HTMLElement;
     /**
      * 👑 THE SEPARATED HYDRATION VALVE
      */

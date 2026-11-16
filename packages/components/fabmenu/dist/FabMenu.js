@@ -32,9 +32,14 @@ export class FabMenuBuilder extends Builder {
     prepare(content, _config) {
         this._clearIdleTimer();
         this.isMenuOpen = false;
+        // 🧩 Same payload contract as `tab`, `form` and `modal`: an HTMLElement is
+        // mounted as-is, so a host can dock its own widget (a theme generator, a
+        // slider bank) instead of a list of option buttons. The element form has no
+        // `title`/`actions` of its own, hence the branch here.
+        const isElement = content instanceof HTMLElement;
         const fab = this.render("@fab");
-        const panel = this.render("@fab>panel", content.actions);
-        const title = this.render("@fab>panel>title", content.title);
+        const panel = this.render("@fab>panel", isElement ? [content] : content.actions);
+        const title = this.render("@fab>panel>title", isElement ? null : content.title);
         if (title && panel)
             panel?.prepend(title);
         const trigger = this.render("@fab>panel>trigger", this.config);
@@ -61,7 +66,12 @@ export class FabMenuBuilder extends Builder {
                 el.className = `fab ${this.config.position} ${props.className || ""}`.trim();
                 break;
             case "@fab>panel":
-                for (const p of payload) {
+                for (const p of payload ?? []) {
+                    // An element entry is a docked widget, not an option: mount it untouched.
+                    if (p instanceof HTMLElement) {
+                        el.appendChild(p);
+                        continue;
+                    }
                     const item = this.render("@fab>panel>item", p);
                     el.appendChild(item);
                 }

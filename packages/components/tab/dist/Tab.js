@@ -47,6 +47,7 @@ export class TabBuilder extends Builder {
             themeId: "default",
             container: null,
             menuPosition: "top",
+            tabStyle: "default",
             lazyload: true,
             name: "tab-" + Math.random().toString(36).substring(7),
             minHeight: "400px",
@@ -86,7 +87,11 @@ export class TabBuilder extends Builder {
             case "@tab": {
                 // `classList` dedupes: the selector already stamped `tab`, and string concatenation
                 // used to emit it twice (`tab position-top tab`).
-                el.classList.add("tab", `position-${this.config.menuPosition}`);
+                el.classList.add("tab");
+                el.dataset.menu = this.config.menuPosition;
+                // Only a non-default look is stamped: the default markup stays `tab position-top`.
+                if (this.config.tabStyle !== "default")
+                    el.dataset.tabStyle = this.config.tabStyle;
                 el.style.minHeight = this.config.minHeight;
                 if (this.config.container instanceof HTMLElement) {
                     el.id = this.config.container.id || el.id;

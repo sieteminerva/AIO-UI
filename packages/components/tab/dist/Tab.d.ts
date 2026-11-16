@@ -4,6 +4,12 @@ export type TabElementType = "@container" | "@tab" | "@tab>menu" | "@tab>menu>it
 export interface iTabConfig extends iBuilderConfig<TabElementType> {
     container?: string | HTMLElement | null;
     menuPosition: "top" | "left" | "bottom" | "right";
+    /**
+     * Look of the strip. `default` is the gradient pill; `folder` draws file-folder tabs that
+     * sit on a ruled edge, with the active one lifted onto the panel. Only the horizontal
+     * positions draw the folder, because a folder only makes sense along a top or bottom rule.
+     */
+    tabStyle: "folder" | "default";
     lazyload: boolean;
     name: string;
     minHeight: string;

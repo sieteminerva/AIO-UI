@@ -15,8 +15,8 @@ the source; `dist/` is gitignored there, which is why this orphan `cdn` branch e
 | Version | `0.2.0` |
 | Tag | `v0.2.0` |
 | Packages | 40 |
-| Published | 2026-11-14 |
-| Repository | `sieteminerva/-aio-ui-dev` |
+| Published | 2026-11-16 |
+| Repository | `sieteminerva/AIO-UI` |
 
 ## 1. What is here
 
@@ -40,9 +40,9 @@ subpath you import.
 <script type="importmap">
   {
     "imports": {
-      "@aio-ui/core": "https://cdn.jsdelivr.net/gh/sieteminerva/-aio-ui-dev@v0.2.0/packages/core/dist/index.js",
-      "@aio-ui/code-block": "https://cdn.jsdelivr.net/gh/sieteminerva/-aio-ui-dev@v0.2.0/packages/components/code-block/dist/index.js",
-      "@aio-ui/code-block/CodeBlock.css": "https://cdn.jsdelivr.net/gh/sieteminerva/-aio-ui-dev@v0.2.0/packages/components/code-block/dist/CodeBlock.css"
+      "@aio-ui/core": "https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.0/packages/core/dist/index.js",
+      "@aio-ui/code-block": "https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.0/packages/components/code-block/dist/index.js",
+      "@aio-ui/code-block/CodeBlock.css": "https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.0/packages/components/code-block/dist/CodeBlock.css"
     }
   }
 </script>
@@ -56,7 +56,7 @@ Three ways to name the same tree:
 | Branch | `…@cdn/…` | follow the newest publish without editing the import map |
 | Commit | `…@<full-sha>/…` | pin a specific build for a test or a rollback |
 
-`https://raw.githubusercontent.com/sieteminerva/-aio-ui-dev/cdn/…` serves the same bytes and is the fallback
+`https://raw.githubusercontent.com/sieteminerva/AIO-UI/cdn/…` serves the same bytes and is the fallback
 when jsDelivr is unavailable; it has no cache layer of its own, so expect plain HTTP caching only.
 
 ## 3. Install offline from the release assets
@@ -66,7 +66,7 @@ attached to the release of this tag:
 
 ```bash
 # 1. fetch the tarballs (one per package you use)
-#    https://github.com/sieteminerva/-aio-ui-dev/releases/download/v0.2.0/aio-ui-<name>-0.2.0.tgz
+#    https://github.com/sieteminerva/AIO-UI/releases/download/v0.2.0/aio-ui-<name>-0.2.0.tgz
 
 # 2. install them into a normal project
 mkdir my-app && cd my-app && npm init -y
@@ -93,7 +93,7 @@ sha256sum -c checksums.txt          # 39 x OK, after downloading checksums.txt n
 **Alternative — clone and build.** If you need the source, a debugger or a change:
 
 ```bash
-git clone https://github.com/sieteminerva/-aio-ui-dev.git aio-ui
+git clone https://github.com/sieteminerva/AIO-UI.git aio-ui
 cd aio-ui
 npm install          # workspace install
 npm run build:pkgs   # writes dist/ for every TypeScript package
@@ -109,10 +109,10 @@ Tag refs are frozen. To move forward:
 
 ```bash
 # a) follow the branch - nothing to edit, the next request revalidates
-https://cdn.jsdelivr.net/gh/sieteminerva/-aio-ui-dev@cdn/packages/core/dist/index.js
+https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@cdn/packages/core/dist/index.js
 
 # b) pin a new tag - replace v0.2.0 in the import map with the newest release tag
-https://github.com/sieteminerva/-aio-ui-dev/releases        # newest tag + tarballs
+https://github.com/sieteminerva/AIO-UI/releases        # newest tag + tarballs
 npm i ./aio-ui-core-<new-version>.tgz             # offline installs: re-download, re-install
 ```
 

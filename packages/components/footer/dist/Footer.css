@@ -32,19 +32,29 @@
 }
 
 /* ROW 1 — the column grid. `auto-fit` keeps the column count dynamic: 1 to n columns
-   share the row and wrap to a new line only when a column would go under ~14rem. */
+   share the row and wrap to a new line only when a column would go under ~14rem.
+
+   The columns are centred, and the row is `justify-content: center` so the leftover space
+   splits evenly outside the tracks instead of piling up to the right. The old layout
+   left-aligned the columns under a centred copyright line, which read as two grids.
+   `auto-fit` collapses the tracks it cannot fill to 0, so no empty column is visible. */
 .footer > .row:not(.bottom) {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+  justify-content: center;
+  justify-items: center;
   align-items: start;
   gap: var(--footer-gap);
+  text-align: center;
 }
 
 .footer .column {
   display: grid;
   align-content: start;
+  justify-items: center;
   gap: 0.5rem;
   min-width: 0;
+  text-align: center;
 }
 
 .footer .header {
@@ -64,6 +74,7 @@
 
 .footer .unstyled-list {
   display: grid;
+  justify-items: center;
   gap: 0.35rem;
   margin: 0;
   padding: 0;

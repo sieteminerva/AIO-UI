@@ -1,5 +1,6 @@
 import { Builder } from "@aio-ui/base";
 import { Skeleton } from "@aio-ui/skeleton";
+import { createImageError } from "@aio-ui/utilities";
 export class MasonryBuilder extends Builder {
     builderId = "masonry";
     name = "masonry";
@@ -38,15 +39,23 @@ export class MasonryBuilder extends Builder {
         const defaultSelectors = {
             "@container": { tagName: "section", className: "masonry gallery" },
             "@masonry": { tagName: "div", className: "grid" },
-            "@masonry>filter": { tagName: "div", className: "filter menu" },
+            "@masonry>filter": { tagName: "nav", className: "filter menu" },
             "@masonry>filter>item": { tagName: "button", className: "item" },
             "@masonry>filter>slider": { tagName: "span", className: "slider" },
-            "@masonry>item": { tagName: "div", className: "item fade-in" },
+            "@masonry>item": { tagName: "figure", className: "item is-fade-in" },
             "@masonry>item>image": { tagName: "img" },
             "@masonry>item>title": { tagName: "h3", className: "title" },
             "@masonry>item>desc": { tagName: "p", className: "desc" },
             "@masonry>item>actions": { tagName: "div", className: "actions" },
             "@masonry>modal": { tagName: "div", className: "modal hidden" },
+            /* The lightbox shows the whole record: the grid is a preview, so the modal repeats the
+               image at full size **and** the text the card only reveals on hover. `stage` is the
+               figure that holds both, which is what makes the caption sit under the picture. */
+            "@masonry>modal>stage": { tagName: "figure", className: "stage" },
+            "@masonry>modal>image": { tagName: "img", className: "img" },
+            "@masonry>modal>caption": { tagName: "figcaption", className: "caption" },
+            "@masonry>modal>title": { tagName: "h3", className: "title" },
+            "@masonry>modal>desc": { tagName: "p", className: "desc" },
             "@masonry>modal>close": { tagName: "i", className: "icon close", wrapper: ".close" },
             "@masonry>modal>next": { tagName: "i", className: "icon right arrow", wrapper: ".next" },
             "@masonry>modal>previous": { tagName: "i", className: "icon left arrow", wrapper: ".previous" },
@@ -96,10 +105,13 @@ export class MasonryBuilder extends Builder {
         });
     }
     /**
-     * GETTER KATEGORI: Menghitung daftar gambar yang AKTIF dan SUDAH TER-RENDER di layar saat ini
-     * (Menghilangkan celah bypass modal data secara instan)
+     * GETTER KATEGORI: record yang AKTIF dan SUDAH TER-RENDER di layar.
+     *
+     * The whole record, not just its URL: the grid is a preview, so the lightbox has to repeat
+     * the picture **and** the text the card only reveals on hover. Filtering by "is on screen"
+     * is what keeps the arrows inside the current filter instead of walking hidden records.
      */
-    get currentVisibleImages() {
+    get currentVisibleRecords() {
         // 1. Ambil data yang lolos saringan kategori saat ini
         const filtered = this.#items.filter(item => {
             if (item instanceof HTMLElement)
@@ -108,8 +120,8 @@ export class MasonryBuilder extends Builder {
         });
         // 2. Batasi hanya sebanyak jumlah item yang sedang aktif di-render di layar (displayedCount)
         const visibleBatch = filtered.slice(0, this.displayedCount);
-        // 3. Ekstrak string URL gambarnya saja
-        return visibleBatch.map(item => (item.image || item.imageUrl)).filter((img) => !!img);
+        // 3. Simpan record utuhnya, bukan cuma URL-nya: modal menampilkan gambar **dan** teks
+        return visibleBatch.filter(item => !!(item.image || item.imageUrl));
     }
     prepare(data, _config) {
         let normalizedData = data;
@@ -223,20 +235,38 @@ export class MasonryBuilder extends Builder {
                     if (img)
                         el.appendChild(img);
                 }
-                if (item.title) {
-                    const h2 = this.render("@masonry>item>title", item);
-                    if (h2)
-                        el.appendChild(h2);
-                }
-                if (item.description) {
-                    const p = this.render("@masonry>item>desc", item);
-                    if (p)
-                        el.appendChild(p);
+                if (item.title || item.description) {
+                    const overlay = document.createElement("header");
+                    overlay.className = "caption";
+                    if (item.title) {
+                        const h2 = this.render("@masonry>item>title", item);
+                        if (h2)
+                            overlay.appendChild(h2);
+                    }
+                    if (item.description) {
+                        const p = this.render("@masonry>item>desc", item);
+                        if (p)
+                            overlay.appendChild(p);
+                    }
+                    el.appendChild(overlay);
                 }
                 if (item.actions && Array.isArray(item.actions)) {
                     const actionsEl = this.render("@masonry>item>actions", item.actions);
                     if (actionsEl)
                         el.appendChild(actionsEl);
+                }
+                /*
+                 * The whole card opens the lightbox, not only its picture: the grid is a preview, so
+                 * anywhere on it is a fair target. `onclick` rather than `addEventListener`, on
+                 * purpose — one handler per card, overwritten by a rebuild and collected with the
+                 * node. A filter empties `.grid`, so no listener list has to be walked to unhook it
+                 * (see `_applyFilter`), and `unmount()` has nothing beyond the modal to clean.
+                 */
+                if (payload?.modalIndex !== undefined && payload?.modalIndex !== -1) {
+                    el.onclick = (event) => {
+                        event.stopPropagation();
+                        this.modal.show(payload.modalIndex);
+                    };
                 }
                 break;
             }
@@ -248,15 +278,8 @@ export class MasonryBuilder extends Builder {
                     img.loading = "lazy";
                 // Fallback saat URL gambar gagal dimuat dari server statis
                 img.onerror = () => {
-                    img.src = 'data:image/svg+xml;utf8,<svg xmlns="http://w3.org" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23222"/><text x="50" y="50" font-family="sans-serif" font-size="10" fill="%23666" text-anchor="middle" dominant-baseline="middle">Image Error</text></svg>';
+                    img.src = createImageError();
                 };
-                img.style.cursor = "pointer";
-                if (payload?.modalIndex !== undefined && payload?.modalIndex !== -1) {
-                    img.addEventListener("click", (e) => {
-                        e.stopPropagation();
-                        this.modal.show(payload.modalIndex);
-                    });
-                }
                 break;
             }
             case "@masonry>item>title":
@@ -280,15 +303,61 @@ export class MasonryBuilder extends Builder {
                 }
                 break;
             }
-            // ── MODAL ─────────────────────────────────────────────────
+            // ── MODAL ─────────────────────────────────────────────
+            // Every modal block reads the payload assembled by `_initModal`: one record, already
+            // normalised (`image`, `title`, `description`). The lightbox is re-rendered per open,
+            // so the markup below is the whole story — nothing patches it afterwards.
+            case "@masonry>modal": {
+                const previous = this.render("@masonry>modal>previous", payload);
+                const stage = this.render("@masonry>modal>stage", payload);
+                const next = this.render("@masonry>modal>next", payload);
+                const close = this.render("@masonry>modal>close", payload);
+                // The controls are wrapped (`i.icon` inside its `.close` / `.next` / `.previous`
+                // wrapper), so the wrapper is the node the overlay lays out; `__outer` is what the
+                // builder hands back.
+                if (previous)
+                    el.appendChild(previous.__outer ?? previous);
+                if (stage)
+                    el.appendChild(stage);
+                if (next)
+                    el.appendChild(next.__outer ?? next);
+                if (close)
+                    el.appendChild(close.__outer ?? close);
+                break;
+            }
+            case "@masonry>modal>stage": {
+                const image = this.render("@masonry>modal>image", payload);
+                const caption = this.render("@masonry>modal>caption", payload);
+                if (image)
+                    el.appendChild(image);
+                if (caption)
+                    el.appendChild(caption);
+                break;
+            }
+            case "@masonry>modal>caption": {
+                const title = this.render("@masonry>item>title", payload);
+                const desc = this.render("@masonry>item>desc", payload);
+                if (title)
+                    el.appendChild(title);
+                if (desc)
+                    el.appendChild(desc);
+                break;
+            }
+            case "@masonry>modal>image": {
+                const img = el;
+                img.decoding = "async";
+                img.src = encodeURI(String(payload?.image || ""));
+                img.alt = payload?.title || "Gallery image";
+                break;
+            }
             case "@masonry>modal>close":
-                // el.innerHTML = "&times;";
+                (el.closest("button") ?? el.parentElement ?? el).setAttribute("aria-label", "Close image");
                 break;
             case "@masonry>modal>next":
-                // el.innerHTML = "&#10095;"; // ❯
+                (el.closest("button") ?? el.parentElement ?? el).setAttribute("aria-label", "Next image");
                 break;
             case "@masonry>modal>previous":
-                // el.innerHTML = "&#10094;"; // ❮
+                (el.closest("button") ?? el.parentElement ?? el).setAttribute("aria-label", "Previous image");
                 break;
             // ── PAGINATION ─────────────────────────────────────────────
             case "@masonry>trigger":
@@ -310,6 +379,9 @@ export class MasonryBuilder extends Builder {
             this.observer.disconnect();
             this.observer = undefined;
         }
+        // The modal is the one node with listeners that outlive their parent: its key handler,
+        // the backdrop click and the two arrows all close over `show`. Cards need no equivalent —
+        // they carry a single `onclick` and leave with their node (see `_applyFilter`).
         if (this.modal && typeof this.modal.destroy === 'function') {
             this.modal.destroy();
         }
@@ -432,7 +504,6 @@ export class MasonryBuilder extends Builder {
         }
         this.load("@masonry").appendChild(fragment);
         this.displayedCount = end;
-        this.modal.updateNavigation();
         // Jika seluruh data (lokal + server hantaran baru) sudah benar-benar habis, matikan kontroler
         if (this.displayedCount >= filtered.length && !this.config.loadFn) {
             this._killPaginationControls();
@@ -563,17 +634,16 @@ export class MasonryBuilder extends Builder {
             this.observer.disconnect();
             this.observer = undefined;
         }
-        this.load("@masonry").innerHTML = '';
-        // Bersihkan buffer antrean memori brik lama dari _nodes pusat agar sinkronisasi index modal tidak kacau!
+        // Drop the builder's handles on the old cards **before** the nodes leave the document:
+        // each card carries its own `onclick` into `modal.show`, so nothing else has to walk a
+        // listener list — replacing the children collects the handlers with the nodes.
         this.remove("@masonry>item", "@masonry>item>actions", "@masonry>item>image", "@masonry>item>title", "@masonry>item>desc", "@masonry>spinner", "@masonry>trigger");
         const grid = this.load("@masonry");
-        grid.innerHTML = '';
+        grid.replaceChildren();
         this.displayedCount = 0;
         this.currentPage = 1;
         this.selectedCategory = category;
         this._syncColumnCount();
-        // Sinkronisasi ulang navigasi modal
-        this.modal.updateNavigation();
         const container = this.load("@container");
         this._createSpinner(container);
         this._initPaginationTrigger(container);
@@ -589,75 +659,101 @@ export class MasonryBuilder extends Builder {
         // SAFE CLASS REMOVAL: Menggunakan `animationend` untuk melepas class animasi
         // tanpa risiko bug macet (lebih andal daripada setTimeout)
         card?.addEventListener('animationend', () => {
-            card.classList.remove("fade-in");
+            card.classList.remove("is-fade-in");
         }, { once: true });
         return card;
     }
+    /**
+     * The lightbox: one record at a time, re-rendered per open.
+     *
+     * The markup is `template()`'s, so opening a card is a `render("@masonry>modal", payload)`
+     * with the record reduced to what the modal shows. Nothing here writes text or touches an
+     * `img` — that is why this method is only about payload, wiring and teardown.
+     */
     _initModal() {
         let currentIndex = 0;
         let isModalOpen = false;
-        // 🟢 ABSOLUT TOKENIZED MODAL: Lahirkan seluruh suku cadangnya lewat render() pusat!
-        const modalEl = this.render("@masonry>modal");
-        const modalImg = document.createElement('img');
-        // Gambar dinamis murni injeksi RAM loader
-        modalImg.className = 'img';
-        const closeBtn = this.render("@masonry>modal>close");
-        const nextBtn = this.render("@masonry>modal>next");
-        const prevBtn = this.render("@masonry>modal>previous");
-        modalEl?.append(prevBtn.__outer, modalImg, nextBtn.__outer, closeBtn.__outer);
-        this.load("@container").appendChild(modalEl);
-        const show = (index) => {
-            const activeImages = this.currentVisibleImages;
-            if (!activeImages.length)
+        let modalEl = null;
+        const container = this.load("@container");
+        /** What the modal shows of a record: the grid is a preview, so the text comes along. */
+        const payloadOf = (record) => ({
+            image: record.image || record.imageUrl || "",
+            title: record.title,
+            description: record.description,
+        });
+        const hide = () => {
+            if (!modalEl)
                 return;
-            currentIndex = (index + activeImages.length) % activeImages.length;
-            modalImg.src = activeImages[currentIndex];
-            modalEl?.classList.remove('hidden');
+            modalEl.classList.add("hidden");
+            isModalOpen = false;
+        };
+        const handleKeyDown = (event) => {
+            if (!isModalOpen)
+                return;
+            if (event.key === 'ArrowRight') {
+                event.preventDefault();
+                show(currentIndex + 1);
+            }
+            if (event.key === 'ArrowLeft') {
+                event.preventDefault();
+                show(currentIndex - 1);
+            }
+            if (event.key === 'Escape') {
+                event.preventDefault();
+                hide();
+            }
+        };
+        /** A click on the backdrop (i.e. outside the stage) closes the lightbox. */
+        const handleBackdropClick = (event) => {
+            if (event.target === modalEl)
+                hide();
+        };
+        /**
+         * Wires one freshly rendered lightbox. The arrow handlers read `currentIndex` live, so
+         * a re-render can never leave them pointing at a record that is no longer shown — which
+         * is why nothing outside has to refresh them.
+         */
+        const wire = (element) => {
+            element.setAttribute('tabindex', '-1');
+            element.addEventListener('keydown', handleKeyDown);
+            element.addEventListener('click', handleBackdropClick);
+            const close = element.querySelector(".close");
+            const next = element.querySelector(".next");
+            const previous = element.querySelector(".previous");
+            if (close)
+                close.onclick = hide;
+            if (next)
+                next.onclick = () => show(currentIndex + 1);
+            if (previous)
+                previous.onclick = () => show(currentIndex - 1);
+        };
+        const show = (index) => {
+            const records = this.currentVisibleRecords;
+            if (!records.length)
+                return;
+            currentIndex = (index + records.length) % records.length;
+            // Drop the previous lightbox through the builder, so no orphan node keeps a second
+            // set of handlers alive; `render()` then owns the new one under the same key.
+            if (modalEl)
+                this.remove("@masonry>modal");
+            modalEl = this.render("@masonry>modal", payloadOf(records[currentIndex]));
+            wire(modalEl);
+            container.appendChild(modalEl);
+            modalEl.classList.remove("hidden");
             isModalOpen = true;
             setTimeout(() => modalEl?.focus(), 50);
         };
-        const hide = () => {
-            modalEl?.classList.add('hidden');
+        const destroy = () => {
+            // The handlers on `.close` / `.next` / `.previous` are own properties of nodes that
+            // leave with the modal; only the two on the overlay itself need unhooking — they
+            // close over `show`, and a document-level keydown is what used to pin the gallery.
+            modalEl?.removeEventListener('keydown', handleKeyDown);
+            modalEl?.removeEventListener('click', handleBackdropClick);
+            modalEl?.remove();
+            modalEl = null;
             isModalOpen = false;
         };
-        const updateNavigation = () => {
-            nextBtn.onclick = () => show(currentIndex + 1);
-            prevBtn.onclick = () => show(currentIndex - 1);
-        };
-        const handleKeyDown = (e) => {
-            if (!isModalOpen)
-                return;
-            if (e.key === 'ArrowRight') {
-                e.preventDefault();
-                show(currentIndex + 1);
-            }
-            if (e.key === 'ArrowLeft') {
-                e.preventDefault();
-                show(currentIndex - 1);
-            }
-            if (e.key === 'Escape') {
-                e.preventDefault();
-                hide();
-            }
-        };
-        closeBtn.onclick = hide;
-        modalEl?.addEventListener('click', (e) => {
-            if (e.target === modalEl)
-                hide();
-        });
-        // The keyboard listener lives on the modal, not on `document`. A document-level
-        // listener is owned by nobody: its closure captures the builder (`show` reads
-        // `this.currentVisibleImages`), so every mount pinned this whole gallery forever —
-        // measured 21 live instances / ~260 KB per visit, retainer
-        // `handleKeyDown → Context → this`. On the modal it dies with the node.
-        // `tabindex="-1"` makes the overlay focusable, which `show()` relies on below.
-        modalEl?.setAttribute('tabindex', '-1');
-        modalEl?.addEventListener('keydown', handleKeyDown);
-        const destroy = () => {
-            modalEl?.removeEventListener('keydown', handleKeyDown);
-            modalEl?.remove();
-        };
-        return { show, updateNavigation, destroy };
+        return { show, destroy };
     }
 }
 //# sourceMappingURL=Masonry.js.map

@@ -1,6 +1,6 @@
 import type { iBasicNode, iBuilderConfig, iBuilderRegistry } from "@aio-ui/core/interface";
 import { Builder } from "@aio-ui/base";
-export type MasonryElementType = "@container" | "@masonry" | "@masonry>filter" | "@masonry>filter>item" | "@masonry>filter>slider" | "@masonry>item" | "@masonry>item>image" | "@masonry>item>title" | "@masonry>item>desc" | "@masonry>item>actions" | "@masonry>modal" | "@masonry>modal>close" | "@masonry>modal>next" | "@masonry>modal>previous" | "@masonry>spinner" | "@masonry>trigger" | "@masonry>sentinel";
+export type MasonryElementType = "@container" | "@masonry" | "@masonry>filter" | "@masonry>filter>item" | "@masonry>filter>slider" | "@masonry>item" | "@masonry>item>image" | "@masonry>item>title" | "@masonry>item>desc" | "@masonry>item>actions" | "@masonry>modal" | "@masonry>modal>stage" | "@masonry>modal>image" | "@masonry>modal>caption" | "@masonry>modal>title" | "@masonry>modal>desc" | "@masonry>modal>close" | "@masonry>modal>next" | "@masonry>modal>previous" | "@masonry>spinner" | "@masonry>trigger" | "@masonry>sentinel";
 export interface iMasonryConfig extends iBuilderConfig<MasonryElementType> {
     container?: string | HTMLElement | null;
     column: number;
@@ -42,10 +42,13 @@ export declare class MasonryBuilder extends Builder<MasonryElementType, iMasonry
      */
     set items(newItems: (iBasicNode | HTMLElement)[]);
     /**
-     * GETTER KATEGORI: Menghitung daftar gambar yang AKTIF dan SUDAH TER-RENDER di layar saat ini
-     * (Menghilangkan celah bypass modal data secara instan)
+     * GETTER KATEGORI: record yang AKTIF dan SUDAH TER-RENDER di layar.
+     *
+     * The whole record, not just its URL: the grid is a preview, so the lightbox has to repeat
+     * the picture **and** the text the card only reveals on hover. Filtering by "is on screen"
+     * is what keeps the arrows inside the current filter instead of walking hidden records.
      */
-    private get currentVisibleImages();
+    private get currentVisibleRecords();
     prepare(data: any, _config?: Partial<iMasonryConfig>): HTMLElement;
     protected template(typeKey: MasonryElementType, el: HTMLElement, payload?: any): void;
     initialize(): void;
@@ -76,6 +79,13 @@ export declare class MasonryBuilder extends Builder<MasonryElementType, iMasonry
     private _applyFilter;
     private _createSpinner;
     private _createItem;
+    /**
+     * The lightbox: one record at a time, re-rendered per open.
+     *
+     * The markup is `template()`'s, so opening a card is a `render("@masonry>modal", payload)`
+     * with the record reduced to what the modal shows. Nothing here writes text or touches an
+     * `img` — that is why this method is only about payload, wiring and teardown.
+     */
     private _initModal;
 }
 //# sourceMappingURL=Masonry.d.ts.map

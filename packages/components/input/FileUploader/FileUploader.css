@@ -427,36 +427,59 @@
     }
   }
 
+  /*
+   * The control is a flex row: the selector button and the filename label are two boxes of
+   * different heights, and only the control knows the row's true middle.
+   *
+   * This sheet owns the whole box — `input.css` no longer paints a file control as a text
+   * input (a file control replaces its own inner layout, so a shared `display: block` would
+   * each time win or lose depending on which of the two sheets the loader injected last).
+   */
+  &:has(> input[type="file"]) > input[type="file"],
   & input[type="file"] {
-    position: relative;
+    box-sizing: border-box;
+    width: 100%;
+    max-height: var(--input-min-height);
     padding: 0 1em;
-    vertical-align: middle;
-    align-content: center;
-  }
-  & input[type="file"]::file-selector-button {
-    /* line-height: 0.75rem; */
-    margin-right: 1em;
-    position: relative;
-    bottom: 5px;
-    min-height: calc(var(--input-icon-size) * 0.85);
-    font-size: calc(var(--input-font-size) * 0.85);
-    padding: 0em 0.7em;
+    font-family: inherit;
+    font-size: var(--input-font-size);
+    line-height: calc(var(--input-line-height) * 1.3);
+    border: 1px solid var(--input-text-color-light);
     border-radius: var(--input-border-radius);
-    font-weight: 600;
-    transition: 30ms;
-    align-self: center;
-    outline: none;
-    color: color-mix(in srgb, var(--input-text-color) 30%, black 30%);
-    border: 2px solid var(--input-accent-color);
-    background-color: color-mix(in srgb, var(--input-primary-color) 50%, var(--input-accent-color) 5%);
-    box-shadow: 0 2px 3px 0 color-mix(in srgb, var(--input-accent-color) 30%, var(--input-primary-color) 45%);
-  }
-  & input[type="file"]::file-selector-button:hover {
-    color: color-mix(in srgb, var(--input-accent-color) 15%, var(--input-paper));
-    background-color: color-mix(in srgb, var(--input-primary-color) 90%, var(--input-paper-soft));
-  }
-  & input[type="file"]::file-selector-button:active {
-    transform: scale(0.95);
+    background-color: var(--input-background-color);
+    color: var(--input-text-color);
+    transition: 200ms;
+    &:is(:hover, :active, :focus, :focus-visible) {
+      border-color: var(--input-border-color);
+      outline: none;
+    }
+    &::file-selector-button {
+      position: relative;
+      bottom: calc(var(--input-min-height) * 0.25);
+      margin: 0 5px 0 0;
+      min-height: calc(var(--input-icon-size) * 0.85);
+      font-size: calc(var(--input-font-size) * 0.85);
+      line-height: 1;
+      padding: 2px 0.7em;
+      border-radius: var(--input-border-radius);
+      font-weight: 600;
+      transition: 30ms;
+      align-self: center;
+      outline: none;
+      color: color-mix(in srgb, var(--input-text-color) 30%, black 30%);
+      border: 2px solid var(--input-accent-color);
+      background-color: color-mix(in srgb, var(--input-primary-color) 50%, var(--input-accent-color) 5%);
+      box-shadow: 0 2px 3px 0 color-mix(in srgb, var(--input-accent-color) 30%, var(--input-primary-color) 45%);
+    }
+
+    &::file-selector-button:hover {
+      color: color-mix(in srgb, var(--input-accent-color) 15%, var(--input-paper));
+      background-color: color-mix(in srgb, var(--input-primary-color) 90%, var(--input-paper-soft));
+    }
+
+    &::file-selector-button:active {
+      transform: scale(0.95);
+    }
   }
 }
 

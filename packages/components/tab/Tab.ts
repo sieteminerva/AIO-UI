@@ -21,6 +21,12 @@ export type TabElementType =
 export interface iTabConfig extends iBuilderConfig<TabElementType> {
   container?: string | HTMLElement | null;
   menuPosition: "top" | "left" | "bottom" | "right";
+  /**
+   * Look of the strip. `default` is the gradient pill; `folder` draws file-folder tabs that
+   * sit on a ruled edge, with the active one lifted onto the panel. Only the horizontal
+   * positions draw the folder, because a folder only makes sense along a top or bottom rule.
+   */
+  tabStyle: "folder" | "default";
   lazyload: boolean;
   name: string;
   minHeight: string;
@@ -95,6 +101,7 @@ export class TabBuilder extends Builder<TabElementType, iTabConfig> {
       themeId: "default",
       container: null,
       menuPosition: "top",
+      tabStyle: "default",
       lazyload: true,
       name: "tab-" + Math.random().toString(36).substring(7),
       minHeight: "400px",
@@ -140,7 +147,10 @@ export class TabBuilder extends Builder<TabElementType, iTabConfig> {
       case "@tab": {
         // `classList` dedupes: the selector already stamped `tab`, and string concatenation
         // used to emit it twice (`tab position-top tab`).
-        el.classList.add("tab", `position-${this.config.menuPosition}`);
+        el.classList.add("tab");
+        el.dataset.menu = this.config.menuPosition;
+        // Only a non-default look is stamped: the default markup stays `tab position-top`.
+        if (this.config.tabStyle !== "default") el.dataset.tabStyle = this.config.tabStyle;
         el.style.minHeight = this.config.minHeight;
 
         if (this.config.container instanceof HTMLElement) {

@@ -27,13 +27,14 @@ export class MenuBuilder extends Builder {
         super(); // Wajib mengetuk pintu rahim induk BuilderBase
         const defaultSelectors = DEFAULT_MENU_SELECTORS;
         const defaultConfig = {
-            type: "top",
             themeId: "default",
             defaultRoute: "home",
             routes: ["home", "package", "gallery", "dashboard", "wizard"],
             emit: () => { },
             onNavigate(href) { return href ? true : false; },
             namespace: null,
+            position: "top",
+            multilevel: null,
             ...config,
             // 🛡️ MERGE SELECTORS TERPISAH: Jangan biarkan `...config` menggantikan seluruh
             // defaultSelectors dengan selectors parsial (mis. createSidebar hanya mengirim
@@ -68,8 +69,7 @@ export class MenuBuilder extends Builder {
         if (actions)
             nav.appendChild(actions);
         // `type` decides the shell, not the content: a sidebar is the same nav in a wrapper.
-        if (this.config.type === "sidebar") {
-            nav.classList.add("vertical");
+        if (this.config.position === "left" || this.config.position === "right") {
             const sidebar = this.render("@container", source);
             sidebar.appendChild(nav);
             return sidebar;
@@ -91,6 +91,8 @@ export class MenuBuilder extends Builder {
             "@menu>hamburger": {},
             "@menu>navigations": navigations,
             "@menu>navigations>item": null,
+            "@menu>menus": null,
+            "@menu>menus>item": null,
             "@menu>actions": actions,
         };
     }
@@ -107,11 +109,17 @@ export class MenuBuilder extends Builder {
         this.navigations = navigations;
         hamburger.removeEventListener("click", this.handleToggle);
         hamburger.addEventListener("click", this.handleToggle);
+        nav.removeEventListener("keydown", this.handleEscape);
+        nav.addEventListener("keydown", this.handleEscape);
         // Reflect the current state on first paint, so `aria-expanded` is never a lie.
         this.setOpen(this.isMenuOpened);
     }
     hamburger = null;
     navigations = null;
+    handleEscape = (event) => {
+        if (event.key === "Escape")
+            this.closeSubmenus();
+    };
     handleToggle = () => {
         this.isMenuOpened = !this.isMenuOpened;
         let isDefaultPrevented = false;
@@ -144,6 +152,13 @@ export class MenuBuilder extends Builder {
                     el.id = payload.id;
                 break;
             case "@menu":
+                el.dataset.position = this.config.position;
+                // The activation is a css hook on the bar, not a per-item class: the sheet owns
+                // *when* a branch opens, the builder only says *how* the host asked for it.
+                // A function activation is the host's own wiring, so there is nothing to stamp.
+                if (this.config.multilevel && typeof this.config.multilevel.activation === "string") {
+                    el.dataset.multilevel = this.config.multilevel.activation;
+                }
                 break;
             case "@menu>brand":
                 // The brand is a link like any other: one key, no bespoke anchor.
@@ -152,14 +167,14 @@ export class MenuBuilder extends Builder {
                     el.appendChild(brandLink);
                 break;
             case "@menu>navigations":
-                for (const p of payload) {
-                    const item = this.render("@menu>navigations>item", p);
-                    el.appendChild(item);
-                }
+                this.paintList(el, payload, "@menu>navigations>item");
+                break;
+            case "@menu>menus":
+                this.paintList(el, payload, "@menu>menus>item");
                 break;
             case "@menu>navigations>item":
-                const a = this.render("@menu>item>link", payload);
-                el.appendChild(a);
+            case "@menu>menus>item":
+                this.paintItem(el, payload);
                 break;
             case "@menu>item>link": {
                 if (payload?.className) {
@@ -236,6 +251,108 @@ export class MenuBuilder extends Builder {
                     el.appendChild(svg);
                 }
                 break;
+        }
+    }
+    // ====================================================
+    // 🪜 MULTI-LEVEL: one list shape, iterated recursively
+    // ====================================================
+    /**
+     * The children of one entry, or `null` when it is a leaf.
+     *
+     * The holding property is the host's choice (`config.multilevel.property`), so the data
+     * keeps whatever shape it already had — `children`, `menus`, `submenu`. There is no depth
+     * limit because nothing here recurses by hand: `paintList()` renders `@menu>menus`, and
+     * each of those items comes straight back through this method.
+     */
+    childrenOf(entry) {
+        const property = this.config.multilevel?.property ?? "children";
+        const raw = entry?.[property];
+        if (!raw)
+            return null;
+        const children = Array.isArray(raw) ? raw : [raw];
+        return children.length ? children : null;
+    }
+    paintList(list, payload, itemKey) {
+        const entries = Array.isArray(payload) ? payload : payload ? [payload] : [];
+        for (const entry of entries) {
+            const item = this.render(itemKey, entry);
+            if (item)
+                list.appendChild(item);
+        }
+    }
+    /**
+     * One `li`. A leaf is a link; a branch is a link plus the same `.menus` list one level
+     * down, marked `.submenu` so the sheet knows it is a disclosure.
+     *
+     * A branch never navigates — its click belongs to the disclosure. A group that is also a
+     * page is expressed by making that page its first child, otherwise one click would have
+     * to mean two things and the pointer would get whichever handler happened to run first.
+     */
+    paintItem(item, payload) {
+        const children = this.childrenOf(payload);
+        const activation = this.config.multilevel?.activation ?? "hover";
+        if (!children) {
+            const leaf = this.render("@menu>item>link", payload);
+            if (leaf)
+                item.appendChild(leaf);
+            return;
+        }
+        item.classList.add("submenu");
+        item.classList.toggle("open", activation === "always");
+        item.classList.toggle("closed", activation !== "always");
+        // A branch lights up when the route lives under it, so the bar still says where you are.
+        if (children.some((child) => /\bis-active\b/.test(String(child?.className ?? "")))) {
+            item.classList.add("is-active");
+        }
+        const isOpen = item.classList.contains("open");
+        // Supplying `onClick` short-circuits `bindNavigation()` in the link template, which is
+        // what keeps a branch off the route table even when it carries no `href` of its own.
+        const link = this.render("@menu>item>link", {
+            ...payload,
+            // The disclosure glyph is the shared icon set, never a bespoke caret: a branch is
+            // handed the closed arrow unless the data named an icon of its own.
+            icon: payload?.icon ?? "icon arrow right",
+            onClick: (event) => {
+                event.preventDefault();
+                if (activation === "click")
+                    this.toggleSubmenu(item);
+                payload?.onClick?.(event);
+            },
+        });
+        if (!link)
+            return;
+        link.setAttribute("aria-haspopup", "true");
+        link.setAttribute("aria-expanded", String(isOpen));
+        // A branch has no `href` on purpose, and an anchor without one is neither focusable nor
+        // keyboard-operable. Restore both instead of inventing a `href="#"` that would pollute
+        // the history.
+        link.setAttribute("tabindex", "0");
+        link.setAttribute("role", "button");
+        link.addEventListener("keydown", (event) => {
+            if (event.key !== "Enter" && event.key !== " ")
+                return;
+            event.preventDefault();
+            link.click();
+        });
+        item.appendChild(link);
+        const nested = this.render("@menu>menus", children);
+        if (nested)
+            item.appendChild(nested);
+    }
+    toggleSubmenu(item) {
+        const open = item.classList.toggle("open");
+        item.classList.toggle("closed", !open);
+        item.querySelector(":scope > a")?.setAttribute("aria-expanded", String(open));
+    }
+    /** Escape closes what a click opened. A hover branch closes by leaving it. */
+    closeSubmenus() {
+        if (this.config.multilevel?.activation === "always")
+            return;
+        const nav = this.load("@menu");
+        for (const item of nav?.querySelectorAll(".item.submenu.open") ?? []) {
+            item.classList.remove("open");
+            item.classList.add("closed");
+            item.querySelector(":scope > a")?.setAttribute("aria-expanded", "false");
         }
     }
     navigate(href) {

@@ -18,6 +18,12 @@
   --tab-hover-wash: rgba(255, 255, 255, 0.06);
   --tab-active-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   --tab-divider-color: rgba(255, 255, 255, 0.08);
+  /* folder variant: the rule the tabs sit on, the panel surface they lift onto, and the
+     resting wash of an inactive tab */
+  --tab-border-color: var(--app-border-color, rgba(168, 137, 102, 0.28));
+  --tab-folder-surface: var(--app-surface-background-color, #ffffff);
+  --tab-folder-hover: var(--app-surface-muted, rgba(244, 238, 226, 0.7));
+  --tab-border-width: 2px;
 }
 
 .tab {
@@ -31,20 +37,20 @@
      ==================================================== */
 
   /* POSISI ATAS (TOP) */
-  &.position-top {
+  &[data-menu="top"] {
     flex-direction: column;
     & > .menu {
       flex-direction: row;
-      border-bottom: 2px solid var(--tab-accent-strong);
+      border-bottom: var(--tab-border-width) solid var(--tab-accent-strong);
     }
   }
 
   /* POSISI BAWAH (BOTTOM) */
-  &.position-bottom {
+  &[data-menu="bottom"] {
     flex-direction: column;
     & > .menu {
       flex-direction: row;
-      border-top: 2px solid var(--tab-accent-strong);
+      border-top: var(--tab-border-width) solid var(--tab-accent-strong);
       order: 2; /* Turun ke lantai bawah secara visual */
     }
     & > .body {
@@ -53,11 +59,11 @@
   }
 
   /* POSISI KIRI (LEFT) */
-  &.position-left {
+  &[data-menu="left"] {
     flex-direction: row;
     & > .menu {
       flex-direction: column;
-      border-right: 2px solid var(--tab-accent-strong);
+      border-right: var(--tab-border-width) solid var(--tab-accent-strong);
       width: 250px;
       flex-shrink: 0;
     }
@@ -67,11 +73,11 @@
   }
 
   /* POSISI KANAN (RIGHT) */
-  &.position-right {
+  &[data-menu="right"] {
     flex-direction: row-reverse;
     & > .menu {
       flex-direction: column;
-      border-left: 2px solid var(--tab-accent-strong);
+      border-left: var(--tab-border-width) solid var(--tab-accent-strong);
       width: 250px;
       flex-shrink: 0;
     }
@@ -145,6 +151,67 @@
           color: var(--tab-active-foreground);
         }
       }
+    }
+  }
+
+  /* ====================================================
+     📁 FOLDER VARIANT (`config.variant: "folder"`)
+     A strip of file-folder tabs sitting on a ruled edge. Only the active tab is a real tab:
+     it lifts onto the panel surface and erases the rule beneath it. Top position only — a
+     folder divider only reads along the top rule of its panel.
+     ==================================================== */
+  &[data-menu="top"][data-tab-style="folder"] {
+    gap: 0;
+
+    & > .menu {
+      gap: 0;
+      padding: 0 0.75rem;
+      align-items: flex-end;
+      border-bottom: var(--tab-border-width) solid var(--tab-border-color);
+    }
+
+    & > .menu > .button {
+      width: auto;
+      padding: 0.55rem 1.1rem;
+      border: 1px solid transparent;
+      border-radius: 0.75rem 0.75rem 0 0;
+      background: transparent;
+      color: var(--tab-label-color);
+      box-shadow: none;
+
+      &:hover {
+        background: var(--tab-folder-hover);
+        transform: none;
+      }
+
+      &.active {
+        background-color: var(--tab-folder-surface);
+        border-color: var(--tab-border-color);
+        border-bottom-color: var(--tab-folder-surface);
+        border-width: var(--tab-border-width);
+        color: var(--tab-accent-strong);
+        box-shadow: none;
+        /* one pixel over the rule, so the active tab is visually continuous with the panel */
+        margin-bottom: -2px;
+        padding-bottom: calc(0.55rem + 2px);
+
+        & .btn-label {
+          color: var(--tab-accent-strong);
+        }
+        & .btn-title {
+          color: var(--tab-title-color);
+        }
+      }
+    }
+
+    & .body {
+      border: var(--tab-border-width) solid var(--tab-border-color);
+      padding: 1em;
+      border-top-color: transparent;
+    }
+
+    &[data-menu="left"][data-tab-style="folder"] {
+      
     }
   }
 

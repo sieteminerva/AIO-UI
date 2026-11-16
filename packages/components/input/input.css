@@ -49,6 +49,11 @@
   /* a popover floats above the page, so it takes the solid surface, not the
      field tint. It used to read --input-picker-color, which nothing declares. */
   --input-popover-background-color: var(--app-surface-strong, #ffffff);
+  /* number stepper glyphs. The platform paints its own spinner in a white box that ignores
+     the field's radius (it hangs off the rounded corner) and cannot be re-coloured, so the
+     control paints a transparent native button over this glyph pair instead. The image is a
+     token because an SVG data-URI cannot inherit `currentColor` and needs a dark variant. */
+  --input-number-spin-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 20'%3E%3Cpath d='M6 1 10 7H2z' fill='%23804600'/%3E%3Cpath d='M6 19 2 13h8z' fill='%23804600'/%3E%3C/svg%3E");
 
   /* sizing */
   --input-font-size: 1.1rem;
@@ -94,6 +99,7 @@
     --input-placeholder-color: rgba(191, 174, 160, 0.5);
     --input-background-color: transparent;
     --input-picker-background: var(--app-surface-strong, #231b14);
+    --input-number-spin-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 20'%3E%3Cpath d='M6 1 10 7H2z' fill='%23bfaea0'/%3E%3Cpath d='M6 19 2 13h8z' fill='%23bfaea0'/%3E%3C/svg%3E");
   }
 }
 
@@ -104,6 +110,7 @@
   --input-placeholder-color: rgba(191, 174, 160, 0.5);
   --input-background-color: transparent;
   --input-picker-background: var(--app-surface-strong, #231b14);
+  --input-number-spin-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 20'%3E%3Cpath d='M6 1 10 7H2z' fill='%23bfaea0'/%3E%3Cpath d='M6 19 2 13h8z' fill='%23bfaea0'/%3E%3C/svg%3E");
 }
 
 input:focus-visible,
@@ -212,8 +219,12 @@ select:focus-visible {
     cursor: pointer;
   }
 
-  /* Shared Core Input Inputs styles */
-  & input:not([type="checkbox"]),
+  /* Shared Core Input Inputs styles.
+     `file` is excluded like `checkbox`: a file control is not a text box, and it is the one
+     control that replaces its own inner layout — the shared `display: block` here used to
+     win over `FileUploader.css` whenever that sheet was injected first, which is what kept
+     the selector button from ever centring. */
+  & input:not([type="checkbox"], [type="file"]),
   & select,
   & textarea,
   & .dropdown:has(> input[type="text"]) input[type="text"] {
@@ -245,6 +256,28 @@ select:focus-visible {
     padding: 0 0;
   }
 
+  /*
+   * Number stepper. The native control is kept — it is still the thing that steps the value —
+   * but made transparent and wide enough to cover the gutter, while the visible glyphs come
+   * from the background image. Left alone it painted a white box that ignored the field's
+   * radius and hung off the rounded corner.
+   */
+  & input[type="number"] {
+    padding-right: 2.15em;
+    background-image: var(--input-number-spin-image);
+    background-repeat: no-repeat;
+    background-position: right 0.55em center;
+    background-size: 0.6em 1em;
+
+    &::-webkit-inner-spin-button {
+      opacity: 0;
+      width: 2em;
+      height: 100%;
+      margin: 0;
+      cursor: pointer;
+    }
+  }
+
   & textarea {
     field-sizing: content;
     min-height: calc(var(--input-min-height) * 2.5);
@@ -259,8 +292,8 @@ select:focus-visible {
   }
 
   /* --- Form Fields Base Interactive States --- */
-  & :is(input:not([type="checkbox"]), textarea, select):hover,
-  & :is(input:not([type="checkbox"]), textarea, select):active {
+  & :is(input:not([type="checkbox"], [type="file"]), textarea, select):hover,
+  & :is(input:not([type="checkbox"], [type="file"]), textarea, select):active {
     border-width: 1px;
     border-style: solid;
     border-color: var(--input-border-color);
@@ -609,6 +642,26 @@ select:focus-visible {
       border: 0;
       background: none;
       min-height: 0;
+    }
+
+    /*
+     * In `datalist` mode the input *is* the box, so the shared `[data-style]` rules above
+     * (written for the framed `select` flavour, where the frame draws the box and the inner
+     * text line must stay flat) have to be undone here: without this the field lost both its
+     * fill and its border as soon as it was hovered, focused or pressed.
+     */
+    &[data-style="datalist"] > input[type="text"] {
+      border: 1px solid var(--input-text-color-light);
+      border-radius: var(--input-border-radius);
+      background-color: var(--input-background-color);
+      min-height: var(--input-min-height);
+      max-height: var(--input-min-height);
+      padding: 0 1em;
+
+      &:is(:hover, :active, :focus, :focus-visible) {
+        border-color: var(--input-border-color);
+        background-color: var(--input-background-color-hover);
+      }
     }
 
     & > input[type="hidden"] {

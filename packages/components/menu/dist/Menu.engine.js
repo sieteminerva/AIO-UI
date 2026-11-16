@@ -16,8 +16,11 @@ export function splitMenuContent(content) {
         : content?.navigations
             ? [content.navigations]
             : [];
-    const brand = navigations[0] ?? { label: "Brand", href: "#home" };
-    const rest = navigations.slice(1);
+    const brand = content?.brand ? content.brand : navigations[0] ?? { label: "Brand", href: "#home" };
+    // Only the *guessed* brand is taken out of the list. When the host names the brand
+    // explicitly, every navigation is a navigation: slicing the first one anyway silently
+    // ate the first entry (the demo lost its first tier heading that way).
+    const rest = content?.brand ? navigations : navigations.slice(1);
     const isAction = (link) => link?.className === "button" || Boolean(link?.href?.includes("tel:"));
     const actions = Array.isArray(content?.actions)
         ? [...content.actions]

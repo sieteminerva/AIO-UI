@@ -1,8 +1,8 @@
 # TASK — form modules without a shell (manifest refs vs. definitions)
 
 Recorded 2026-11-17. **A1–A4 landed in batch 52**; **the opt-in split and its graph proof landed in
-batch 53** (see the end of this file). Nothing here is open except the `0.3.0` bump, which belongs to
-B56.
+batch 53** (see the end of this file). Open: the warn/throw policy, the form's full stack and the
+`0.2.2` bump — decided after b53, scheduled as B53b and B56.
 
 **Status:** `check:bundle` green · `verify` → 82 files, 745 passed, 1 skipped.
 **Next:** B54 — closure + export index (`.guidance/project/TASK-releases-branch.md`).
@@ -222,8 +222,8 @@ bundler and record which files it parsed:
 - `examples/demo` already declares `FORM_ADAPTER_MANIFEST` in its schema, so it is unaffected — that
   is the check that we are not breaking the shell path.
 - `docs/framework/api-map.json` gains the two new subpath entries; `catalogue.json` regenerated.
-- Version: `0.3.0`. Do not sneak it into `0.2.2`; the release batch (B55) publishes whatever the
-  tree says.
+- Version: `0.2.2` (third digit only while pre-release — D4). The release batch (B55/B56) publishes
+  whatever the tree says.
 
 ### B53.5 — What would make this batch fail
 
@@ -271,22 +271,77 @@ depends on which default wins.
 
 ## Landed (batch 53) — opt-in, and proved by the module graph
 
-| Claim (B53)                                                     | What actually shipped                                                                                                                                                                                              |
-| --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| B53.1 split: data vs. implementations                            | `FormRegistry.ts` keeps `FORM_ADAPTER_MANIFEST` + `FormModuleDefinition`; new `FormAdapters.ts` holds `FORM_ADAPTER_DEFINITIONS`/`FORM_ADAPTER_IDS`. `InputRegistry.ts` keeps the manifest + helpers; new `InputModules.ts` holds `INPUT_MODULE_DEFINITIONS`/`INPUT_MODULE_DEFINITION_IDS`. Both roots dropped the definition arrays (manifest/ids/types stay). |
-| B53.2 the default becomes an error, once                           | `FormBuilder` with no modules and no `provideModules()` throws at the top of `prepare()`: *"No modules configured, so not one field can be rendered. Pass the stack: new ModuleLoader(\"form\", FORM_ADAPTER_DEFINITIONS) — those definitions are exported by @aio-ui/form/adapters …"*. `InputBuilder` deliberately does **not** throw: a field without modules is a complete, plainer field (see the matrix). |
-| B53.3 `scripts/bundle-probe.mjs`                                  | Four Vite builds (`form-root`, `input-root`, `form-full`, `input-full`) with ids collected from Vite's `transform`/`load` hooks — Vite 8 no longer fires Rollup's `moduleParsed`, and asserting on bundle text was ruled out up front. Both directions asserted; an empty parse is a failure; failure prints the parsed list. ≈1.3 s, wired as `check:bundle` inside `check`. |
-| B53.4 migration                                                   | Each test now names its stack: `[inputFormAdapter]` for plain-field cases, the full stack for cascade/multistep, `inputModules` for the action set. `FormConfig`, `FormRow`, `FormSubmit`, `FormModules`, `Cascade`, `Input.test`, `InputControls`, `FileModule`, `Modules` touched. READMEs, `docs/agent/handbook.md`, `api-map.json` and `catalogue.json` updated; the demo's asset map gained both new subpaths. |
-| B53.5 what would make it fail                                     | Checked rather than assumed: pointing `form-root` at the adapters produced five findings; `preset = INPUT_MODULE_DEFINITIONS` default parameters are gone from every helper (`mountInputModules`, `mountControls`, `inputFilesOf` now do nothing without a preset). |
+| Claim (B53)                              | What actually shipped                                                                                                                                                                                                                                                                                                                                                                                               |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| B53.1 split: data vs. implementations    | `FormRegistry.ts` keeps `FORM_ADAPTER_MANIFEST` + `FormModuleDefinition`; new `FormAdapters.ts` holds `FORM_ADAPTER_DEFINITIONS`/`FORM_ADAPTER_IDS`. `InputRegistry.ts` keeps the manifest + helpers; new `InputModules.ts` holds `INPUT_MODULE_DEFINITIONS`/`INPUT_MODULE_DEFINITION_IDS`. Both roots dropped the definition arrays (manifest/ids/types stay).                                                     |
+| B53.2 the default becomes an error, once | `FormBuilder` with no modules and no `provideModules()` throws at the top of `prepare()`: _"No modules configured, so not one field can be rendered. Pass the stack: new ModuleLoader(\"form\", FORM_ADAPTER_DEFINITIONS) — those definitions are exported by @aio-ui/form/adapters …"_. `InputBuilder` deliberately does **not** throw: a field without modules is a complete, plainer field (see the matrix).     |
+| B53.3 `scripts/bundle-probe.mjs`         | Four Vite builds (`form-root`, `input-root`, `form-full`, `input-full`) with ids collected from Vite's `transform`/`load` hooks — Vite 8 no longer fires Rollup's `moduleParsed`, and asserting on bundle text was ruled out up front. Both directions asserted; an empty parse is a failure; failure prints the parsed list. ≈1.3 s, wired as `check:bundle` inside `check`.                                       |
+| B53.4 migration                          | Each test now names its stack: `[inputFormAdapter]` for plain-field cases, the full stack for cascade/multistep, `inputModules` for the action set. `FormConfig`, `FormRow`, `FormSubmit`, `FormModules`, `Cascade`, `Input.test`, `InputControls`, `FileModule`, `Modules` touched. READMEs, `docs/agent/handbook.md`, `api-map.json` and `catalogue.json` updated; the demo's asset map gained both new subpaths. |
+| B53.5 what would make it fail            | Checked rather than assumed: pointing `form-root` at the adapters produced five findings; `preset = INPUT_MODULE_DEFINITIONS` default parameters are gone from every helper (`mountInputModules`, `mountControls`, `inputFilesOf` now do nothing without a preset).                                                                                                                                                 |
 
 **New surface, one line each:** `FormBuilder` gained `config.inputModules` (the field-level preset
 the manifest path used to fill in invisibly), and `Input.ts` renders a native `<select>` for a type
 whose matrix row names no control — so `dropdown` without its module is plainer, not a hole.
 
-**Not done here, on purpose:** the `0.3.0` bump (B56 publishes what the tree says) and the
+**Not done here, on purpose:** the version bump (B56 publishes what the tree says) and the
 `releases` branch work (B54–B56).
+
+## Owner decisions (2026-11-17, after b53) — warnings, full stack, numbering
+
+> "fallback ke select oke … tapi untuk semuanya yang butuh submodule tapi ga di install sebaiknya
+> kasih warn, tapi kalau yang ga cukup warn kasih throw error yang jelas alasan-nya … untuk form
+> tetap otomatis menginstall input dan untuk submodule input diaktifkan semua … sebaiknya increment
+> di digit ke 3 saja"
+
+### D1 — every degraded capability speaks; the ones that cannot be warned about throw
+
+| Capability missing     | What the field does                                                   | Signal                                                                                                                                          |
+| ---------------------- | --------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `dropdown`             | native `<select>` from the same options                               | **warn** — a plainer control, same answer                                                                                                        |
+| `popover`              | no anchor; the control is unchanged                                   | **warn** — purely additive                                                                                                                       |
+| `controls`             | no button set                                                         | **throw at the declaration site** when the schema declares `actions` — a group that asked for buttons and got none is a hole, not a plainer control |
+| `file`                 | plain `<input type="file">`, `onFileSelected` never fires            | **warn** on the field; **throw in `beforeSubmit`** when the form declares `config.files` — that policy would silently drop the bytes             |
+| `inputFormAdapter`     | no field can be built                                                 | **throw** on `create()` (already, b53)                                                                                                           |
+
+Mechanism — one helper, not four call sites: `packages/components/input/Missing.ts` exports
+`reportMissing({ capability, module, fix, severity })`.
+
+- `severity: "warn"` → `console.warn` **once per builder instance and capability** (a 40-field
+  schema must not print 40 lines) and `emit("moduleMissing", { capability, module })` when the host
+  passed an emitter, so an app can surface it in its own UI.
+- `severity: "error"` → throw naming the capability, the module id and the exact import that fixes
+  it — the same shape as the b53 message, which is why a consumer can act on it without the source.
+
+Proof: one test per table row (`vi.spyOn(console, "warn")`), one that the warn fires **once** for
+two degraded fields, and one per throw asserting the module id and the subpath appear in the message.
+
+### D2 — the form stack owns the input layer again, at the *entry* level
+
+`@aio-ui/form/adapters` exports `FORM_ADAPTER_DEFINITIONS` **including** the four input definitions,
+and `Form.prepare()` routes every loader id in `INPUT_MODULE_IDS` into `#inputModules` — the same
+id-based rule `provideModules()` has always used — instead of loading it as a form feature. One
+import means everything on; the roots stay empty, so `form-root` is still proved clean while
+`form-full` now proves the five adapters **and** the four modules are in the graph.
+
+A standalone `InputBuilder` stays opt-in (`@aio-ui/input/modules`): a bare text field should not pay
+for a dropdown builder. "All four on" is a **form** default, not an input one.
+
+### D3 — `@aio-ui/form` installs `@aio-ui/input` automatically
+
+Move that internal edge from `peerDependencies` to `dependencies` (exact version) so installing the
+form tarball brings its field layer without a second URL. Every other internal edge stays a peer
+until B55 decides per package from the closure graph — that decision only becomes measurable once
+the graph exists.
+
+### D4 — numbering: third digit only while pre-release
+
+`0.3.0` is withdrawn. This batch and the release that follows are `0.2.2`, then `0.2.3`, … until the
+third digit saturates. Breaking notes live in the release body, not in the number.
 
 ## Next
 
-B54 — `scripts/closure.mjs` + `scripts/exports.mjs` + `check:exports`, then B55/B56.
-→ `.guidance/project/TASK-releases-branch.md`
+1. **B53b** — D1 + D2 + D3 (input warnings/throws, the form's full default stack, `form` → `input` as
+   a dependency), with the probe's `form-full`/`form-root` expectations extended to cover the four
+   input modules.
+2. **B54** — `scripts/closure.mjs` + `scripts/exports.mjs` + `check:exports`.
+3. **B55/B56** — the release folder and the `0.2.2` publish, then the offline install proof.

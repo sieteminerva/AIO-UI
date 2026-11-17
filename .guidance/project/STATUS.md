@@ -25,13 +25,19 @@ no modules throws on the first `create()` naming the import, and `check:bundle`
 implementations while the two opt-in entries pull in all of them.
 **Input default:** none (B), shipped with its condition met — `__tests__/Modules.test.ts` walks every
 declared field type with `modules: []` and a `dropdown` degrades to a native `<select>`, never a hole.
-**Next:** B54 — `closure.mjs` + `exports.mjs` + `check:exports`.
+**Decided after b53 (owner, 2026-11-17):** every missing sub-module now **speaks** — `dropdown` and
+`popover` warn (once per builder, plus a `moduleMissing` emit), while a declared `actions` set with no
+`controls` module and a `config.files` policy with no `file` module **throw** with the reason in the
+message. `@aio-ui/form/adapters` becomes the *full* stack (it re-includes the four input modules, and
+`prepare()` routes ids in `INPUT_MODULE_IDS` to the fields), and `@aio-ui/form` gains
+`@aio-ui/input` as a real **dependency**. Numbering: third digit only while pre-release → `0.2.2`.
+**Next:** B53b — warnings/throws + full form stack + the dependency move; then B54.
 → `.guidance/project/TASK-form-modules.md`
 
 ### 2. Release — one-command offline installs from an orphan branch
 
 `main` stays source-only; each release folder goes to an orphan `releases` branch so
-`npm install <raw-github-url>/aio-ui-form-0.3.0.tgz` works in one command with **no**
+`npm install <raw-github-url>/aio-ui-form-0.2.2.tgz` works in one command with **no**
 `registry.npmjs.org` call for the `@aio-ui/*` peers. Tarballs become self-contained by staging the
 package, moving internal peers into exact `dependencies` + `bundledDependencies`, and copying the
 built dependency dirs into `<stage>/node_modules/@aio-ui/`.
@@ -42,6 +48,8 @@ and catch a subpath whose file `files[]` excludes.
 **Budget measured:** mode A = 6.1 MB raw ≈ 2.2 MB gz (heaviest closure `form` 1.17 MB), so the
 proposed 25 MB would never fire; replaced by three gates — per tarball ≤ 2 MB, per version ≤ 8 MB,
 repo growth ≤ 3 MB gz.
+**Numbering (owner, 2026-11-17):** third digit only while pre-release — the next release is `0.2.2`,
+not `0.3.0`; breaking notes go in the release body.
 **Next:** B54 — `closure.mjs` + `exports.mjs` + `check:exports`.
 → `.guidance/project/TASK-releases-branch.md`
 

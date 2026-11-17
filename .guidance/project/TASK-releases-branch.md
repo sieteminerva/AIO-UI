@@ -7,7 +7,7 @@ Recorded 2026-11-17. Not started. Owner band: **Tooling** (`scripts/release.mjs`
 
 `main` stays source-only (no binaries, fast clone), and there is no manual web-UI upload:
 each release folder is committed to an orphan `releases` branch, so
-`npm install https://github.com/sieteminerva/AIO-UI/raw/releases/v0.3.0/aio-ui-form-0.3.0.tgz`
+`npm install https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.2/aio-ui-form-0.2.2.tgz`
 works in one command and **offline** — no `@aio-ui/*` fetch from `registry.npmjs.org`.
 
 Rooted in a user report: installing A pulls B, B pulls C, C pulls D, and every manual
@@ -90,10 +90,10 @@ From `closure.json`, `publish-releases.mjs` renders `vX/install/<package>.txt` �
 closure in topological order, e.g.
 
 ```
-npm install https://github.com/sieteminerva/AIO-UI/raw/releases/v0.3.0/aio-ui-core-0.3.0.tgz \
-            https://github.com/…/aio-ui-base-0.3.0.tgz \
-            https://github.com/…/aio-ui-input-0.3.0.tgz \
-            https://github.com/…/aio-ui-form-0.3.0.tgz --no-audit --no-fund
+npm install https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.2/aio-ui-core-0.2.2.tgz \
+            https://github.com/…/aio-ui-base-0.2.2.tgz \
+            https://github.com/…/aio-ui-input-0.2.2.tgz \
+            https://github.com/…/aio-ui-form-0.2.2.tgz --no-audit --no-fund
 ```
 
 and the same command inside the branch `README.md` per package. If mode A is on, the README says
@@ -135,18 +135,19 @@ reads entry points, and `catalogue.mjs` reads READMEs. Four readers, four chance
 
 ### 6. Version + release gate
 
-`node scripts/version.mjs --apply --version 0.3.0` → `npm run verify:pkgs` (build + verify + build;
+`node scripts/version.mjs --apply --version 0.2.2` → `npm run verify:pkgs` (build + verify + build;
 §4 release tier) → `release.mjs --apply` → `publish-releases.mjs --apply` →
 `publish-cdn.mjs --apply`.
 
 ### Order of batches
 
-| Batch | Content                                                  | Depends on        |
-| ----- | -------------------------------------------------------- | ----------------- |
-| B53   | form/input default opt-in + `bundle-probe` proof (§form) | —                 |
-| B54   | `closure.mjs` + `exports.mjs` + `check:exports` gate     | B53 (exits/sizes) |
-| B55   | `release.mjs --bundle` + `publish-releases.mjs`          | B54               |
-| B56   | `0.3.0` bump + full release verification                 | B53–B55           |
+| Batch | Content                                                       | Depends on        |
+| ----- | ------------------------------------------------------------- | ----------------- |
+| B53   | form/input default opt-in + `bundle-probe` proof (§form)      | —                 |
+| B53b  | missing-module warnings/throws + form owns the full stack     | B53               |
+| B54   | `closure.mjs` + `exports.mjs` + `check:exports` gate          | B53b (exits/sizes) |
+| B55   | `release.mjs --bundle` + `publish-releases.mjs`               | B54               |
+| B56   | `0.2.2` bump + full release verification                      | B53b–B55          |
 
 ## Decisions
 
@@ -161,13 +162,17 @@ reads entry points, and `catalogue.mjs` reads READMEs. Four readers, four chance
    only `vX/` folders. Neither may carry the other's content.
 4. **The graph is computed once** (`closure.mjs`) and every consumer reads it; no script re-walks
    dependencies by hand.
+5. **`form` → `input` becomes a real `dependencies` entry, not a peer** (owner, 2026-11-17): the
+   form ships with its field layer, so one `npm i` of the form tarball is enough. Every other
+   internal edge stays a peer until B55 decides per package from the graph.
+6. **Numbering: third digit only while pre-release** (owner, 2026-11-17) — `0.2.2`, `0.2.3`, … until
+   the digit saturates. Breaking notes go in the release body, not in the number.
 
 **Still open — needs the owner:**
 
 1. ~~Size budget~~ — **measured, see below. The proposed single 25 MB number is withdrawn.**
-2. **Whether `form` → `input` stays a peer on `main`.** Bundling makes it work for a consumer, but a
-   `dependencies` entry would let npm resolve it for a plain `npm install @aio-ui/form` from the CDN
-   registry — a different distribution story (fase 7), not this batch.
+2. ~~`form` → `input` as peer or dependency~~ — **decided: dependency** (see 5). B53b does the move;
+   the closure graph (B54) then confirms it costs one edge, not a second copy.
 
 ## Size budget — measured, not guessed (2026-11-17)
 
@@ -213,9 +218,16 @@ generated line, which is why the verification section installs from `install/<pk
 From a scratch directory **outside** the repo:
 
 ```
-npm install <abs>/aio-ui-form-0.3.0.tgz --no-audit --no-fund \
+npm install <abs>/aio-ui-form-0.2.2.tgz --no-audit --no-fund \
   --cache /tmp/npm-cache-empty --offline
 ```
+
+- **Today the answer is no**, and it is not a packaging detail: `v0.2.1` assets predate B53, every
+  internal edge is a peer, and `@aio-ui/core` declares **no** dependency although its `dist` imports
+  `@aio-ui/utilities/*`. So `npm install <aio-ui-core-0.2.1.tgz>` alone succeeds and then fails on
+  first import. B54–B56 is what turns this section into a green check.
+- After B53b, `@aio-ui/form` declares `@aio-ui/input` as a real dependency, so the form tarball is the
+  first one whose single-URL story can be true; the rest follow the same rule per package.
 
 - `--cache` on an empty dir + `--offline` is the only combination that proves nothing is fetched
   from the registry. A plain `npm install` passes from the local cache and proves nothing.

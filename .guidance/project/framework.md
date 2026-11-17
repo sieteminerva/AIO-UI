@@ -13,6 +13,14 @@ Why / stages: `.guidance/plan-framework.md`. Engineering rules:
 
 ## Next
 
+- **B53b — missing sub-modules speak, and the form owns the full stack** — `reportMissing()` in
+  `packages/components/input/Missing.ts`: warn once per builder+capability (plus a `moduleMissing`
+  emit) for `dropdown`/`popover`, throw at the declaration site for a declared `actions` set with no
+  `controls` module and in `beforeSubmit` for a `config.files` policy with no `file` module.
+  `@aio-ui/form/adapters` re-includes the four input definitions and `Form.prepare()` routes ids in
+  `INPUT_MODULE_IDS` into `#inputModules`; `@aio-ui/form` moves `@aio-ui/input` to a real dependency.
+  The probe's `form-full` must then show nine implementations, `form-root` still none.
+  → `.guidance/project/TASK-form-modules.md` (D1–D3)
 - **B54 — one closure graph, one export index** — `scripts/closure.mjs` (topological closure from
   `dependencies` + `peerDependencies`, `--json`, cycle report, size per closure) and
   `scripts/exports.mjs` → `docs/framework/exports.json` + a `check:exports` gate that fails when a
@@ -23,8 +31,8 @@ Why / stages: `.guidance/plan-framework.md`. Engineering rules:
   `dependencies`, `bundledDependencies`, no `development` condition), size gate before publish, then
   `publish-releases.mjs` writes `vX/` to an orphan `releases` branch via a worktree and renders
   `install/<pkg>.txt` (mode B) from the same graph. → `.guidance/project/TASK-releases-branch.md`
-- **B56 — `0.3.0`** — version bump, `verify:pkgs`, release + publish, then the offline install proof
-  from a scratch dir with an empty npm cache.
+- **B56 — `0.2.2`** — version bump (third digit only while pre-release), `verify:pkgs`, release +
+  publish, then the offline install proof from a scratch dir with an empty npm cache.
 - `scripts/proof.mjs --report`: list every component package and whether it carries an `inspect()`
   assertion. Report-only at first (the gap list is the ratchet); make it a `verify` gate once the 20
   packages are covered, so §16 stops depending on discipline.

@@ -186,7 +186,7 @@ FLOW.md              operator map
 dev/                 Vite copy: index.html, vite.config.ts, src/main.ts
 ```
 
-### 7.2 Per release (`.draft/release/v<version>/`)
+### 7.2 Per release (`releases/v<version>/`, inside the orphan-branch worktree)
 
 ```
 aio-ui-<name>-<version>.tgz   × 37
@@ -195,8 +195,8 @@ layout.json                  dir / entry / stylesRoot / bare per package
 checksums.txt                sha256 per tarball
 ```
 
-Uploading that folder as a GitHub Release asset turns it into the install source:
-`npm i <tarball URL>` for bundler users, `registry.json` for the generator's import map.
+Committing that folder to the orphan `releases` branch turns it into the install source:
+`npm i <raw branch URL>` for bundler users, `registry.json` for the generator's import map.
 
 ## 8. Commands
 
@@ -208,11 +208,12 @@ npm run version:report             # versions + peer ranges
 npm run version:check              # exit 1 on drift or non-semver peers
 node scripts/version.mjs --apply --version 0.1.1
 node scripts/release.mjs --version 0.1.1             # dry run
-node scripts/release.mjs --version 0.1.1 --apply     # artefacts in .draft/release
+node scripts/release.mjs --version 0.1.1 --apply     # artefacts in releases/v0.1.1
 node .draft/preset/layout.mjs --out .draft/preset/layout.json
 npx vitest run .draft/preset       # generator suite (100 tests, 1 opt-in skipped)
 npx tsc -p .draft/preset/tsconfig.json
-node scripts/publish-cdn.mjs --apply   # tarballs → cdn branch; moves the version tag
+node scripts/publish-releases.mjs --apply   # v<version>/ → releases branch
+node scripts/publish-cdn.mjs --apply        # unpacked tree → releases branch; moves the version tag
 SMOKE_BASE=https://cdn.jsdelivr.net/gh/<owner>/<repo>@v<version>/ \
   npx vitest run .draft/preset/release.test.ts   # writes .draft/cdn-smoke/
 node .draft/smoke/serve.mjs 5300   # then open /.draft/cdn-smoke/store/#checkout
@@ -293,7 +294,7 @@ Next three tasks, in order:
 
 ```bash
 git restore packages package.json package-lock.json   # undo version bumps
-rm -rf .draft/release                                  # undo release artefacts
+rm -rf releases/v<version>                              # undo release artefacts
 rm -rf .draft/results                                  # undo generated sites
 git status --short                                     # confirm nothing unintended
 ```

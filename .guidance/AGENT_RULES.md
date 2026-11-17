@@ -322,7 +322,8 @@ by an agent with no context.
 - **Separate the doc batch** when it is bookkeeping: `docs(status): record batch 38`.
 - **A logbook card must resolve in the commit that writes it** — `git show --stat` is the check.
 - **Never rewrite published history**, never force-move a tag jsDelivr already served (see
-  `docs/live-cdn-repo.md`). `main` is the only branch that carries work; `cdn` is generated.
+  `docs/live-cdn-repo.md`). `main` is the only branch that carries work; `releases` is generated
+  and checked out at `releases/` (a git worktree, ignored on `main`).
 - **The first line is the logbook's raw material:** if the summary line alone cannot tell the next
   agent what changed, the logbook card will be blind too.
 

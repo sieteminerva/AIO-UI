@@ -26,20 +26,27 @@ no `file` module). `FORM_ADAPTER_DEFINITIONS` is **nine**, `prepare()` routes th
 field preset while the manifest keeps its five, and `@aio-ui/form` now depends on `@aio-ui/input` —
 proof: **152** parsed modules, a dropdown rendered from the one default import (`inspectPage`).
 **Next:** B54 — `closure.mjs` + `exports.mjs`. The frozen `.draft/release/v0.2.1` snapshot was
-removed (its layout predates `@aio-ui/input/Missing`), so 14 release checks are skipped until
-B55/B56 writes `v0.2.2` artefacts — open work, not a green.
+removed in b53b (its layout predates `@aio-ui/input/Missing`); the new home is
+`releases/v0.2.1/` in the branch worktree, regenerated 2026-11-18, so the release contract suite
+runs against current bytes again — re-check it on `v0.2.2` in B56.
 → `.guidance/project/TASK-form-modules.md`
 
 ### 2. Release — one-command offline installs from an orphan branch
 
-`main` stays source-only; each release folder goes to an orphan `releases` branch so
-`npm install <raw-github-url>/aio-ui-form-0.2.2.tgz` works in one command with **no**
-`registry.npmjs.org` call for the `@aio-ui/*` peers. Tarballs become self-contained by staging the
-package, moving internal peers into exact `dependencies` + `bundledDependencies`, and copying the
-built dependency dirs into `<stage>/node_modules/@aio-ui/`.
-**Plan (2026-11-17):** the closure is a graph computed once by `scripts/closure.mjs`, then shipped
-two ways — embedded (mode A, one URL) or declared (`install/<pkg>.txt`, mode B). `scripts/exports.mjs`
-+ a `check:exports` gate end the four-way export-map recomputation and catch a subpath whose file
+`main` stays source-only; one orphan branch, **`releases`**, carries both halves so
+`npm install <raw-github-url>/releases/v0.2.2/aio-ui-form-0.2.2.tgz` works with **no**
+`registry.npmjs.org` call for the `@aio-ui/*` peers: the unpacked tree at the root (jsDelivr import
+maps) and `v<version>/*.tgz` beside it (installs; `registry.json` points at `raw/releases/…`).
+**Landed (B54a, 2026-11-18):** the branch is checked out at **`<repo>/releases`** (a git worktree,
+created on demand by `scripts/releases-worktree.mjs`), `release.mjs --apply` writes `releases/vX/`
+there, `publish-releases.mjs` gates registry ⇄ tarballs and pushes the folder, `publish-cdn.mjs`
+replaces only the branch root and moves the tag, `.draft/` is scratch-only, and `cdn` was renamed
+to `releases` (tag `v0.2.1` untouched). No GitHub release asset is uploaded any more.
+**Not done yet:** no `v0.2.2` exists — B55 must make the tarballs self-contained (bundled closure,
+exact internal `dependencies`) and B56 bumps the version and runs `verify:pkgs`.
+**Plan:** the closure is a graph computed once by `scripts/closure.mjs`, then shipped two ways —
+embedded (mode A, one URL) or declared (`install/<pkg>.txt`, mode B). `scripts/exports.mjs` + a
+`check:exports` gate end the four-way export-map recomputation and catch a subpath whose file
 `files[]` excludes. **Budget measured:** mode A = 6.1 MB raw ≈ 2.2 MB gz (heaviest closure `form`
 1.17 MB), so the gates are per tarball ≤ 2 MB, per version ≤ 8 MB, repo growth ≤ 3 MB gz.
 **Numbering (owner):** third digit only while pre-release — next is `0.2.2`, not `0.3.0`.

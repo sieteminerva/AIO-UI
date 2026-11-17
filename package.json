@@ -23,6 +23,8 @@
     "version:report": "node scripts/version.mjs",
     "version:check": "node scripts/version.mjs --check",
     "release:plan": "node scripts/release.mjs",
+    "publish:releases": "node scripts/publish-releases.mjs",
+    "publish:cdn": "node scripts/publish-cdn.mjs",
     "new:component": "node scripts/new-component.mjs",
     "check": "npm run typecheck && npm run check:bounds && npm run check:bundle && npm run check:api && npm run check:catalogue && npm run version:check",
     "verify": "npm run check && npm run test",

@@ -583,7 +583,7 @@ by measuring, and each has cost at least one session.
   `node orchestrator/layout.mjs --out orchestrator/layout.json` (prints "stdout is not a tty" but
   writes), and audit by diffing its keys against `packages/**/package.json`.
 - `node scripts/api.mjs --write` and `scripts/release.mjs` need a real tty — run them bare.
-- `.draft/release/v<version>/` is a snapshot: after any `exports`/subpath change
+- `releases/v<version>/` (the orphan-branch worktree) is a snapshot: after any `exports`/subpath change
   `orchestrator/release.test.ts` fails on a missing file until `release.mjs --version <v> --apply`
   regenerates it. Without it the cases **skip silently**.
 

@@ -1,8 +1,9 @@
 /**
  * RELEASE CHECK — the artefacts must describe a site that can actually load.
  *
- * Skipped when `.draft/release/v<version>/` is absent (a clean checkout has no
- * artefacts). Produce them first:
+ * Skipped when `releases/v<version>/` is absent (a clean checkout has no
+ * artefacts — the folder lives in the orphan-branch worktree, gitignored on `main`).
+ * Produce them first:
  *
  *   node scripts/release.mjs --version 0.1.0 --apply
  *
@@ -28,7 +29,7 @@ import { galleryScenario, storeScenario } from "./scenarios.ts";
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, "..");
 const WORKSPACE_VERSION = JSON.parse(readFileSync(join(ROOT, "package.json"), "utf8")).version as string;
-const RELEASE = join(ROOT, ".draft", "release", `v${WORKSPACE_VERSION}`);
+const RELEASE = join(ROOT, "releases", `v${WORKSPACE_VERSION}`);
 const available = existsSync(join(RELEASE, "registry.json"));
 
 /**

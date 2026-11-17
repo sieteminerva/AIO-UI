@@ -5,7 +5,7 @@
  * Turns a built workspace into the artefacts a generated site needs, without
  * publishing to npm:
  *
- *   .draft/release/v<version>/
+ *   releases/v<version>/              (inside the orphan-branch worktree)
  *     aio-ui-<name>-<version>.tgz   one per package   (installable by URL)
  *     registry.json                 specifier → tarball + integrity + subpaths
  *     layout.json                   package → dir/entry/stylesRoot/bare
@@ -15,14 +15,16 @@
  *   node scripts/release.mjs --version 0.1.0            # plan only
  *   node scripts/release.mjs --version 0.1.0 --apply    # write artefacts
  *
- * Nothing here talks to GitHub. Uploading the folder as a Release asset is the
- * separate (and equally reversible) step; this script only decides *what* a
- * release contains.
+ * The output directory is the `releases` worktree (`./releases`, see
+ * scripts/releases-worktree.mjs), not a scratch folder: the tarball a consumer
+ * installs is a file in that checkout, and `publish-releases.mjs --apply` commits
+ * it to the orphan branch. Nothing here talks to the remote.
  */
 import { execSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join, relative } from "node:path";
+import { ensureWorktree } from "./releases-worktree.mjs";
 
 const ROOT = process.cwd();
 const SCOPE = "@aio-ui/";
@@ -45,7 +47,7 @@ const valueOf = (name) => {
 const version = valueOf("--version");
 const apply = flag("--apply");
 const repository = process.env.GITHUB_REPOSITORY || "sieteminerva/AIO-UI";
-const outDir = version ? join(ROOT, ".draft", "release", `v${version}`) : null;
+const outDir = version ? join(ROOT, "releases", `v${version}`) : null;
 
 if (!version || !/^\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?$/.test(version)) {
   console.error("[release] --version <x.y.z> is required (semver, pre-release allowed)");
@@ -145,6 +147,10 @@ if (!apply) {
   process.exit(0);
 }
 
+// The artefacts belong to the orphan branch, so the working directory has to be its
+// checkout. Creating it on demand keeps `--apply` a single command on a fresh clone.
+ensureWorktree({ root: ROOT });
+
 rmSync(outDir, { recursive: true, force: true });
 mkdirSync(outDir, { recursive: true });
 
@@ -186,7 +192,9 @@ for (const entry of packages) {
   registry.packages[name] = {
     dir,
     subpaths,
-    tarball: `https://github.com/${repository}/releases/download/v${version}/${packed.filename}`,
+    // Raw file on the orphan branch: one URL, no GitHub Release asset to upload, and
+    // the same bytes jsDelivr already serves for the unpacked tree.
+    tarball: `https://github.com/${repository}/raw/releases/v${version}/${packed.filename}`,
     integrity: packed.integrity,
     size: packed.size,
   };
@@ -211,5 +219,5 @@ writeFileSync(join(outDir, "layout.json"), `${JSON.stringify(layout, null, 2)}\n
 writeFileSync(join(outDir, "checksums.txt"), `${checksums.join("\n")}\n`, "utf8");
 
 console.log(`[release] wrote ${checksums.length} tarball(s) + registry.json + layout.json + checksums.txt`);
-console.log(`[release] next: create tag v${version}, then upload ${relative(ROOT, outDir)} as release assets`);
-console.log("[release] undo with: rm -rf .draft/release");
+console.log(`[release] next: node scripts/publish-releases.mjs --apply`);
+console.log(`[release] undo with: rm -rf ${relative(ROOT, outDir).replace(/\\/g, "/")}`);

@@ -60,13 +60,14 @@ artefacts describe a tree that never existed.
 1. `node scripts/version.mjs --apply --version <x.y.z>`, then `npm install --package-lock-only`
    (the lockfile carries the versions too, and CI installs with `npm ci`).
 2. `npm run verify:pkgs` — build, then the source gate, then the example builds.
-3. `node scripts/release.mjs --version <x.y.z> --apply` → `.draft/release/v<x.y.z>/` (40 tarballs +
-   `registry.json` + `layout.json` + `checksums.txt`).
-4. `node scripts/publish-cdn.mjs --apply` → assembles the orphan `cdn` branch, force-tags
-   `v<x.y.z>`, pushes branch + tag to `origin`.
-5. Upload `.draft/release/v<x.y.z>/` (43 files) as the release assets for that tag. `gh` is absent
-   here, so it is a REST call or the web UI — skip it and every `tarball` URL in `registry.json`
-   404s, even though the import-map URLs keep working.
+3. `node scripts/release.mjs --version <x.y.z> --apply` → `releases/v<x.y.z>/` (40 tarballs +
+   `registry.json` + `layout.json` + `checksums.txt`, written inside the orphan-branch worktree).
+4. `node scripts/publish-releases.mjs --apply` → commits `v<x.y.z>/` to the orphan `releases`
+   branch and pushes it; then `node scripts/publish-cdn.mjs --apply` → the unpacked tree for the
+   import map, and force-tags `v<x.y.z>`.
+5. Nothing to upload: `registry.json` points at `raw/releases/v<x.y.z>/…`, so a tarball URL
+   resolves the moment the branch is pushed. Legacy tags keep their uploaded assets; new ones
+   need none.
 6. Verify live: `registry.json` names the right repository and `@v<x.y.z>`, and one
    `packages/*/dist/*.js` returns `200`.
 

@@ -6,7 +6,9 @@
 
 ## Live claims
 
-_No live writer. Add a row here before your first edit — see the rules below._
+| Agent        | Band    | Task                                                   | Write scope                                                                                                                                    | Started    | Checkpoint                              | State  |
+| ------------ | ------- | ------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- | ---------- | --------------------------------------- | ------ |
+| copilot b54  | Tooling | `releases/` as the orphan-branch worktree; cdn → releases | `scripts/*.mjs`, `.gitignore`, `docs/live-cdn-repo*.md`, `.guidance/project/TASK-releases-branch.md`, `STATUS.md`, `orchestrator/release.test.ts` | 2026-11-18 | `.guidance/project/STATUS.md`           | active |
 
 ## Row shape
 

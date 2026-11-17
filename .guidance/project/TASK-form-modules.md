@@ -345,9 +345,9 @@ third digit saturates. Breaking notes live in the release body, not in the numbe
 ## Next
 
 1. **B54** — `scripts/closure.mjs` + `scripts/exports.mjs` + `check:exports`. Note for the release
-   half: `orchestrator/release.test.ts` reads the frozen `.draft/release/v<version>/` snapshot, and
-   the stale `v0.2.1` directory was removed when B53b added the `@aio-ui/input/Missing` subpath (the
-   snapshot's layout predates it, so the closure check was comparing today's source against a
-   release that never contained it). Those 14 checks are **skipped** until B55/B56 writes `v0.2.2`
-   artefacts — re-run them there, and treat the skip count as open work, not as a green.
+   half: `orchestrator/release.test.ts` reads the `releases/v<version>/` snapshot written by
+   `release.mjs` into the orphan-branch worktree. When the snapshot's layout predates a subpath
+   (as it did for `@aio-ui/input/Missing` in b53b) the closure check compares today's source
+   against a release that never contained it — regenerate the snapshot before trusting it. When the
+   folder is absent the 14 checks are **skipped** — treat the skip count as open work, not a green.
 2. **B55/B56** — the release folder and the `0.2.2` publish, then the offline install proof.

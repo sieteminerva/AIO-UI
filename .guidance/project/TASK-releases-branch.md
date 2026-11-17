@@ -1,7 +1,8 @@
 # TASK — self-contained `.tgz` on an orphan `releases` branch
 
-Recorded 2026-11-17. Not started. Owner band: **Tooling** (`scripts/release.mjs`,
-`scripts/publish-cdn.mjs`, new `scripts/publish-releases.mjs`).
+Recorded 2026-11-17. Partially landed 2026-11-18 (the branch, the worktree, the two publishers).
+Owner band: **Tooling** (`scripts/release.mjs`, `scripts/releases-worktree.mjs`,
+`scripts/publish-releases.mjs`, `scripts/publish-cdn.mjs`).
 
 ## Goal
 
@@ -16,14 +17,18 @@ to be resolved by the tooling, not by the reader of a README.
 
 ## What exists today (so the plan subtracts instead of rewriting)
 
-- `scripts/release.mjs --apply --version X` → `.draft/release/vX/`: 40 tarballs,
-  `registry.json`, `layout.json`, `checksums.txt`. Packs with
-  `npm pack "./<pkg>" --pack-destination …` straight from the workspace (`release.mjs:170`), so
-  `peerDependencies: { "@aio-ui/base": "^0.2.1", … }` stay unresolved for a bare consumer — the
-  `E404` this task removes.
-- `scripts/publish-cdn.mjs --apply` → assembles `.draft/cdn-tree`, commits it to the orphan `cdn`
-  branch through a git worktree under `.draft/cdn-worktree`, moves the version tag. The worktree
-  pattern is the one to mirror.
+- **One orphan branch, one checkout.** `releases` carries both halves: `v<version>/*.tgz` (what
+  `npm i` installs) and the unpacked tree at the root (what jsDelivr serves). It is checked out at
+  `<repo>/releases` — a git worktree created on first use by `scripts/releases-worktree.mjs`,
+  ignored on `main`, never a scratch folder. The old `cdn` branch was renamed into it on
+  2026-11-18; the tag `v0.2.1` still points at the commit it was renamed from.
+- `scripts/release.mjs --apply --version X` → `releases/vX/`: 40 tarballs, `registry.json`,
+  `layout.json`, `checksums.txt`. Each registry `tarball` is
+  `https://github.com/<repo>/raw/releases/vX/<name>.tgz`, so no GitHub release asset has to exist.
+- `scripts/publish-releases.mjs --apply` gates the folder (registry ⇄ tarballs, both directions)
+  and commits `vX/` to the branch. `scripts/publish-cdn.mjs --apply` stages the unpacked tree at
+  `releases/.stage/cdn`, replaces only the branch root, and moves the version tag. Both share the
+  same worktree, so nothing is copied between checkouts.
 - Two gates already guard the front of the pipeline: every package at the target version, and
   `dist` present for every root export.
 
@@ -64,7 +69,7 @@ by hand.
 
 ### 2. `release.mjs` gains `--bundle` (mode A)
 
-1. Per package, stage under `.draft/release/.stage/<name>/`:
+1. Per package, stage under `releases/.stage/<name>/`:
    - copy the package dir;
    - rewrite **only the staged** `package.json`: internal `peerDependencies` → exact
      `dependencies` + `"bundledDependencies"`, and drop the `development` export condition (the
@@ -117,21 +122,18 @@ reads entry points, and `catalogue.mjs` reads READMEs. Four readers, four chance
 
 ### 5. Publish the folder to `releases` (`scripts/publish-releases.mjs`)
 
-1. Refuse to run without `.draft/release/vX/registry.json`.
-2. Worktree at `.draft/releases-worktree`:
-   - if `origin/releases` exists → `git worktree add .draft/releases-worktree origin/releases`;
-   - else → `git worktree add --detach …`, then `git checkout --orphan releases`, empty the index
-     (`git rm -rf --cached .`), so history starts once and never carries `main`'s tree.
-3. Write `vX/` with the tarballs + `registry.json` + `layout.json` + `checksums.txt` +
-   `closure.json` + `install/*.txt`. **Never delete older `vX/` directories** — a published URL is a
-   contract.
-4. Render `README.md` at the branch root from `templates/releases/README.md.tpl`: version table,
-   per-package install command, self-contained vs. closure badge. Generated data, not prose.
-5. `--apply` → `git add -A && git commit -F <msg> && git push origin releases`. Dry run prints the
-   file list and total bytes; undo line printed (`git worktree remove --force .draft/releases-worktree`).
-6. `publish-cdn.mjs` keeps publishing **unpacked** packages (jsDelivr import maps) and must never see
-   the staged `node_modules`: add one assertion — a tarball that unpacks a `node_modules/` directory
-   into the cdn tree fails the run.
+Landed 2026-11-18 for the plain (non-bundled) tarballs; the bundled rewrite is §2 and still open.
+
+1. Refuse to run without `releases/vX/registry.json`, and refuse a folder where a tarball named in
+   the registry is missing **or** a tarball exists that the registry does not name.
+2. Worktree at `<repo>/releases` (`ensureWorktree`): reuse the checkout → local branch → remote
+   branch → a fresh orphan. Never a throwaway worktree under `.draft`.
+3. Commit `vX/` as it stands. **Never delete older `vX/` directories** — a published URL is a
+   contract, and `publish-cdn.mjs` replaces only the branch root.
+4. `--apply` → commit + force-push `releases`. Dry run prints the file list and total bytes.
+5. `publish-cdn.mjs` keeps publishing **unpacked** packages (jsDelivr import maps) and must never
+   see the staged `node_modules`: add one assertion — a tarball that unpacks a `node_modules/`
+   directory into the cdn tree fails the run. (Still open, lands with §2.)
 
 ### 6. Version + release gate
 
@@ -141,13 +143,14 @@ reads entry points, and `catalogue.mjs` reads READMEs. Four readers, four chance
 
 ### Order of batches
 
-| Batch | Content                                                       | Depends on        |
-| ----- | ------------------------------------------------------------- | ----------------- |
-| B53   | form/input default opt-in + `bundle-probe` proof (§form)      | —                 |
-| B53b  | missing-module warnings/throws + form owns the full stack     | B53               |
+| Batch | Content                                                       | Depends on         |
+| ----- | ------------------------------------------------------------- | ------------------ |
+| B53   | form/input default opt-in + `bundle-probe` proof (§form)      | —                  |
+| B53b  | missing-module warnings/throws + form owns the full stack     | B53                |
+| B54a  | `releases` branch + `./releases` worktree + both publishers   | —                  |
 | B54   | `closure.mjs` + `exports.mjs` + `check:exports` gate          | B53b (exits/sizes) |
-| B55   | `release.mjs --bundle` + `publish-releases.mjs`               | B54               |
-| B56   | `0.2.2` bump + full release verification                      | B53b–B55          |
+| B55   | `release.mjs --bundle` + `install/*.txt`                      | B54                |
+| B56   | `0.2.2` bump + full release verification                      | B53b–B55           |
 
 ## Decisions
 
@@ -158,8 +161,10 @@ reads entry points, and `catalogue.mjs` reads READMEs. Four readers, four chance
 2. **The `development` export condition is stripped from staged manifests** in the tarball and in
    every bundled copy. `files[]` ships root `*.ts`, so leaving it in lets a consumer's bundler pull
    TypeScript sources out of `node_modules`.
-3. **Separate branches** — `cdn` keeps the unpacked tree for jsDelivr import maps, `releases` holds
-   only `vX/` folders. Neither may carry the other's content.
+3. ~~**Separate branches**~~ — **superseded 2026-11-18 (owner): one orphan branch, `releases`.**
+   It carries the unpacked tree at the root **and** `vX/` beside it; the old `cdn` branch was
+   renamed into it and the tag `v0.2.1` still points at the renamed commit. The checkout lives at
+   `<repo>/releases` (a worktree), not in `.draft`.
 4. **The graph is computed once** (`closure.mjs`) and every consumer reads it; no script re-walks
    dependencies by hand.
 5. **`form` → `input` becomes a real `dependencies` entry, not a peer** (owner, 2026-11-17): the

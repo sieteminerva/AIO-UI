@@ -17,6 +17,8 @@ export default defineConfig({
     exclude: [
       "**/node_modules/**",
       "**/dist/**",
+      // The `releases` worktree holds unpacked copies of the packages, tests included.
+      "releases/**",
       ".draft/cdn-tree/**",
       ".draft/cdn-worktree/**",
       ".draft/cdn-smoke/**",

@@ -8,7 +8,7 @@
 
 This branch carries the **built** framework: the exact files that `scripts/release.mjs` packed into
 release tarballs, unpacked so that a browser import map and jsDelivr can serve them. `main` holds
-the source; `dist/` is gitignored there, which is why this orphan `cdn` branch exists at all.
+the source; `dist/` is gitignored there, which is why this orphan `releases` branch exists at all.
 
 | | |
 | --- | --- |
@@ -28,6 +28,7 @@ the source; `dist/` is gitignored there, which is why this orphan `cdn` branch e
 | `registry.json` | version, `base` URL, and per-package `dir` / `subpaths` / `tarball` / `integrity` / `size` |
 | `layout.json` | flat name → directory map used by the generator and the resolver |
 | `checksums.txt` | `sha256` of every artefact, verifiable with `sha256sum -c checksums.txt` |
+| `v__VERSION__/*.tgz` | the installable tarball per package — one file, one URL |
 
 Nothing in this branch is hand-written. If a file looks wrong, it is wrong on `main`.
 
@@ -53,20 +54,21 @@ Three ways to name the same tree:
 | Ref | URL shape | When to use |
 | --- | --- | --- |
 | Tag | `…@__TAG__/…` | default. Tag content never changes, so the browser/CDN cache is safe forever |
-| Branch | `…@cdn/…` | follow the newest publish without editing the import map |
+| Branch | `…@releases/…` | follow the newest publish without editing the import map |
 | Commit | `…@<full-sha>/…` | pin a specific build for a test or a rollback |
 
-`https://raw.githubusercontent.com/__REPOSITORY__/cdn/…` serves the same bytes and is the fallback
-when jsDelivr is unavailable; it has no cache layer of its own, so expect plain HTTP caching only.
+`https://raw.githubusercontent.com/__REPOSITORY__/releases/…` serves the same bytes and is the
+fallback when jsDelivr is unavailable; it has no cache layer of its own, so expect plain HTTP
+caching only.
 
 ## 3. Install offline from the release assets
 
 The packages are **not** on the npm registry, so `npm i @aio-ui/core` fails. Install the tarballs
-attached to the release of this tag:
+committed beside this README:
 
 ```bash
 # 1. fetch the tarballs (one per package you use)
-#    https://github.com/__REPOSITORY__/releases/download/__TAG__/aio-ui-<name>-__VERSION__.tgz
+#    https://github.com/__REPOSITORY__/raw/releases/__TAG__/aio-ui-<name>-__VERSION__.tgz
 
 # 2. install them into a normal project
 mkdir my-app && cd my-app && npm init -y
@@ -109,10 +111,10 @@ Tag refs are frozen. To move forward:
 
 ```bash
 # a) follow the branch - nothing to edit, the next request revalidates
-https://cdn.jsdelivr.net/gh/__REPOSITORY__@cdn/packages/core/dist/index.js
+https://cdn.jsdelivr.net/gh/__REPOSITORY__@releases/packages/core/dist/index.js
 
 # b) pin a new tag - replace __TAG__ in the import map with the newest release tag
-https://github.com/__REPOSITORY__/releases        # newest tag + tarballs
+https://github.com/__REPOSITORY__/tree/releases   # this branch: newest tarballs in v<version>/
 npm i ./aio-ui-core-<new-version>.tgz             # offline installs: re-download, re-install
 ```
 
@@ -130,7 +132,7 @@ Generated from `registry.json` at publish time, so it always matches the tree ab
 [`registry.json`](./registry.json) also carries each package's `exports` subpaths, tarball URL,
 `integrity` hash and size.
 
-| Package | Directory | Entry (`exports["."]`) | Release asset |
+| Package | Directory | Entry (`exports["."]`) | Tarball |
 | --- | --- | --- | --- |
 __PACKAGE_TABLE__
 
@@ -139,4 +141,4 @@ __PACKAGE_TABLE__
 jsDelivr answers a **tag** URL with `Cache-Control: public, max-age=31536000, s-maxage=31536000,
 immutable` and pins the tag to the commit it first saw. Force-moving a tag therefore does *not*
 change what `@<tag>` serves, not even after a purge. Every published version gets its own new tag;
-`@cdn` and commit SHAs are the only refs that revalidate.
+`@releases` and commit SHAs are the only refs that revalidate.

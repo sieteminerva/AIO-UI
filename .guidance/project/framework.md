@@ -16,7 +16,7 @@ Why / stages: `.guidance/plan-framework.md`. Engineering rules:
 - **B54 (remaining) — one export index** — `scripts/exports.mjs` → `docs/framework/exports.json` +
   a `check:exports` gate that fails when a subpath's file is excluded by `files[]` (today's silent
   404 at install time). Four scripts stop recomputing the export map (closure + bundle + publish
-  already landed). → `.guidance/project/TASK-releases-branch.md`
+  already landed). → `docs/framework/TASK-releases-branch.md`
 - **Mode A polish** — `install/<pkg>.txt` for the declared/bundled fallback, and the size gate the
   plan asked for (mode B is 1.18 MB, mode A 6.27 MB; both measured, neither gated).
 - `scripts/proof.mjs --report`: list every component package and whether it carries an `inspect()`

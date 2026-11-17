@@ -6,7 +6,7 @@ batch 53**; **the warn/throw policy, the form's full stack and the dependency mo
 
 **Status:** `check:bundle` green (152 parsed modules) · `verify` → 83 files, 757 passed, 1 skipped.
 **Next:** B54 remainder — `scripts/exports.mjs` + `check:exports`
-(`.guidance/project/TASK-releases-branch.md`).
+(`docs/framework/TASK-releases-branch.md`).
 
 Owner band: **Framework** (`packages/components/form`, `packages/components/input`,
 `packages/modules/module-loader`), docs touch `docs/agent/handbook.md`.

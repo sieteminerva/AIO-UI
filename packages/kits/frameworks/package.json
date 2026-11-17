@@ -1,6 +1,6 @@
 {
   "name": "@aio-ui/frameworks",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "type": "module",
   "description": "Aggregated public surface for frameworks.",
   "files": [
@@ -14,17 +14,12 @@
     }
   },
   "dependencies": {
-    "@aio-ui/base": "0.2.2",
-    "@aio-ui/core": "0.2.2",
-    "@aio-ui/app": "0.2.2"
+    "@aio-ui/base": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.3/aio-ui-base-0.2.3.tgz",
+    "@aio-ui/core": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.3/aio-ui-core-0.2.3.tgz",
+    "@aio-ui/app": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.3/aio-ui-app-0.2.3.tgz"
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "prepublishOnly": "npm run build"
-  },
-  "bundledDependencies": [
-    "@aio-ui/app",
-    "@aio-ui/base",
-    "@aio-ui/core"
-  ]
+  }
 }

@@ -1,6 +1,6 @@
 {
   "name": "@aio-ui/form",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "type": "module",
   "files": [
     "dist",
@@ -56,25 +56,16 @@
     }
   },
   "dependencies": {
-    "@aio-ui/input": "0.2.2",
-    "@aio-ui/base": "0.2.2",
-    "@aio-ui/core": "0.2.2",
-    "@aio-ui/http-service": "0.2.2",
-    "@aio-ui/message": "0.2.2",
-    "@aio-ui/module-loader": "0.2.2",
-    "@aio-ui/utilities": "0.2.2"
+    "@aio-ui/input": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.3/aio-ui-input-0.2.3.tgz",
+    "@aio-ui/base": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.3/aio-ui-base-0.2.3.tgz",
+    "@aio-ui/core": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.3/aio-ui-core-0.2.3.tgz",
+    "@aio-ui/http-service": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.3/aio-ui-http-service-0.2.3.tgz",
+    "@aio-ui/message": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.3/aio-ui-message-0.2.3.tgz",
+    "@aio-ui/module-loader": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.3/aio-ui-module-loader-0.2.3.tgz",
+    "@aio-ui/utilities": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.3/aio-ui-utilities-0.2.3.tgz"
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "prepublishOnly": "npm run build"
-  },
-  "bundledDependencies": [
-    "@aio-ui/base",
-    "@aio-ui/core",
-    "@aio-ui/http-service",
-    "@aio-ui/input",
-    "@aio-ui/message",
-    "@aio-ui/module-loader",
-    "@aio-ui/utilities"
-  ]
+  }
 }

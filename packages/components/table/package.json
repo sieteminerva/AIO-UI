@@ -1,6 +1,6 @@
 {
   "name": "@aio-ui/table",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "type": "module",
   "files": [
     "dist",
@@ -24,17 +24,10 @@
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "@aio-ui/base": "0.2.2",
-    "@aio-ui/core": "0.2.2",
-    "@aio-ui/form": "0.2.2",
-    "@aio-ui/module-loader": "0.2.2",
-    "@aio-ui/utilities": "0.2.2"
-  },
-  "bundledDependencies": [
-    "@aio-ui/base",
-    "@aio-ui/core",
-    "@aio-ui/form",
-    "@aio-ui/module-loader",
-    "@aio-ui/utilities"
-  ]
+    "@aio-ui/base": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.3/aio-ui-base-0.2.3.tgz",
+    "@aio-ui/core": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.3/aio-ui-core-0.2.3.tgz",
+    "@aio-ui/form": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.3/aio-ui-form-0.2.3.tgz",
+    "@aio-ui/module-loader": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.3/aio-ui-module-loader-0.2.3.tgz",
+    "@aio-ui/utilities": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.3/aio-ui-utilities-0.2.3.tgz"
+  }
 }

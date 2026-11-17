@@ -1,6 +1,6 @@
 {
   "name": "@aio-ui/base",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "type": "module",
   "files": [
     "dist",
@@ -18,9 +18,6 @@
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "@aio-ui/core": "0.2.2"
-  },
-  "bundledDependencies": [
-    "@aio-ui/core"
-  ]
+    "@aio-ui/core": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.3/aio-ui-core-0.2.3.tgz"
+  }
 }

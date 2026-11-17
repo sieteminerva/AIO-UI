@@ -9,7 +9,7 @@
  * Auth: a token in `GITHUB_TOKEN` (classic: `repo`; fine-grained: Contents + Administration
  * read/write). It is read from the environment and never printed — run this yourself:
  *
- *   GITHUB_TOKEN=ghp_… node scripts/publish-release-assets.mjs --tag v0.2.3 --body .draft/release-body.md
+ *   GITHUB_TOKEN=ghp_… node scripts/publish-release-assets.mjs --tag v0.2.3 --body docs/releases/v0.2.3.md
  *
  * Dry run is the default; `--apply` uploads. Re-running is safe: an asset that already exists
  * with the same name is skipped, never replaced.

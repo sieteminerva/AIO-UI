@@ -44,9 +44,9 @@ The AI never names a package, and generated sites never need a build step.
 | -------------------- | ---------------------------------------------------------- | ---------------------------------------------------------- |
 | Wizard               | frontend terpisah (tanpa user management)                  | Google Identity Services → spec + ID token ke orchestrator |
 | Orchestrator         | Apps Script project (standalone)                           | Gemini key, service account GitHub, engine di-bundle       |
-| Engine               | `.draft/preset/*` → bundle GAS                             | pure: tanpa `fs`/`path`/`fetch`; data in → file map out    |
+| Engine               | `temp/preset/*` → bundle GAS                             | pure: tanpa `fs`/`path`/`fetch`; data in → file map out    |
 | Template spreadsheet | one master file, duplicated per site                       | schemas managed by `TableBuilderService`                   |
-| Gemini               | `gemini-2.5-flash`, `temperature 0.2`, JSON output         | prompt: `.draft/preset/prompt.content.md`                  |
+| Gemini               | `gemini-2.5-flash`, `temperature 0.2`, JSON output         | prompt: `temp/preset/prompt.content.md`                  |
 | Drive                | temporary custody of the duplicate                         | ownership transferred to the client, then detached         |
 | GitHub               | one repo per site from a template; releases hold artefacts | framework releases: `sieteminerva/AIO-UI`                  |
 | Hosting              | GitHub Pages atau Cloudflare Pages (belum diputuskan)      | build-free: lima file statis per situs                     |
@@ -78,7 +78,7 @@ Conventions that must not drift:
 
 ## 5. Contracts
 
-### 5.1 AI output — `iAiSiteContent` v1 (`.draft/preset/ai.ts`)
+### 5.1 AI output — `iAiSiteContent` v1 (`temp/preset/ai.ts`)
 
 ```json
 {
@@ -110,7 +110,7 @@ The model writes **content only**. Orchestrator facts (`id`, `engine`, `model`, 
 
 ### 5.3 Derivation — `plan(preset)`
 
-Content → capability table (`.draft/preset/catalogue.ts`):
+Content → capability table (`temp/preset/catalogue.ts`):
 
 | Signal                                                    | Adds                                                                                             |
 | --------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
@@ -175,7 +175,7 @@ Generated-site flow:
 
 ## 7. Outputs
 
-### 7.1 Per generated site (`.draft/results/<scenario>/`)
+### 7.1 Per generated site (`temp/results/<scenario>/`)
 
 ```
 preset.json          the document (regenerate from this)
@@ -209,15 +209,15 @@ npm run version:check              # exit 1 on drift or non-semver peers
 node scripts/version.mjs --apply --version 0.1.1
 node scripts/release.mjs --version 0.1.1             # dry run
 node scripts/release.mjs --version 0.1.1 --apply     # artefacts in releases/v0.1.1
-node .draft/preset/layout.mjs --out .draft/preset/layout.json
-npx vitest run .draft/preset       # generator suite (100 tests, 1 opt-in skipped)
-npx tsc -p .draft/preset/tsconfig.json
+node temp/preset/layout.mjs --out temp/preset/layout.json
+npx vitest run temp/preset       # generator suite (100 tests, 1 opt-in skipped)
+npx tsc -p temp/preset/tsconfig.json
 node scripts/publish-releases.mjs --apply   # v<version>/ → releases branch
 node scripts/publish-cdn.mjs --apply        # unpacked tree → releases branch; moves the version tag
 SMOKE_BASE=https://cdn.jsdelivr.net/gh/<owner>/<repo>@v<version>/ \
-  npx vitest run .draft/preset/release.test.ts   # writes .draft/cdn-smoke/
-node .draft/smoke/serve.mjs 5300   # then open /.draft/cdn-smoke/store/#checkout
-cd .draft/results/gallery-static_v1/dev && npx vite --port 5199
+  npx vitest run temp/preset/release.test.ts   # writes temp/cdn-smoke/
+node temp/smoke/serve.mjs 5300   # then open /temp/cdn-smoke/store/#checkout
+cd temp/results/gallery-static_v1/dev && npx vite --port 5199
 ```
 
 ## 9. Status (honest)
@@ -279,7 +279,7 @@ Next three tasks, in order:
 
 1. **Read before writing**: `.guidance/plan.md` (open work), `.guidance/AGENT_RULES.md`
    (hard rules), this guide, and the module you touch.
-2. **Drafts first**: new engine code lives in `.draft/<topic>/` until its shape is stable;
+2. **Drafts first**: new engine code lives in `temp/<topic>/` until its shape is stable;
    only then move it to `scripts/` or a package.
 3. **A capability belongs in a module; a component only renders.** Never import a
    component's CSS from JS, never couple `packages/*` to the CMS.
@@ -295,11 +295,11 @@ Next three tasks, in order:
 ```bash
 git restore packages package.json package-lock.json   # undo version bumps
 rm -rf releases/v<version>                              # undo release artefacts
-rm -rf .draft/results                                  # undo generated sites
+rm -rf temp/results                                  # undo generated sites
 git status --short                                     # confirm nothing unintended
 ```
 
-Stop any `vite` process before regenerating `.draft/results` (Windows locks the folder).
+Stop any `vite` process before regenerating `temp/results` (Windows locks the folder).
 
 ## 12. Reference documents
 
@@ -314,5 +314,5 @@ Stop any `vite` process before regenerating `.draft/results` (Windows locks the 
 | `docs/GoogleSheets CMS/REST_API.MD`                    | server contract (`/exec`)                                   |
 | `docs/GoogleSheets CMS/Technical-Detail - Caching.jpg` | cache layers                                                |
 | `.archives/wizard.ts`                                  | reference wizard (the `store` model flow)                   |
-| `.draft/preset/README.md`                              | generator internals and rules                               |
-| `.draft/preset/prompt.content.md`                      | the AI prompt                                               |
+| `temp/preset/README.md`                              | generator internals and rules                               |
+| `temp/preset/prompt.content.md`                      | the AI prompt                                               |

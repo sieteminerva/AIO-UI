@@ -8,9 +8,9 @@
  *
  * It is checked out at `<repo>/releases` and stays there between publishes, so a
  * generated tarball is a file you can open in the file manager instead of a hidden
- * directory inside `.draft/`. `main` ignores the folder (a worktree must never be
- * added to `main` twice) and carries no binaries. `.draft/` keeps only scratch:
- * the bundle probe, smoke sites, commit messages.
+ * directory inside `temp/`. `main` ignores the folder (a worktree must never be
+ * added to `main` twice) and carries no binaries. `temp/` keeps only scratch:
+ * throwaway runs, probes, generated sites — safe to delete wholesale.
  *
  * Nothing here writes to `main`'s manifests: the worktree is a second checkout, and
  * only files inside it are staged.

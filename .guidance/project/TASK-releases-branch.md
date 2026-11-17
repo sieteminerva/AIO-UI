@@ -127,7 +127,7 @@ Landed 2026-11-18 for the plain (non-bundled) tarballs; the bundled rewrite is �
 1. Refuse to run without `releases/vX/registry.json`, and refuse a folder where a tarball named in
    the registry is missing **or** a tarball exists that the registry does not name.
 2. Worktree at `<repo>/releases` (`ensureWorktree`): reuse the checkout → local branch → remote
-   branch → a fresh orphan. Never a throwaway worktree under `.draft`.
+   branch → a fresh orphan. Never a throwaway worktree under `temp`.
 3. Commit `vX/` as it stands. **Never delete older `vX/` directories** — a published URL is a
    contract, and `publish-cdn.mjs` replaces only the branch root.
 4. `--apply` → commit + force-push `releases`. Dry run prints the file list and total bytes.
@@ -165,7 +165,7 @@ Landed 2026-11-18 for the plain (non-bundled) tarballs; the bundled rewrite is �
 3. ~~**Separate branches**~~ — **superseded 2026-11-18 (owner): one orphan branch, `releases`.**
    It carries the unpacked tree at the root **and** `vX/` beside it; the old `cdn` branch was
    renamed into it and the tag `v0.2.1` still points at the renamed commit. The checkout lives at
-   `<repo>/releases` (a worktree), not in `.draft`.
+   `<repo>/releases` (a worktree), not in `temp`.
 4. **The graph is computed once** (`closure.mjs`) and every consumer reads it; no script re-walks
    dependencies by hand.
 5. **`form` → `input` becomes a real `dependencies` entry, not a peer** (owner, 2026-11-17): the

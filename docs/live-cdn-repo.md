@@ -16,7 +16,7 @@ README is §2.1.
 > **Branch rename (2026-11-18).** The orphan branch is now **`releases`**, not `cdn`; it carries
 > both the unpacked tree (jsDelivr import maps) and each version's `v<version>/*.tgz`, so one
 > checkout serves `npm i` and the browser. It lives at `<repo>/releases` (a git worktree, ignored
-> on `main`) and `.draft/` is scratch only. `@cdn` URLs are retired — use `@releases` or the tag.
+> on `main`) and `temp/` is scratch only. `@cdn` URLs are retired — use `@releases` or the tag.
 > GitHub release assets are no longer part of the flow: a tarball is a file on the branch.
 
 ## 1. What is live
@@ -397,9 +397,9 @@ Generate copies whose import map points at the published tag, then serve the fil
 SMOKE_BASE=https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v$V/ \
   npx vitest run orchestrator/release.test.ts
 
-node .draft/smoke/serve.mjs 5300
-# open http://localhost:5300/.draft/cdn-smoke/store/#checkout
-# open http://localhost:5300/.draft/cdn-smoke/gallery/#home
+node temp/smoke/serve.mjs 5300
+# open http://localhost:5300/temp/cdn-smoke/store/#checkout
+# open http://localhost:5300/temp/cdn-smoke/gallery/#home
 ```
 
 Pass criteria: store form renders a fieldset with fields; gallery mounts masonry and carousel;

@@ -37,7 +37,7 @@ maps) and `v<version>/*.tgz` beside it (installs; `registry.json` points at `raw
 **Landed (B54a, 2026-11-18):** the branch is checked out at **`<repo>/releases`** (a git worktree,
 created on demand by `scripts/releases-worktree.mjs`), `release.mjs --apply` writes `releases/vX/`
 there, `publish-releases.mjs` gates registry ⇄ tarballs and pushes the folder, `publish-cdn.mjs`
-replaces only the branch root and moves the tag, `.draft/` is scratch-only, and `cdn` was renamed
+replaces only the branch root and moves the tag, `temp/` is scratch-only, and `cdn` was renamed
 to `releases` (tag `v0.2.1` untouched).
 **Landed (B54a–B56, 2026-11-18):** `scripts/closure.mjs` is the graph (40 packages, 51 edges, 21
 leaves, one real cycle `form ⇄ message`); `release.mjs` ships **mode B by default** — every internal
@@ -48,7 +48,7 @@ replaces only the branch root and moves the tag. **`0.2.3` is published**: tag, 
 branch, jsDelivr `@v0.2.3` 200.
 **Open — the last manual step is the owner's:** the Releases _page_ (release object + 40 assets)
 needs a token, so it is
-`GITHUB_TOKEN=… node scripts/publish-release-assets.mjs --tag v0.2.3 --body .draft/release-body.md --apply`
+`GITHUB_TOKEN=… node scripts/publish-release-assets.mjs --tag v0.2.3 --body temp/release-body.md --apply`
 (no `gh`/token on this machine; nothing else in the pipeline needs it).
 **Next:** `scripts/exports.mjs` + `check:exports` (the B54 remainder), then mode B
 `install/<pkg>.txt`.

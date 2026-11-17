@@ -54,7 +54,7 @@ builds, ~2 m). Everything that inspects emitted `dist/` belongs to the last one.
 
 - **Two output homes, one rule:** `releases/` is a git worktree of the orphan `releases` branch
   (`scripts/releases-worktree.mjs` creates it on first use) and holds every generated artefact —
-  `v<version>/` tarballs, the unpacked jsDelivr tree, the staged copy under `.stage/`. `.draft/`
+  `v<version>/` tarballs, the unpacked jsDelivr tree, the staged copy under `.stage/`. `temp/`
   is scratch only: the bundle probe, smoke sites, commit messages. `releases/` is gitignored on
   `main` because a worktree must never be tracked twice; the folder is a real checkout, not a
   hidden directory.

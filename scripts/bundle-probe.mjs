@@ -29,7 +29,7 @@ const ROOT = join(fileURLToPath(import.meta.url), "..", "..");
 /** Repository root with POSIX separators: module ids from Vite always use `/`. */
 const ROOT_POSIX = ROOT.split(sep).join("/");
 const ENTRIES = join(ROOT, "scripts", "bundle-probe");
-const OUT = join(ROOT, ".draft", "bundle-probe", "out");
+const OUT = join(ROOT, "temp", "bundle-probe", "out");
 
 const FORM_ADAPTERS = [
   "packages/components/form/adapters/Calculation.ts",

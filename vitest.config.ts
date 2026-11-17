@@ -19,12 +19,8 @@ export default defineConfig({
       "**/dist/**",
       // The `releases` worktree holds unpacked copies of the packages, tests included.
       "releases/**",
-      ".draft/cdn-tree/**",
-      ".draft/cdn-worktree/**",
-      ".draft/cdn-smoke/**",
-      ".draft/smoke/**",
-      ".draft/release/**",
-      ".draft/results/**",
+      // Local scratch; anything generated here is not part of the suite.
+      "temp/**",
     ],
     environment: "node",
   },

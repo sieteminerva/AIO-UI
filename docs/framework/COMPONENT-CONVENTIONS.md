@@ -590,7 +590,7 @@ by measuring, and each has cost at least one session.
 ### Terminal (Git-bash on Windows)
 
 - `node` is aliased to `winpty node.exe`; call `node.exe` when stdout is redirected.
-- `node.exe` cannot read git-bash `/tmp` — scratch JSON goes under repo `.draft/`.
+- `node.exe` cannot read git-bash `/tmp` — scratch JSON goes under repo `temp/`.
 - Git-bash rewrites a `/-x/` argument into `C:/Program Files/Git/-x/`; prefix with
   `MSYS_NO_PATHCONV=1`.
 - `gh` is not installed: release assets go through `git credential fill` + `curl` (POST

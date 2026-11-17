@@ -99,7 +99,7 @@ force a preset regeneration for every site. So: **0.1.x = add barrels + keep ali
 | ------------------------------------------------ | ---------------------------------------- | --------------------------------------------------------- |
 | `plan()` catalogue (`orchestrator/catalogue.ts`) | specifiers like `@aio-ui/form/Form`      | switch to root specifiers; keeps generated output shorter |
 | `registry.assets.ts` (demo + gallery)            | specifier → loader                       | regenerate entries; Vite needs static strings either way  |
-| `.draft/results/**`                              | generated `app.js` / `dev/src/main.ts`   | regenerate (tests do it)                                  |
+| `temp/results/**`                              | generated `app.js` / `dev/src/main.ts`   | regenerate (tests do it)                                  |
 | `prompt.content.md`                              | never names packages                     | no change                                                 |
 | `docs/*`                                         | examples with subpaths                   | update examples in the same PR                            |
 | `scripts/bounds.mjs`                             | validates deep imports through `exports` | no change; it follows the map                             |

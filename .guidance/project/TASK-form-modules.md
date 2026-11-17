@@ -194,7 +194,7 @@ throw halfway through a schema.
 The claim to prove is about **module identity in a real bundle**, so the probe must run the real
 bundler and record which files it parsed:
 
-1. Three probe entries under `.draft/bundle-probe/src/`:
+1. Three probe entries under `temp/bundle-probe/src/`:
    - `form-root.ts` → `import { FormBuilder } from "@aio-ui/form"` (nothing else);
    - `input-root.ts` → `import { InputBuilder } from "@aio-ui/input"`;
    - `form-full.ts` → also imports `@aio-ui/form/adapters`.
@@ -349,4 +349,4 @@ third digit saturates. Breaking notes live in the release body, not in the numbe
    `releases/v<version>/` and runs 14 checks against `v0.2.3` — regenerate the folder with
    `release.mjs --version <v> --apply` whenever a subpath is added, or the suite starts skipping.
 2. **B57** — the Releases page: `GITHUB_TOKEN=… node scripts/publish-release-assets.mjs --tag v0.2.3
-   --body .draft/release-body.md --apply`. Owner's manual step; nothing else needs a token.
+--body temp/release-body.md --apply`. Owner's manual step; nothing else needs a token.

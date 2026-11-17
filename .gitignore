@@ -9,8 +9,8 @@ lerna-debug.log*
 
 node_modules
 .archives
-# Local scratch area. The generator engine lives in orchestrator/; .draft/ is throwaway.
-.draft/
+# Local scratch area: throwaway runs, probes, generated sites. Safe to delete wholesale.
+temp/
 # `releases/` is a real checkout of the orphan `releases` branch (tarballs + the
 # jsDelivr tree), created with `git worktree add`. It is ignored on `main` because a
 # worktree must never be tracked twice — the folder itself is ordinary, visible and

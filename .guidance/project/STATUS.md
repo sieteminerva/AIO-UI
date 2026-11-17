@@ -4,8 +4,8 @@
 > session, never appended: each is a summary plus the link to the real detail, which is opened only
 > after the user picks a card (`AGENT_RULES.md` §13).
 >
-> Rewritten 2026-11-17: card 1 is a **defect report from a real `.tgz` consumer**, card 2 a **spec
-> handed over by the user**, card 3 the queue that survived the rewrite.
+> Rewritten 2026-11-18: card 1 is the form stack, card 2 the release pipeline that now ships
+> `0.2.3`, card 3 the queue that survived.
 
 ### 1. Form — modules that never get loaded without a shell
 
@@ -25,10 +25,7 @@ where a warning would leave a hole (declared `actions` with no `controls` module
 no `file` module). `FORM_ADAPTER_DEFINITIONS` is **nine**, `prepare()` routes the input four to the
 field preset while the manifest keeps its five, and `@aio-ui/form` now depends on `@aio-ui/input` —
 proof: **152** parsed modules, a dropdown rendered from the one default import (`inspectPage`).
-**Next:** B54 — `closure.mjs` + `exports.mjs`. The frozen `.draft/release/v0.2.1` snapshot was
-removed in b53b (its layout predates `@aio-ui/input/Missing`); the new home is
-`releases/v0.2.1/` in the branch worktree, regenerated 2026-11-18, so the release contract suite
-runs against current bytes again — re-check it on `v0.2.2` in B56.
+**Next:** B54 remainder — `scripts/exports.mjs` + `check:exports`.
 → `.guidance/project/TASK-form-modules.md`
 
 ### 2. Release — one-command offline installs from an orphan branch
@@ -42,22 +39,20 @@ created on demand by `scripts/releases-worktree.mjs`), `release.mjs --apply` wri
 there, `publish-releases.mjs` gates registry ⇄ tarballs and pushes the folder, `publish-cdn.mjs`
 replaces only the branch root and moves the tag, `.draft/` is scratch-only, and `cdn` was renamed
 to `releases` (tag `v0.2.1` untouched).
-**Landed (B55/B56, 2026-11-18):** `scripts/closure.mjs` is the graph (40 packages, 51 edges, one
-real cycle `form ⇄ message`, 21 leaves); `release.mjs` is **bundled by default** — each tarball
-carries its closure under `node_modules/` with exact `dependencies` + `bundledDependencies` and no
-`development` condition, 6.27 MB total for all 40. **`v0.2.2` is published**: tag + `v0.2.2/` on
-the branch, jsDelivr `@v0.2.2` returns 200, and one tarball installs **offline** with an empty
-cache (`--offline`), pulling nothing else from the registry.
-**Open:** GitHub release assets + the release object for `v0.2.3` need one authenticated run of
-`node scripts/publish-release-assets.mjs --tag v0.2.3 --body <file> --apply` (no `gh`/token on
-this machine); `scripts/exports.mjs` + `check:exports` (B54 proper).
-**Plan:** the closure is a graph computed once by `scripts/closure.mjs`, then shipped two ways —
-embedded (mode A, one URL) or declared (`install/<pkg>.txt`, mode B). `scripts/exports.mjs` + a
-`check:exports` gate end the four-way export-map recomputation and catch a subpath whose file
-`files[]` excludes. **Budget measured:** mode A = 6.1 MB raw ≈ 2.2 MB gz (heaviest closure `form`
-1.17 MB), so the gates are per tarball ≤ 2 MB, per version ≤ 8 MB, repo growth ≤ 3 MB gz.
-**Numbering (owner):** third digit only while pre-release — next is `0.2.2`, not `0.3.0`.
-**Next:** B54 — `closure.mjs` + `exports.mjs` + `check:exports`.
+**Landed (B54a–B56, 2026-11-18):** `scripts/closure.mjs` is the graph (40 packages, 51 edges, 21
+leaves, one real cycle `form ⇄ message`); `release.mjs` ships **mode B by default** — every internal
+edge is a tarball URL on the branch, so `npm i aio-ui-form` pulls **8 separate modules** (proved in
+an empty project; 1.18 MB for the whole family). `--bundle` stays as mode A (closure embedded,
+6.27 MB). `publish-releases.mjs` gates registry ⇄ tarballs and pushes the folder; `publish-cdn.mjs`
+replaces only the branch root and moves the tag. **`0.2.3` is published**: tag, `v0.2.3/` on the
+branch, jsDelivr `@v0.2.3` 200.
+**Open — the last manual step is the owner's:** the Releases _page_ (release object + 40 assets)
+needs a token, so it is
+`GITHUB_TOKEN=… node scripts/publish-release-assets.mjs --tag v0.2.3 --body .draft/release-body.md --apply`
+(no `gh`/token on this machine; nothing else in the pipeline needs it).
+**Next:** `scripts/exports.mjs` + `check:exports` (the B54 remainder), then mode B
+`install/<pkg>.txt`.
+**Numbering (owner):** third digit only while pre-release.
 → `.guidance/project/TASK-releases-branch.md`
 
 ### 3. Carried queue — the small fixes that keep §16 honest
@@ -85,8 +80,8 @@ the dead `ElementCreatedEventBus.relay` call plus two leftover `console.log` in 
 ## Cross-project
 
 - **Official release** waits for all four manual model references (`gallery` exists; `store`,
-  `profile`, `blog` do not). The tree is at `0.2.1`; the last published tag is `v0.2.1`
-  (pre-release, 2026-11-16). Lane: `gallery.md`.
+  `profile`, `blog` do not). The tree and the published tag are at `0.2.3` (pre-release,
+  2026-11-18). Lane: `gallery.md`.
 - **Rules**: process `.guidance/AGENT_RULES.md`; engineering + environment
   `docs/framework/COMPONENT-CONVENTIONS.md` (§12 CSS, §13 anti-patterns, §15 env/gates/harness).
 - **Memory**: `/memories/` holds state + pointers only — preferences, a band outline per repo, and

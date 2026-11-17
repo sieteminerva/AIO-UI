@@ -13,18 +13,12 @@ Why / stages: `.guidance/plan-framework.md`. Engineering rules:
 
 ## Next
 
-- **B54 — one closure graph, one export index** — `scripts/closure.mjs` (topological closure from
-  `dependencies` + `peerDependencies`, `--json`, cycle report, size per closure) and
-  `scripts/exports.mjs` → `docs/framework/exports.json` + a `check:exports` gate that fails when a
-  subpath's file is excluded by `files[]` (today's silent 404 at install time). Four scripts stop
-  recomputing the export map. → `.guidance/project/TASK-releases-branch.md`
-- **B55 — release: embed the closure, publish the folder** — `release.mjs --bundle` materialises the
-  closure under `<stage>/node_modules/@aio-ui/` with rewritten manifests (exact internal
-  `dependencies`, `bundledDependencies`, no `development` condition), size gate before publish, then
-  `publish-releases.mjs` writes `vX/` to an orphan `releases` branch via a worktree and renders
-  `install/<pkg>.txt` (mode B) from the same graph. → `.guidance/project/TASK-releases-branch.md`
-- **B56 — `0.2.2`** — version bump (third digit only while pre-release), `verify:pkgs`, release +
-  publish, then the offline install proof from a scratch dir with an empty npm cache.
+- **B54 (remaining) — one export index** — `scripts/exports.mjs` → `docs/framework/exports.json` +
+  a `check:exports` gate that fails when a subpath's file is excluded by `files[]` (today's silent
+  404 at install time). Four scripts stop recomputing the export map (closure + bundle + publish
+  already landed). → `.guidance/project/TASK-releases-branch.md`
+- **Mode A polish** — `install/<pkg>.txt` for the declared/bundled fallback, and the size gate the
+  plan asked for (mode B is 1.18 MB, mode A 6.27 MB; both measured, neither gated).
 - `scripts/proof.mjs --report`: list every component package and whether it carries an `inspect()`
   assertion. Report-only at first (the gap list is the ratchet); make it a `verify` gate once the 20
   packages are covered, so §16 stops depending on discipline.
@@ -45,6 +39,12 @@ Why / stages: `.guidance/plan-framework.md`. Engineering rules:
 
 ## Landed
 
+- **Batch 54–56** — the release is a real pipeline: `scripts/closure.mjs` (40 packages, 51 edges,
+  21 leaves, one real cycle `form ⇄ message`), `release.mjs` in two modes (**B default**: internal
+  edges are tarball URLs, so one install pulls 8 separate modules; **A**: closure embedded), the
+  `releases` orphan branch checked out at `./releases`, `publish-releases.mjs`,
+  `publish-cdn.mjs`, and `publish-release-assets.mjs` for the GitHub release page. `0.2.3` is
+  published: tag + branch folder + jsDelivr `@v0.2.3`.
 - **Batch 53b** — every degraded capability **speaks**, and one import is the whole form.
   `input/Missing.ts` (`reportMissing`, on the new `@aio-ui/input/Missing` subpath, never the root)
   warns once per builder+capability and emits `moduleMissing` for `dropdown`/`file`/`popover`, and

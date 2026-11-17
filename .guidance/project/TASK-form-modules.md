@@ -2,11 +2,11 @@
 
 Recorded 2026-11-17. **A1–A4 landed in batch 52**; **the opt-in split and its graph proof landed in
 batch 53**; **the warn/throw policy, the form's full stack and the dependency move landed in b53b**
-(see the end of this file). Open: the `0.2.2` bump (B56).
+(see the end of this file). **`0.2.3` is published** (B55/B56, 2026-11-18).
 
-**Status:** `check:bundle` green (152 parsed modules) · `verify` → 82 files, 743 passed, 15 skipped
-(the release-artefact suite waits for `v0.2.2` artefacts).
-**Next:** B54 — closure + export index (`.guidance/project/TASK-releases-branch.md`).
+**Status:** `check:bundle` green (152 parsed modules) · `verify` → 83 files, 757 passed, 1 skipped.
+**Next:** B54 remainder — `scripts/exports.mjs` + `check:exports`
+(`.guidance/project/TASK-releases-branch.md`).
 
 Owner band: **Framework** (`packages/components/form`, `packages/components/input`,
 `packages/modules/module-loader`), docs touch `docs/agent/handbook.md`.
@@ -344,10 +344,9 @@ third digit saturates. Breaking notes live in the release body, not in the numbe
 
 ## Next
 
-1. **B54** — `scripts/closure.mjs` + `scripts/exports.mjs` + `check:exports`. Note for the release
-   half: `orchestrator/release.test.ts` reads the `releases/v<version>/` snapshot written by
-   `release.mjs` into the orphan-branch worktree. When the snapshot's layout predates a subpath
-   (as it did for `@aio-ui/input/Missing` in b53b) the closure check compares today's source
-   against a release that never contained it — regenerate the snapshot before trusting it. When the
-   folder is absent the 14 checks are **skipped** — treat the skip count as open work, not a green.
-2. **B55/B56** — the release folder and the `0.2.2` publish, then the offline install proof.
+1. **B54 remainder** — `scripts/exports.mjs` + `check:exports`. `closure.mjs` and both release modes
+   are landed; the export index is the last piece. `orchestrator/release.test.ts` already reads
+   `releases/v<version>/` and runs 14 checks against `v0.2.3` — regenerate the folder with
+   `release.mjs --version <v> --apply` whenever a subpath is added, or the suite starts skipping.
+2. **B57** — the Releases page: `GITHUB_TOKEN=… node scripts/publish-release-assets.mjs --tag v0.2.3
+   --body .draft/release-body.md --apply`. Owner's manual step; nothing else needs a token.

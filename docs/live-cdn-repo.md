@@ -344,15 +344,31 @@ What `publish-cdn.mjs` does:
 
 ### Step 6 — commit and push source/docs
 
-There is no GitHub release to create: the tarballs are files on the `releases` branch, and
-`registry.json` points at `raw/releases/v<version>/…`, so publishing is the branch push above.
-Legacy releases (`v0.2.1` and older) still carry uploaded assets; nothing new needs them.
-
 ```bash
 git add -A
 git commit -F <message-file>
 git push origin main
 ```
+
+### Step 6b — the GitHub release page (manual, needs a token)
+
+Everything above works without GitHub auth; the tarballs are files on the `releases` branch and
+`registry.json` points at `raw/releases/v<version>/…`. The **Releases page** is a separate
+artefact: it needs a release object plus one uploaded asset per package, and that is the only step
+this repository cannot do unattended (no `gh`, no token on the build machine).
+
+The script is ready — run it yourself, token inline, never pasted into chat:
+
+```bash
+GITHUB_TOKEN=<your token> node scripts/publish-release-assets.mjs \
+  --tag v<version> --body <release-notes.md> --apply
+```
+
+It creates the release (pre-release, body from the file) if it is missing and uploads every
+`releases/v<version>/*.tgz`; re-running skips assets that already exist. Web-UI equivalent: open
+`…/releases/new?tag=v<version>`, paste the notes, drag the contents of `releases/v<version>/`.
+Treat this as the **last manual action** of a release, after the branch and tag are verified —
+it changes nothing on the CDN, only what a human sees on the Releases page.
 
 ### Step 7 — purge and verify jsDelivr
 

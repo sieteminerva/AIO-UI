@@ -126,8 +126,11 @@ export interface iInputConfig extends iBuilderConfig<InputElementType> {
     /**
      * Optional loader that supplies the input sub-modules (dropdown, file, controls, popover).
      *
-     * Leave it `null` and the core preset keeps every adapter available. Inject one to
-     * trim the layer down (for example `LITE_INPUT_MODULES`), or to add a project module.
+     * Leave it `null` and the field is a plain labelled control: the modules are an
+     * enhancement, never a precondition. Pass `INPUT_MODULE_DEFINITIONS` from
+     * `@aio-ui/input/modules` for the full layer, a subset, or your own module. Since
+     * `0.3.0` nothing is compiled into the package root, so an omitted option costs no
+     * bytes rather than silently shipping all four.
      *
      * An already-resolved `iInputAdapter[]` is accepted too: that is what a parent
      * component hands over when its own manifest resolved the set — the field must not

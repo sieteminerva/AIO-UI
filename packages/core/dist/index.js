@@ -13,6 +13,7 @@
 // ---- runtime -------------------------------------------------------------
 export { ComponentRegistry, mergeBuildConfig } from "./ComponentRegistry.js";
 export { DOMRenderer } from "./DOMRenderer.js";
+export { inspectPage } from "./Inspect.js";
 export { getBuilderAdapter, setBuilderAdapter } from "./BuilderPort.js";
 export { ensureStylesheet, injectLazyCss, isStyleInjected, isStylesheetPending, normalizeStylesheetPath, replaceLazyCss, styleTagId, useStylesheetAssets, } from "./Stylesheets.js";
 export { releaseBuilders } from "./Registry/BuilderInstances.js";

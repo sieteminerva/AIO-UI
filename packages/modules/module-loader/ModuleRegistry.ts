@@ -1,4 +1,4 @@
-import { Registry } from "@aio-ui/core";
+import { Registry, RegistryError } from "@aio-ui/core";
 import type { RegistryDuplicatePolicy } from "@aio-ui/core";
 
 /**
@@ -88,14 +88,36 @@ export class ModuleRegistry<TContext = unknown, TResult = unknown> {
   /**
    * Registers a module definition.
    *
+   * @summary A definition is `{ id, load }`. A **manifest ref** — `{ id, path, export }`, the
+   * shape an AST declares — is not a definition: only `ComponentRegistry` (or
+   * `resolveModuleDefinitions()`) can turn a specifier into a live module. Registering a ref used
+   * to succeed silently and fail three layers later inside a consumer's form, so the door now
+   * names the mistake instead of storing it.
    * @param definition - Definition to register; its `id` becomes the lookup key.
    * @returns The current registry instance, for fluent registration chains.
-   * @throws {RegistryError} With code `INVALID_ID` for a malformed id, or `DUPLICATE_ID` when the policy is `"error"` and the id exists.
+   * @throws {RegistryError} With code `INVALID_ID` for a malformed id, `INVALID_DEFINITION` when
+   *   `load` is missing, or `DUPLICATE_ID` when the policy is `"error"` and the id exists.
    * @example
    * modules.register(validationFormAdapter);
    */
   public register(definition: iModuleDefinition<TContext, TResult>): this {
-    // Step 1: Delegate storage to the kernel using the definition id.
+    // Step 1: Refuse anything that cannot load itself, and say which shape was expected.
+    if (typeof (definition as { load?: unknown } | null)?.load !== "function") {
+      const ref = definition as unknown as { id?: string; path?: string; export?: string };
+      const shape = ref && (ref.path || ref.export)
+        ? `it looks like a manifest ref ({ path: "${ref.path ?? "?"}", export: "${ref.export ?? "?"}" })`
+        : "it has no load() function";
+      throw new RegistryError(
+        "INVALID_DEFINITION",
+        `[${this.scope}] module "${String(ref?.id ?? "?")}" is not a definition — ${shape}. ` +
+        `A loader takes definitions (in this package: FORM_ADAPTER_DEFINITIONS, or one adapter ` +
+        `exported from its own subpath). Manifest refs belong to ComponentRegistry, or can be ` +
+        `resolved first with resolveModuleDefinitions().`,
+        { scope: this.scope, id: String(ref?.id ?? "?") },
+      );
+    }
+
+    // Step 2: Delegate storage to the kernel using the definition id.
     this.#definitions.register(definition.id, definition);
     return this;
   }

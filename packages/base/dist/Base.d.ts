@@ -2,6 +2,27 @@ import type { iBuilderRegistry, iBuilderConfig, iElementProperty, iNodeRecordIte
 import { BuilderProxy } from "./BaseAdapters/BuilderProxy";
 export declare const GLOBAL_INSTANCE_COUNTER: Map<string, number>;
 /**
+ * What one built instance looks like as data — the component-level counterpart of
+ * `iPageInspection` in `@aio-ui/core`.
+ *
+ * `hierarchy` is the primary field, not `records`: a builder stamps its root with ONE
+ * record (its own), while `hierarchy` is the complete per-key inventory the instance
+ * actually built, including the elements each key owns. A caller that answers
+ * "which keys exist and what did they render" needs the second.
+ */
+export interface iBuilderInspection {
+    /** Serialized markup of the instance root, exactly as `create()` produced it. */
+    html: string;
+    /** Every selector key this instance registered, in selector-map order. */
+    keys: string[];
+    /** Per-key relations: `scope`, `parent`, `children` (keys) and `elements` (inventory). */
+    hierarchy: Record<string, iNodeRecordRelations>;
+    /** The resolved identity seed — the same payload yields the same namespace. */
+    namespace: string | null;
+    /** Records stamped on the root. Usually one; a page tree lives in `inspectPage()`. */
+    records: iNodeRecordItem[];
+}
+/**
  * @classdesc
  * Builder is the abstract foundation for declarative landing-page components.
  * It provides a unified lifecycle for resolving configuration, generating stable namespaces,
@@ -389,6 +410,39 @@ export declare abstract class Builder<TType extends string = string, TConfig ext
      * @public
      */
     destroy(typeKey?: TType): void;
+    /**
+     * 🔎 INSPECT — what this instance built, as data instead of DOM.
+     *
+     * Designed for a caller that cannot look at a screen: a test, a generator or an agent.
+     * It answers three questions in one synchronous call — *which keys exist*, *what markup
+     * did they produce*, and *which elements does each key own* — without touching the
+     * document, waiting for a stylesheet, or knowing this component's payload contract.
+     *
+     * Three properties are load-bearing, each pinned by a test next door:
+     *
+     * - **Deterministic.** The identity seed comes from the payload (`buildNamespace`, keys
+     *   sorted), never from an instance counter, so the same payload yields the same markup.
+     *   A snapshot diff is therefore a real diff.
+     * - **Idempotent.** `hierarchy.elements` is rebuilt from the live tree, so reading twice
+     *   returns the same data and re-walking changes nothing.
+     * - **Hierarchy-first.** `records` on a builder root holds one item (its own); the page
+     *   graph lives in `inspectPage()` on the renderer side. Reporting `keys`/`hierarchy`
+     *   first keeps the useful half from being hidden behind the thin one.
+     *
+     * `html` is deliberately raw: attribute order and the anti-FOUC markers (`data-loaded`,
+     * `--is-loading`) are left in. Normalising here would hide a regression from the caller.
+     *
+     * @returns Markup, keys, relations, namespace and the root records.
+     *
+     * @example
+     * const builder = new SectionBuilder(config);
+     * builder.create(payload);
+     * const { html, keys } = builder.inspect();
+     *
+     * @summary Lives in the class body on purpose: `Builder.prototype` is frozen at the
+     *   bottom of this file, so this hook cannot be bolted on later.
+     */
+    inspect(): iBuilderInspection;
     /**
      * Recursively parses CSS selector chains (e.g., ".column>neon", "div.col-4>.card-wrapper")
      * into a nested DOM hierarchy.

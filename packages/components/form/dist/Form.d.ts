@@ -2,6 +2,7 @@ import type { iBuilderConfig, iBuilderRegistry } from "@aio-ui/core/interface";
 import { Builder } from "@aio-ui/base";
 import type { iCascadeEventDetail } from "./FormModuleTypes";
 import type { iFormModuleContext } from "./FormModuleTypes";
+import type { InputModulePreset } from "@aio-ui/input/InputModuleTypes";
 import { ModuleLoader } from "@aio-ui/module-loader";
 import type { HttpService } from "@aio-ui/http-service";
 import type { iFormMessages } from "./FormMessages";
@@ -105,13 +106,26 @@ export interface iFormConfig extends iBuilderConfig<FormElementType> {
         useAdapter?: string | null;
     } | null;
     /**
-     * Optional loader that supplies optional Form sub-modules.
+     * Loader that supplies the Form's own sub-modules — **required to render a field**.
      *
-     * Leave it `null` (default) and every feature keeps its built-in handler, so
-     * existing forms are unaffected. An injected loader only replaces a feature
-     * when the matching module is registered in it.
+     * Since `0.2.2` the adapters are no longer compiled into `@aio-ui/form`: pass
+     * `new ModuleLoader("form", FORM_ADAPTER_DEFINITIONS)` from `@aio-ui/form/adapters`
+     * (or a subset, or your own). A builder with no modules throws on the first
+     * `create()` instead of failing one field at a time.
+     *
+     * A manifest host does not pass this: `provideModules()` hands the resolved stack over.
      */
     modules?: ModuleLoader<iFormModuleContext, any> | null;
+    /**
+     * The **field-level** adapter set: dropdown, uploader, controls, popover.
+     *
+     * Leave it `null` and every field is a plain labelled control — the modules are an
+     * enhancement, never a precondition. Pass `INPUT_MODULE_DEFINITIONS` from
+     * `@aio-ui/input/modules` for the full layer, or a subset you actually use. A manifest
+     * host fills this in through `provideModules()` (`scope: "input"` refs), which wins
+     * over this option.
+     */
+    inputModules?: InputModulePreset | null;
 }
 export declare class FormBuilder extends Builder<FormElementType, iFormConfig> {
     #private;

@@ -1,6 +1,6 @@
 {
   "name": "@aio-ui/form",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "type": "module",
   "files": [
     "dist",
@@ -10,68 +10,71 @@
   ],
   "exports": {
     ".": {
-      "development": "./index.ts",
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
+    "./adapters": {
+      "types": "./dist/FormAdapters.d.ts",
+      "default": "./dist/FormAdapters.js"
+    },
     "./Form.css": "./Form.css",
     "./FormLayout": {
-      "development": "./FormLayout.ts",
       "types": "./dist/FormLayout.d.ts",
       "default": "./dist/FormLayout.js"
     },
     "./FormMessages": {
-      "development": "./FormMessages.ts",
       "types": "./dist/FormMessages.d.ts",
       "default": "./dist/FormMessages.js"
     },
     "./FormModuleTypes": {
-      "development": "./FormModuleTypes.ts",
       "types": "./dist/FormModuleTypes.d.ts",
       "default": "./dist/FormModuleTypes.js"
     },
     "./FormRegistry": {
-      "development": "./FormRegistry.ts",
       "types": "./dist/FormRegistry.d.ts",
       "default": "./dist/FormRegistry.js"
     },
     "./Input.FormAdapter": {
-      "development": "./Input.FormAdapter.ts",
       "types": "./dist/Input.FormAdapter.d.ts",
       "default": "./dist/Input.FormAdapter.js"
     },
     "./calculation-adapter": {
-      "development": "./adapters/Calculation.ts",
       "types": "./dist/adapters/Calculation.d.ts",
       "default": "./dist/adapters/Calculation.js"
     },
     "./cascade-adapter": {
-      "development": "./adapters/Cascade.ts",
       "types": "./dist/adapters/Cascade.d.ts",
       "default": "./dist/adapters/Cascade.js"
     },
     "./multistep-adapter": {
-      "development": "./adapters/Multistep.ts",
       "types": "./dist/adapters/Multistep.d.ts",
       "default": "./dist/adapters/Multistep.js"
     },
     "./validation-adapter": {
-      "development": "./adapters/Validation.ts",
       "types": "./dist/adapters/Validation.d.ts",
       "default": "./dist/adapters/Validation.js"
     }
   },
-  "peerDependencies": {
-    "@aio-ui/base": "^0.2.1",
-    "@aio-ui/core": "^0.2.1",
-    "@aio-ui/http-service": "^0.2.1",
-    "@aio-ui/message": "^0.2.1",
-    "@aio-ui/module-loader": "^0.2.1",
-    "@aio-ui/utilities": "^0.2.1",
-    "@aio-ui/input": "^0.2.1"
+  "dependencies": {
+    "@aio-ui/input": "0.2.2",
+    "@aio-ui/base": "0.2.2",
+    "@aio-ui/core": "0.2.2",
+    "@aio-ui/http-service": "0.2.2",
+    "@aio-ui/message": "0.2.2",
+    "@aio-ui/module-loader": "0.2.2",
+    "@aio-ui/utilities": "0.2.2"
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "prepublishOnly": "npm run build"
-  }
+  },
+  "bundledDependencies": [
+    "@aio-ui/base",
+    "@aio-ui/core",
+    "@aio-ui/http-service",
+    "@aio-ui/input",
+    "@aio-ui/message",
+    "@aio-ui/module-loader",
+    "@aio-ui/utilities"
+  ]
 }

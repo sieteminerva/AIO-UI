@@ -1,4 +1,4 @@
-# FabMenu (`@aio-ui/fab-menu`)
+# FabMenu (`@aio-ui/fabmenu`)
 
 FabMenu is the floating action button: a trigger in a viewport corner that opens a panel of
 labelled options. It closes on selection (configurable), on a second trigger press, and after an
@@ -29,9 +29,9 @@ option button. The payload itself may be an element too — the panel then holds
 gets no title.
 
 ```ts
-const dock = new SliderBank();            // any element, no registration involved
+const dock = new SliderBank(); // any element, no registration involved
 build("fab-menu", { actions: [{ label: "Reset" }, dock] });
-build("fab-menu", dock);                  // element as the whole payload
+build("fab-menu", dock); // element as the whole payload
 ```
 
 This is the same contract as `tab` (`body`), `form` (`inputs`) and `modal` (content): the fab stops

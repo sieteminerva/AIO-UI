@@ -1,18 +1,13 @@
 {
   "name": "@aio-ui/http-service",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "type": "module",
   "files": [
     "dist",
     "*.ts"
   ],
-  "peerDependencies": {
-    "@aio-ui/core": "^0.2.1",
-    "@aio-ui/utilities": "^0.2.1"
-  },
   "exports": {
     ".": {
-      "development": "./index.ts",
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     }
@@ -20,5 +15,13 @@
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "prepublishOnly": "npm run build"
-  }
+  },
+  "dependencies": {
+    "@aio-ui/core": "0.2.2",
+    "@aio-ui/utilities": "0.2.2"
+  },
+  "bundledDependencies": [
+    "@aio-ui/core",
+    "@aio-ui/utilities"
+  ]
 }

@@ -39,11 +39,13 @@ declare class InputFormAdapter {
      *
      * @param fieldset - Group the set acts on.
      * @param spec - `{ actions, position? }` declared by the group schema.
-     * @returns The controls node, or `null` when the input preset has no controls module.
+     * @returns The controls node, or `null` when nothing was declared.
+     * @throws {Error} When the group declared a button and no module can render one.
      *
      * @summary Delegated to the input module registry, so this adapter does not know how a
-     * button works — and a host that drops the `controls` module gets no buttons instead of
-     * a broken fieldset.
+     * button works. A group that declared no buttons simply gets none; a group that declared
+     * buttons and got none is a hole, and it says so instead of rendering a fieldset that
+     * quietly lost its actions.
      */
     renderActions(fieldset: HTMLElement, spec: {
         actions: any;
@@ -56,6 +58,8 @@ declare class InputFormAdapter {
      * not an implied file payload. A callback receives the raw `File` map and decides what
      * to add (a Drive serialization, a signed URL, nothing at all).
      * @param payload - Mutable submit payload.
+     * @throws {Error} When a `files` policy is declared and no module can read the selected
+     *   files — the policy would receive an empty map and drop the bytes without a word.
      */
     beforeSubmit(payload: Record<string, any>): Promise<void>;
 }

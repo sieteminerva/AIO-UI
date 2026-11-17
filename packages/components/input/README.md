@@ -39,15 +39,73 @@ action buttons are present), `info`, `position` (`top | left | right | bottom`),
 
 | Option      | Default                | Meaning                                                             |
 | ----------- | ---------------------- | ------------------------------------------------------------------- |
-| `modules`   | core preset            | `ModuleLoader`, preset array, or already-resolved `iInputAdapter[]` |
+| `modules`   | none                   | `ModuleLoader`, preset array, or already-resolved `iInputAdapter[]` |
 | `selectors` | see `defaultSelectors` | Per-key tag/class override                                          |
 | `namespace` | `null`                 | Prefix for generated ids                                            |
 | `themeId`   | `"default"`            | Passed through to the theme provider                                |
 | `emit`      | `() => {}`             | Publish channel for the owning form                                 |
 
-`modules: null` keeps every core adapter available. Pass an already-resolved adapter array
-when a parent already loaded the set — the field then never loads or unloads modules the
-host owns (that is what `Form` does).
+`modules: null` is a complete field: a plain labelled control. The four sub-modules are an
+enhancement, not a precondition — see below. Pass an already-resolved adapter array when a
+parent already loaded the set: the field then never loads or unloads modules the host owns
+(that is what `Form` does).
+
+<!-- part: id=modules -->
+
+### Modules — load only what you use
+
+Four sub-modules hang off the field: `dropdown` (a whole builder), `file` (the uploader),
+`controls` (the action set) and `popover`. **None of them is compiled into the package root**
+since `0.2.2` — `scripts/bundle-probe.mjs` proves it against the parsed module graph. Ask for
+all four with one import:
+
+```ts
+import { InputBuilder } from "@aio-ui/input";
+import { INPUT_MODULE_DEFINITIONS } from "@aio-ui/input/modules";
+
+new InputBuilder({ modules: INPUT_MODULE_DEFINITIONS });
+```
+
+Each has its own `*/module` entry too, so a consumer can take one without instantiating the
+other three:
+
+```ts
+import { dropdownInputModule } from "@aio-ui/input/dropdown/module";
+import { inputControlsInputModule } from "@aio-ui/input/controls/module";
+
+new InputBuilder({ modules: [dropdownInputModule, inputControlsInputModule] });
+```
+
+The two shapes, and what each is for:
+
+- `INPUT_MODULE_DEFINITIONS` (`@aio-ui/input/modules`) — what `modules` and `ModuleLoader` take:
+  `{ id, load }`.
+- `INPUT_MODULE_MANIFEST` (root) — the same list as `{ id, path, export }` refs, for an AST whose
+  host lets `ComponentRegistry` (or `resolveModuleDefinitions()`) resolve them. Strings only, which
+  is why the root can export it without pulling a single module in.
+
+**A ref is not a definition.** Handing a ref to a loader now throws
+`RegistryError` / `INVALID_DEFINITION` at registration instead of failing later as a field with
+no control. Order is decorate order (`controls` before `popover`); a trimmed preset that keeps
+`popover` but drops `controls` still works, it just anchors to the field wrapper instead.
+
+**What a missing module costs — and says.** A field is never a hole, and a degradation is
+never silent. `packages/components/input/Missing.ts` is the single voice:
+
+| Capability missing | What the field does                            | Signal                                                       |
+| ------------------ | ---------------------------------------------- | ------------------------------------------------------------ |
+| `dropdown`         | native `<select>` over the same options        | **warn**, once per builder + capability                      |
+| `popover`          | `config.popover` ignored, no anchor attached   | **warn**, same dedupe (ids the preset declared, not a guess) |
+| `file`             | plain file input, `onFileSelected` never fires | **warn**                                                     |
+| `controls`         | the field renders, the buttons never exist     | **throw** at the declaration site                            |
+
+Every warning is one `console.warn` **and** a `moduleMissing` event through `config.emit`
+(`{ builder, capability, module, fix, consequence, severity }`), so an app can surface it in
+its own UI instead of reading a console. The throws name the capability, the module id and the
+one subpath that fixes it — a declared action set that renders no buttons is a hole, not a
+plainer control, so a warning would not be enough. `__tests__/Modules.test.ts` walks every
+declared type with `modules: []` and asserts a control still exists; `__tests__/Missing.test.ts`
+pins the sentences.
 
 <!-- part: id=nodes role=contract -->
 

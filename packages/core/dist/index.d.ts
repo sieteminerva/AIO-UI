@@ -12,6 +12,7 @@
  */
 export { ComponentRegistry, mergeBuildConfig } from "./ComponentRegistry";
 export { DOMRenderer } from "./DOMRenderer";
+export { inspectPage } from "./Inspect";
 export { getBuilderAdapter, setBuilderAdapter } from "./BuilderPort";
 export { ensureStylesheet, injectLazyCss, isStyleInjected, isStylesheetPending, normalizeStylesheetPath, replaceLazyCss, styleTagId, useStylesheetAssets, } from "./Stylesheets";
 export { releaseBuilders } from "./Registry/BuilderInstances";
@@ -19,6 +20,7 @@ export { TemplateRegistry, getTemplates, setTemplates } from "./TemplateRegistry
 export { DEFAULT_REGISTRY_SCOPE, Registry, RegistryError, assertValidId, assertValidScope, qualifyId, splitQualifiedId, } from "./Registry/index";
 export type { iComponentAssetMaps, iComponentManifest, iComponentModuleRef, RegisterFn } from "./ComponentRegistry";
 export type { iBuilderAdapter } from "./BuilderPort";
+export type { iPageInspection } from "./Inspect";
 export type { iStyleLoader } from "./Stylesheets";
 export type { TemplateHandler } from "./TemplateRegistry";
 export type { RegistryDuplicatePolicy, RegistryErrorCode, iRegistryEntry, iRegistryErrorDetails, iRegistryLike, iRegistryOptions, } from "./Registry/index";

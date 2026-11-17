@@ -4,12 +4,13 @@ import { Skeleton } from "@aio-ui/skeleton";
 import { ModuleLoader } from "@aio-ui/module-loader";
 import { inputTypeOf } from "./FieldTypes";
 import {
-  INPUT_MODULE_DEFINITIONS,
   type iInputAdapter,
   type iInputModuleContext,
   type InputModuleItem,
   type InputModulePreset,
 } from "./InputRegistry";
+import { INPUT_MODULE_IDS } from "./InputModuleTypes";
+import { reportMissing } from "./Missing";
 import type { iCalculationFormula } from "./CalculationTypes";
 
 /**
@@ -208,8 +209,11 @@ export interface iInputConfig extends iBuilderConfig<InputElementType> {
   /**
    * Optional loader that supplies the input sub-modules (dropdown, file, controls, popover).
    *
-   * Leave it `null` and the core preset keeps every adapter available. Inject one to
-   * trim the layer down (for example `LITE_INPUT_MODULES`), or to add a project module.
+   * Leave it `null` and the field is a plain labelled control: the modules are an
+   * enhancement, never a precondition. Pass `INPUT_MODULE_DEFINITIONS` from
+   * `@aio-ui/input/modules` for the full layer, a subset, or your own module. Since
+   * `0.3.0` nothing is compiled into the package root, so an omitted option costs no
+   * bytes rather than silently shipping all four.
    *
    * An already-resolved `iInputAdapter[]` is accepted too: that is what a parent
    * component hands over when its own manifest resolved the set — the field must not
@@ -231,12 +235,75 @@ export class InputBuilder extends Builder<InputElementType, iInputConfig> {
   /** Adapters that arrived already live (host-owned); never loaded or disposed here. */
   readonly #live: iInputAdapter[];
 
+  /**
+   * Ids the preset declared — definitions carry one, live adapters do not.
+   *
+   * This is the only signal a capability with no distinguishable hook has (the popover only
+   * *decorates*): a preset built from definitions names every module it contains, and an
+   * empty set means an empty preset. A preset of live adapters names none, and then the
+   * builder stays quiet rather than guess — the host that handed instances owns them.
+   */
+  readonly #declared: Set<string>;
+
+  /** Capabilities already reported, so one schema prints one line per kind. */
+  #warned = new Set<string>();
+
   /** Modules resolved for the field being built. */
   #modules: iInputAdapter[] = [];
 
   /** Host data a module may read: the builder's own configuration. */
   get #moduleContext(): iInputModuleContext {
     return { builderConfig: this.config };
+  }
+
+  /**
+   * Whether any resolved adapter implements a hook.
+   *
+   * Method sniffing, never id matching: a project may ship its own uploader under another
+   * id, and "can this set read files" is the question — not "is the built-in one here".
+   *
+   * @param hook - Adapter method that *is* the capability.
+   * @returns `true` when at least one module offers it.
+   */
+  #offers(hook: "getFiles" | "renderActions"): boolean {
+    return this.#modules.some((module) => typeof (module as any)[hook] === "function");
+  }
+
+  /**
+   * Whether the popover module is provably absent.
+   *
+   * The popover is the one capability with no hook to sniff — it only *decorates*. So the
+   * answer comes from the ids the preset declared: nothing declared and nothing live means
+   * there is nothing to attach a popover with. A host that hands live adapters is not
+   * second-guessed; the builder cannot see inside an instance.
+   */
+  get #popoverMissing(): boolean {
+    if (this.#declared.size > 0) return !this.#declared.has(INPUT_MODULE_IDS.popover);
+    return this.#modules.length === 0;
+  }
+
+  /**
+   * Reports one degraded capability through `Missing.ts`.
+   *
+   * @param capability - Schema vocabulary (`dropdown`, `file`, `actions`, `popover`).
+   * @param module - Module id that would have provided it.
+   * @param fix - Subpath and export that fix it.
+   * @param consequence - What the visitor gets instead, in one clause.
+   * @param severity - `warn` (default) keeps the field, `error` throws.
+   * @throws {Error} For `severity: "error"`, with the module id and the fix in the message.
+   */
+  #missing(
+    capability: string,
+    module: string,
+    fix: string,
+    consequence: string,
+    severity: "warn" | "error" = "warn"
+  ): void {
+    reportMissing({ capability, module, fix, consequence, severity }, {
+      owner: "InputBuilder",
+      seen: this.#warned,
+      emit: this.config.emit,
+    });
   }
 
   /**
@@ -283,8 +350,9 @@ export class InputBuilder extends Builder<InputElementType, iInputConfig> {
     this.config = this.resolveConfig(defaultConfig, config);
 
     // Two ways to get an adapter set: a loader (host-owned lifecycle), a preset whose
-    // definitions this builder loads itself while live adapters are used as-is, or the
-    // default definitions when the host says nothing.
+    // definitions this builder loads itself while live adapters are used as-is, or nothing
+    // at all — and "nothing" is a complete field, just a plainer one. The definitions the
+    // layer ships with live behind `@aio-ui/input/modules`, so no import here may name them.
     if (Array.isArray(this.config.modules)) {
       const preset = this.config.modules as InputModuleItem[];
       const definitions = preset.filter((item) => typeof (item as any).load === "function");
@@ -295,8 +363,10 @@ export class InputBuilder extends Builder<InputElementType, iInputConfig> {
     } else {
       this.#live = [];
       this.#loader = this.config.modules
-        ?? new ModuleLoader<iInputModuleContext, iInputAdapter>("input", INPUT_MODULE_DEFINITIONS);
+        ?? new ModuleLoader<iInputModuleContext, iInputAdapter>("input", []);
     }
+
+    this.#declared = new Set(this.#loader?.ids() ?? []);
 
   }
 
@@ -359,6 +429,19 @@ export class InputBuilder extends Builder<InputElementType, iInputConfig> {
     // from the field what it wants to do, and `InputBuilder` never learns their names.
     this.#modules = [...(this.#loader?.resolveAll(this.#moduleContext) ?? []), ...this.#live];
 
+    // 🚪 A declared action set is a promise of buttons. Without the controls module the
+    // field itself would render perfectly and the buttons would simply never exist — that
+    // is a hole, not a plainer control, so this one throws at the declaration site.
+    if (cfg?.actions && !this.#offers("renderActions")) {
+      this.#missing(
+        "actions",
+        INPUT_MODULE_IDS.controls,
+        "@aio-ui/input/controls/module (inputControlsInputModule)",
+        "the declared action buttons would never render.",
+        "error"
+      );
+    }
+
     const wrapper = this.render("@field", this.#input)!;
 
     // 🏷️ One label, one place. `useLabel` is an on/off switch (default on, set in
@@ -407,11 +490,40 @@ export class InputBuilder extends Builder<InputElementType, iInputConfig> {
     }
 
     if (!inputEl) {
-      // Default untuk jenis text, number, email, password, dll.
-      inputEl = this.render("@field>input", this.#input)!;
+      // A matrix row with no control of its own is a type owned by a module (`dropdown`).
+      // A module may only *enhance* a field, never be the only way it exists: without the
+      // module the same options render as a native `<select>` — plainer, not a hole. That
+      // is what makes "no modules by default" an honest default instead of a trap.
+      inputEl = controlKey
+        ? this.render("@field>input", this.#input)!
+        : this.render("@field>select", this.#input)!;
+
+      // Falling back is the degradation made visible: this branch only runs when the type
+      // has no control of its own (`dropdown`), so the fact is reported from here instead
+      // of being inferred later.
+      if (!controlKey) {
+        this.#missing(
+          "dropdown",
+          INPUT_MODULE_IDS.dropdown,
+          "@aio-ui/input/dropdown/module (dropdownInputModule)",
+          "the field falls back to a native select over the same options."
+        );
+      }
+
       if ((this.#input.type === "text" || this.#input.type === "number") && (cfg?.className === "loading")) {
         inputEl.classList.add("loading");
       }
+    }
+
+    // 📎 An uploader is additive: the field still opens the file dialog, it just stops
+    // there. `onFileSelected` never fires and nothing is previewed, so say it once.
+    if (this.#input.type === "file" && !this.#offers("getFiles")) {
+      this.#missing(
+        "file",
+        INPUT_MODULE_IDS.file,
+        "@aio-ui/input/file-uploader/module (fileUploaderInputModule)",
+        "the field is a plain file input: no preview, and onFileSelected never fires."
+      );
     }
 
     if (inputEl) {
@@ -440,6 +552,17 @@ export class InputBuilder extends Builder<InputElementType, iInputConfig> {
     // and the popover all need a mounted control (and, for the uploader, its `.field`).
     if (inputEl) {
       for (const module of this.#modules) module.decorate?.(wrapper, inputEl, this.#input, this.#moduleContext);
+
+      // Purely additive: the control is untouched and `config.popover` is simply not
+      // attached. Worth a line, never worth a throw.
+      if (cfg?.popover && this.#popoverMissing) {
+        this.#missing(
+          "popover",
+          INPUT_MODULE_IDS.popover,
+          "@aio-ui/input/popover/module (popoverInputModule)",
+          "config.popover is ignored and no anchor attaches to the control."
+        );
+      }
     }
 
     return wrapper!;

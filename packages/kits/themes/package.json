@@ -1,6 +1,6 @@
 {
   "name": "@aio-ui/themes",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "type": "module",
   "description": "Aggregated public surface for themes.",
   "files": [
@@ -9,18 +9,22 @@
   ],
   "exports": {
     ".": {
-      "development": "./index.ts",
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     }
   },
   "dependencies": {
-    "@aio-ui/theme-default": "^0.2.1",
-    "@aio-ui/theme-cyberpunk": "^0.2.1",
-    "@aio-ui/theme-horizontal": "^0.2.1"
+    "@aio-ui/theme-default": "0.2.2",
+    "@aio-ui/theme-cyberpunk": "0.2.2",
+    "@aio-ui/theme-horizontal": "0.2.2"
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "prepublishOnly": "npm run build"
-  }
+  },
+  "bundledDependencies": [
+    "@aio-ui/theme-cyberpunk",
+    "@aio-ui/theme-default",
+    "@aio-ui/theme-horizontal"
+  ]
 }

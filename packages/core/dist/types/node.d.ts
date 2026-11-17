@@ -17,7 +17,14 @@ declare global {
         __payload: any;
         __index: number;
         __templateId: string;
-        getMetadata: ((context: iMetadataContext) => any) | undefined | null;
+        /**
+         * The record pool this element was stamped with.
+         *
+         * Omitting the context returns the records exactly as stamped. Passing one rebases
+         * every key onto a new scope and parents the roots under `parentKey` — that is how a
+         * builder's tree is sewn into the page that hosts it.
+         */
+        getMetadata: ((context?: iMetadataContext) => any) | undefined | null;
         mount: (compositeOutput: iCompositeBuilderOutput | HTMLElement | null | any) => void;
     }
 }

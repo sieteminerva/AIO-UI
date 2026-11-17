@@ -67,9 +67,15 @@ export declare class ModuleRegistry<TContext = unknown, TResult = unknown> {
     /**
      * Registers a module definition.
      *
+     * @summary A definition is `{ id, load }`. A **manifest ref** — `{ id, path, export }`, the
+     * shape an AST declares — is not a definition: only `ComponentRegistry` (or
+     * `resolveModuleDefinitions()`) can turn a specifier into a live module. Registering a ref used
+     * to succeed silently and fail three layers later inside a consumer's form, so the door now
+     * names the mistake instead of storing it.
      * @param definition - Definition to register; its `id` becomes the lookup key.
      * @returns The current registry instance, for fluent registration chains.
-     * @throws {RegistryError} With code `INVALID_ID` for a malformed id, or `DUPLICATE_ID` when the policy is `"error"` and the id exists.
+     * @throws {RegistryError} With code `INVALID_ID` for a malformed id, `INVALID_DEFINITION` when
+     *   `load` is missing, or `DUPLICATE_ID` when the policy is `"error"` and the id exists.
      * @example
      * modules.register(validationFormAdapter);
      */

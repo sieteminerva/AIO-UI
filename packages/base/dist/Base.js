@@ -785,6 +785,49 @@ export class Builder {
         // console.log(`[Lifecycle Security] _nodes Map successfully liquidated. Memory state at 0B leak.`);
     }
     /**
+     * 🔎 INSPECT — what this instance built, as data instead of DOM.
+     *
+     * Designed for a caller that cannot look at a screen: a test, a generator or an agent.
+     * It answers three questions in one synchronous call — *which keys exist*, *what markup
+     * did they produce*, and *which elements does each key own* — without touching the
+     * document, waiting for a stylesheet, or knowing this component's payload contract.
+     *
+     * Three properties are load-bearing, each pinned by a test next door:
+     *
+     * - **Deterministic.** The identity seed comes from the payload (`buildNamespace`, keys
+     *   sorted), never from an instance counter, so the same payload yields the same markup.
+     *   A snapshot diff is therefore a real diff.
+     * - **Idempotent.** `hierarchy.elements` is rebuilt from the live tree, so reading twice
+     *   returns the same data and re-walking changes nothing.
+     * - **Hierarchy-first.** `records` on a builder root holds one item (its own); the page
+     *   graph lives in `inspectPage()` on the renderer side. Reporting `keys`/`hierarchy`
+     *   first keeps the useful half from being hidden behind the thin one.
+     *
+     * `html` is deliberately raw: attribute order and the anti-FOUC markers (`data-loaded`,
+     * `--is-loading`) are left in. Normalising here would hide a regression from the caller.
+     *
+     * @returns Markup, keys, relations, namespace and the root records.
+     *
+     * @example
+     * const builder = new SectionBuilder(config);
+     * builder.create(payload);
+     * const { html, keys } = builder.inspect();
+     *
+     * @summary Lives in the class body on purpose: `Builder.prototype` is frozen at the
+     *   bottom of this file, so this hook cannot be bolted on later.
+     */
+    inspect() {
+        const keys = Object.keys(this.hierarchy.get());
+        const root = keys.length ? this.load(keys[0]) : null;
+        return {
+            html: root ? root.outerHTML : "",
+            keys,
+            hierarchy: this.hierarchy.get(),
+            namespace: this.instanceNamespace,
+            records: (root?.getMetadata?.() ?? []),
+        };
+    }
+    /**
      * Recursively parses CSS selector chains (e.g., ".column>neon", "div.col-4>.card-wrapper")
      * into a nested DOM hierarchy.
      */

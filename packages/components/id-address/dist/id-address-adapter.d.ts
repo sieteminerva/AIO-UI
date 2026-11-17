@@ -18,7 +18,7 @@ export interface IAddressAdapter {
     selector?: Object;
     textContent?: Object;
 }
-export declare const setPlaceholderText: (element: HTMLInputElement | HTMLSelectElement, text: string) => HTMLInputElement | HTMLSelectElement;
+export declare const setPlaceholderText: (element: HTMLInputElement | HTMLSelectElement, text: string) => HTMLSelectElement | HTMLInputElement;
 export declare function __setloadingState(el: HTMLInputElement | HTMLSelectElement, level: any, state?: string, placeholderEl?: HTMLInputElement | null): void;
 export declare function __setErrorState(el: HTMLInputElement | HTMLSelectElement, level: any, _message: string, placeholderEl?: HTMLInputElement | null): void;
 //# sourceMappingURL=id-address-adapter.d.ts.map

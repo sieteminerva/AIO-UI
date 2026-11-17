@@ -1,5 +1,5 @@
 /** Machine-readable failure reasons raised by the registry kernel. */
-export type RegistryErrorCode = "DUPLICATE_ID" | "INVALID_ID" | "INVALID_SCOPE" | "MISSING_ENTRY" | "MISSING_DEPENDENCY" | "CYCLIC_DEPENDENCY";
+export type RegistryErrorCode = "DUPLICATE_ID" | "INVALID_ID" | "INVALID_SCOPE" | "INVALID_DEFINITION" | "MISSING_ENTRY" | "MISSING_DEPENDENCY" | "CYCLIC_DEPENDENCY";
 /** Extra context attached to a {@link RegistryError}. */
 export interface iRegistryErrorDetails {
     /** Registry scope that raised the error. */

@@ -1,34 +1,30 @@
 /**
- * Input module registry.
+ * Input module registry — **data and helpers only, zero implementations.**
  *
  * The input layer has its own sub-modules — controls nobody should pay for unless the
  * field asks for them: a dropdown (a whole builder), the uploader (~1.8k lines), the
- * action button set, and popovers. They are declared here as **definitions**, the same
- * shape `FormRegistry` uses, so:
+ * action button set, and popovers. This file declares them as **refs** (`InputModuleManifest`,
+ * strings) and offers the helpers that walk a preset; the live definitions
+ * (`INPUT_MODULE_DEFINITIONS`, `{ id, load }`) live in `./InputModules`, behind the
+ * `@aio-ui/input/modules` subpath.
  *
- * - `InputBuilder` renders a field without importing any of them,
- * - a project picks the definitions (`INPUT_MODULE_DEFINITIONS` or its own set) or injects its
- *   own `ModuleLoader` through `config.modules`,
- * - the set can later move into installable packages one definition at a time (fase 7).
+ * That split is deliberate: importing `@aio-ui/input` must not compile the four modules.
+ * `scripts/bundle-probe.mjs` proves it against the parsed module graph — which is also why
+ * no helper here may name a default preset: a default parameter is an import edge.
+ *
+ * The helpers therefore take an **optional** preset and do nothing without one. There is
+ * nothing to mount, read or offer when the host declared no modules — that is a capability,
+ * not an error.
  *
  * This is *not* the field-type matrix — that is `FieldTypes.ts`. This file decides who is
  * allowed to touch a field while it is being built.
  */
 import type { iComponentModuleRef } from "@aio-ui/core";
-import type { InputModuleDefinition, InputModulePreset } from "./InputModuleTypes";
+import type { InputModulePreset } from "./InputModuleTypes";
 export { INPUT_MODULE_IDS } from "./InputModuleTypes";
 export type { InputModuleId, InputModuleItem, InputModulePreset, iInputAdapter, iInputModuleContext, InputModuleDefinition, } from "./InputModuleTypes";
 /**
- * Every adapter the input layer itself provides — the default set.
- *
- * @summary Registration order is decorate order, so `controls` (the action set) runs
- * before `popover`, which anchors to a wrapper the controls may have changed. Named
- * "definitions" because that is what the items are: nothing here is instantiated until
- * a field, a form or a helper asks for it.
- */
-export declare const INPUT_MODULE_DEFINITIONS: InputModuleDefinition[];
-/**
- * The same stack as manifest refs, so a parent component can declare it without importing
+ * The stack as manifest refs, so a parent component can declare it without importing
  * classes and the registry can resolve one entry at a time.
  *
  * @summary `scope` is deliberately absent here: these are input-layer modules, and it is
@@ -36,8 +32,6 @@ export declare const INPUT_MODULE_DEFINITIONS: InputModuleDefinition[];
  * the list in its own manifest.
  */
 export declare const INPUT_MODULE_MANIFEST: iComponentModuleRef[];
-/** Ids of the definitions above, so a test can pin the two shapes together. */
-export declare const INPUT_MODULE_DEFINITION_IDS: string[];
 /**
  * Offers a subtree to every module in the preset.
  *
@@ -47,7 +41,8 @@ export declare const INPUT_MODULE_DEFINITION_IDS: string[];
  * adapter — and a preset without the `file` module simply has nothing to mount.
  *
  * @param root - Subtree to scan.
- * @param preset - Definitions to resolve. Defaults to the core set.
+ * @param preset - Definitions to resolve. Omit it and nothing is mounted: without a
+ *   declared preset there is no module to run, and guessing one would undo the split.
  */
 export declare function mountInputModules(root: Document | HTMLElement, preset?: InputModulePreset): void;
 /**
@@ -56,7 +51,7 @@ export declare function mountInputModules(root: Document | HTMLElement, preset?:
  * @param scope - Element the set acts on.
  * @param actions - Declared actions; the module normalises the shape.
  * @param position - Where the buttons sit relative to the scope.
- * @param preset - Definitions to resolve. Defaults to the core set.
+ * @param preset - Definitions to resolve. Omit it and there is no controls module to ask.
  * @returns The controls node, or `null` when the preset has no controls module.
  *
  * @summary The group-level entry point: `FormBuilder` offers a `<fieldset>` here and never
@@ -68,7 +63,8 @@ export declare function mountControls(scope: HTMLElement, actions: any, position
  * The files currently selected inside a form, keyed by input name.
  *
  * @param formId - Id of the form that owns the file inputs.
- * @param preset - Definitions to resolve. Defaults to the core set.
+ * @param preset - Definitions to resolve. Omit it and the answer is "no files", because
+ *   no module can read them.
  * @returns Raw files; empty when the preset has no module that can read them.
  */
 export declare function inputFilesOf(formId: string, preset?: InputModulePreset): Record<string, File[]>;

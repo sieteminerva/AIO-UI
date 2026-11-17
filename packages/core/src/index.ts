@@ -14,6 +14,7 @@
 // ---- runtime -------------------------------------------------------------
 export { ComponentRegistry, mergeBuildConfig } from "./ComponentRegistry";
 export { DOMRenderer } from "./DOMRenderer";
+export { inspectPage } from "./Inspect";
 export { getBuilderAdapter, setBuilderAdapter } from "./BuilderPort";
 export {
   ensureStylesheet,
@@ -40,6 +41,7 @@ export {
 // ---- contracts -----------------------------------------------------------
 export type { iComponentAssetMaps, iComponentManifest, iComponentModuleRef, RegisterFn } from "./ComponentRegistry";
 export type { iBuilderAdapter } from "./BuilderPort";
+export type { iPageInspection } from "./Inspect";
 export type { iStyleLoader } from "./Stylesheets";
 export type { TemplateHandler } from "./TemplateRegistry";
 export type {

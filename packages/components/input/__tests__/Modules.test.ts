@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ModuleLoader, resolveModuleDefinitions } from "@aio-ui/module-loader";
 
@@ -66,6 +66,16 @@ describe("input module registry", () => {
  */
 describe("degradation without modules", () => {
   const types = Object.keys(INPUT_TYPE_REGISTRY) as Array<keyof typeof INPUT_TYPE_REGISTRY>;
+
+  // This matrix renders every degraded field on purpose, so the layer says so out loud.
+  // The sentences themselves are asserted in `Missing.test.ts`; here they are noise.
+  beforeEach(() => {
+    vi.spyOn(console, "warn").mockImplementation(() => { });
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
 
   function render(type: string): HTMLElement {
     return new InputBuilder({ modules: [] }).create({

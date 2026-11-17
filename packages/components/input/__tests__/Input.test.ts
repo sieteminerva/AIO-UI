@@ -13,7 +13,7 @@ import { ModuleLoader } from "@aio-ui/module-loader";
  */
 
 function build(schema: Record<string, any>, config: Record<string, any> = {}): { container: HTMLElement; control: HTMLElement } {
-  // The layer ships no preset of its own since `0.3.0`, so this file states the one it
+  // The layer ships no preset of its own since `0.2.2`, so this file states the one it
   // exercises. Degradation with no modules at all is pinned in `Modules.test.ts`.
   const container = new InputBuilder({ modules: INPUT_MODULE_DEFINITIONS, ...config } as any).create(schema as any) as HTMLElement;
   const control = container.querySelector("input, textarea, select") as HTMLElement;
@@ -252,12 +252,12 @@ describe("input module registry", () => {
     expect(container.querySelector("button")).not.toBeNull();
   });
 
-  it("renders the bare field when the controls module is not registered", () => {
-    const { container } = build(withActions, { modules: new ModuleLoader("input", []) });
-
-    expect(container.classList.contains("actions")).toBe(false);
-    expect(container.querySelector("button")).toBeNull();
-    expect(container.querySelector("input")).not.toBeNull();
+  it("refuses a declared action set when the controls module is not registered", () => {
+    // A field that declared buttons and got none is a hole, not a plainer control, so the
+    // degradation is a throw with the fix in the message — `Missing.test.ts` pins the wording.
+    expect(() => build(withActions, { modules: new ModuleLoader("input", []) })).toThrow(
+      /"controls" module is not in this builder's set/
+    );
   });
 
   it("lets a project module own a field type the registry has never heard of", () => {

@@ -198,7 +198,10 @@ import { FormBuilder, FORM_ADAPTER_MANIFEST } from "@aio-ui/form";
 import { inputFormAdapter } from "@aio-ui/form/Input.FormAdapter";
 
 // Want everything: one import of the definitions — note the subpath, not the root.
+// Nine entries: four engines, `input`, and the four field modules. A form built this way
+// has a real dropdown, a real uploader and a real action set.
 import { FORM_ADAPTER_DEFINITIONS } from "@aio-ui/form/adapters";
+new FormBuilder({ modules: new ModuleLoader("form", FORM_ADAPTER_DEFINITIONS) });
 
 // Want less: each adapter is its own subpath, so the rest is never loaded.
 new FormBuilder({ modules: new ModuleLoader("form", [inputFormAdapter]) });
@@ -207,21 +210,24 @@ new FormBuilder({ modules: new ModuleLoader("form", [inputFormAdapter]) });
 const refs = FORM_ADAPTER_MANIFEST.filter((ref) => (ref.scope ?? "form") === "form");
 new FormBuilder({ modules: new ModuleLoader("form", await resolveModuleDefinitions(refs)) });
 
-// Fields that need dropdown/file/controls/popover need the input layer declared too.
+// A trimmed stack that still needs dropdown/file/controls/popover declares the input layer
+// separately — same four definitions, the form just has to know they are field presets.
 import { INPUT_MODULE_DEFINITIONS } from "@aio-ui/input/modules";
 new FormBuilder({ modules: loader, inputModules: INPUT_MODULE_DEFINITIONS });
 ```
 
-Why the subpath: since `0.3.0` the builder ships **no** stack of its own, so importing
+Why the subpath: since `0.2.2` the builder ships **no** stack of its own, so importing
 `@aio-ui/form` compiles no engine — `scripts/bundle-probe.mjs` fails the `check` gate if that ever
 stops being true. A builder with no modules throws on the first `create()` and names the import.
 
 Two traps, in order of how often they bite:
 
-1. **`scope: "input"` entries are not form adapters.** They are field presets — pass them as
-   `config.inputModules`, or through `form.provideModules({ id: definition })`, never to
-   `config.modules`. Omit them and every field is a plainer control (a dropdown degrades to a
-   native `<select>`), never a hole.
+1. **A missing sub-module is never silent.** Omit one and the field keeps working in a plainer
+   shape — a dropdown becomes a native `<select>`, a `file` field a plain file input, a popover
+   is not attached — but the layer says so: one `console.warn` per builder and capability, plus a
+   `moduleMissing` event through `config.emit`. Two cases **throw** instead, because a warning
+   would leave a hole: a declared `config.actions` with no `controls` module (the buttons would
+   never exist) and a `config.files` policy with no `file` module (the bytes would be dropped).
 2. **`resolveModuleDefinitions()` is async and must finish before `create()`.** A builder's render
    is synchronous and never owns module I/O.
 

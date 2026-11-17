@@ -13,14 +13,6 @@ Why / stages: `.guidance/plan-framework.md`. Engineering rules:
 
 ## Next
 
-- **B53b — missing sub-modules speak, and the form owns the full stack** — `reportMissing()` in
-  `packages/components/input/Missing.ts`: warn once per builder+capability (plus a `moduleMissing`
-  emit) for `dropdown`/`popover`, throw at the declaration site for a declared `actions` set with no
-  `controls` module and in `beforeSubmit` for a `config.files` policy with no `file` module.
-  `@aio-ui/form/adapters` re-includes the four input definitions and `Form.prepare()` routes ids in
-  `INPUT_MODULE_IDS` into `#inputModules`; `@aio-ui/form` moves `@aio-ui/input` to a real dependency.
-  The probe's `form-full` must then show nine implementations, `form-root` still none.
-  → `.guidance/project/TASK-form-modules.md` (D1–D3)
 - **B54 — one closure graph, one export index** — `scripts/closure.mjs` (topological closure from
   `dependencies` + `peerDependencies`, `--json`, cycle report, size per closure) and
   `scripts/exports.mjs` → `docs/framework/exports.json` + a `check:exports` gate that fails when a
@@ -53,6 +45,19 @@ Why / stages: `.guidance/plan-framework.md`. Engineering rules:
 
 ## Landed
 
+- **Batch 53b** — every degraded capability **speaks**, and one import is the whole form.
+  `input/Missing.ts` (`reportMissing`, on the new `@aio-ui/input/Missing` subpath, never the root)
+  warns once per builder+capability and emits `moduleMissing` for `dropdown`/`file`/`popover`, and
+  throws where a warning would leave a hole: a declared `config.actions` with no `controls` module
+  (field and group alike) and a `config.files` policy with no `file` module. `capability` detection
+  is method sniffing (`getFiles`, `renderActions`) plus the ids the preset declared — the popover
+  only decorates, so it has nothing to sniff. `FORM_ADAPTER_DEFINITIONS` is now **nine**: the four
+  engines, `input`, and the four input modules from `@aio-ui/input/modules`; `Form.#loadFeatures()`
+  skips ids in `INPUT_MODULE_IDS` and `#routeInputModules()` hands those definitions to the field
+  preset, so the manifest keeps its five form-scope refs. `@aio-ui/form` now lists `@aio-ui/input`
+  under `dependencies`. Proofs: `check:bundle` → **152 parsed module(s)** (was 140), a dropdown
+  rendered through the one default import (`inspectPage` html has the dropdown root and no
+  `<select>`), 8 new `Missing.test.ts` cases, 4 new form cases.
 - **Batch 53** — the form and input presets are **opt-in, and the module graph proves it**: the two
   registries keep only data (manifest refs, ids, helpers) while the live definitions moved to
   `@aio-ui/form/adapters` and `@aio-ui/input/modules`; both builders lost their default stack, so

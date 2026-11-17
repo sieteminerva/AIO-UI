@@ -132,6 +132,7 @@
     "stylesRoot": "dist",
     "subpaths": {
       ".": "dist/index.js",
+      "./adapters": "dist/FormAdapters.js",
       "./Form.css": "dist/Form.css",
       "./FormLayout": "dist/FormLayout.js",
       "./FormMessages": "dist/FormMessages.js",
@@ -164,8 +165,10 @@
     "stylesRoot": "dist",
     "subpaths": {
       ".": "dist/index.js",
+      "./modules": "dist/InputModules.js",
       "./InputRegistry": "dist/InputRegistry.js",
       "./InputModuleTypes": "dist/InputModuleTypes.js",
+      "./Missing": "dist/Missing.js",
       "./FieldTypes": "dist/FieldTypes.js",
       "./Attribute": "dist/Attribute.js",
       "./FormValues": "dist/FormValues.js",

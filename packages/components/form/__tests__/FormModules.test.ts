@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 
 import { INPUT_MODULE_IDS } from "@aio-ui/input/InputRegistry";
 import type { iInputAdapter } from "@aio-ui/input/InputModuleTypes";
+import { inspectPage } from "@aio-ui/core";
 import { ModuleLoader, resolveModuleDefinitions } from "@aio-ui/module-loader";
 
 import type { iFormModuleContext } from "../FormModuleTypes";
@@ -31,7 +32,7 @@ beforeEach(() => {
 /**
  * A form on the one adapter every field needs.
  *
- * Since `0.3.0` there is no default stack, so a test states its contract by naming one: a
+ * Since `0.2.2` there is no default stack, so a test states its contract by naming one: a
  * plain-field test needs `inputFormAdapter` and nothing else.
  */
 function stack(): FormBuilder {
@@ -57,9 +58,11 @@ function markerAdapter(): iInputAdapter & { seen: string[] } {
 
 describe("form adapter manifest", () => {
   it("declares exactly the adapters the definitions provide", () => {
+    const inputIds = new Set<string>(Object.values(INPUT_MODULE_IDS));
     const formScoped = FORM_ADAPTER_MANIFEST.filter((ref) => (ref.scope ?? "form") === "form").map((ref) => ref.id);
 
-    expect(formScoped).toEqual(FORM_ADAPTER_IDS);
+    // The form scope is the definitions minus the field layer's ids — one stack, two layers.
+    expect(formScoped).toEqual(FORM_ADAPTER_IDS.filter((id) => !inputIds.has(id)));
     expect(new Set(FORM_ADAPTER_IDS).size).toBe(FORM_ADAPTER_IDS.length);
   });
 
@@ -73,11 +76,35 @@ describe("form adapter manifest", () => {
     }
   });
 
-  it("keeps the definition list free of input modules", () => {
-    const inputIds = new Set<string>(Object.values(INPUT_MODULE_IDS));
-    const leaked = FORM_ADAPTER_DEFINITIONS.filter((definition) => inputIds.has(String(definition.id)));
+  it("keeps the manifest's form scope at the five, and the definitions at the full nine", () => {
+    // Two lists, two jobs. The manifest is *what a registry may resolve* and keeps the form
+    // scope at five (the input four are re-declared with `scope: "input"`); the definitions
+    // are *what one import means*, and that is the whole form — engines plus field modules.
+    const inputIds = Object.values(INPUT_MODULE_IDS);
 
-    expect(leaked).toEqual([]);
+    expect(FORM_ADAPTER_IDS).toHaveLength(5 + inputIds.length);
+    for (const id of inputIds) expect(FORM_ADAPTER_IDS).toContain(id);
+
+    const formScoped = FORM_ADAPTER_MANIFEST.filter((ref) => (ref.scope ?? "form") === "form").map((ref) => ref.id);
+    expect(formScoped).toHaveLength(5);
+  });
+
+  it("routes the input ids to the fields instead of loading them as form features", () => {
+    // The stack is one list, but not one layer: a loader carrying all nine must leave the
+    // form with five features and hand the other four to the field preset. Doing it by id
+    // (not by `scope`) is what keeps a manifest written before `scope` existed working.
+    const loader = new ModuleLoader("form", FORM_ADAPTER_DEFINITIONS);
+    const form = new FormBuilder({ modules: loader });
+
+    const el = form.create([{ type: "text", id: "routed-field", title: "Field" }] as any) as HTMLElement;
+    document.body.appendChild(el);
+
+    const loaded = loader.loadedIds();
+    expect(loaded).toContain("input");
+    for (const id of Object.values(INPUT_MODULE_IDS)) {
+      // Never loaded as a form feature: the field layer instantiates its own copy.
+      expect(loaded, `${id} must not be loaded by the form loader`).not.toContain(id);
+    }
   });
 });
 
@@ -171,13 +198,61 @@ describe("hand-wired modules (no registry, no shell)", () => {
     expect(loader.ids()).toEqual(["input"]);
   });
 
+  it("renders a dropdown as a dropdown from the one default import", () => {
+    // The end-to-end proof of the routing: without it the field would fall back to a native
+    // `<select>` — the exact degradation the layer warns about.
+    const form = new FormBuilder({ modules: new ModuleLoader("form", FORM_ADAPTER_DEFINITIONS) });
+
+    const el = form.create([
+      { type: "dropdown", id: "pick", title: "Pick", config: { options: [{ value: "a", label: "A" }] } },
+    ] as any) as HTMLElement;
+    document.body.appendChild(el);
+
+    expect(el.querySelector("#pick")).not.toBeNull();
+    expect(el.querySelector("select")).toBeNull();
+
+    // Proof of render, not "it looks right": the tree reports what it built, and the
+    // dropdown root — the module's own markup — is in it instead of a native select.
+    const built = inspectPage(el);
+    expect(built.nodeCount).toBeGreaterThan(0);
+    expect(built.html).toContain("dropdown");
+    expect(built.html).not.toContain("<select");
+  });
+
+  it("refuses a group that declared buttons when nothing can render them", () => {
+    // A warning is not enough: the fieldset would render and the buttons would never exist.
+    const form = stack();
+
+    expect(() =>
+      form.create([
+        { id: "group", title: "Group", actions: ["editor"], group: [{ type: "text", id: "in-group", title: "Field" }] },
+      ] as any)
+    ).toThrow(/"controls" module is not in this builder's set/);
+  });
+
+  it("refuses a files policy that would receive no files", () => {
+    // Directly on the adapter: `beforeSubmit` is where the bytes either arrive or are lost,
+    // and a submit event cannot be asserted for a rejection without swallowing it.
+    const adapter = inputFormAdapter.load({
+      config: { files: async () => ({ uploaded: true }) },
+      form: { id: "policy-form" },
+      builderConfig: {},
+      inputModules: [],
+    } as any) as any;
+
+    return expect(adapter.beforeSubmit({})).rejects.toThrow(/@aio-ui\/input\/file-uploader\/module/);
+  });
+
   it("resolves the manifest into the same stack the definitions describe", async () => {
     // The manifest also carries the input layer (`scope: "input"`); those are field presets and
     // must not be handed to the form's own loader — `provideModules()` is the door for them.
     const formRefs = FORM_ADAPTER_MANIFEST.filter((ref) => (ref.scope ?? "form") === "form");
     const definitions = await resolveModuleDefinitions<iFormModuleContext, any>(formRefs);
 
-    expect(definitions.map((definition) => String(definition.id))).toEqual(FORM_ADAPTER_IDS);
+    const inputIds = new Set<string>(Object.values(INPUT_MODULE_IDS));
+    expect(definitions.map((definition) => String(definition.id))).toEqual(
+      FORM_ADAPTER_IDS.filter((id) => !inputIds.has(id))
+    );
 
     const form = new FormBuilder({
       modules: new ModuleLoader<iFormModuleContext, any>("form", definitions),

@@ -4,34 +4,30 @@
 > session, never appended: each is a summary plus the link to the real detail, which is opened only
 > after the user picks a card (`AGENT_RULES.md` §13).
 >
-> Rewritten 2026-11-17: the theme-console, menu and masonry cards were dropped on request and the
-> three below took their place. Card 1 is a **defect report from a real `.tgz` consumer**, card 2 is
-> a **spec handed over by the user**, card 3 is the queue that survived the rewrite.
+> Rewritten 2026-11-17: card 1 is a **defect report from a real `.tgz` consumer**, card 2 a **spec
+> handed over by the user**, card 3 the queue that survived the rewrite.
 
 ### 1. Form — modules that never get loaded without a shell
 
 A consumer installs the `.tgz` set by hand, skips `AioApp`, renders through `DOMRenderer` and calls
-`new FormBuilder({ modules: new ModuleLoader("form", FORM_ADAPTER_MANIFEST) })`. Every field throws
+`new FormBuilder({ modules: new ModuleLoader("form", FORM_ADAPTER_MANIFEST) })`. Every field threw
 `[FormBuilder] No module rendered the field`. Cause was a **shape mismatch, not missing behaviour**:
-`ModuleLoader` takes `iModuleDefinition` (`{ id, load }`); what was handed to it is
-`iComponentModuleRef` (`{ id, path, export }`), which only `ComponentRegistry` can resolve.
-**Landed (b52):** the door refuses a ref with `INVALID_DEFINITION` and names both shapes;
-`resolveModuleDefinitions()` bridges them; both `@aio-ui/form` and `@aio-ui/input` now export their
-full stack from the root _and_ per-adapter subpaths; README + handbook recipes added.
-**Landed (b53, 2026-11-17):** the default is opt-in and **proved** — the registries keep only data
-while the live definitions moved to `@aio-ui/form/adapters` / `@aio-ui/input/modules`, a builder with
-no modules throws on the first `create()` naming the import, and `check:bundle`
-(`scripts/bundle-probe.mjs`) asserts on parsed module ids that the two roots pull in none of the nine
-implementations while the two opt-in entries pull in all of them.
-**Input default:** none (B), shipped with its condition met — `__tests__/Modules.test.ts` walks every
-declared field type with `modules: []` and a `dropdown` degrades to a native `<select>`, never a hole.
-**Decided after b53 (owner, 2026-11-17):** every missing sub-module now **speaks** — `dropdown` and
-`popover` warn (once per builder, plus a `moduleMissing` emit), while a declared `actions` set with no
-`controls` module and a `config.files` policy with no `file` module **throw** with the reason in the
-message. `@aio-ui/form/adapters` becomes the *full* stack (it re-includes the four input modules, and
-`prepare()` routes ids in `INPUT_MODULE_IDS` to the fields), and `@aio-ui/form` gains
-`@aio-ui/input` as a real **dependency**. Numbering: third digit only while pre-release → `0.2.2`.
-**Next:** B53b — warnings/throws + full form stack + the dependency move; then B54.
+`ModuleLoader` takes `iModuleDefinition` (`{ id, load }`); a manifest carries
+`iComponentModuleRef` (`{ id, path, export }`), which only `ComponentRegistry` resolves.
+**Landed (b52/b53):** the door refuses a ref with `INVALID_DEFINITION` and names both shapes; the
+stack is opt-in and **proved** — the definitions live behind `@aio-ui/form/adapters` and
+`@aio-ui/input/modules`, a builder with no modules throws on the first `create()` naming the import,
+and `check:bundle` asserts on parsed module ids that both roots pull in none of the nine
+implementations while both opt-in entries pull in all of them.
+**Landed (b53b, 2026-11-17):** every degraded capability **speaks** — `input/Missing.ts` warns once
+per builder and capability (plus a `moduleMissing` emit) for `dropdown`/`file`/`popover`, and throws
+where a warning would leave a hole (declared `actions` with no `controls` module, `config.files` with
+no `file` module). `FORM_ADAPTER_DEFINITIONS` is **nine**, `prepare()` routes the input four to the
+field preset while the manifest keeps its five, and `@aio-ui/form` now depends on `@aio-ui/input` —
+proof: **152** parsed modules, a dropdown rendered from the one default import (`inspectPage`).
+**Next:** B54 — `closure.mjs` + `exports.mjs`. The frozen `.draft/release/v0.2.1` snapshot was
+removed (its layout predates `@aio-ui/input/Missing`), so 14 release checks are skipped until
+B55/B56 writes `v0.2.2` artefacts — open work, not a green.
 → `.guidance/project/TASK-form-modules.md`
 
 ### 2. Release — one-command offline installs from an orphan branch
@@ -41,23 +37,20 @@ message. `@aio-ui/form/adapters` becomes the *full* stack (it re-includes the fo
 `registry.npmjs.org` call for the `@aio-ui/*` peers. Tarballs become self-contained by staging the
 package, moving internal peers into exact `dependencies` + `bundledDependencies`, and copying the
 built dependency dirs into `<stage>/node_modules/@aio-ui/`.
-**Plan rewritten (2026-11-17):** the closure is a graph, computed once by `scripts/closure.mjs`, then
-shipped two ways — embedded (mode A, one URL) or declared (`install/<pkg>.txt`, mode B, one command,
-deduped). `scripts/exports.mjs` + a `check:exports` gate end the four-way export-map recomputation
-and catch a subpath whose file `files[]` excludes.
-**Budget measured:** mode A = 6.1 MB raw ≈ 2.2 MB gz (heaviest closure `form` 1.17 MB), so the
-proposed 25 MB would never fire; replaced by three gates — per tarball ≤ 2 MB, per version ≤ 8 MB,
-repo growth ≤ 3 MB gz.
-**Numbering (owner, 2026-11-17):** third digit only while pre-release — the next release is `0.2.2`,
-not `0.3.0`; breaking notes go in the release body.
+**Plan (2026-11-17):** the closure is a graph computed once by `scripts/closure.mjs`, then shipped
+two ways — embedded (mode A, one URL) or declared (`install/<pkg>.txt`, mode B). `scripts/exports.mjs`
++ a `check:exports` gate end the four-way export-map recomputation and catch a subpath whose file
+`files[]` excludes. **Budget measured:** mode A = 6.1 MB raw ≈ 2.2 MB gz (heaviest closure `form`
+1.17 MB), so the gates are per tarball ≤ 2 MB, per version ≤ 8 MB, repo growth ≤ 3 MB gz.
+**Numbering (owner):** third digit only while pre-release — next is `0.2.2`, not `0.3.0`.
 **Next:** B54 — `closure.mjs` + `exports.mjs` + `check:exports`.
 → `.guidance/project/TASK-releases-branch.md`
 
 ### 3. Carried queue — the small fixes that keep §16 honest
 
-`scripts/proof.mjs --report` (per-package `inspect()` coverage — the ratchet that makes §16
-mechanical), the dead `ElementCreatedEventBus.relay` call plus two leftover `console.log` in
-`DOMRenderer`, and `#cleanupMap` never being reset per `render()`.
+`scripts/proof.mjs --report` (per-package `inspect()` coverage — the ratchet that makes §16 mechanical),
+the dead `ElementCreatedEventBus.relay` call plus two leftover `console.log` in `DOMRenderer`, and
+`#cleanupMap` never being reset per `render()`.
 → `.guidance/project/framework.md` (`## Next`)
 
 ## Where everything else lives
@@ -74,8 +67,6 @@ mechanical), the dead `ElementCreatedEventBus.relay` call plus two leftover `con
 | Release + publish               | `docs/live-cdn-repo.md`                   |
 | Live demo / Pages               | `docs/framework/DEMO.md`                  |
 | Architecture decisions          | `.guidance/project/DECISIONS.md`          |
-
-Last updated: 2026-11-17
 
 ## Cross-project
 

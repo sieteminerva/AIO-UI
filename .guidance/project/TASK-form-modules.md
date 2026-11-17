@@ -295,13 +295,13 @@ whose matrix row names no control — so `dropdown` without its module is plaine
 
 ### D1 — every degraded capability speaks; the ones that cannot be warned about throw
 
-| Capability missing     | What the field does                                                   | Signal                                                                                                                                          |
-| ---------------------- | --------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| `dropdown`             | native `<select>` from the same options                               | **warn** — a plainer control, same answer                                                                                                        |
-| `popover`              | no anchor; the control is unchanged                                   | **warn** — purely additive                                                                                                                       |
-| `controls`             | no button set                                                         | **throw at the declaration site** when the schema declares `actions` — a group that asked for buttons and got none is a hole, not a plainer control |
-| `file`                 | plain `<input type="file">`, `onFileSelected` never fires            | **warn** on the field; **throw in `beforeSubmit`** when the form declares `config.files` — that policy would silently drop the bytes             |
-| `inputFormAdapter`     | no field can be built                                                 | **throw** on `create()` (already, b53)                                                                                                           |
+| Capability missing | What the field does                                       | Signal                                                                                                                                              |
+| ------------------ | --------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `dropdown`         | native `<select>` from the same options                   | **warn** — a plainer control, same answer                                                                                                           |
+| `popover`          | no anchor; the control is unchanged                       | **warn** — purely additive                                                                                                                          |
+| `controls`         | no button set                                             | **throw at the declaration site** when the schema declares `actions` — a group that asked for buttons and got none is a hole, not a plainer control |
+| `file`             | plain `<input type="file">`, `onFileSelected` never fires | **warn** on the field; **throw in `beforeSubmit`** when the form declares `config.files` — that policy would silently drop the bytes                |
+| `inputFormAdapter` | no field can be built                                     | **throw** on `create()` (already, b53)                                                                                                              |
 
 Mechanism — one helper, not four call sites: `packages/components/input/Missing.ts` exports
 `reportMissing({ capability, module, fix, severity })`.
@@ -315,7 +315,7 @@ Mechanism — one helper, not four call sites: `packages/components/input/Missin
 Proof: one test per table row (`vi.spyOn(console, "warn")`), one that the warn fires **once** for
 two degraded fields, and one per throw asserting the module id and the subpath appear in the message.
 
-### D2 — the form stack owns the input layer again, at the *entry* level
+### D2 — the form stack owns the input layer again, at the _entry_ level
 
 `@aio-ui/form/adapters` exports `FORM_ADAPTER_DEFINITIONS` **including** the four input definitions,
 and `Form.prepare()` routes every loader id in `INPUT_MODULE_IDS` into `#inputModules` — the same
@@ -328,10 +328,13 @@ for a dropdown builder. "All four on" is a **form** default, not an input one.
 
 ### D3 — `@aio-ui/form` installs `@aio-ui/input` automatically
 
-Move that internal edge from `peerDependencies` to `dependencies` (exact version) so installing the
-form tarball brings its field layer without a second URL. Every other internal edge stays a peer
-until B55 decides per package from the closure graph — that decision only becomes measurable once
-the graph exists.
+Move that internal edge from `peerDependencies` to `dependencies` so installing the form tarball
+brings its field layer without a second URL. The range stays a caret (`^0.2.x`) like every other
+internal edge: `scripts/version.mjs` rewrites them all to `^<version>` at bump time and its
+`--check` fails on anything that is not `^x.y.z`, so a literal pin would break the version gate for
+a distinction nobody can observe inside one fixed-version family. Every other internal edge stays a
+peer until B55 decides per package from the closure graph — that decision only becomes measurable
+once the graph exists.
 
 ### D4 — numbering: third digit only while pre-release
 
@@ -340,8 +343,10 @@ third digit saturates. Breaking notes live in the release body, not in the numbe
 
 ## Next
 
-1. **B53b** — D1 + D2 + D3 (input warnings/throws, the form's full default stack, `form` → `input` as
-   a dependency), with the probe's `form-full`/`form-root` expectations extended to cover the four
-   input modules.
-2. **B54** — `scripts/closure.mjs` + `scripts/exports.mjs` + `check:exports`.
-3. **B55/B56** — the release folder and the `0.2.2` publish, then the offline install proof.
+1. **B54** — `scripts/closure.mjs` + `scripts/exports.mjs` + `check:exports`. Note for the release
+   half: `orchestrator/release.test.ts` reads the frozen `.draft/release/v<version>/` snapshot, and
+   the stale `v0.2.1` directory was removed when B53b added the `@aio-ui/input/Missing` subpath (the
+   snapshot's layout predates it, so the closure check was comparing today's source against a
+   release that never contained it). Those 14 checks are **skipped** until B55/B56 writes `v0.2.2`
+   artefacts — re-run them there, and treat the skip count as open work, not as a green.
+2. **B55/B56** — the release folder and the `0.2.2` publish, then the offline install proof.

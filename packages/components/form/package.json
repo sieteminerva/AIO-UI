@@ -72,7 +72,9 @@
     "@aio-ui/http-service": "^0.2.1",
     "@aio-ui/message": "^0.2.1",
     "@aio-ui/module-loader": "^0.2.1",
-    "@aio-ui/utilities": "^0.2.1",
+    "@aio-ui/utilities": "^0.2.1"
+  },
+  "dependencies": {
     "@aio-ui/input": "^0.2.1"
   },
   "scripts": {

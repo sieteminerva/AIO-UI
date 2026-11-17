@@ -130,7 +130,7 @@ element.addEventListener("formSubmit", (event) => console.log(event.detail.data)
 
 No registry, no `AioApp`: build the form yourself and hand it the modules it may use. Three
 shapes, and only one of them is a loader input. **The builder ships no stack of its own** since
-`0.3.0`: the adapters live behind `@aio-ui/form/adapters`, so importing `@aio-ui/form` does not
+`0.2.2`: the adapters live behind `@aio-ui/form/adapters`, so importing `@aio-ui/form` does not
 compile a single engine.
 
 ```ts
@@ -138,7 +138,7 @@ import { ModuleLoader, resolveModuleDefinitions } from "@aio-ui/module-loader";
 import { FormBuilder, FORM_ADAPTER_MANIFEST } from "@aio-ui/form";
 import { FORM_ADAPTER_DEFINITIONS } from "@aio-ui/form/adapters";
 
-// 1. Everything — one import, the whole default stack (five adapters).
+// 1. Everything — one import, the whole stack: five form adapters + four field modules.
 new FormBuilder({ modules: new ModuleLoader("form", FORM_ADAPTER_DEFINITIONS) });
 
 // 2. Only what this form uses. Each adapter is its own subpath, so the rest is never loaded.
@@ -152,18 +152,31 @@ const definitions = await resolveModuleDefinitions(refs);
 new FormBuilder({ modules: new ModuleLoader("form", definitions) });
 ```
 
+**One import is the whole form.** `FORM_ADAPTER_DEFINITIONS` is nine entries: the four engines,
+`input`, and the four field modules (`dropdown`, `file`, `controls`, `popover`, re-exported from
+`@aio-ui/input/modules`). `prepare()` routes them by id — ids in `INPUT_MODULE_IDS` become the
+field preset, everything else is loaded as a form feature — which is the same rule
+`provideModules()` uses for a manifest. So a hand-wired form gets a real dropdown, a real
+uploader and a real action set from one line. `bundle-probe` proves all nine are in that graph
+and none of them in the root's.
+
 Two rules, both enforced now:
 
 - **A ref is not a definition.** `{ id, path, export }` is data for `ComponentRegistry` or
   `resolveModuleDefinitions()`; a loader takes `{ id, load }`. Registering a ref used to be
   accepted silently and fail later as `No module rendered the field` — it now throws
   `RegistryError` with code `INVALID_DEFINITION` and names both shapes.
-- **Input sub-modules are not form adapters.** `scope: "input"` entries (`dropdown`, `file`,
-  `controls`, `popover`) are field presets: pass them through `config.inputModules` (or
-  `form.provideModules({ id: definition })`), never through `config.modules`. Leave them out and
-  every field is a plain labelled control — a dropdown degrades to a native `<select>` built from
-  the same options, never to a hole. Ask for the full layer with one import:
-  `import { INPUT_MODULE_DEFINITIONS } from "@aio-ui/input/modules"`.
+- **A missing capability speaks.** Without a module the field keeps working, in a plainer
+  shape: a `dropdown` becomes a native `<select>` over the same options, an uploader becomes a
+  plain file input, a popover is not attached. None of that is silent any more — each one
+  warns once per builder and emits `moduleMissing`, and the two cases a warning cannot cover
+  **throw** with the fix in the message: a declared `config.actions` with no `controls` module
+  (buttons would never exist), and a `config.files` policy with no `file` module (the policy
+  would receive no files and the bytes would be dropped).
+
+`@aio-ui/form` lists `@aio-ui/input` under **`dependencies`**, not peers: installing the form
+tarball brings its field layer with it, so the second URL is not something a consumer has to
+know about.
 
 A builder with **no** modules throws on the first `create()`, with the import that fixes it: a
 form with no adapter cannot render one field, and failing per field halfway through a schema

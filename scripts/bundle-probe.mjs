@@ -10,10 +10,11 @@
  *
  * Direction matters, and both are checked:
  *
- *   - **negative** — `@aio-ui/form` root does not parse the four form engines,
- *     `@aio-ui/input` root does not parse the four input sub-modules;
- *   - **positive** — `@aio-ui/form/adapters` and `@aio-ui/input/modules` do parse them,
- *     so the negative cases cannot be green merely because nothing resolved.
+ *   - **negative** — `@aio-ui/form` root does not parse the five form adapters and the
+ *     four input modules, `@aio-ui/input` root does not parse the four input sub-modules;
+ *   - **positive** — `@aio-ui/form/adapters` parses **all nine** (it is the full stack: one
+ *     import, whole form) and `@aio-ui/input/modules` parses its four, so the negative
+ *     cases cannot be green merely because nothing resolved.
  *
  * A build that produces no parsed module is a failure, not a pass.
  *
@@ -64,7 +65,9 @@ const CASES = [
   {
     name: "form-full",
     entry: "form-full.ts",
-    present: FORM_ADAPTERS,
+    // Nine: the form's own five, then the four the fields need. One import is the whole
+    // stack, which is only true if all nine are actually in the graph.
+    present: [...FORM_ADAPTERS, ...INPUT_MODULES],
     absent: [],
   },
   {

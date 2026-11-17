@@ -56,7 +56,7 @@ parent already loaded the set: the field then never loads or unloads modules the
 
 Four sub-modules hang off the field: `dropdown` (a whole builder), `file` (the uploader),
 `controls` (the action set) and `popover`. **None of them is compiled into the package root**
-since `0.3.0` — `scripts/bundle-probe.mjs` proves it against the parsed module graph. Ask for
+since `0.2.2` — `scripts/bundle-probe.mjs` proves it against the parsed module graph. Ask for
 all four with one import:
 
 ```ts
@@ -89,11 +89,23 @@ The two shapes, and what each is for:
 no control. Order is decorate order (`controls` before `popover`); a trimmed preset that keeps
 `popover` but drops `controls` still works, it just anchors to the field wrapper instead.
 
-**What a missing module costs:** a field is never a hole. `dropdown` without its module renders a
-native `<select>` from the same options; `file` is a plain file input with no uploader UI;
-`actions` and `popover` simply do nothing. `__tests__/Modules.test.ts` walks every declared type
-with `modules: []` and asserts a control still exists — that matrix is the condition the opt-in
-default hangs on.
+**What a missing module costs — and says.** A field is never a hole, and a degradation is
+never silent. `packages/components/input/Missing.ts` is the single voice:
+
+| Capability missing | What the field does                            | Signal                                                       |
+| ------------------ | ---------------------------------------------- | ------------------------------------------------------------ |
+| `dropdown`         | native `<select>` over the same options        | **warn**, once per builder + capability                      |
+| `popover`          | `config.popover` ignored, no anchor attached   | **warn**, same dedupe (ids the preset declared, not a guess) |
+| `file`             | plain file input, `onFileSelected` never fires | **warn**                                                     |
+| `controls`         | the field renders, the buttons never exist     | **throw** at the declaration site                            |
+
+Every warning is one `console.warn` **and** a `moduleMissing` event through `config.emit`
+(`{ builder, capability, module, fix, consequence, severity }`), so an app can surface it in
+its own UI instead of reading a console. The throws name the capability, the module id and the
+one subpath that fixes it — a declared action set that renders no buttons is a hole, not a
+plainer control, so a warning would not be enough. `__tests__/Modules.test.ts` walks every
+declared type with `modules: []` and asserts a control still exists; `__tests__/Missing.test.ts`
+pins the sentences.
 
 <!-- part: id=nodes role=contract -->
 

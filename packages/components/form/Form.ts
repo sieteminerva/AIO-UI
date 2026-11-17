@@ -148,7 +148,7 @@ export interface iFormConfig extends iBuilderConfig<FormElementType> {
   /**
    * Loader that supplies the Form's own sub-modules — **required to render a field**.
    *
-   * Since `0.3.0` the adapters are no longer compiled into `@aio-ui/form`: pass
+   * Since `0.2.2` the adapters are no longer compiled into `@aio-ui/form`: pass
    * `new ModuleLoader("form", FORM_ADAPTER_DEFINITIONS)` from `@aio-ui/form/adapters`
    * (or a subset, or your own). A builder with no modules throws on the first
    * `create()` instead of failing one field at a time.
@@ -227,9 +227,68 @@ export class FormBuilder extends Builder<FormElementType, iFormConfig> {
    *
    * @param context - Konteks host yang dioper ke definisi.
    * @returns Hasil modul, satu per adapter.
+   *
+   * @summary Sama persis dengan `resolveAll()` — hanya modul yang belum hidup yang
+   * dimuat — kecuali satu hal: id milik `INPUT_MODULE_IDS` dilewati. Id itu bukan
+   * perilaku form, melainkan preset sebuah field, dan `#routeInputModules()` yang
+   * menyerahkannya ke lapisan input. Tanpa aturan ini
+   * `@aio-ui/form/adapters` (stack penuh) akan memuat dropdown sebagai fitur form.
    */
   #resolved(context: iFormModuleContext): iFormAdapter[] {
-    return [...this.#activeLoader.resolveAll(context), ...this.#providedLive.values()] as iFormAdapter[];
+    return [...this.#loadFeatures(context), ...this.#providedLive.values()] as iFormAdapter[];
+  }
+
+  /**
+   * Memuat modul form yang baru hidup pada satu fase.
+   *
+   * @param context - Konteks host yang dioper ke definisi.
+   * @returns Instance yang lahir pada pemanggilan ini saja.
+   *
+   * @summary Sama persis dengan `resolveAll()` — hanya modul yang belum hidup yang
+   * dimuat, urutan registrasi dipertahankan — kecuali satu hal: id milik
+   * `INPUT_MODULE_IDS` dilewati. Id itu bukan perilaku form, melainkan preset sebuah
+   * field, dan `#routeInputModules()` yang menyerahkannya ke lapisan input.
+   */
+  #loadFeatures(context: iFormModuleContext): iFormAdapter[] {
+    const inputIds = new Set<string>(Object.values(INPUT_MODULE_IDS));
+    const features: iFormAdapter[] = [];
+
+    for (const id of this.#activeLoader.ids()) {
+      if (inputIds.has(id)) continue;
+      if (this.#activeLoader.isLoaded(id)) continue;
+
+      const instance = this.#activeLoader.load(id, context);
+      if (instance) features.push(instance as iFormAdapter);
+    }
+
+    return features;
+  }
+
+  /**
+   * Memindahkan id lapisan field dari loader ke preset field.
+   *
+   * @summary `FORM_ADAPTER_DEFINITIONS` adalah stack **penuh**, jadi loader form juga
+   * membawa empat definisi input. Keempatnya bukan perilaku form: mereka preset yang
+   * dipakai saat sebuah field dibangun. Definisi diserahkan apa adanya (bukan instance)
+   * karena `InputBuilder` yang memiliki siklus hidupnya — satu instance per render field,
+   * dilepas oleh builder yang membuatnya.
+   *
+   * Id yang sudah diserahkan manifest (`provideModules()`) menang: host sudah menyatakan
+   * setnya, dan stack bawaan tidak boleh menimpanya.
+   */
+  #routeInputModules(): void {
+    const inputIds = new Set<string>(Object.values(INPUT_MODULE_IDS));
+    const routed: InputModuleItem[] = [];
+
+    for (const id of this.#activeLoader.ids()) {
+      if (!inputIds.has(id)) continue;
+      if (this.#inputModules.some((item) => String((item as any).id) === id)) continue;
+
+      const definition = this.#activeLoader.resolve(id);
+      if (definition) routed.push(definition as InputModuleItem);
+    }
+
+    if (routed.length) this.#inputModules = [...this.#inputModules, ...routed];
   }
 
   /**
@@ -395,6 +454,10 @@ export class FormBuilder extends Builder<FormElementType, iFormConfig> {
       inputs = inputs.content;
     }
     this.#inputs = Array.isArray(inputs) ? inputs : [inputs];
+
+    // 🧩 Satu impor, seluruh stack: definisi lapisan field yang ikut di loader dipindah
+    // ke preset field sebelum siklus render dimulai.
+    this.#routeInputModules();
 
     // 🌊 Siklus hidup baru per prepare: seluruh modul dilepas lalu dimuat ulang.
     // Loader yang diserahkan registry ikut dilepas — instance lama masih memegang form
@@ -845,7 +908,7 @@ export class FormBuilder extends Builder<FormElementType, iFormConfig> {
     // sekarang, setelah step multistep lahir dari attach() di atas. Loader aktif yang
     // memutuskan — termasuk loader dari manifest registry, yang dulu melewati fase ini
     // sehingga `calculation` tidak pernah hidup pada form yang dimount lewat registry.
-    this.#features.push(...this.#activeLoader.resolveAll(this._buildModuleContext(formElement, "initialize")));
+    this.#features.push(...this.#loadFeatures(this._buildModuleContext(formElement, "initialize")));
 
     // console.log(`[Form Engine v2] Form ID "${formElement?.id}" successfully compiled with active listeners.`);
   }

@@ -49,6 +49,37 @@ action buttons are present), `info`, `position` (`top | left | right | bottom`),
 when a parent already loaded the set — the field then never loads or unloads modules the
 host owns (that is what `Form` does).
 
+<!-- part: id=modules -->
+
+### Modules — load only what you use
+
+Four sub-modules hang off the field: `dropdown` (a whole builder), `file` (the uploader),
+`controls` (the action set) and `popover`. Each has its own `*/module` entry, and each entry
+exports its **definition**, so a consumer can take one without instantiating the other three:
+
+```ts
+import { InputBuilder } from "@aio-ui/input";
+import { dropdownInputModule } from "@aio-ui/input/dropdown/module";
+import { inputControlsInputModule } from "@aio-ui/input/controls/module";
+
+new InputBuilder({ modules: [dropdownInputModule, inputControlsInputModule] });
+```
+
+Both shapes are exported from the root when the whole stack is what you want:
+
+```ts
+import { INPUT_MODULE_DEFINITIONS, INPUT_MODULE_MANIFEST } from "@aio-ui/input";
+```
+
+- `INPUT_MODULE_DEFINITIONS` — what `modules` and `ModuleLoader` take: `{ id, load }`.
+- `INPUT_MODULE_MANIFEST` — the same list as `{ id, path, export }` refs, for an AST whose
+  host lets `ComponentRegistry` (or `resolveModuleDefinitions()`) resolve them.
+
+**A ref is not a definition.** Handing a ref to a loader now throws
+`RegistryError` / `INVALID_DEFINITION` at registration instead of failing later as a field with
+no control. Order is decorate order (`controls` before `popover`); a trimmed preset that keeps
+`popover` but drops `controls` still works, it just anchors to the field wrapper instead.
+
 <!-- part: id=nodes role=contract -->
 
 ## Nodes

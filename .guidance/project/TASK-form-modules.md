@@ -1,6 +1,7 @@
 # TASK — form modules without a shell (manifest refs vs. definitions)
 
-Recorded 2026-11-17. Not started. Owner band: **Framework** (`packages/components/form`,
+Recorded 2026-11-17. **A1–A4 landed in batch 52**; the compile-level question in §Decision is still open.
+Owner band: **Framework** (`packages/components/form`, `packages/components/input`,
 `packages/modules/module-loader`), docs touch `docs/agent/handbook.md`.
 
 ## The report
@@ -88,3 +89,59 @@ Directly encodes "the two shapes must say the same thing".
 | the negative                    | test: no `renderField` feature → still the explicit field error (do not lose the loud failure) |
 
 Gate: `npm run check` before the commit, `npm run verify` once at the end of the batch.
+
+## Landed (batch 52)
+
+- **A1** — `RegistryError` gained the code `INVALID_DEFINITION`; `ModuleRegistry.register()` now
+  refuses anything without a `load()` and names the shape it was handed ("it looks like a manifest
+  ref (`path`/`export`)"), pointing at `FORM_ADAPTER_DEFINITIONS` or `resolveModuleDefinitions()`.
+- **A2** — `resolveModuleDefinitions(refs, { import? })` in `@aio-ui/module-loader`: async, parallel,
+  order-preserving, returns the **exported symbol itself** (no wrapper, one instance). Rejects a ref
+  with no `export` (it does not guess), an unimportable specifier, and a symbol that is not a
+  definition.
+- **A3** — the surface now says which shape is which:
+  - `@aio-ui/form` root exports `FORM_ADAPTER_DEFINITIONS`, `FORM_ADAPTER_IDS`,
+    `FORM_ADAPTER_MANIFEST`, `FORM_MODULE_IDS` + types (previously reachable only through the
+    undiscoverable `@aio-ui/form/FormRegistry` subpath);
+  - `@aio-ui/input` root exports `INPUT_MODULE_DEFINITIONS`, `INPUT_MODULE_DEFINITION_IDS`,
+    `INPUT_MODULE_IDS`, `INPUT_MODULE_MANIFEST`, `mountInputModules`, `inputFilesOf` + types.
+    Parity with form was missing, even though `input` had the same two-shape split;
+  - `packages/components/form/README.md` gained "Without a shell (direct `new FormBuilder`)",
+    `packages/components/input/README.md` gained "Modules — pay only for what you use", and
+    `docs/agent/handbook.md` gained "Wiring modules by hand — two shapes, one rule".
+- **A4** — pinned in tests: refs are refused at the door; a two-adapter stack renders fields with
+  the engines genuinely absent (`loadedIds()` proves it); every manifest ref resolves to a real
+  definition (`input/__tests__/Modules.test.ts`) so a typo in `path`/`export` can no longer hide
+  behind a string comparison; input-scoped definitions route through `provideModules()`.
+- **Side finding, fixed:** `input/__tests__/Modules.test.ts` called `.sort()` on the exported
+  `INPUT_MODULE_DEFINITION_IDS` constant, silently reordering the preset for every later test in
+  the file. Copy-then-sort now.
+
+Result: `verify` → 82 files, 723 passed, 1 skipped.
+
+## Decision still open — compile-level on-demand
+
+Per-adapter subpaths make a module **instantiable** on demand, but not yet **skippable at compile
+time**, because each package's own builder statically imports its full default preset:
+
+- `Form.ts:11` → `FORM_ADAPTER_DEFINITIONS` → all five adapters (cascade, multistep, calculation,
+  validation, input);
+- `Input.ts:7` → `INPUT_MODULE_DEFINITIONS` → all four (dropdown builder, uploader, controls,
+  popover).
+
+A synchronous `create()` cannot lazily `import()`, so the default must be reachable statically. Two
+ways out, both needing a call from the owner:
+
+1. **Keep the default, accept the cost** — every app that imports `@aio-ui/form` compiles the five
+   adapters, every app that imports `@aio-ui/input` compiles the four modules. The subpath exports
+   then only prevent *duplicate* copies and allow *behavioural* trimming.
+2. **Make the default opt-in** — `@aio-ui/form` ships `FormBuilder` with no adapters (the error
+   already tells you what to pass), and the full stack moves to an explicit entry
+   (`@aio-ui/form/adapters`, `@aio-ui/input/modules`). That is a breaking change: 12 test files and
+   every README example rely on `new FormBuilder({ schema })` working, and a payload with
+   `cascading: true` would silently stop cascading for anyone who forgot the import.
+
+Recommendation: (2) as a `0.3.0` item, done in one batch with the tests rewritten to inject the
+stack, **not** silently. Until then the docs must not promise "unused modules are not compiled" —
+they currently promise exactly that, in the two new sections, which is why this decision is not
+cosmetic.

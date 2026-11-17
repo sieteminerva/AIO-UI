@@ -6,7 +6,9 @@
 
 ## Live claims
 
-_No live writer. Add a row here before your first edit — see the rules below._
+| Agent       | Band      | Task                                                          | Write scope                                                                                    | Started    | Checkpoint                            | State  |
+| ----------- | --------- | ------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- | ---------- | ------------------------------------- | ------ |
+| copilot b52 | Framework | Form modules: refuse manifest refs at the door, resolve them explicitly, export the adapters | `packages/modules/module-loader/**`, `packages/components/form/**`, `packages/core/src/Registry/**`, `docs/framework/api-map.json` | 2026-11-17 | `/memories/session/form-modules.md` | active |
 
 ## Row shape
 

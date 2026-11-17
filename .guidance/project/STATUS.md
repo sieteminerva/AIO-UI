@@ -12,11 +12,14 @@
 
 A consumer installs the `.tgz` set by hand, skips `AioApp`, renders through `DOMRenderer` and calls
 `new FormBuilder({ modules: new ModuleLoader("form", FORM_ADAPTER_MANIFEST) })`. Every field throws
-`[FormBuilder] No module rendered the field`. Cause is a **shape mismatch, not missing behaviour**:
-`ModuleLoader` takes `iModuleDefinition` (`{ id, load }`); what is being handed to it is
-`iComponentModuleRef` (`{ id, path, export }`), which only `ComponentRegistry` can resolve. Nothing
-in the public surface says which is which, and `ModuleRegistry.register()` does not validate.
-**Plan:** guard at the door + one `resolveModuleDefinitions()` helper + the missing README recipe.
+`[FormBuilder] No module rendered the field`. Cause was a **shape mismatch, not missing behaviour**:
+`ModuleLoader` takes `iModuleDefinition` (`{ id, load }`); what was handed to it is
+`iComponentModuleRef` (`{ id, path, export }`), which only `ComponentRegistry` can resolve.
+**Landed (b52):** the door refuses a ref with `INVALID_DEFINITION` and names both shapes;
+`resolveModuleDefinitions()` bridges them; both `@aio-ui/form` and `@aio-ui/input` now export their
+full stack from the root *and* per-adapter subpaths; README + handbook recipes added.
+**Open:** compile-level on-demand (each builder still statically imports its default preset) —
+needs a 0.3.0 decision, not a patch.
 → `.guidance/project/TASK-form-modules.md`
 
 ### 2. Release — one-command offline installs from an orphan branch

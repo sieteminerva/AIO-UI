@@ -3,6 +3,7 @@ export type RegistryErrorCode =
   | "DUPLICATE_ID"
   | "INVALID_ID"
   | "INVALID_SCOPE"
+  | "INVALID_DEFINITION"
   | "MISSING_ENTRY"
   | "MISSING_DEPENDENCY"
   | "CYCLIC_DEPENDENCY";

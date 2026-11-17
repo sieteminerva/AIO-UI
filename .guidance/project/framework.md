@@ -13,11 +13,11 @@ Why / stages: `.guidance/plan-framework.md`. Engineering rules:
 
 ## Next
 
-- **Form modules without a shell** — `ModuleLoader` gets `iModuleDefinition` (`{ id, load }`) while
-  the docs and every manifest quote `iComponentModuleRef` (`{ id, path, export }`); a hand-wired
-  consumer therefore reaches `[FormBuilder] No module rendered the field`. Guard `register()`, add
-  `resolveModuleDefinitions()`, document the `FORM_ADAPTER_DEFINITIONS` one-liner.
-  → `.guidance/project/TASK-form-modules.md`
+- **Decide compile-level on-demand for form / input modules** — the per-adapter subpaths landed in
+  b52 (a module can now be instantiated alone), but each builder still statically imports its full
+  default preset, so `@aio-ui/form` always compiles five adapters and `@aio-ui/input` four modules.
+  Two options are written up; both need a call because option 2 changes the default.
+  → `.guidance/project/TASK-form-modules.md` (`## Decision still open`)
 - **Self-contained tarballs on an orphan `releases` branch** — bundle internal `@aio-ui/*` into each
   `.tgz` so one `npm install <url>.tgz` works offline, and publish the folder from a worktree
   instead of the web UI. → `.guidance/project/TASK-releases-branch.md`

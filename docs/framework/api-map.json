@@ -213,12 +213,19 @@
       "barrel": "./index.ts",
       "values": [
         "DEFAULT_FORM_MESSAGES",
+        "FORM_ADAPTER_DEFINITIONS",
+        "FORM_ADAPTER_IDS",
+        "FORM_ADAPTER_MANIFEST",
+        "FORM_MODULE_IDS",
         "FormBuilder",
         "composeMessage",
         "messageDraft",
         "resolveStyle"
       ],
       "types": [
+        "FormModuleDefinition",
+        "FormModulePhase",
+        "iFormAdapter",
         "iFormConfig",
         "iFormMessage",
         "iFormMessageCategory",
@@ -226,7 +233,8 @@
         "iFormMessageField",
         "iFormMessageParams",
         "iFormMessageStyle",
-        "iFormMessages"
+        "iFormMessages",
+        "iFormModuleContext"
       ]
     },
     "@aio-ui/frameworks": {
@@ -270,9 +278,19 @@
       "kind": "package",
       "barrel": "./index.ts",
       "values": [
-        "InputBuilder"
+        "INPUT_MODULE_DEFINITIONS",
+        "INPUT_MODULE_DEFINITION_IDS",
+        "INPUT_MODULE_IDS",
+        "INPUT_MODULE_MANIFEST",
+        "InputBuilder",
+        "inputFilesOf",
+        "mountInputModules"
       ],
       "types": [
+        "InputModuleDefinition",
+        "InputModuleId",
+        "InputModuleItem",
+        "InputModulePreset",
         "InputType",
         "iActionType",
         "iBasicInputConfig",
@@ -281,7 +299,9 @@
         "iInputActionContext",
         "iInputActionDefinition",
         "iInputActionHandler",
-        "iInputConfig"
+        "iInputAdapter",
+        "iInputConfig",
+        "iInputModuleContext"
       ]
     },
     "@aio-ui/markdown": {
@@ -355,12 +375,15 @@
       "barrel": "./index.ts",
       "values": [
         "ModuleLoader",
-        "ModuleRegistry"
+        "ModuleRegistry",
+        "resolveModuleDefinitions"
       ],
       "types": [
         "iModuleDefinition",
         "iModuleLoaderOptions",
-        "iModuleRegistryOptions"
+        "iModuleRef",
+        "iModuleRegistryOptions",
+        "iResolveModuleRefsOptions"
       ]
     },
     "@aio-ui/modules": {

@@ -3,7 +3,9 @@ import { beforeEach, describe, expect, it } from "vitest";
 
 import { INPUT_MODULE_IDS } from "@aio-ui/input/InputRegistry";
 import type { iInputAdapter } from "@aio-ui/input/InputModuleTypes";
+import { ModuleLoader, resolveModuleDefinitions } from "@aio-ui/module-loader";
 
+import type { iFormModuleContext } from "../FormModuleTypes";
 import { FormBuilder } from "../Form";
 import { inputFormAdapter } from "../Input.FormAdapter";
 import { FORM_ADAPTER_DEFINITIONS, FORM_ADAPTER_IDS, FORM_ADAPTER_MANIFEST } from "../FormRegistry";
@@ -117,5 +119,64 @@ describe("Form.provideModules", () => {
     document.body.appendChild(el);
 
     expect(phases).toEqual(["initialize"]);
+  });
+});
+
+/**
+ * A consumer outside the registry — `npm i` a `.tgz`, `new FormBuilder({ modules })` by hand —
+ * has to pick a shape for `modules`. The two shapes look alike and only one is a loader input,
+ * so these cases pin the boundary the docs and the README recipes now state.
+ */
+describe("hand-wired modules (no registry, no shell)", () => {
+  it("throws a named error when a manifest ref is registered instead of a definition", () => {
+    // Exactly the consumer's bug: `new ModuleLoader("form", FORM_ADAPTER_MANIFEST)`.
+    expect(() => new ModuleLoader("form", FORM_ADAPTER_MANIFEST as any)).toThrow(/is not a definition/);
+  });
+
+  it("renders fields from a hand-picked stack, with the engines left out", () => {
+    // `input` is the only adapter a field needs; the four engines are optional by design.
+    const loader = new ModuleLoader("form", [inputFormAdapter]);
+    const form = new FormBuilder({ modules: loader });
+
+    const el = form.create([{ type: "text", id: "picked-field", title: "Field" }] as any) as HTMLElement;
+    document.body.appendChild(el);
+
+    const input = el.querySelector<HTMLInputElement>("#picked-field");
+    expect(input).not.toBeNull();
+
+    // Proof of the negative: the cascade engine was never loaded, so `cascading: true` is inert
+    // rather than throwing "no module rendered the field".
+    expect(loader.loadedIds()).toEqual(["input"]);
+    expect(loader.ids()).toEqual(["input"]);
+  });
+
+  it("resolves the manifest into the same stack the definitions describe", async () => {
+    // The manifest also carries the input layer (`scope: "input"`); those are field presets and
+    // must not be handed to the form's own loader — `provideModules()` is the door for them.
+    const formRefs = FORM_ADAPTER_MANIFEST.filter((ref) => (ref.scope ?? "form") === "form");
+    const definitions = await resolveModuleDefinitions<iFormModuleContext, any>(formRefs);
+
+    expect(definitions.map((definition) => String(definition.id))).toEqual(FORM_ADAPTER_IDS);
+
+    const form = new FormBuilder({
+      modules: new ModuleLoader<iFormModuleContext, any>("form", definitions),
+    });
+    const el = form.create([{ type: "text", id: "resolved-field", title: "Field" }] as any) as HTMLElement;
+    document.body.appendChild(el);
+
+    expect(el.querySelector<HTMLInputElement>("#resolved-field")).not.toBeNull();
+  });
+
+  it("routes input-scoped definitions through provideModules, not through the loader", async () => {
+    // A host that resolves the whole manifest by hand has both layers in one list. This is the
+    // split `Form.provideModules()` performs for a registry-built form, done explicitly.
+    const definitions = await resolveModuleDefinitions(FORM_ADAPTER_MANIFEST);
+    const form = new FormBuilder();
+    form.provideModules(Object.fromEntries(definitions.map((definition) => [String(definition.id), definition])));
+
+    const el = form.create([{ type: "text", id: "routed-field", title: "Field" }] as any) as HTMLElement;
+    document.body.appendChild(el);
+
+    expect(el.querySelector<HTMLInputElement>("#routed-field")).not.toBeNull();
   });
 });

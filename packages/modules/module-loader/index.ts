@@ -4,3 +4,5 @@ export { ModuleLoader } from "./ModuleLoader";
 export type { iModuleLoaderOptions } from "./ModuleLoader";
 export { ModuleRegistry } from "./ModuleRegistry";
 export type { iModuleDefinition, iModuleRegistryOptions } from "./ModuleRegistry";
+export { resolveModuleDefinitions } from "./Resolve";
+export type { iModuleRef, iResolveModuleRefsOptions } from "./Resolve";

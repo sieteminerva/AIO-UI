@@ -179,6 +179,43 @@ examples and its tables as `columns` + `rows`. A `see README` cell above is a ta
 machine shape — it cannot tell you that a payload is valid. That needs a per-component contract
 (§9).
 
+### Wiring modules by hand — two shapes, one rule
+
+`form` and `input` each ship optional sub-modules. They are described in **two shapes that look
+alike**, and only one of them can be registered:
+
+| Shape        | Looks like                                     | Consumed by                                                       |
+| ------------ | ---------------------------------------------- | ----------------------------------------------------------------- |
+| **ref**      | `{ id, path: "@aio-ui/form/cascade-adapter", export: "cascadeFormAdapter" }` | `ComponentRegistry`, `resolveModuleDefinitions()` |
+| **definition** | `{ id, load: (context) => … }`               | `ModuleLoader`, `config.modules`                                  |
+
+A ref handed to a loader now throws `RegistryError` with code `INVALID_DEFINITION` — it used to be
+accepted and surface much later as `No module rendered the field`.
+
+```ts
+import { ModuleLoader, resolveModuleDefinitions } from "@aio-ui/module-loader";
+import { FormBuilder, FORM_ADAPTER_MANIFEST } from "@aio-ui/form";
+import { inputFormAdapter } from "@aio-ui/form/Input.FormAdapter";
+
+// Want everything: one import of the definitions.
+import { FORM_ADAPTER_DEFINITIONS } from "@aio-ui/form";
+
+// Want less: each adapter is its own subpath, so the rest is never loaded.
+new FormBuilder({ modules: new ModuleLoader("form", [inputFormAdapter]) });
+
+// Have refs (an AST, a manifest)? Resolve them once, before anything is built.
+const refs = FORM_ADAPTER_MANIFEST.filter((ref) => (ref.scope ?? "form") === "form");
+new FormBuilder({ modules: new ModuleLoader("form", await resolveModuleDefinitions(refs)) });
+```
+
+Two traps, in order of how often they bite:
+
+1. **`scope: "input"` entries are not form adapters.** They are field presets — pass them to
+   `form.provideModules({ id: definition })`, never to `config.modules`. Omit them and fields use
+   the input layer's own default preset.
+2. **`resolveModuleDefinitions()` is async and must finish before `create()`.** A builder's render
+   is synchronous and never owns module I/O.
+
 ---
 
 ## 6. Reference — how to verify

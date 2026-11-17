@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
 
+import { ModuleLoader, resolveModuleDefinitions } from "@aio-ui/module-loader";
+
+import type { iInputAdapter, iInputModuleContext } from "../InputModuleTypes";
 import {
   INPUT_MODULE_DEFINITION_IDS,
   INPUT_MODULE_DEFINITIONS,
@@ -23,7 +26,9 @@ describe("input module registry", () => {
   });
 
   it("covers every documented module id", () => {
-    expect(INPUT_MODULE_DEFINITION_IDS.sort()).toEqual(Object.values(INPUT_MODULE_IDS).sort());
+    // Copy before sorting: `sort()` mutates, and this array is the exported registry constant —
+    // sorting it in place silently reorders the preset for every later test in this file.
+    expect([...INPUT_MODULE_DEFINITION_IDS].sort()).toEqual(Object.values(INPUT_MODULE_IDS).sort());
     expect(INPUT_MODULE_DEFINITIONS).toHaveLength(Object.values(INPUT_MODULE_IDS).length);
   });
 
@@ -32,5 +37,21 @@ describe("input module registry", () => {
       expect(ref.path, `${ref.id} → ${ref.path}`).toMatch(/^@aio-ui\/input\/[a-z-]+\/module$/);
       expect(ref.export, `${ref.id} has no named export`).toBeTruthy();
     }
+  });
+
+  it("resolves every ref to a real definition, so a typo cannot hide behind a string compare", async () => {
+    // The string comparisons above prove the two lists *look* alike. This proves the paths and
+    // export names actually exist — the failure a hand-wired consumer hits first.
+    const definitions = await resolveModuleDefinitions<iInputModuleContext, iInputAdapter>(INPUT_MODULE_MANIFEST);
+
+    expect(definitions.map((definition) => String(definition.id))).toEqual(INPUT_MODULE_DEFINITION_IDS);
+    for (const definition of definitions) expect(typeof definition.load).toBe("function");
+    // Same objects, not copies: a module is instantiated once, however it was declared.
+    expect(definitions).toEqual(INPUT_MODULE_DEFINITIONS);
+  });
+
+  it("refuses a manifest ref where a definition is expected", () => {
+    // The door exists so this mistake fails at registration, not inside a field later.
+    expect(() => new ModuleLoader("input", INPUT_MODULE_MANIFEST as any)).toThrow(/is not a definition/);
   });
 });

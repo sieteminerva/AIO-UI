@@ -124,6 +124,45 @@ const element = build("form", { schema, config: { id: "checkout" } });
 element.addEventListener("formSubmit", (event) => console.log(event.detail.data));
 ```
 
+<!-- part: id=direct -->
+
+### Without a shell (direct `new FormBuilder`)
+
+No registry, no `AioApp`: build the form yourself and hand it the modules it may use. Three
+shapes, and only one of them is a loader input.
+
+```ts
+import { ModuleLoader, resolveModuleDefinitions } from "@aio-ui/module-loader";
+import { FormBuilder, FORM_ADAPTER_DEFINITIONS, FORM_ADAPTER_MANIFEST } from "@aio-ui/form";
+
+// 1. Everything — one import, the whole default stack.
+new FormBuilder({ modules: new ModuleLoader("form", FORM_ADAPTER_DEFINITIONS) });
+
+// 2. Only what this form uses. Each adapter is its own subpath, so the rest is never loaded.
+import { inputFormAdapter } from "@aio-ui/form/Input.FormAdapter";
+import { validationFormAdapter } from "@aio-ui/form/validation-adapter";
+new FormBuilder({ modules: new ModuleLoader("form", [inputFormAdapter, validationFormAdapter]) });
+
+// 3. From manifest refs (the shape an AST declares), resolved once, before anything is built.
+const refs = FORM_ADAPTER_MANIFEST.filter((ref) => (ref.scope ?? "form") === "form");
+const definitions = await resolveModuleDefinitions(refs);
+new FormBuilder({ modules: new ModuleLoader("form", definitions) });
+```
+
+Two rules, both enforced now:
+
+- **A ref is not a definition.** `{ id, path, export }` is data for `ComponentRegistry` or
+  `resolveModuleDefinitions()`; a loader takes `{ id, load }`. Registering a ref used to be
+  accepted silently and fail later as `No module rendered the field` — it now throws
+  `RegistryError` with code `INVALID_DEFINITION` and names both shapes.
+- **Input sub-modules are not form adapters.** `scope: "input"` entries (`dropdown`, `file`,
+  `controls`, `popover`) are field presets: pass them through `form.provideModules({ id: definition })`,
+  never through `config.modules`. Leave them out entirely and the fields use the input layer's own
+  default preset.
+
+`resolveModuleDefinitions()` is async and must be awaited **before** `create()`: a builder's render
+is synchronous and never owns module I/O.
+
 <!-- part: id=validation -->
 
 ### Validation

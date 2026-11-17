@@ -24,12 +24,12 @@ exposes `renderField`.)
 `FORM_ADAPTER_DEFINITIONS` (`Form.ts:352`, `#resolved()` at `Form.ts:216`).
 
 - `ModuleLoader` / `ModuleRegistry` accept **`iModuleDefinition`** — `{ id, requires?, matches?,
-  load(context), destroy? }` (`packages/modules/module-loader/ModuleRegistry.ts:15`).
+load(context), destroy? }` (`packages/modules/module-loader/ModuleRegistry.ts:15`).
   `ModuleRegistry.register()` stores whatever it is handed without validating, and
   `ModuleLoader.#load()` calls `definition.load(context)` unconditionally
   (`ModuleLoader.ts:229`).
 - `FORM_ADAPTER_MANIFEST` is **`iComponentModuleRef[]`** — `{ id, path, export, scope }`
-  (`packages/components/form/FormRegistry.ts:63`). That shape is a *manifest ref*: only
+  (`packages/components/form/FormRegistry.ts:63`). That shape is a _manifest ref_: only
   `ComponentRegistry.loadModules()` knows how to turn it into a live object, by
   `import(path)` and picking `export` (`packages/core/src/ComponentRegistry.ts:519-556`).
   It has no `load`, so a `ModuleLoader` built from it can never yield an adapter.
@@ -48,18 +48,19 @@ tell that this is a **surface** defect, not missing behaviour.
 **A1 — Guard the wrong shape (fail at the door, name both shapes).**
 `ModuleRegistry.register()` throws
 `RegistryError("INVALID_DEFINITION", …)` when `typeof definition.load !== "function"`, and the
-message says: *a manifest ref (`path`/`export`) belongs to `ComponentRegistry`; a loader takes
-definitions (`FORM_ADAPTER_DEFINITIONS`) or `{ id, load }`.* Cost: ~15 lines + one test. Turns a
+message says: _a manifest ref (`path`/`export`) belongs to `ComponentRegistry`; a loader takes
+definitions (`FORM_ADAPTER_DEFINITIONS`) or `{ id, load }`._ Cost: ~15 lines + one test. Turns a
 TypeError / a delayed field error into one sentence naming the fix.
 
 **A2 — One helper that converts refs to definitions.**
 `resolveModuleDefinitions(refs)` in **`@aio-ui/module-loader`** (not in `form`, not in `core`):
 async map over refs → `{ id, load: () => import(ref.path).then((m) => m[ref.export]) }`, `scope`
 ignored. Boundary to state out loud: **a builder never awaits module I/O** — the helper is called
-by the consumer *before* `create()`, because `prepare()` is synchronous and must stay that way.
+by the consumer _before_ `create()`, because `prepare()` is synchronous and must stay that way.
 This reuses `ComponentRegistry`'s knowledge of the ref shape without duplicating its loader.
 
 **A3 — Document the no-shell path where a consumer looks.**
+
 - `packages/components/form/README.md`: a five-line "no registry, no shell" recipe using
   `FORM_ADAPTER_DEFINITIONS` (this is already all it takes; nobody wrote it down).
 - `docs/agent/handbook.md`: same recipe under the form row, plus the one sentence about the two
@@ -81,12 +82,12 @@ Directly encodes "the two shapes must say the same thing".
 
 ## Proof of render (§16)
 
-| Claim                          | Proof                                                                                     |
-| ------------------------------ | ----------------------------------------------------------------------------------------- |
+| Claim                           | Proof                                                                                                                                                               |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | a loader from definitions works | test: `new FormBuilder({ modules: new ModuleLoader("form", FORM_ADAPTER_DEFINITIONS) })` → `inspect().html` contains N field elements (not just "it did not throw") |
-| refs are refused at the door    | test: refs registered → `RegistryError` with code `INVALID_DEFINITION`, message cites both shapes |
-| the helper closes the gap       | test: `await resolveModuleDefinitions(FORM_ADAPTER_MANIFEST)` → 9 definitions, all with `load`; a form built from them renders the same N fields |
-| the negative                    | test: no `renderField` feature → still the explicit field error (do not lose the loud failure) |
+| refs are refused at the door    | test: refs registered → `RegistryError` with code `INVALID_DEFINITION`, message cites both shapes                                                                   |
+| the helper closes the gap       | test: `await resolveModuleDefinitions(FORM_ADAPTER_MANIFEST)` → 9 definitions, all with `load`; a form built from them renders the same N fields                    |
+| the negative                    | test: no `renderField` feature → still the explicit field error (do not lose the loud failure)                                                                      |
 
 Gate: `npm run check` before the commit, `npm run verify` once at the end of the batch.
 
@@ -134,7 +135,7 @@ ways out, both needing a call from the owner:
 
 1. **Keep the default, accept the cost** — every app that imports `@aio-ui/form` compiles the five
    adapters, every app that imports `@aio-ui/input` compiles the four modules. The subpath exports
-   then only prevent *duplicate* copies and allow *behavioural* trimming.
+   then only prevent _duplicate_ copies and allow _behavioural_ trimming.
 2. **Make the default opt-in** — `@aio-ui/form` ships `FormBuilder` with no adapters (the error
    already tells you what to pass), and the full stack moves to an explicit entry
    (`@aio-ui/form/adapters`, `@aio-ui/input/modules`). That is a breaking change: 12 test files and
@@ -145,3 +146,84 @@ Recommendation: (2) as a `0.3.0` item, done in one batch with the tests rewritte
 stack, **not** silently. Until then the docs must not promise "unused modules are not compiled" —
 they currently promise exactly that, in the two new sections, which is why this decision is not
 cosmetic.
+
+## Decision taken (owner, 2026-11-17): option 2 — and it must be *proved*
+
+> "saya setuju opsi 2, tapi pastikan juga untuk benar-benar tidak ikut ter-compile saat build."
+
+So the batch is not "move the import"; it is "**move the import and prove the graph**". A doc claim
+is not proof (§16), and a green suite proves nothing about a module that was in the graph before and
+after.
+
+### B53.1 — Split each registry so data and implementations live in different modules
+
+| Package | Keep (data only, zero adapter imports)                        | Move out (imports implementations)      | New entry                |
+| ------- | ------------------------------------------------------------- | --------------------------------------- | ------------------------ |
+| form    | `FormModuleTypes.ts` (`FORM_MODULE_IDS`, context/types), refs array | `FORM_ADAPTER_DEFINITIONS`, `FORM_ADAPTER_IDS` | `@aio-ui/form/adapters`  |
+| input   | `InputModuleTypes.ts` (ids/types), refs array                  | `INPUT_MODULE_DEFINITIONS`, `INPUT_MODULE_DEFINITION_IDS` | `@aio-ui/input/modules` |
+
+The manifest refs stay in the light module (they are strings), which is what makes
+`FORM_ADAPTER_MANIFEST` still harmless to import from the root.
+
+Two files need more than a move:
+
+- `InputRegistry.ts` currently carries **both** the definitions and the helpers
+  (`adaptersOf`, `mountInputModules`, `inputFilesOf`, `inputFilesOf`). The helpers take
+  `preset = INPUT_MODULE_DEFINITIONS` as a **default parameter**, which is itself a static edge to
+  the four modules. The default has to go: a helper with no preset does nothing (there is nothing
+  loaded to mount), and `InputFormAdapter` already threads its own preset through.
+- `Input.FormAdapter.ts` passes `this.#preset` (possibly `undefined`) into `mountInputModules()`.
+  With the default gone, `undefined` must mean "skip", not "use the full set".
+
+### B53.2 — The default becomes an error, once, with the fix in it
+
+`FormBuilder` / `InputBuilder` with no `modules` must fail at the earliest possible moment with a
+message that names the entry (`@aio-ui/form/adapters`, `@aio-ui/input/modules`) and the minimal
+option (`[inputFormAdapter]`). It must **not** degrade to "renders nothing useful" and must not
+throw halfway through a schema.
+
+### B53.3 — Proof: `scripts/bundle-probe.mjs`
+
+The claim to prove is about **module identity in a real bundle**, so the probe must run the real
+bundler and record which files it parsed:
+
+1. Three probe entries under `.draft/bundle-probe/src/`:
+   - `form-root.ts` → `import { FormBuilder } from "@aio-ui/form"` (nothing else);
+   - `input-root.ts` → `import { InputBuilder } from "@aio-ui/input"`;
+   - `form-full.ts` → also imports `@aio-ui/form/adapters`.
+2. Build each with Vite (`build.lib` or `build.rollupOptions.input`) in a custom plugin whose
+   `moduleParsed(id)` hook collects every resolved module id.
+3. Assertions, in both directions:
+   - **negative (the point of the batch):** `form-root` never parses `adapters/Cascade.ts`,
+     `adapters/Multistep.ts`, `adapters/Calculation.ts`, `adapters/Validation.ts`;
+     `input-root` never parses `Dropdown/Dropdown.InputModule.ts`,
+     `FileUploader/FileUploader.InputModule.ts`, `InputControls/InputControls.InputModule.ts`,
+     `Popover.InputModule.ts`.
+   - **positive (the probe is not vacuous):** `form-full` *does* parse all five; `form-root` *does*
+     parse `Form.ts`, `Input.FormAdapter.ts`, `Input.ts`.
+   - A probe that passes because the build failed must be impossible: exit non-zero on a missing
+     chunk, and print the parsed list on failure.
+4. Cost target ≤ ~6 s for the three builds; it runs in **`check`** (contract tier), not in the test
+   suite, because it is a build-shape fact, not a behaviour fact. If it cannot fit the ~12 s budget,
+   it goes to `verify` and the tier table in §4 is updated in the same commit.
+
+### B53.4 — Migration the decision implies
+
+- 12 test files construct `new FormBuilder()`/`new InputBuilder()` with no modules. Each gets an
+  explicit stack — and the choice of stack is the test's contract: a cascade test must import the
+  cascade adapter, a plain field test only `inputFormAdapter`.
+- README examples that show `new FormBuilder({ schema })` must show what to pass.
+- `examples/demo` already declares `FORM_ADAPTER_MANIFEST` in its schema, so it is unaffected — that
+  is the check that we are not breaking the shell path.
+- `docs/framework/api-map.json` gains the two new subpath entries; `catalogue.json` regenerated.
+- Version: `0.3.0`. Do not sneak it into `0.2.2`; the release batch (B55) publishes whatever the
+  tree says.
+
+### B53.5 — What would make this batch fail
+
+- The probe asserting on **string content** of the bundle instead of parsed module ids (a minifier,
+  a comment, or a coincidental identifier makes it lie).
+- Proving only the positive direction (the full entry pulls everything) and calling it done.
+- Leaving `preset = INPUT_MODULE_DEFINITIONS` as a default parameter somewhere in `input` — the
+  graph edge survives the move and the probe should then fail, which is the point.
+

@@ -17,20 +17,24 @@ A consumer installs the `.tgz` set by hand, skips `AioApp`, renders through `DOM
 `iComponentModuleRef` (`{ id, path, export }`), which only `ComponentRegistry` can resolve.
 **Landed (b52):** the door refuses a ref with `INVALID_DEFINITION` and names both shapes;
 `resolveModuleDefinitions()` bridges them; both `@aio-ui/form` and `@aio-ui/input` now export their
-full stack from the root *and* per-adapter subpaths; README + handbook recipes added.
-**Open:** compile-level on-demand (each builder still statically imports its default preset) —
-needs a 0.3.0 decision, not a patch.
+full stack from the root _and_ per-adapter subpaths; README + handbook recipes added.
+**Decided (owner, 2026-11-17):** default becomes opt-in (`@aio-ui/form/adapters`,
+`@aio-ui/input/modules`) — with a `bundle-probe` gate that proves the unused adapters are absent
+from the parsed module graph, not just unused at runtime. `0.3.0`, breaking.
 → `.guidance/project/TASK-form-modules.md`
 
 ### 2. Release — one-command offline installs from an orphan branch
 
 `main` stays source-only; each release folder goes to an orphan `releases` branch so
-`npm install <raw-github-url>/aio-ui-form-0.2.2.tgz` works in one command with **no**
+`npm install <raw-github-url>/aio-ui-form-0.3.0.tgz` works in one command with **no**
 `registry.npmjs.org` call for the `@aio-ui/*` peers. Tarballs become self-contained by staging the
 package, moving internal peers into exact `dependencies` + `bundledDependencies`, and copying the
-built dependency dirs into `<stage>/node_modules/@aio-ui/`. Workspace manifests are never touched.
-**Open decisions:** bundle size (measure first), and whether the staged `package.json` keeps the
-`development` export condition that would ship raw `.ts` out of `node_modules`.
+built dependency dirs into `<stage>/node_modules/@aio-ui/`.
+**Plan rewritten (2026-11-17):** the closure is a graph, computed once by `scripts/closure.mjs`, then
+shipped two ways — embedded (mode A, one URL) or declared (`install/<pkg>.txt`, mode B, one command,
+deduped). `scripts/exports.mjs` + a `check:exports` gate end the four-way export-map recomputation
+and catch a subpath whose file `files[]` excludes.
+**Needs the owner:** the size budget (proposed 25 MB total).
 → `.guidance/project/TASK-releases-branch.md`
 
 ### 3. Carried queue — the small fixes that keep §16 honest

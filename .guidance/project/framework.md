@@ -13,14 +13,24 @@ Why / stages: `.guidance/plan-framework.md`. Engineering rules:
 
 ## Next
 
-- **Decide compile-level on-demand for form / input modules** — the per-adapter subpaths landed in
-  b52 (a module can now be instantiated alone), but each builder still statically imports its full
-  default preset, so `@aio-ui/form` always compiles five adapters and `@aio-ui/input` four modules.
-  Two options are written up; both need a call because option 2 changes the default.
-  → `.guidance/project/TASK-form-modules.md` (`## Decision still open`)
-- **Self-contained tarballs on an orphan `releases` branch** — bundle internal `@aio-ui/*` into each
-  `.tgz` so one `npm install <url>.tgz` works offline, and publish the folder from a worktree
-  instead of the web UI. → `.guidance/project/TASK-releases-branch.md`
+- **B53 — form / input default opt-in, proved by the module graph** — the owner approved option 2
+  (breaking, `0.3.0`). Split each registry into data (refs, ids) and implementations, move the full
+  preset to `@aio-ui/form/adapters` and `@aio-ui/input/modules`, drop the `preset =
+  INPUT_MODULE_DEFINITIONS` default parameters, and add `scripts/bundle-probe.mjs` — a real Vite
+  build whose `moduleParsed` list must show the unused adapters **absent** (and present for the full
+  entry, so the probe cannot pass vacuously). → `.guidance/project/TASK-form-modules.md`
+- **B54 — one closure graph, one export index** — `scripts/closure.mjs` (topological closure from
+  `dependencies` + `peerDependencies`, `--json`, cycle report, size per closure) and
+  `scripts/exports.mjs` → `docs/framework/exports.json` + a `check:exports` gate that fails when a
+  subpath's file is excluded by `files[]` (today's silent 404 at install time). Four scripts stop
+  recomputing the export map. → `.guidance/project/TASK-releases-branch.md`
+- **B55 — release: embed the closure, publish the folder** — `release.mjs --bundle` materialises the
+  closure under `<stage>/node_modules/@aio-ui/` with rewritten manifests (exact internal
+  `dependencies`, `bundledDependencies`, no `development` condition), size gate before publish, then
+  `publish-releases.mjs` writes `vX/` to an orphan `releases` branch via a worktree and renders
+  `install/<pkg>.txt` (mode B) from the same graph. → `.guidance/project/TASK-releases-branch.md`
+- **B56 — `0.3.0`** — version bump, `verify:pkgs`, release + publish, then the offline install proof
+  from a scratch dir with an empty npm cache.
 - `scripts/proof.mjs --report`: list every component package and whether it carries an `inspect()`
   assertion. Report-only at first (the gap list is the ratchet); make it a `verify` gate once the 20
   packages are covered, so §16 stops depending on discipline.

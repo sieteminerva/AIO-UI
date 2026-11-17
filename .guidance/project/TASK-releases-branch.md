@@ -7,8 +7,12 @@ Recorded 2026-11-17. Not started. Owner band: **Tooling** (`scripts/release.mjs`
 
 `main` stays source-only (no binaries, fast clone), and there is no manual web-UI upload:
 each release folder is committed to an orphan `releases` branch, so
-`npm install https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.2/aio-ui-form-0.2.2.tgz`
+`npm install https://github.com/sieteminerva/AIO-UI/raw/releases/v0.3.0/aio-ui-form-0.3.0.tgz`
 works in one command and **offline** — no `@aio-ui/*` fetch from `registry.npmjs.org`.
+
+Rooted in a user report: installing A pulls B, B pulls C, C pulls D, and every manual
+`npm install <a>.tgz` fails with E404 because none of the peers are in a registry. The closure has
+to be resolved by the tooling, not by the reader of a README.
 
 ## What exists today (so the plan subtracts instead of rewriting)
 
@@ -25,71 +29,154 @@ works in one command and **offline** — no `@aio-ui/*` fetch from `registry.npm
 
 ## Plan
 
-### 1. Bundle inside the staging dir (`release.mjs`)
+### The real problem is a graph, not a tarball
 
-1. Build the internal graph once: for every workspace package, `dependencies` +
-   `peerDependencies` keys starting with `@aio-ui/`. Topological walk with cycle detection
-   (`RegistryError`-style named failure, never a stack overflow).
-2. Per package, under `.draft/release/.stage/<name>/`:
-   - copy the package dir (honouring `files[]` — `npm pack` in the stage decides, but copying the
-     whole dir is cheaper and the `files` filter still applies at pack time);
-   - rewrite the staged `package.json` only: internal `peerDependencies` → exact
-     `dependencies: { "@aio-ui/x": "X" }`, then `"bundledDependencies": ["@aio-ui/x", …]`;
-   - fill `<stage>/node_modules/@aio-ui/<dep>/` with the **already-built** dependency dir
-     (recursive, so a bundled dep carries its own bundle). Memoise: stage each package once,
-     hard-link or copy from the cache.
-3. `npm pack .` inside the stage; keep the same filename convention
-   (`aio-ui-<name>-<version>.tgz`) so `registry.json` needs no change beyond `size`/`integrity`.
-4. `main`'s `package.json` files are read, never written — `scripts/bounds.mjs` and the workspace
-   links stay clean. State this as a hard rule in the script header.
+> "install module A dia butuh module B … manual install module B dapat error juga karena module B
+> butuh module C, dimana C butuh D. dah siklus saling terkait ini harus diresolve secara otomatis."
 
-**Cost to measure before committing to it:** duplication is real — bundle size grows with the
-closure, and 40 tarballs × their closure can be large. Dry-run must print per-tarball size and the
-total; if the total is unacceptable, the fallback is a `--no-bundle` flag plus a README that
-installs the full set (40 URLs), which still needs no registry.
+Every internal edge today is a **peer dependency**, which is correct for the workspace and fatal for
+a consumer without a registry: npm will not fetch a peer it cannot find. Resolving that closure is
+one computation, and there are only two honest ways to ship the answer:
 
-### 2. Publish the folder to `releases` (`scripts/publish-releases.mjs`)
+| Mode | Mechanism | Consumer experience | Cost |
+| ---- | --------- | ------------------- | ---- |
+| **A — embed** | materialise the whole closure under `<stage>/node_modules/@aio-ui/` and declare `bundledDependencies` | `npm install <one-url>.tgz` — **one command, offline** | closure duplicated into every tarball |
+| **B — declare** | publish `closure.json` + one generated `npm install url1 url2 …` line | one command, offline, npm resolves in a single pass | no duplication, but more than one URL |
 
-1. Refuse to run without `.draft/release/vX/registry.json` (same guard as `publish-cdn.mjs:40`).
+Both come out of the same graph, so the work is: **build the graph once, then choose per package.**
+Recommendation: A as the default (it is what was asked for), B generated for free and used as the
+fallback when the size gate trips.
+
+### 1. `scripts/closure.mjs` — the shared primitive (do this first)
+
+1. Read every publishable `package.json` (the same walk `release.mjs` already does), then build a
+   directed graph over keys starting with `@aio-ui/` in both `dependencies` and `peerDependencies`.
+2. Topological sort with explicit cycle reporting — an internal cycle is a design error, so name the
+   cycle and exit 1 instead of recursing.
+3. Output, per package: `direct` deps, `closure` in load order, `closedSize` (bytes of every dist
+   file in the closure, de-duplicated), and the reverse map (who needs me).
+4. Modes: dry-run (default, prints the graph + the 5 heaviest closures), `--json` (one document, for
+   `aio-kit` and for `release.mjs` to consume), `--check` (fail when a `@aio-ui/*` key is missing
+   from the workspace, i.e. a typo'd dependency name).
+
+This is the piece that answers "resolved automatically": nothing downstream re-walks dependencies
+by hand.
+
+### 2. `release.mjs` gains `--bundle` (mode A)
+
+1. Per package, stage under `.draft/release/.stage/<name>/`:
+   - copy the package dir;
+   - rewrite **only the staged** `package.json`: internal `peerDependencies` → exact
+     `dependencies` + `"bundledDependencies"`, and drop the `development` export condition (the
+     tarball is a published artefact; a consumer bundler must not pull `.ts` out of `node_modules`);
+   - materialise the closure under `<stage>/node_modules/@aio-ui/<dep>/`, each copy rewritten the
+     same way **recursively** — a bundled dependency that still declares internal peers will make
+     npm fetch them again, which is exactly the E404 being removed;
+   - hard-link the built dependency directories where the filesystem allows it, copy otherwise
+     (Windows NTFS supports `linkSync`; a copy is the fallback, not the default).
+2. `npm pack .` inside the stage, keeping the filename convention so `registry.json` needs no change
+   beyond `size`/`integrity`.
+3. `registry.json` gains `order` (topological index) and `selfContained: true|false` per package, so
+   the branch README can tell the truth per package instead of globally.
+4. **Size gate, before anything is published:** dry-run prints per-tarball and total bytes. If the
+   total exceeds the agreed budget (propose: 25 MB for the whole 40-package set), the run refuses to
+   publish and points at `--no-bundle` (mode B). A number decided after the fact is not a gate.
+5. `main`'s `package.json` files are read, never written — `scripts/bounds.mjs` and the workspace
+   links stay clean. State this as a hard rule in the script header, not a comment.
+
+### 3. Mode B is generated, never hand-written
+
+From `closure.json`, `publish-releases.mjs` renders `vX/install/<package>.txt` — one line, the
+closure in topological order, e.g.
+
+```
+npm install https://github.com/sieteminerva/AIO-UI/raw/releases/v0.3.0/aio-ui-core-0.3.0.tgz \
+            https://github.com/…/aio-ui-base-0.3.0.tgz \
+            https://github.com/…/aio-ui-input-0.3.0.tgz \
+            https://github.com/…/aio-ui-form-0.3.0.tgz --no-audit --no-fund
+```
+
+and the same command inside the branch `README.md` per package. If mode A is on, the README says
+"one URL is enough"; if mode B is on, it says "paste this line". Either way the consumer never
+guesses.
+
+### 4. `scripts/exports.mjs` — stop recomputing the export map in four places
+
+The user's other note — the export indexing is spread out — is the same defect from the other side.
+Today `release.mjs` derives subpaths with `subpathsOf()`, `api.mjs` holds `api-map.json`, `bounds.mjs`
+reads entry points, and `catalogue.mjs` reads READMEs. Four readers, four chances to disagree.
+
+- One generated `docs/framework/exports.json`: package → `dir`, `subpaths` (specifier → published
+  file), `conditions` (`development`/`types`/`default`), `files` coverage verdict.
+- **`check:exports` gate (the new, cheap value):** for every subpath, the published file must be
+  present **in the tarball**, i.e. survive `files[]`. A subpath pointing at an excluded file is a
+  silent 404 at install time and nothing checks it today. Compute `files[]` membership without
+  packing (gitignore-style matcher over the package dir) so the gate costs ~1 s.
+- `release.mjs` and `publish-cdn.mjs` then read `exports.json` instead of recomputing; `api.mjs`
+  cross-checks its symbol list against it.
+
+### 5. Publish the folder to `releases` (`scripts/publish-releases.mjs`)
+
+1. Refuse to run without `.draft/release/vX/registry.json`.
 2. Worktree at `.draft/releases-worktree`:
    - if `origin/releases` exists → `git worktree add .draft/releases-worktree origin/releases`;
-   - else → `git worktree add --detach …` then `git checkout --orphan releases`, empty index
+   - else → `git worktree add --detach …`, then `git checkout --orphan releases`, empty the index
      (`git rm -rf --cached .`), so history starts once and never carries `main`'s tree.
-3. Write `vX/` with the 40 tarballs + `registry.json` + `layout.json` + `checksums.txt`.
-   **Never delete older `vX/` directories** — a published URL is a contract.
+3. Write `vX/` with the tarballs + `registry.json` + `layout.json` + `checksums.txt` +
+   `closure.json` + `install/*.txt`. **Never delete older `vX/` directories** — a published URL is a
+   contract.
 4. Render `README.md` at the branch root from `templates/releases/README.md.tpl`: version table,
-   the exact install command per package, and the "install the one you need" note. Generated data,
-   not prose, so it cannot drift.
+   per-package install command, self-contained vs. closure badge. Generated data, not prose.
 5. `--apply` → `git add -A && git commit -F <msg> && git push origin releases`. Dry run prints the
-   file list and total bytes. Undo line printed: `git worktree remove --force .draft/releases-worktree`.
-6. `publish-cdn.mjs` keeps publishing **unpacked** packages (jsDelivr import maps) — it must not
-   see the staged `node_modules`, so it keeps reading `.draft/release/vX/` only. Add one
-   assertion: a tarball that unpacks a `node_modules/` directory into the cdn tree is a failure.
+   file list and total bytes; undo line printed (`git worktree remove --force .draft/releases-worktree`).
+6. `publish-cdn.mjs` keeps publishing **unpacked** packages (jsDelivr import maps) and must never see
+   the staged `node_modules`: add one assertion — a tarball that unpacks a `node_modules/` directory
+   into the cdn tree fails the run.
 
-### 3. Version + release gate
+### 6. Version + release gate
 
-`node scripts/version.mjs --apply --version 0.2.2` → `npm run verify:pkgs` (build + verify +
-build; §4 says release tier) → `node scripts/release.mjs --apply --version 0.2.2` →
-`node scripts/publish-releases.mjs --apply` → `node scripts/publish-cdn.mjs --apply`.
+`node scripts/version.mjs --apply --version 0.3.0` → `npm run verify:pkgs` (build + verify + build;
+§4 release tier) → `release.mjs --apply` → `publish-releases.mjs --apply` →
+`publish-cdn.mjs --apply`.
 
-## Decisions to take before coding
+### Order of batches
 
-1. **`development` export condition inside the tarball.** The export maps ship
-   `{"development": "./index.ts", …}` and `files[]` includes root `*.ts`, so a consumer whose
-   bundler enables the `development` condition will pull **TypeScript sources out of
-   `node_modules`**. Either strip the condition from the staged `package.json` (recommended —
-   the tarball is a published artefact, not the workspace) or document loudly that consumers must
-   not enable it. Do not leave it implicit.
-2. **Bundle or not** — see the size measurement above.
-3. **Branch name** — `releases` (chosen) vs. reusing `cdn` with a `tarballs/` folder. Separate
-   branch keeps jsDelivr's tree small; keep them separate.
+| Batch | Content                                                  | Depends on |
+| ----- | -------------------------------------------------------- | ---------- |
+| B53   | form/input default opt-in + `bundle-probe` proof (§form)  | —          |
+| B54   | `closure.mjs` + `exports.mjs` + `check:exports` gate      | B53 (exits/sizes) |
+| B55   | `release.mjs --bundle` + `publish-releases.mjs`           | B54        |
+| B56   | `0.3.0` bump + full release verification                  | B53–B55    |
+
+
+## Decisions
+
+**Taken (2026-11-17):**
+
+1. **Mode A is the default**, mode B is generated anyway and is the fallback when the size gate
+   trips. One command must be enough for the common case.
+2. **The `development` export condition is stripped from staged manifests** in the tarball and in
+   every bundled copy. `files[]` ships root `*.ts`, so leaving it in lets a consumer's bundler pull
+   TypeScript sources out of `node_modules`.
+3. **Separate branches** — `cdn` keeps the unpacked tree for jsDelivr import maps, `releases` holds
+   only `vX/` folders. Neither may carry the other's content.
+4. **The graph is computed once** (`closure.mjs`) and every consumer reads it; no script re-walks
+   dependencies by hand.
+
+**Still open — needs the owner:**
+
+1. **Size budget.** Proposed: refuse to publish above **25 MB total** for the 40 tarballs, and print
+   the heaviest five closures in the dry run. A budget chosen after measuring is not a budget.
+2. **Whether `form` → `input` stays a peer on `main`.** Bundling makes it work for a consumer, but a
+   `dependencies` entry would let npm resolve it for a plain `npm install @aio-ui/form` from the CDN
+   registry — a different distribution story (fase 7), not this batch.
 
 ## Verification (the honest one)
 
 From a scratch directory **outside** the repo:
 
 ```
-npm install <abs>/aio-ui-form-0.2.2.tgz --no-audit --no-fund \
+npm install <abs>/aio-ui-form-0.3.0.tgz --no-audit --no-fund \
   --cache /tmp/npm-cache-empty --offline
 ```
 
@@ -99,5 +186,7 @@ npm install <abs>/aio-ui-form-0.2.2.tgz --no-audit --no-fund \
   `@aio-ui/input/dropdown/module` — the three shapes a submission app actually uses.
 - Also assert the installed tree has **no** `@aio-ui` package outside
   `node_modules/@aio-ui/form/node_modules/` (i.e. nothing leaked to the root).
+- Repeat once in mode B (`npm install $(cat install/aio-ui-form.txt | cut -d' ' -f3-)`) to prove the
+  declared closure is complete: if a URL is missing, npm fails with E404 and the file is wrong.
 
 Gate: `npm run verify` on `main` before the run (source-only, ~54 s).

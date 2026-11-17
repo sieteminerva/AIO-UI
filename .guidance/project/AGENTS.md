@@ -6,7 +6,9 @@
 
 ## Live claims
 
-_No live writer. Add a row here before your first edit — see the rules below._
+| Agent       | Band    | Task                                                        | Write scope                      | Started    | Checkpoint                    | State   |
+| ----------- | ------- | ----------------------------------------------------------- | -------------------------------- | ---------- | ----------------------------- | ------- |
+| copilot b53 | Tooling | Write the B53–B56 plan: opt-in preset proof + closure graph | `.guidance/project/**`           | 2026-11-17 | `.guidance/project/STATUS.md` | handoff |
 
 ## Row shape
 

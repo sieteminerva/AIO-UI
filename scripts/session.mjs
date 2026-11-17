@@ -120,13 +120,20 @@ function facts() {
       // The heading carries its own ordinal (`### 1. Theme console`) — drop it, because the
       // runner numbers the list itself and `1. 1. …` is exactly the kind of noise a ritual
       // runner exists to remove.
-      .map((line) => line.replace(/^###\s*/, "").replace(/^\d+[.)]\s*/, "").trim()),
+      .map((line) =>
+        line
+          .replace(/^###\s*/, "")
+          .replace(/^\d+[.)]\s*/, "")
+          .trim(),
+      ),
     claims: claimRows(),
     stamp: (() => {
       const now = new Date();
       const pad = (n) => String(n).padStart(2, "0");
-      return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ` +
-        `${pad(now.getHours())}:${pad(now.getMinutes())}`;
+      return (
+        `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ` +
+        `${pad(now.getHours())}:${pad(now.getMinutes())}`
+      );
     })(),
   };
 }
@@ -163,9 +170,10 @@ function openPrompt() {
 // start — STEP 0
 // ─────────────────────────────────────────────────────────────────────────────
 function start(f) {
-  const gate = f.staged + f.untracked > 0
-    ? "code may have changed — `npm run check` (~12 s) before the next commit"
-    : "tree clean; a gate was probably already run — do not repeat it";
+  const gate =
+    f.staged + f.untracked > 0
+      ? "code may have changed — `npm run check` (~12 s) before the next commit"
+      : "tree clean; a gate was probably already run — do not repeat it";
 
   say(bold(`\nAIO session start — ${f.stamp}`));
   say(dim(`  branch ${f.branch} · HEAD ${f.head}\n`));
@@ -190,8 +198,10 @@ function start(f) {
 
   say(`\n${bold("DO NOT read yet:")} the cards' detail docs, plan*.md, other bands, .archives/`);
   say(
-    dim("  Open a TASKS.md / TASK-*.md / band AGENTS.md only after the user picks a card.\n" +
-        "  Take a claim row (this board) before the first edit.\n"),
+    dim(
+      "  Open a TASKS.md / TASK-*.md / band AGENTS.md only after the user picks a card.\n" +
+        "  Take a claim row (this board) before the first edit.\n",
+    ),
   );
 
   if (asJson) {

@@ -8,6 +8,7 @@
   --fab-border-color: var(--app-border-color, #e0e0e0);
   --fab-text-color: var(--app-text-color, #333333);
   --fab-muted-color: var(--app-text-accent-color, #888888);
+  --fab-primary-color: var(--app-accent-color, #45f83f);
   --fab-accent-color: var(--app-primary-color, #7b2cbf);
   --fab-accent-text: var(--app-text-on-primary, #ffffff);
   --fab-shadow: var(--app-shadow-soft, 0 8px 32px rgba(0, 0, 0, 0.15));
@@ -122,7 +123,7 @@
       }
 
       &.active {
-        background: var(--fab-accent-color);
+        background: var(--fab-primary-color);
         color: var(--fab-accent-text);
       }
     }

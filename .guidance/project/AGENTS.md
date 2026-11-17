@@ -6,9 +6,7 @@
 
 ## Live claims
 
-| Agent         | Band    | Task                                                   | Write scope                                                                                        | Started    | Checkpoint                          | State  |
-| ------------- | ------- | ------------------------------------------------------ | -------------------------------------------------------------------------------------------------- | ---------- | ----------------------------------- | ------ |
-| copilot b51   | Tooling | Record the two new logbook cards + their task briefs   | `.guidance/project/**`, `AGENTS.md`                                                                | 2026-11-17 | `.guidance/project/STATUS.md`       | active |
+_No live writer. Add a row here before your first edit — see the rules below._
 
 ## Row shape
 

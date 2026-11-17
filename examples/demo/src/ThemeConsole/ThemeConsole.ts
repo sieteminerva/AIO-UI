@@ -100,9 +100,9 @@ export class ThemeConsoleBuilder extends Builder<ThemeConsoleElementType, iTheme
         : {}),
     });
     this.#colorizer
+      .attach("@colorizer>mode", "color-mode")
       .attach("@colorizer>configurator", "color-configurator")
-      .attach("@colorizer>output", "color-report")
-      .attach("@colorizer>mode", "color-mode");
+      .attach("@colorizer>output", "color-report");
 
     return root;
   }
@@ -126,9 +126,9 @@ export class ThemeConsoleBuilder extends Builder<ThemeConsoleElementType, iTheme
         const rail = document.createElement("div");
         rail.className = "rail";
         rail.append(
+          mode,
           this.render("@console>trigger", { target: "color-configurator", id: "theme-mixer", label: "Mixer" })!,
           this.render("@console>trigger", { target: "color-report", id: "theme-report", label: "Report" })!,
-          mode,
         );
 
         el.append(rail, configurator, report);

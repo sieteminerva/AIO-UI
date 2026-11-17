@@ -1,6 +1,6 @@
 {
   "name": "@aio-ui/frameworks",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "type": "module",
   "description": "Aggregated public surface for frameworks.",
   "files": [
@@ -15,9 +15,9 @@
     }
   },
   "dependencies": {
-    "@aio-ui/base": "^0.2.2",
-    "@aio-ui/core": "^0.2.2",
-    "@aio-ui/app": "^0.2.2"
+    "@aio-ui/base": "^0.2.3",
+    "@aio-ui/core": "^0.2.3",
+    "@aio-ui/app": "^0.2.3"
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",

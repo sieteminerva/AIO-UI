@@ -13,15 +13,18 @@
  *
  * Usage:
  *   node scripts/release.mjs --version 0.1.0            # plan only
- *   node scripts/release.mjs --version 0.1.0 --apply    # write artefacts (bundled by default)
- *   node scripts/release.mjs --version 0.1.0 --apply --no-bundle   # mode B: bare tarballs
+ *   node scripts/release.mjs --version 0.1.0 --apply    # write artefacts (mode B by default)
+ *   node scripts/release.mjs --version 0.1.0 --apply --bundle   # mode A: self-contained
  *
- * Bundling (mode A) is the default because it is what makes one URL enough: each
- * tarball carries its whole `@aio-ui/*` closure under `node_modules/`, declared as
- * exact `dependencies` + `bundledDependencies`, and the `development` export
- * condition is stripped so a consumer's bundler cannot pull `.ts` out of
- * `node_modules`. `--no-bundle` keeps the old peer-only tarballs and is only useful
- * for debugging the pack step.
+ * Two modes, same graph:
+ *
+ *   B — declared (default): every internal edge becomes an exact `dependencies` entry whose
+ *       value is the tarball URL on the `releases` branch. Packages stay separate modules, and
+ *       `npm install <A>.tgz` pulls B, then C, then D by itself — the modular install.
+ *   A — embedded (`--bundle`): the closure is copied into the tarball under `node_modules/` and
+ *       declared as `bundledDependencies`, so one URL is enough and nothing else is fetched.
+ *
+ * Both strip the `development` export condition: the tarball is a published artefact.
  *
  * The output directory is the `releases` worktree (`./releases`, see
  * scripts/releases-worktree.mjs), not a scratch folder: the tarball a consumer
@@ -54,7 +57,7 @@ const valueOf = (name) => {
 
 const version = valueOf("--version");
 const apply = flag("--apply");
-const bundle = !flag("--no-bundle");
+const bundle = flag("--bundle");
 const repository = process.env.GITHUB_REPOSITORY || "sieteminerva/AIO-UI";
 const outDir = version ? join(ROOT, "releases", `v${version}`) : null;
 
@@ -199,18 +202,31 @@ function publishedExports(value) {
   return out;
 }
 
+/** Tarball name npm will produce for a package: `@aio-ui/form` → `aio-ui-form-0.1.0.tgz`. */
+function tarballName(packageName, targetVersion) {
+  return `aio-ui-${packageName.slice(SCOPE.length)}-${targetVersion}.tgz`;
+}
+
+/** The URL a consumer's npm can follow: that tarball as a file on the `releases` branch. */
+function tarballUrl(packageName, targetVersion) {
+  return `https://github.com/${repository}/raw/releases/v${targetVersion}/${tarballName(packageName, targetVersion)}`;
+}
+
 /**
- * Copies one package to `target` and rewrites its manifest so the closure travels with it.
+ * Copies one package to `target` and rewrites its manifest so its closure is reachable.
  *
- * A cycle (`form ↔ message`) is broken at the repeated name: that package is already
- * inside the tarball higher up, and node's upward lookup finds it there. It stays a
- * declared exact dependency, it just is not nested a second time.
+ * Mode B (default): every internal edge becomes an exact `dependencies` entry pointing at the
+ * tarball URL — npm installs A, follows the URL to B, then C, and the modules stay separate.
+ * Mode A (`--bundle`): the closure is copied under `node_modules/` and declared bundled, so one
+ * tarball is self-contained; a cycle (`form ↔ message`) is broken at the repeated name because
+ * that package is already inside the tarball higher up.
  */
 function stagePackage(name, target, ancestry) {
   const entry = byName.get(name);
   cpSync(entry.dir, target, {
     recursive: true,
-    filter: (source) => !source.split(sep).includes("node_modules") && !source.split(sep).includes(".turbo"),
+    filter: (source) =>
+      !source.split(sep).includes("node_modules") && !source.split(sep).includes(".turbo"),
   });
 
   const manifest = JSON.parse(readFileSync(join(target, "package.json"), "utf8"));
@@ -218,12 +234,12 @@ function stagePackage(name, target, ancestry) {
 
   for (const dep of internalEdges(manifest)) {
     const depVersion = byName.get(dep).manifest.version;
-    // Exact, not the workspace range: the copy in this tarball is the version it was built against.
-    manifest.dependencies = { ...manifest.dependencies, [dep]: depVersion };
+    // A URL, not a range: the consumer has no registry, and the closure must resolve by itself.
+    manifest.dependencies = { ...manifest.dependencies, [dep]: tarballUrl(dep, depVersion) };
     delete manifest.peerDependencies?.[dep];
     delete manifest.optionalDependencies?.[dep];
 
-    if (ancestry.has(dep)) continue;
+    if (!bundle || ancestry.has(dep)) continue;
     stagePackage(dep, join(target, "node_modules", ...dep.split("/")), new Set([...ancestry, dep]));
     bundled.push(dep);
   }
@@ -240,9 +256,7 @@ function stagePackage(name, target, ancestry) {
 // The staging tree lives at the branch worktree root so a failed pack is inspectable; the
 // branch ignores `/.stage/`, so it never ships.
 const stageRoot = join(ROOT, "releases", ".stage");
-if (bundle) {
-  writeFileSync(join(ROOT, "releases", ".gitignore"), "/.stage/\n", "utf8");
-}
+writeFileSync(join(ROOT, "releases", ".gitignore"), "/.stage/\n", "utf8");
 
 for (const entry of packages) {
   const name = entry.manifest.name;
@@ -259,7 +273,7 @@ for (const entry of packages) {
   // "./C:\\…" is read as a path inside the cwd and resolves to nothing.
   let bundledCount = 0;
   let packSource = entry.dir;
-  if (bundle) {
+  {
     packSource = join(stageRoot, entry.manifest.name.split("/").pop());
     bundledCount = stagePackage(name, packSource, new Set([name]));
   }
@@ -310,8 +324,8 @@ writeFileSync(join(outDir, "checksums.txt"), `${checksums.join("\n")}\n`, "utf8"
 
 console.log(`[release] wrote ${checksums.length} tarball(s) + registry.json + layout.json + checksums.txt`);
 console.log(
-  `[release] mode ${bundle ? "A — self-contained (bundled closure)" : "B — bare tarballs (peers unresolved)"} · ${(totalBytes / 1024 / 1024).toFixed(2)} MB total`,
+  `[release] mode ${bundle ? "A — self-contained (bundled closure)" : "B — separate modules (internal dependencies are tarball URLs)"} · ${(totalBytes / 1024 / 1024).toFixed(2)} MB total`,
 );
-if (bundle) rmSync(stageRoot, { recursive: true, force: true });
+rmSync(stageRoot, { recursive: true, force: true });
 console.log(`[release] next: node scripts/publish-releases.mjs --apply`);
 console.log(`[release] undo with: rm -rf ${relative(ROOT, outDir).replace(/\\/g, "/")}`);

@@ -1,7 +1,7 @@
 {
   "name": "aio-ui",
   "private": true,
-  "version": "0.2.2",
+  "version": "0.2.3",
   "type": "module",
   "workspaces": [
     "packages/*",
@@ -25,6 +25,7 @@
     "release:plan": "node scripts/release.mjs",
     "publish:releases": "node scripts/publish-releases.mjs",
     "publish:cdn": "node scripts/publish-cdn.mjs",
+    "publish:assets": "node scripts/publish-release-assets.mjs",
     "new:component": "node scripts/new-component.mjs",
     "check": "npm run typecheck && npm run check:bounds && npm run check:bundle && npm run check:api && npm run check:catalogue && npm run version:check",
     "verify": "npm run check && npm run test",

@@ -48,8 +48,9 @@ carries its closure under `node_modules/` with exact `dependencies` + `bundledDe
 `development` condition, 6.27 MB total for all 40. **`v0.2.2` is published**: tag + `v0.2.2/` on
 the branch, jsDelivr `@v0.2.2` returns 200, and one tarball installs **offline** with an empty
 cache (`--offline`), pulling nothing else from the registry.
-**Open:** create the GitHub Release object for the tag (no `gh`/token on this machine; the releases
-page needs one click), `scripts/exports.mjs` + `check:exports` (B54 proper), mode B `install/*.txt`.
+**Open:** GitHub release assets + the release object for `v0.2.3` need one authenticated run of
+`node scripts/publish-release-assets.mjs --tag v0.2.3 --body <file> --apply` (no `gh`/token on
+this machine); `scripts/exports.mjs` + `check:exports` (B54 proper).
 **Plan:** the closure is a graph computed once by `scripts/closure.mjs`, then shipped two ways —
 embedded (mode A, one URL) or declared (`install/<pkg>.txt`, mode B). `scripts/exports.mjs` + a
 `check:exports` gate end the four-way export-map recomputation and catch a subpath whose file

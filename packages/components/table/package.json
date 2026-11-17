@@ -1,6 +1,6 @@
 {
   "name": "@aio-ui/table",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "type": "module",
   "files": [
     "dist",
@@ -22,11 +22,11 @@
     }
   },
   "peerDependencies": {
-    "@aio-ui/base": "^0.2.2",
-    "@aio-ui/core": "^0.2.2",
-    "@aio-ui/form": "^0.2.2",
-    "@aio-ui/module-loader": "^0.2.2",
-    "@aio-ui/utilities": "^0.2.2"
+    "@aio-ui/base": "^0.2.3",
+    "@aio-ui/core": "^0.2.3",
+    "@aio-ui/form": "^0.2.3",
+    "@aio-ui/module-loader": "^0.2.3",
+    "@aio-ui/utilities": "^0.2.3"
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",

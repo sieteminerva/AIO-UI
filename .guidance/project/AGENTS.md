@@ -6,9 +6,7 @@
 
 ## Live claims
 
-| Agent       | Band    | Task                                              | Write scope                                                                                                 | Started    | Checkpoint                    | State  |
-| ----------- | ------- | ------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- | ---------- | ----------------------------- | ------ |
-| copilot b56 | Tooling | Ship `v0.2.2` — closure, bundle, publish, release | `scripts/*.mjs`, `packages/**/package.json`, `package.json`, `package-lock.json`, `docs/**`, `.guidance/**` | 2026-11-18 | `.guidance/project/STATUS.md` | active |
+_No live writer. Add a row here before your first edit — see the rules below._
 
 ## Row shape
 

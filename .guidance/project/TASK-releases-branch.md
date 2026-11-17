@@ -143,14 +143,14 @@ Landed 2026-11-18 for the plain (non-bundled) tarballs; the bundled rewrite is �
 
 ### Order of batches
 
-| Batch | Content                                                       | Depends on         |
-| ----- | ------------------------------------------------------------- | ------------------ |
-| B53   | form/input default opt-in + `bundle-probe` proof (§form)      | —                  |
-| B53b  | missing-module warnings/throws + form owns the full stack     | B53                |
-| B54a  | `releases` branch + `./releases` worktree + both publishers   | —                  |
-| B54   | `closure.mjs` + `exports.mjs` + `check:exports` gate          | B53b (exits/sizes) |
-| B55   | `release.mjs --bundle` + `install/*.txt`                      | B54                |
-| B56   | `0.2.2` bump + full release verification                      | B53b–B55           |
+| Batch | Content                                                     | Depends on         |
+| ----- | ----------------------------------------------------------- | ------------------ |
+| B53   | form/input default opt-in + `bundle-probe` proof (§form)    | —                  |
+| B53b  | missing-module warnings/throws + form owns the full stack   | B53                |
+| B54a  | `releases` branch + `./releases` worktree + both publishers | —                  |
+| B54   | `closure.mjs` + `exports.mjs` + `check:exports` gate        | B53b (exits/sizes) |
+| B55   | `release.mjs --bundle` + `install/*.txt`                    | B54                |
+| B56   | `0.2.2` bump + full release verification                    | B53b–B55           |
 
 ## Decisions
 

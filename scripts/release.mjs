@@ -13,7 +13,15 @@
  *
  * Usage:
  *   node scripts/release.mjs --version 0.1.0            # plan only
- *   node scripts/release.mjs --version 0.1.0 --apply    # write artefacts
+ *   node scripts/release.mjs --version 0.1.0 --apply    # write artefacts (bundled by default)
+ *   node scripts/release.mjs --version 0.1.0 --apply --no-bundle   # mode B: bare tarballs
+ *
+ * Bundling (mode A) is the default because it is what makes one URL enough: each
+ * tarball carries its whole `@aio-ui/*` closure under `node_modules/`, declared as
+ * exact `dependencies` + `bundledDependencies`, and the `development` export
+ * condition is stripped so a consumer's bundler cannot pull `.ts` out of
+ * `node_modules`. `--no-bundle` keeps the old peer-only tarballs and is only useful
+ * for debugging the pack step.
  *
  * The output directory is the `releases` worktree (`./releases`, see
  * scripts/releases-worktree.mjs), not a scratch folder: the tarball a consumer
@@ -22,8 +30,8 @@
  */
 import { execSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import { join, relative } from "node:path";
+import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { join, relative, sep } from "node:path";
 import { ensureWorktree } from "./releases-worktree.mjs";
 
 const ROOT = process.cwd();
@@ -46,6 +54,7 @@ const valueOf = (name) => {
 
 const version = valueOf("--version");
 const apply = flag("--apply");
+const bundle = !flag("--no-bundle");
 const repository = process.env.GITHUB_REPOSITORY || "sieteminerva/AIO-UI";
 const outDir = version ? join(ROOT, "releases", `v${version}`) : null;
 
@@ -164,6 +173,76 @@ const registry = {
 
 const checksums = [];
 const layout = {};
+let totalBytes = 0;
+const byName = new Map(packages.map((entry) => [entry.manifest.name, entry]));
+
+/** `@aio-ui/*` names this manifest requires: install requirements, all three fields. */
+function internalEdges(manifest) {
+  const names = new Set();
+  for (const field of ["dependencies", "peerDependencies", "optionalDependencies"]) {
+    for (const key of Object.keys(manifest[field] ?? {})) {
+      if (key.startsWith(SCOPE)) names.add(key);
+    }
+  }
+  return [...names].sort();
+}
+
+/** Drops the `development` condition at every depth: a shipped tarball is a published artefact. */
+function publishedExports(value) {
+  if (Array.isArray(value)) return value.map(publishedExports);
+  if (!value || typeof value !== "object") return value;
+  const out = {};
+  for (const [key, inner] of Object.entries(value)) {
+    if (key === "development") continue;
+    out[key] = publishedExports(inner);
+  }
+  return out;
+}
+
+/**
+ * Copies one package to `target` and rewrites its manifest so the closure travels with it.
+ *
+ * A cycle (`form ↔ message`) is broken at the repeated name: that package is already
+ * inside the tarball higher up, and node's upward lookup finds it there. It stays a
+ * declared exact dependency, it just is not nested a second time.
+ */
+function stagePackage(name, target, ancestry) {
+  const entry = byName.get(name);
+  cpSync(entry.dir, target, {
+    recursive: true,
+    filter: (source) => !source.split(sep).includes("node_modules") && !source.split(sep).includes(".turbo"),
+  });
+
+  const manifest = JSON.parse(readFileSync(join(target, "package.json"), "utf8"));
+  const bundled = [];
+
+  for (const dep of internalEdges(manifest)) {
+    const depVersion = byName.get(dep).manifest.version;
+    // Exact, not the workspace range: the copy in this tarball is the version it was built against.
+    manifest.dependencies = { ...manifest.dependencies, [dep]: depVersion };
+    delete manifest.peerDependencies?.[dep];
+    delete manifest.optionalDependencies?.[dep];
+
+    if (ancestry.has(dep)) continue;
+    stagePackage(dep, join(target, "node_modules", ...dep.split("/")), new Set([...ancestry, dep]));
+    bundled.push(dep);
+  }
+
+  for (const field of ["peerDependencies", "optionalDependencies"]) {
+    if (manifest[field] && Object.keys(manifest[field]).length === 0) delete manifest[field];
+  }
+  if (bundled.length) manifest.bundledDependencies = bundled;
+  if (manifest.exports) manifest.exports = publishedExports(manifest.exports);
+  writeFileSync(join(target, "package.json"), `${JSON.stringify(manifest, null, 2)}\n`, "utf8");
+  return bundled.length;
+}
+
+// The staging tree lives at the branch worktree root so a failed pack is inspectable; the
+// branch ignores `/.stage/`, so it never ships.
+const stageRoot = join(ROOT, "releases", ".stage");
+if (bundle) {
+  writeFileSync(join(ROOT, "releases", ".gitignore"), "/.stage/\n", "utf8");
+}
 
 for (const entry of packages) {
   const name = entry.manifest.name;
@@ -178,15 +257,24 @@ for (const entry of packages) {
   // (`packages/app`) as GitHub shorthand `owner/repo` and packs over ssh
   // instead of the local directory. `dir` is relative to ROOT, never absolute —
   // "./C:\\…" is read as a path inside the cwd and resolves to nothing.
-  const output = execSync(`npm pack "./${dir}" --pack-destination "${outDir}" --json`, {
+  let bundledCount = 0;
+  let packSource = entry.dir;
+  if (bundle) {
+    packSource = join(stageRoot, entry.manifest.name.split("/").pop());
+    bundledCount = stagePackage(name, packSource, new Set([name]));
+  }
+  const packDir = relative(ROOT, packSource).replace(/\\/g, "/");
+  const output = execSync(`npm pack "./${packDir}" --pack-destination "${outDir}" --json`, {
     cwd: ROOT,
     encoding: "utf8",
   });
   const [packed] = JSON.parse(output);
 
   const tarballPath = join(outDir, packed.filename);
+  const bytes = readFileSync(tarballPath).length;
   const sha256 = createHash("sha256").update(readFileSync(tarballPath)).digest("hex");
   checksums.push(`${sha256}  ${packed.filename}`);
+  totalBytes += bytes;
 
   const subpaths = subpathsOf(entry.manifest, entry.dir);
   registry.packages[name] = {
@@ -197,6 +285,8 @@ for (const entry of packages) {
     tarball: `https://github.com/${repository}/raw/releases/v${version}/${packed.filename}`,
     integrity: packed.integrity,
     size: packed.size,
+    selfContained: bundle,
+    bundled: bundledCount,
   };
 
   // Layout mirrors the generator's resolver: `entry` is a JS root only, every
@@ -219,5 +309,9 @@ writeFileSync(join(outDir, "layout.json"), `${JSON.stringify(layout, null, 2)}\n
 writeFileSync(join(outDir, "checksums.txt"), `${checksums.join("\n")}\n`, "utf8");
 
 console.log(`[release] wrote ${checksums.length} tarball(s) + registry.json + layout.json + checksums.txt`);
+console.log(
+  `[release] mode ${bundle ? "A — self-contained (bundled closure)" : "B — bare tarballs (peers unresolved)"} · ${(totalBytes / 1024 / 1024).toFixed(2)} MB total`,
+);
+if (bundle) rmSync(stageRoot, { recursive: true, force: true });
 console.log(`[release] next: node scripts/publish-releases.mjs --apply`);
 console.log(`[release] undo with: rm -rf ${relative(ROOT, outDir).replace(/\\/g, "/")}`);

@@ -66,12 +66,19 @@ for (const [name, entry] of Object.entries(registry.packages)) {
   mkdirSync(target, { recursive: true });
   // Windows `tar` treats `C:\...` as a remote host, so pass repo-relative paths.
   const fromRoot = (path) => relative(ROOT, path).replace(/\\/g, "/");
-  execSync(`tar -xzf "${fromRoot(tarball)}" -C "${fromRoot(target)}" --strip-components=1`, {
+  // A bundled tarball carries its closure under `node_modules/`. Those files are
+  // duplicates of sibling packages already in this tree (and on Windows their nested
+  // paths blow the 260-character limit), so they are never unpacked here.
+  execSync(`tar -xzf "${fromRoot(tarball)}" -C "${fromRoot(target)}" --strip-components=1 --exclude=package/node_modules`, {
     cwd: ROOT,
     stdio: "pipe",
   });
   if (!existsSync(join(target, "package.json"))) {
     console.error(`[cdn] ${name}: tarball did not unpack into ${entry.dir}`);
+    process.exit(1);
+  }
+  if (existsSync(join(target, "node_modules"))) {
+    console.error(`[cdn] ${name}: a bundled node_modules/ reached the cdn tree; refusing to publish`);
     process.exit(1);
   }
 }

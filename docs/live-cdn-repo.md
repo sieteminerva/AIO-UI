@@ -33,17 +33,17 @@ README is §2.1.
 >   makes the `tarball` URLs inside `registry.json` resolve. Publishing a new version means repeating
 >   that upload (`gh` is absent on this machine, so it is a REST call or the web UI).
 
-| Piece          | Value                                                                                                 |
-| -------------- | ----------------------------------------------------------------------------------------------------- |
-| Repository     | `https://github.com/sieteminerva/AIO-UI` (public)                                                     |
-| Default branch | `main` — source only; `dist/` is gitignored                                                           |
-| CDN branch     | `releases` — orphan branch: the unpacked tree at the root **and** `v<version>/*.tgz` beside it         |
-| Local checkout | `<repo>/releases` — a git worktree of that branch, ignored on `main`                                  |
-| Version tag    | `v0.2.1` at `346fac7` — the commit the branch was renamed from, **not** `main`                        |
-| CDN base       | `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.1/`                                             |
-| Branch README  | `…@v0.2.1/README.md` — generated at publish time, see §2.1                                             |
-| Install URL    | `…/raw/releases/v<version>/aio-ui-<name>-<version>.tgz` — no GitHub release asset to upload           |
-| Packages       | 40 (base/core/app/styles/utilities, 23 components, 6 modules, 3 themes, 3 kits)                       |
+| Piece          | Value                                                                                          |
+| -------------- | ---------------------------------------------------------------------------------------------- |
+| Repository     | `https://github.com/sieteminerva/AIO-UI` (public)                                              |
+| Default branch | `main` — source only; `dist/` is gitignored                                                    |
+| CDN branch     | `releases` — orphan branch: the unpacked tree at the root **and** `v<version>/*.tgz` beside it |
+| Local checkout | `<repo>/releases` — a git worktree of that branch, ignored on `main`                           |
+| Version tag    | `v0.2.1` at `346fac7` — the commit the branch was renamed from, **not** `main`                 |
+| CDN base       | `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.1/`                                      |
+| Branch README  | `…@v0.2.1/README.md` — generated at publish time, see §2.1                                     |
+| Install URL    | `…/raw/releases/v<version>/aio-ui-<name>-<version>.tgz` — no GitHub release asset to upload    |
+| Packages       | 40 (base/core/app/styles/utilities, 23 components, 6 modules, 3 themes, 3 kits)                |
 
 Why the split: jsDelivr serves **repository files**, and `dist/` is not committed on `main`.
 `scripts/publish-cdn.mjs` rebuilds the tag content from the release tarballs on `releases`, so the
@@ -424,19 +424,19 @@ Never push `main` to the old `rajutan` remote.
 
 ## 8. Troubleshooting
 
-| Symptom                                           | Cause                                                                                                         | Fix                                                                                                                                                                        |
-| ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Every package URL 404s, `registry.json` 404s      | Tag still points at `main` (no `dist`)                                                                        | Run `publish-cdn.mjs --apply`                                                                                                                                              |
-| One subpath 404s (`dropdown/module`)              | URL derived from the specifier                                                                                | Check `layout.subpaths`; resolver must use `exports`                                                                                                                       |
-| A stylesheet 404s at the package root             | CSS export names a source file                                                                                | Prefer `dist/` for CSS in `release.mjs` / `layout.mjs`                                                                                                                     |
-| Browser ignores the import map                    | Missing `"imports"` wrapper                                                                                   | `runtime.ts` serialises `site.importMap`                                                                                                                                   |
-| `tar (child): Cannot connect to …`                | Absolute Windows path passed to tar                                                                           | Use repo-relative paths (the script already does)                                                                                                                          |
-| `422 already_exists` on upload                    | Asset name already present                                                                                    | Delete the old asset, then upload                                                                                                                                          |
-| jsDelivr keeps serving the old bytes              | CDN cache                                                                                                     | Purge the URL(s), wait a few seconds, hard-reload                                                                                                                          |
-| `@releases` still reports the previous version | Branch refs are cached `s-maxage=43200` (12 h); a wildcard purge does not always evict the file | Purge the **exact** file (`…@releases/registry.json`), then re-probe                                                                                                          |
+| Symptom                                           | Cause                                                                                                         | Fix                                                                                                                                                                             |
+| ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Every package URL 404s, `registry.json` 404s      | Tag still points at `main` (no `dist`)                                                                        | Run `publish-cdn.mjs --apply`                                                                                                                                                   |
+| One subpath 404s (`dropdown/module`)              | URL derived from the specifier                                                                                | Check `layout.subpaths`; resolver must use `exports`                                                                                                                            |
+| A stylesheet 404s at the package root             | CSS export names a source file                                                                                | Prefer `dist/` for CSS in `release.mjs` / `layout.mjs`                                                                                                                          |
+| Browser ignores the import map                    | Missing `"imports"` wrapper                                                                                   | `runtime.ts` serialises `site.importMap`                                                                                                                                        |
+| `tar (child): Cannot connect to …`                | Absolute Windows path passed to tar                                                                           | Use repo-relative paths (the script already does)                                                                                                                               |
+| `422 already_exists` on upload                    | Asset name already present                                                                                    | Delete the old asset, then upload                                                                                                                                               |
+| jsDelivr keeps serving the old bytes              | CDN cache                                                                                                     | Purge the URL(s), wait a few seconds, hard-reload                                                                                                                               |
+| `@releases` still reports the previous version    | Branch refs are cached `s-maxage=43200` (12 h); a wildcard purge does not always evict the file               | Purge the **exact** file (`…@releases/registry.json`), then re-probe                                                                                                            |
 | Moved the tag, jsDelivr still serves the old tree | jsDelivr pins a tag to a commit (`immutable, max-age=31536000`); purge reports `finished` and changes nothing | Closed in `v0.1.1`: never force-move a served tag. Publish a **new version** (`version.mjs --apply --version 0.2.1`) or point `registry.base` at `@<commit-sha>` / `@releases`. |
-| Old registry + new assets (`integrity` mismatch)  | A tag's registry was cached before the assets were replaced                                                   | Treat that tag as unusable; publish a new version                                                                                                                          |
-| jsDelivr 404s the whole repo                      | Repository is private or tag missing                                                                          | Make it public / check `git ls-remote`                                                                                                                                     |
+| Old registry + new assets (`integrity` mismatch)  | A tag's registry was cached before the assets were replaced                                                   | Treat that tag as unusable; publish a new version                                                                                                                               |
+| jsDelivr 404s the whole repo                      | Repository is private or tag missing                                                                          | Make it public / check `git ls-remote`                                                                                                                                          |
 
 ## 9. Pre-flight checklist
 

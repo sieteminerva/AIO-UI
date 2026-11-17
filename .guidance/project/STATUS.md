@@ -41,9 +41,15 @@ maps) and `v<version>/*.tgz` beside it (installs; `registry.json` points at `raw
 created on demand by `scripts/releases-worktree.mjs`), `release.mjs --apply` writes `releases/vX/`
 there, `publish-releases.mjs` gates registry ⇄ tarballs and pushes the folder, `publish-cdn.mjs`
 replaces only the branch root and moves the tag, `.draft/` is scratch-only, and `cdn` was renamed
-to `releases` (tag `v0.2.1` untouched). No GitHub release asset is uploaded any more.
-**Not done yet:** no `v0.2.2` exists — B55 must make the tarballs self-contained (bundled closure,
-exact internal `dependencies`) and B56 bumps the version and runs `verify:pkgs`.
+to `releases` (tag `v0.2.1` untouched).
+**Landed (B55/B56, 2026-11-18):** `scripts/closure.mjs` is the graph (40 packages, 51 edges, one
+real cycle `form ⇄ message`, 21 leaves); `release.mjs` is **bundled by default** — each tarball
+carries its closure under `node_modules/` with exact `dependencies` + `bundledDependencies` and no
+`development` condition, 6.27 MB total for all 40. **`v0.2.2` is published**: tag + `v0.2.2/` on
+the branch, jsDelivr `@v0.2.2` returns 200, and one tarball installs **offline** with an empty
+cache (`--offline`), pulling nothing else from the registry.
+**Open:** create the GitHub Release object for the tag (no `gh`/token on this machine; the releases
+page needs one click), `scripts/exports.mjs` + `check:exports` (B54 proper), mode B `install/*.txt`.
 **Plan:** the closure is a graph computed once by `scripts/closure.mjs`, then shipped two ways —
 embedded (mode A, one URL) or declared (`install/<pkg>.txt`, mode B). `scripts/exports.mjs` + a
 `check:exports` gate end the four-way export-map recomputation and catch a subpath whose file

@@ -19,7 +19,7 @@ import { execSync } from "node:child_process";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 
-const QUIET = { stdio: "pipe", encoding: "utf8" };
+const QUIET = { stdio: "pipe", encoding: "utf8", maxBuffer: 256 * 1024 * 1024 };
 
 function git(cwd, command, options = QUIET) {
   return execSync(`git ${command}`, { cwd, ...options });

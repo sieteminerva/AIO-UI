@@ -1,10 +1,11 @@
 # TASK — form modules without a shell (manifest refs vs. definitions)
 
 Recorded 2026-11-17. **A1–A4 landed in batch 52**; **the opt-in split and its graph proof landed in
-batch 53** (see the end of this file). Open: the warn/throw policy, the form's full stack and the
-`0.2.2` bump — decided after b53, scheduled as B53b and B56.
+batch 53**; **the warn/throw policy, the form's full stack and the dependency move landed in b53b**
+(see the end of this file). Open: the `0.2.2` bump (B56).
 
-**Status:** `check:bundle` green · `verify` → 82 files, 745 passed, 1 skipped.
+**Status:** `check:bundle` green (152 parsed modules) · `verify` → 82 files, 743 passed, 15 skipped
+(the release-artefact suite waits for `v0.2.2` artefacts).
 **Next:** B54 — closure + export index (`.guidance/project/TASK-releases-branch.md`).
 
 Owner band: **Framework** (`packages/components/form`, `packages/components/input`,

@@ -3,27 +3,39 @@
 > Read this file only at orientation, beside `git log --oneline -8`. Cards are rewritten every
 > session, never appended: each is a summary plus the link to the real detail, which is opened only
 > after the user picks a card (`AGENT_RULES.md` §13).
+>
+> Rewritten 2026-11-17: the theme-console, menu and masonry cards were dropped on request and the
+> three below took their place. Card 1 is a **defect report from a real `.tgz` consumer**, card 2 is
+> a **spec handed over by the user**, card 3 is the queue that survived the rewrite.
 
-### 1. Theme console — docked in the fab menu
+### 1. Form — modules that never get loaded without a shell
 
-Colour engine + kit + presets, plus the `ThemeConsole` chrome: one fab panel with a mode switch,
-an evenly spread Mixer | Report rail and one drawer open at a time, tokens broadcast to `<html>` and
-kept in ONE persisted config so the page and the panel can never disagree.
-**Open:** the drawers still carry the colouriser's page-only preview sections (ramps, palette).
-→ `examples/demo/src/ThemeConsole/TASKS.md`
+A consumer installs the `.tgz` set by hand, skips `AioApp`, renders through `DOMRenderer` and calls
+`new FormBuilder({ modules: new ModuleLoader("form", FORM_ADAPTER_MANIFEST) })`. Every field throws
+`[FormBuilder] No module rendered the field`. Cause is a **shape mismatch, not missing behaviour**:
+`ModuleLoader` takes `iModuleDefinition` (`{ id, load }`); what is being handed to it is
+`iComponentModuleRef` (`{ id, path, export }`), which only `ComponentRegistry` can resolve. Nothing
+in the public surface says which is which, and `ModuleRegistry.register()` does not validate.
+**Plan:** guard at the door + one `resolveModuleDefinitions()` helper + the missing README recipe.
+→ `.guidance/project/TASK-form-modules.md`
 
-### 2. Menu — recursive submenus and a compact strip
+### 2. Release — one-command offline installs from an orphan branch
 
-`config.multilevel` (`activation`, `property`, `multicolumn`) beside `position`; a branch is
-`li.item.submenu` with `open`/`closed` and never navigates; below 768px every position becomes one
-scrolling strip. Shipped.
-→ `packages/components/menu/README.md` (`## Multi-level`, `## Compact viewport`)
+`main` stays source-only; each release folder goes to an orphan `releases` branch so
+`npm install <raw-github-url>/aio-ui-form-0.2.2.tgz` works in one command with **no**
+`registry.npmjs.org` call for the `@aio-ui/*` peers. Tarballs become self-contained by staging the
+package, moving internal peers into exact `dependencies` + `bundledDependencies`, and copying the
+built dependency dirs into `<stage>/node_modules/@aio-ui/`. Workspace manifests are never touched.
+**Open decisions:** bundle size (measure first), and whether the staged `package.json` keeps the
+`development` export condition that would ship raw `.ts` out of `node_modules`.
+→ `.guidance/project/TASK-releases-branch.md`
 
-### 3. Masonry — the lightbox is part of the payload
+### 3. Carried queue — the small fixes that keep §16 honest
 
-`@masonry>modal>stage|image|caption|title|desc` are declared selectors, so `template()` builds the
-lightbox and re-renders it per open. Shipped; the column distribution is still open.
-→ `packages/components/masonry/README.md`
+`scripts/proof.mjs --report` (per-package `inspect()` coverage — the ratchet that makes §16
+mechanical), the dead `ElementCreatedEventBus.relay` call plus two leftover `console.log` in
+`DOMRenderer`, and `#cleanupMap` never being reset per `render()`.
+→ `.guidance/project/framework.md` (`## Next`)
 
 ## Where everything else lives
 
@@ -40,7 +52,7 @@ lightbox and re-renders it per open. Shipped; the column distribution is still o
 | Live demo / Pages               | `docs/framework/DEMO.md`                  |
 | Architecture decisions          | `.guidance/project/DECISIONS.md`          |
 
-Last updated: 2026-11-16
+Last updated: 2026-11-17
 
 ## Cross-project
 

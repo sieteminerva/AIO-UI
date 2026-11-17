@@ -13,6 +13,14 @@ Why / stages: `.guidance/plan-framework.md`. Engineering rules:
 
 ## Next
 
+- **Form modules without a shell** — `ModuleLoader` gets `iModuleDefinition` (`{ id, load }`) while
+  the docs and every manifest quote `iComponentModuleRef` (`{ id, path, export }`); a hand-wired
+  consumer therefore reaches `[FormBuilder] No module rendered the field`. Guard `register()`, add
+  `resolveModuleDefinitions()`, document the `FORM_ADAPTER_DEFINITIONS` one-liner.
+  → `.guidance/project/TASK-form-modules.md`
+- **Self-contained tarballs on an orphan `releases` branch** — bundle internal `@aio-ui/*` into each
+  `.tgz` so one `npm install <url>.tgz` works offline, and publish the folder from a worktree
+  instead of the web UI. → `.guidance/project/TASK-releases-branch.md`
 - `scripts/proof.mjs --report`: list every component package and whether it carries an `inspect()`
   assertion. Report-only at first (the gap list is the ratchet); make it a `verify` gate once the 20
   packages are covered, so §16 stops depending on discipline.

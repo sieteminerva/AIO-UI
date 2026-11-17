@@ -26,14 +26,14 @@ a fix, `@aio-ui/form` depends on `@aio-ui/input`.
 
 ## Map
 
-| Need                      | File                                      |
-| ------------------------- | ----------------------------------------- |
-| Framework queue + landed  | `.guidance/project/framework.md`          |
+| Need                      | File                                            |
+| ------------------------- | ----------------------------------------------- |
+| Framework queue + landed  | `.guidance/project/framework.md`                |
 | Gallery / generator queue | `.guidance/project/gallery.md` · `generator.md` |
-| Process rules             | `.guidance/AGENT_RULES.md`                |
-| Component + env rules     | `docs/framework/COMPONENT-CONVENTIONS.md` |
-| Release + publish ritual  | `docs/live-cdn-repo.md`                   |
-| Live writers (lock)       | `.guidance/project/AGENTS.md`             |
+| Process rules             | `.guidance/AGENT_RULES.md`                      |
+| Component + env rules     | `docs/framework/COMPONENT-CONVENTIONS.md`       |
+| Release + publish ritual  | `docs/live-cdn-repo.md`                         |
+| Live writers (lock)       | `.guidance/project/AGENTS.md`                   |
 
 ## Cross-project
 

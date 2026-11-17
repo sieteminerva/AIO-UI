@@ -6,7 +6,7 @@
  *
  *   iAiSiteContent → parseAiContent → assemblePreset → generateSite
  *
- * They are also the fixtures behind `.draft/results/*`: running the test suite
+ * They are also the fixtures behind `temp/results/*`: running the test suite
  * writes real folders that can be opened in a browser.
  */
 import { assemblePreset, assertAiContent } from "./ai.ts";

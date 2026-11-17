@@ -244,10 +244,10 @@ describe.skipIf(!available)("release artefacts", () => {
   }
 
   it("writes a locally servable copy of both sites", () => {
-    // The real smoke test: serve the repo root at :5300, open `/.draft/smoke/<site>/`.
+    // The real smoke test: serve the repo root at :5300, open `/temp/smoke/<site>/`.
     const localBase = "http://localhost:5300/";
     const resolver = createCdnResolver({ base: localBase, layout });
-    const out = join(ROOT, ".draft", "smoke");
+    const out = join(ROOT, "temp", "smoke");
 
     for (const [label, preset] of [
       ["gallery", galleryScenario.preset],
@@ -271,7 +271,7 @@ describe.skipIf(!available)("release artefacts", () => {
   const cdnBase = process.env.SMOKE_BASE;
   it.skipIf(!cdnBase)("writes a copy that loads from the tagged CDN", () => {
     const resolver = createCdnResolver({ base: cdnBase!, layout });
-    const out = join(ROOT, ".draft", "cdn-smoke");
+    const out = join(ROOT, "temp", "cdn-smoke");
 
     for (const [label, preset] of [
       ["gallery", galleryScenario.preset],

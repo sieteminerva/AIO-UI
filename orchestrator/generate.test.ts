@@ -12,13 +12,13 @@ import type { iWebPreset } from "./types.ts";
 /**
  * Golden-output tests.
  *
- * They assert behaviour *and* write the generated sites to `.draft/results/`,
+ * They assert behaviour *and* write the generated sites to `temp/results/`,
  * because the flow is easier to judge from real files than from string
  * assertions. Nothing here touches the network: the resolver points at the
  * release URL the site will use once the first tag exists.
  */
 const HERE = dirname(fileURLToPath(import.meta.url));
-const RESULTS = join(HERE, "..", ".draft", "results");
+const RESULTS = join(HERE, "..", "temp", "results");
 
 const layout = JSON.parse(readFileSync(join(HERE, "layout.json"), "utf8")) as PackageLayout;
 const resolver = createCdnResolver({
@@ -43,7 +43,7 @@ function read(name: string, path: string): string {
 }
 
 describe("generateSite — writes real folders", () => {
-  it("generates every scenario into .draft/results", () => {
+  it("generates every scenario into temp/results", () => {
     const index: string[] = ["# Generated sites", ""];
 
     SCENARIOS.forEach((scenario) => {

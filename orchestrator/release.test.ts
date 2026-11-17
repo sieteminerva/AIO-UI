@@ -31,6 +31,20 @@ const WORKSPACE_VERSION = JSON.parse(readFileSync(join(ROOT, "package.json"), "u
 const RELEASE = join(ROOT, ".draft", "release", `v${WORKSPACE_VERSION}`);
 const available = existsSync(join(RELEASE, "registry.json"));
 
+/**
+ * Blanks out comments before a specifier scan.
+ *
+ * `tsc` copies doc blocks into `dist`, and a README-style example inside one —
+ * `import { FORM_ADAPTER_DEFINITIONS } from "@aio-ui/form/adapters"` — is documentation,
+ * not an import edge. Matching it would demand an import-map key for a file nobody loads
+ * through that specifier, which is a false positive, not a finding.
+ */
+function stripComments(source: string): string {
+  return source
+    .replace(/\/\*[\s\S]*?\*\//g, "")
+    .replace(/(^|[^:])\/\/[^\n]*/g, "$1");
+}
+
 interface RegistryEntry {
   dir: string;
   subpaths: Record<string, string>;
@@ -154,7 +168,7 @@ describe.skipIf(!available)("release artefacts", () => {
         const barrel = site.importMap.imports["@aio-ui/frameworks"];
         expect(barrel, "@aio-ui/frameworks must be mapped").toBeTruthy();
 
-        const source = readFileSync(repoPath(barrel), "utf8");
+        const source = stripComments(readFileSync(repoPath(barrel), "utf8"));
         const imports = [...source.matchAll(/from\s+["'](@aio-ui\/[^"']+)["']/g)].map((match) => match[1]);
         expect(imports.length).toBeGreaterThan(0);
 
@@ -166,6 +180,9 @@ describe.skipIf(!available)("release artefacts", () => {
         // A prefix alone cannot add `.js`: `@aio-ui/utilities/AttributeUtils`
         // would become `…/dist/AttributeUtils` and 404. Every bare subpath used
         // by a loaded module must therefore have an exact entry.
+        //
+        // Comments are stripped first: a doc block that shows `import { X } from
+        // "@aio-ui/…"` is documentation, not an edge, and `tsc` keeps it in `dist`.
         const seen = new Set<string>();
         const pending = Object.values(site.importMap.imports).filter(
           (url) => url.startsWith(base) && url.endsWith(".js"),
@@ -177,7 +194,7 @@ describe.skipIf(!available)("release artefacts", () => {
           if (seen.has(url)) continue;
           seen.add(url);
 
-          const source = readFileSync(repoPath(url), "utf8");
+          const source = stripComments(readFileSync(repoPath(url), "utf8"));
           for (const [, specifier] of source.matchAll(/(?:from\s*|import\s*\(\s*)["'](@aio-ui\/[^"']+)["']/g)) {
             const exact = site.importMap.imports[specifier];
             if (exact) {

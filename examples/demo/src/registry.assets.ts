@@ -41,6 +41,11 @@ export const componentAssets = {
     "@aio-ui/input/file-uploader/module": () => import("@aio-ui/input/file-uploader/module"),
     "@aio-ui/input/controls/module": () => import("@aio-ui/input/controls/module"),
     "@aio-ui/input/popover/module": () => import("@aio-ui/input/popover/module"),
+    // The opt-in stacks, for a host that wants the whole layer in one import instead of
+    // nine manifest refs. Every exact `exports` subpath is mapped here — a prefix cannot
+    // add `.js`, so a missing key is a runtime 404, not a slow path.
+    "@aio-ui/form/adapters": () => import("@aio-ui/form/adapters"),
+    "@aio-ui/input/modules": () => import("@aio-ui/input/modules"),
     // Adapters owned by other packages: the form never imports them, the host declares them.
     "@aio-ui/id-address/form": () => import("@aio-ui/id-address/form"),
     "@aio-ui/table/adapters/FormAdapter": () => import("@aio-ui/table/adapters/FormAdapter"),

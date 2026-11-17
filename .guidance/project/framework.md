@@ -13,12 +13,6 @@ Why / stages: `.guidance/plan-framework.md`. Engineering rules:
 
 ## Next
 
-- **B53 — form / input default opt-in, proved by the module graph** — the owner approved option 2
-  (breaking, `0.3.0`). Split each registry into data (refs, ids) and implementations, move the full
-  preset to `@aio-ui/form/adapters` and `@aio-ui/input/modules`, drop the `preset =
-  INPUT_MODULE_DEFINITIONS` default parameters, and add `scripts/bundle-probe.mjs` — a real Vite
-  build whose `moduleParsed` list must show the unused adapters **absent** (and present for the full
-  entry, so the probe cannot pass vacuously). → `.guidance/project/TASK-form-modules.md`
 - **B54 — one closure graph, one export index** — `scripts/closure.mjs` (topological closure from
   `dependencies` + `peerDependencies`, `--json`, cycle report, size per closure) and
   `scripts/exports.mjs` → `docs/framework/exports.json` + a `check:exports` gate that fails when a
@@ -51,6 +45,17 @@ Why / stages: `.guidance/plan-framework.md`. Engineering rules:
 
 ## Landed
 
+- **Batch 53** — the form and input presets are **opt-in, and the module graph proves it**: the two
+  registries keep only data (manifest refs, ids, helpers) while the live definitions moved to
+  `@aio-ui/form/adapters` and `@aio-ui/input/modules`; both builders lost their default stack, so
+  `FormBuilder` with no modules throws on the first `create()` naming the import it wants, and a
+  field without input modules is a plainer control, never a hole (`dropdown` degrades to a native
+  `<select>` built from the same options). `scripts/bundle-probe.mjs` runs four real Vite builds and
+  asserts on **parsed module ids** in both directions — the two roots parse none of the nine
+  implementations, the two opt-in entries parse all of them — wired as `check:bundle` inside `check`
+  (~1.3 s). Measured: `verify` → 82 files, 745 passed, 1 skipped. The probe was proved able to fail
+  (an entry pulling the adapters produced five findings), and `orchestrator/release.test.ts` stopped
+  reading doc blocks as import edges.
 - **Batch 49** — `scripts/session.mjs` freezes the session rituals into an order of operations
   instead of prose an agent re-reads: `start` (STEP 0 — tree, last 8 commits, the three cards, live
   claims, and what to report versus what not to read yet), `cp` (CP-3, auto-numbered), `end` (§14's

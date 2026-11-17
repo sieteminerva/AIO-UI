@@ -26,16 +26,16 @@ class InputFormAdapter {
   }
 
   /**
-   * The input adapter set this form runs on, or `undefined` for the input layer's default.
+   * The input adapter set this form runs on, or `undefined` for a plain field.
    *
-   * @summary The host may declare the input modules in its manifest (`scope: "input"`);
-   * when it does, fields must use *that* set. Without this the field built its own
-   * `InputBuilder` with no `modules` and quietly fell back to `INPUT_MODULE_DEFINITIONS`, so a
-   * trimmed layer still shipped the uploader.
+   * @summary The host may declare the input modules (`inputModules`, or a manifest with
+   * `scope: "input"`); when it does, fields must use *that* set. When it does not, the
+   * field gets no input sub-modules at all: since `0.3.0` there is no default to fall back
+   * to, because a default would be a static import edge and the whole point of the split
+   * is that an app which never imports `@aio-ui/input/modules` never compiles them.
    */
   get #preset() {
-    // `?.` because a context built by a test (or by a third-party host) may predate the
-    // field; empty and absent both mean "use the input layer's default preset".
+    // `?.` because a context built by a test (or by a third-party host) may predate the field.
     return this.#context.inputModules?.length ? this.#context.inputModules : undefined;
   }
 

@@ -1,7 +1,15 @@
 // @vitest-environment happy-dom
 import { describe, expect, it } from "vitest";
 
+import { ModuleLoader } from "@aio-ui/module-loader";
+
 import { FormBuilder } from "../Form";
+import { inputFormAdapter } from "../Input.FormAdapter";
+
+/** One stack, declared once: these cases only need a field to exist. */
+function builder(): FormBuilder {
+  return new FormBuilder({ modules: new ModuleLoader("form", [inputFormAdapter]) });
+}
 
 /**
  * End to end through the builder: the payload a consumer actually receives on
@@ -22,7 +30,7 @@ const schema = [
 ];
 
 async function submit(configure: (form: HTMLFormElement) => void): Promise<Record<string, any>> {
-  const form = new FormBuilder().create(schema as any) as HTMLFormElement;
+  const form = builder().create(schema as any) as HTMLFormElement;
   document.body.appendChild(form);
 
   let payload: Record<string, any> | null = null;
@@ -80,7 +88,7 @@ describe("formSubmit payload", () => {
 describe("submit hooks", () => {
   it("calls config.onSubmit with the completed payload", async () => {
     const seen: any[] = [];
-    const form = new FormBuilder().create(schema as any, { onSubmit: (data: any) => seen.push(data) } as any) as HTMLFormElement;
+    const form = builder().create(schema as any, { onSubmit: (data: any) => seen.push(data) } as any) as HTMLFormElement;
     document.body.appendChild(form);
 
     (form.querySelector("#name") as HTMLInputElement).value = "Budi";
@@ -94,7 +102,7 @@ describe("submit hooks", () => {
   });
 
   it("keeps dispatching formSubmit when onSubmit throws", async () => {
-    const form = new FormBuilder().create(schema as any, {
+    const form = builder().create(schema as any, {
       onSubmit: () => { throw new Error("boom"); },
     } as any) as HTMLFormElement;
     document.body.appendChild(form);
@@ -113,7 +121,7 @@ describe("submit hooks", () => {
   });
 
   it("clears the controls before answering when resetOnSubmit is on", async () => {
-    const form = new FormBuilder().create(schema as any, { resetOnSubmit: true } as any) as HTMLFormElement;
+    const form = builder().create(schema as any, { resetOnSubmit: true } as any) as HTMLFormElement;
     document.body.appendChild(form);
 
     let nameAtDispatch: string | null = null;

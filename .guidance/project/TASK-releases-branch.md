@@ -38,10 +38,10 @@ Every internal edge today is a **peer dependency**, which is correct for the wor
 a consumer without a registry: npm will not fetch a peer it cannot find. Resolving that closure is
 one computation, and there are only two honest ways to ship the answer:
 
-| Mode | Mechanism | Consumer experience | Cost |
-| ---- | --------- | ------------------- | ---- |
-| **A — embed** | materialise the whole closure under `<stage>/node_modules/@aio-ui/` and declare `bundledDependencies` | `npm install <one-url>.tgz` — **one command, offline** | closure duplicated into every tarball |
-| **B — declare** | publish `closure.json` + one generated `npm install url1 url2 …` line | one command, offline, npm resolves in a single pass | no duplication, but more than one URL |
+| Mode            | Mechanism                                                                                             | Consumer experience                                    | Cost                                  |
+| --------------- | ----------------------------------------------------------------------------------------------------- | ------------------------------------------------------ | ------------------------------------- |
+| **A — embed**   | materialise the whole closure under `<stage>/node_modules/@aio-ui/` and declare `bundledDependencies` | `npm install <one-url>.tgz` — **one command, offline** | closure duplicated into every tarball |
+| **B — declare** | publish `closure.json` + one generated `npm install url1 url2 …` line                                 | one command, offline, npm resolves in a single pass    | no duplication, but more than one URL |
 
 Both come out of the same graph, so the work is: **build the graph once, then choose per package.**
 Recommendation: A as the default (it is what was asked for), B generated for free and used as the
@@ -141,13 +141,12 @@ reads entry points, and `catalogue.mjs` reads READMEs. Four readers, four chance
 
 ### Order of batches
 
-| Batch | Content                                                  | Depends on |
-| ----- | -------------------------------------------------------- | ---------- |
-| B53   | form/input default opt-in + `bundle-probe` proof (§form)  | —          |
-| B54   | `closure.mjs` + `exports.mjs` + `check:exports` gate      | B53 (exits/sizes) |
-| B55   | `release.mjs --bundle` + `publish-releases.mjs`           | B54        |
-| B56   | `0.3.0` bump + full release verification                  | B53–B55    |
-
+| Batch | Content                                                  | Depends on        |
+| ----- | -------------------------------------------------------- | ----------------- |
+| B53   | form/input default opt-in + `bundle-probe` proof (§form) | —                 |
+| B54   | `closure.mjs` + `exports.mjs` + `check:exports` gate     | B53 (exits/sizes) |
+| B55   | `release.mjs --bundle` + `publish-releases.mjs`          | B54               |
+| B56   | `0.3.0` bump + full release verification                 | B53–B55           |
 
 ## Decisions
 
@@ -174,13 +173,13 @@ reads entry points, and `catalogue.mjs` reads READMEs. Four readers, four chance
 
 Throwaway measurement over the built tree (35 internal packages, `dist` + `src`):
 
-| Fact | Value |
-| ---- | ----- |
-| all internal `dist` combined | **4.5 MB** |
-| mode A total (Σ of every package's closure) | **6.1 MB raw ≈ 2.2 MB gzipped** |
-| heaviest closure | `@aio-ui/form` 1.17 MB / 6 packages |
-| next | `table` 1.07, `id-address` 1.06, `message` 0.89, `input` 0.49 (2 pkgs), `modules` 0.29 (7 pkgs) |
-| single packages | `input` 591 KB, `core` 410 KB, `form` 403 KB, `base` 211 KB |
+| Fact                                        | Value                                                                                           |
+| ------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| all internal `dist` combined                | **4.5 MB**                                                                                      |
+| mode A total (Σ of every package's closure) | **6.1 MB raw ≈ 2.2 MB gzipped**                                                                 |
+| heaviest closure                            | `@aio-ui/form` 1.17 MB / 6 packages                                                             |
+| next                                        | `table` 1.07, `id-address` 1.06, `message` 0.89, `input` 0.49 (2 pkgs), `modules` 0.29 (7 pkgs) |
+| single packages                             | `input` 591 KB, `core` 410 KB, `form` 403 KB, `base` 211 KB                                     |
 
 **A 25 MB total budget is ~11× reality, so it would never fire — it is a wish, not a gate.** A gate
 that cannot trip is worse than none: it documents a limit nobody is near and hides the moment a
@@ -188,22 +187,22 @@ staging bug doubles a tarball.
 
 Three numbers instead, each catching a different failure:
 
-| Gate | Number | Catches | When it trips |
-| ---- | ------ | ------- | ------------- |
-| per tarball | **≤ 2.0 MB raw** (heaviest measured 1.17) | a staging bug that copies the tree twice (source + dist + node_modules), or a new heavy dependency | refuse to pack that package; print its closure |
-| per version total | **≤ 8.0 MB raw** (measured 6.1, +30 % headroom) | slow growth spread across many packages | refuse to publish; list the five heaviest |
-| repo growth | **≤ 3 MB gzipped per version** (measured 2.2) | the only *permanent* cost — every `vX/` stays in git forever | warn and require an explicit `--allow-growth` |
+| Gate              | Number                                          | Catches                                                                                            | When it trips                                  |
+| ----------------- | ----------------------------------------------- | -------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
+| per tarball       | **≤ 2.0 MB raw** (heaviest measured 1.17)       | a staging bug that copies the tree twice (source + dist + node_modules), or a new heavy dependency | refuse to pack that package; print its closure |
+| per version total | **≤ 8.0 MB raw** (measured 6.1, +30 % headroom) | slow growth spread across many packages                                                            | refuse to publish; list the five heaviest      |
+| repo growth       | **≤ 3 MB gzipped per version** (measured 2.2)   | the only _permanent_ cost — every `vX/` stays in git forever                                       | warn and require an explicit `--allow-growth`  |
 
 Why each direction is bad:
 
 - **Too tight** (say 6 MB): the honest build trips the gate on the very first run, the natural
   response is to raise the number without measuring, and the gate loses its meaning. It also pushes
-  everyone to mode B for no reason — mode B is not smaller, it is *deduped*, and its cost is
+  everyone to mode B for no reason — mode B is not smaller, it is _deduped_, and its cost is
   correctness of a generated line rather than bytes.
 - **Too loose** (25 MB): a 4× regression stays invisible, and the branch grows by up to 25 MB per
   release forever. Git never forgets, so `git clone --branch releases` degrades for every future
   contributor.
-- **Right size**: the number moves only when someone *decides* to grow, and the diff that made it
+- **Right size**: the number moves only when someone _decides_ to grow, and the diff that made it
   grow is named in the failure message.
 
 Mode B costs nothing in this budget (`install/*.txt` is a few KB); its risk is completeness of the

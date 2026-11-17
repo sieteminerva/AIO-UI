@@ -4,7 +4,6 @@ import { Skeleton } from "@aio-ui/skeleton";
 import { ModuleLoader } from "@aio-ui/module-loader";
 import { inputTypeOf } from "./FieldTypes";
 import {
-  INPUT_MODULE_DEFINITIONS,
   type iInputAdapter,
   type iInputModuleContext,
   type InputModuleItem,
@@ -208,8 +207,11 @@ export interface iInputConfig extends iBuilderConfig<InputElementType> {
   /**
    * Optional loader that supplies the input sub-modules (dropdown, file, controls, popover).
    *
-   * Leave it `null` and the core preset keeps every adapter available. Inject one to
-   * trim the layer down (for example `LITE_INPUT_MODULES`), or to add a project module.
+   * Leave it `null` and the field is a plain labelled control: the modules are an
+   * enhancement, never a precondition. Pass `INPUT_MODULE_DEFINITIONS` from
+   * `@aio-ui/input/modules` for the full layer, a subset, or your own module. Since
+   * `0.3.0` nothing is compiled into the package root, so an omitted option costs no
+   * bytes rather than silently shipping all four.
    *
    * An already-resolved `iInputAdapter[]` is accepted too: that is what a parent
    * component hands over when its own manifest resolved the set — the field must not
@@ -283,8 +285,9 @@ export class InputBuilder extends Builder<InputElementType, iInputConfig> {
     this.config = this.resolveConfig(defaultConfig, config);
 
     // Two ways to get an adapter set: a loader (host-owned lifecycle), a preset whose
-    // definitions this builder loads itself while live adapters are used as-is, or the
-    // default definitions when the host says nothing.
+    // definitions this builder loads itself while live adapters are used as-is, or nothing
+    // at all — and "nothing" is a complete field, just a plainer one. The definitions the
+    // layer ships with live behind `@aio-ui/input/modules`, so no import here may name them.
     if (Array.isArray(this.config.modules)) {
       const preset = this.config.modules as InputModuleItem[];
       const definitions = preset.filter((item) => typeof (item as any).load === "function");
@@ -295,7 +298,7 @@ export class InputBuilder extends Builder<InputElementType, iInputConfig> {
     } else {
       this.#live = [];
       this.#loader = this.config.modules
-        ?? new ModuleLoader<iInputModuleContext, iInputAdapter>("input", INPUT_MODULE_DEFINITIONS);
+        ?? new ModuleLoader<iInputModuleContext, iInputAdapter>("input", []);
     }
 
   }
@@ -407,8 +410,13 @@ export class InputBuilder extends Builder<InputElementType, iInputConfig> {
     }
 
     if (!inputEl) {
-      // Default untuk jenis text, number, email, password, dll.
-      inputEl = this.render("@field>input", this.#input)!;
+      // A matrix row with no control of its own is a type owned by a module (`dropdown`).
+      // A module may only *enhance* a field, never be the only way it exists: without the
+      // module the same options render as a native `<select>` — plainer, not a hole. That
+      // is what makes "no modules by default" an honest default instead of a trap.
+      inputEl = controlKey
+        ? this.render("@field>input", this.#input)!
+        : this.render("@field>select", this.#input)!;
       if ((this.#input.type === "text" || this.#input.type === "number") && (cfg?.className === "loading")) {
         inputEl.classList.add("loading");
       }

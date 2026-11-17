@@ -16,6 +16,11 @@
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
+    "./modules": {
+      "development": "./InputModules.ts",
+      "types": "./dist/InputModules.d.ts",
+      "default": "./dist/InputModules.js"
+    },
     "./InputRegistry": {
       "development": "./InputRegistry.ts",
       "types": "./dist/InputRegistry.d.ts",

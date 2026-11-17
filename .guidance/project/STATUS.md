@@ -18,13 +18,14 @@ A consumer installs the `.tgz` set by hand, skips `AioApp`, renders through `DOM
 **Landed (b52):** the door refuses a ref with `INVALID_DEFINITION` and names both shapes;
 `resolveModuleDefinitions()` bridges them; both `@aio-ui/form` and `@aio-ui/input` now export their
 full stack from the root _and_ per-adapter subpaths; README + handbook recipes added.
-**Decided (owner, 2026-11-17):** default becomes opt-in (`@aio-ui/form/adapters`,
-`@aio-ui/input/modules`) — with a `bundle-probe` gate that proves the unused adapters are absent
-from the parsed module graph, not just unused at runtime. `0.3.0`, breaking.
-**Input default:** recommended *none* (B), because the declarative path (`FORM_ADAPTER_MANIFEST`)
-already keeps all four input modules for registry/AST apps — only the hand-wired consumer becomes
-explicit. Condition: the degradation matrix must first show no field type turns into a hole.
-**Next:** B53 — opt-in presets + `bundle-probe`.
+**Landed (b53, 2026-11-17):** the default is opt-in and **proved** — the registries keep only data
+while the live definitions moved to `@aio-ui/form/adapters` / `@aio-ui/input/modules`, a builder with
+no modules throws on the first `create()` naming the import, and `check:bundle`
+(`scripts/bundle-probe.mjs`) asserts on parsed module ids that the two roots pull in none of the nine
+implementations while the two opt-in entries pull in all of them.
+**Input default:** none (B), shipped with its condition met — `__tests__/Modules.test.ts` walks every
+declared field type with `modules: []` and a `dropdown` degrades to a native `<select>`, never a hole.
+**Next:** B54 — `closure.mjs` + `exports.mjs` + `check:exports`.
 → `.guidance/project/TASK-form-modules.md`
 
 ### 2. Release — one-command offline installs from an orphan branch

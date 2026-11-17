@@ -1,7 +1,23 @@
 // @vitest-environment happy-dom
 import { describe, expect, it } from "vitest";
 
+import { ModuleLoader } from "@aio-ui/module-loader";
+import { INPUT_MODULE_DEFINITIONS } from "@aio-ui/input/modules";
+
 import { FormBuilder } from "../Form";
+import { FORM_ADAPTER_DEFINITIONS } from "../FormAdapters";
+
+/**
+ * This file exercises cascade, multistep and the group action set, so it declares both
+ * layers: the test says which engines it depends on instead of inheriting them from the
+ * builder.
+ */
+function builder(): FormBuilder {
+  return new FormBuilder({
+    modules: new ModuleLoader("form", FORM_ADAPTER_DEFINITIONS),
+    inputModules: INPUT_MODULE_DEFINITIONS,
+  });
+}
 
 /**
  * Cascade, both hold modes.
@@ -23,7 +39,7 @@ const schema = [
 ];
 
 function build(mode: "template" | "hidden"): HTMLFormElement {
-  return new FormBuilder().create(schema as any, { cascading: true, cascadeMode: mode } as any) as HTMLFormElement;
+  return builder().create(schema as any, { cascading: true, cascadeMode: mode } as any) as HTMLFormElement;
 }
 
 async function type(form: HTMLFormElement, id: string, value: string): Promise<void> {
@@ -98,7 +114,7 @@ describe("multistep gate", () => {
   ];
 
   function buildSteps(): HTMLFormElement {
-    return new FormBuilder().create(steps as any, { multistep: true } as any) as HTMLFormElement;
+    return builder().create(steps as any, { multistep: true } as any) as HTMLFormElement;
   }
 
   const active = (form: HTMLFormElement) =>
@@ -143,7 +159,7 @@ describe("cascade and a repeated scope", () => {
   ];
 
   const render = (mode: "template" | "hidden") =>
-    new FormBuilder().create(repeatable as any, { cascading: true, cascadeMode: mode } as any) as HTMLFormElement;
+    builder().create(repeatable as any, { cascading: true, cascadeMode: mode } as any) as HTMLFormElement;
 
   const tick = () => new Promise((resolve) => setTimeout(resolve, 0));
 

@@ -32,13 +32,18 @@ nobody reads is the most expensive habit in this repo.
 | Tier           | Command                             | Cost          | Run it when                                                                                       |
 | -------------- | ----------------------------------- | ------------- | ------------------------------------------------------------------------------------------------- |
 | **Inner loop** | `npm run dev:demo`, `npm run build` | —             | while editing. Nothing else. A dev server is already the feedback loop.                           |
-| **Contract**   | `npm run check`                     | **~12 s**     | after touching a type, an `exports` map, an API surface, or a README table — i.e. before a commit |
+| **Contract**   | `npm run check`                     | **~14 s**     | after touching a type, an `exports` map, an API surface, or a README table — i.e. before a commit |
 | **Batch**      | `npm run verify`                    | **~54 s**     | **once**, at the end of a batch (`check` + the full test suite)                                   |
 | **Release**    | `npm run verify:pkgs`               | **~2 m 23 s** | before a release, or when the work depends on emitted `dist/`                                     |
 
-Split by what each tier reads, not by importance: `check` is typecheck + `bounds` + `api` +
-`catalogue` + `version` (4 of those 5 finish in about a second), `verify` adds the tests — which are
-~43 s of the 54 — and `verify:pkgs` adds `build:pkgs` (~85 s) and the example builds.
+Split by what each tier reads, not by importance: `check` is typecheck + `bounds` + `bundle` + `api` +
+`catalogue` + `version` (the last four finish in about a second each; `bundle` is ~1.3 s of Vite
+builds), `verify` adds the tests — which are ~43 s of the 54 — and `verify:pkgs` adds `build:pkgs`
+(~85 s) and the example builds.
+
+`check:bundle` (`scripts/bundle-probe.mjs`) is a **build-shape** gate: it runs four Vite builds and
+asserts on the parsed module ids, so it answers "is this file in the graph?" — a question the test
+suite cannot answer, because a module that is compiled but unused looks exactly like one that is not.`
 
 - **Single test file while iterating**, never the whole suite: `npx vitest run <path>`.
 - **Never re-run a tier that already passed** without a code change. Markdown-only edits after a

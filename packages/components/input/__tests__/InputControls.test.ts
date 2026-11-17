@@ -2,7 +2,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { InputControlsBuilder } from "../InputControls/InputControls";
-import { normaliseActions } from "../InputControls/InputControls.InputModule";
+import { inputControlsInputModule, normaliseActions } from "../InputControls/InputControls.InputModule";
 import { mountControls } from "../InputRegistry";
 
 /**
@@ -278,7 +278,7 @@ describe("mountControls", () => {
   it("builds the set through the module registry", () => {
     const { fieldset, name } = group();
 
-    const node = mountControls(fieldset, editSave());
+    const node = mountControls(fieldset, editSave(), "right", [inputControlsInputModule]);
 
     expect(node?.querySelectorAll("button")).toHaveLength(2);
     expect(name.readOnly).toBe(true);
@@ -286,7 +286,7 @@ describe("mountControls", () => {
 
   it("keeps buttons out of the form's submit path", () => {
     const { fieldset } = group();
-    const node = mountControls(fieldset, editSave());
+    const node = mountControls(fieldset, editSave(), "right", [inputControlsInputModule]);
 
     const types = [...(node?.querySelectorAll("button") ?? [])].map((button) => (button as HTMLButtonElement).type);
     expect(types).toEqual(["button", "button"]);
@@ -310,7 +310,7 @@ describe("action presets", () => {
 
   it("renders and locks through the shorthand alone", () => {
     const { fieldset, name, tier } = group();
-    const node = mountControls(fieldset, ["editor"]);
+    const node = mountControls(fieldset, ["editor"], "right", [inputControlsInputModule]);
 
     expect([...(node?.querySelectorAll("button") ?? [])].map((b) => b.textContent?.trim())).toEqual(["Edit", "Save"]);
     expect(name.readOnly).toBe(true);

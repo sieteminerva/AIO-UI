@@ -197,8 +197,8 @@ import { ModuleLoader, resolveModuleDefinitions } from "@aio-ui/module-loader";
 import { FormBuilder, FORM_ADAPTER_MANIFEST } from "@aio-ui/form";
 import { inputFormAdapter } from "@aio-ui/form/Input.FormAdapter";
 
-// Want everything: one import of the definitions.
-import { FORM_ADAPTER_DEFINITIONS } from "@aio-ui/form";
+// Want everything: one import of the definitions — note the subpath, not the root.
+import { FORM_ADAPTER_DEFINITIONS } from "@aio-ui/form/adapters";
 
 // Want less: each adapter is its own subpath, so the rest is never loaded.
 new FormBuilder({ modules: new ModuleLoader("form", [inputFormAdapter]) });
@@ -206,13 +206,22 @@ new FormBuilder({ modules: new ModuleLoader("form", [inputFormAdapter]) });
 // Have refs (an AST, a manifest)? Resolve them once, before anything is built.
 const refs = FORM_ADAPTER_MANIFEST.filter((ref) => (ref.scope ?? "form") === "form");
 new FormBuilder({ modules: new ModuleLoader("form", await resolveModuleDefinitions(refs)) });
+
+// Fields that need dropdown/file/controls/popover need the input layer declared too.
+import { INPUT_MODULE_DEFINITIONS } from "@aio-ui/input/modules";
+new FormBuilder({ modules: loader, inputModules: INPUT_MODULE_DEFINITIONS });
 ```
+
+Why the subpath: since `0.3.0` the builder ships **no** stack of its own, so importing
+`@aio-ui/form` compiles no engine — `scripts/bundle-probe.mjs` fails the `check` gate if that ever
+stops being true. A builder with no modules throws on the first `create()` and names the import.
 
 Two traps, in order of how often they bite:
 
-1. **`scope: "input"` entries are not form adapters.** They are field presets — pass them to
-   `form.provideModules({ id: definition })`, never to `config.modules`. Omit them and fields use
-   the input layer's own default preset.
+1. **`scope: "input"` entries are not form adapters.** They are field presets — pass them as
+   `config.inputModules`, or through `form.provideModules({ id: definition })`, never to
+   `config.modules`. Omit them and every field is a plainer control (a dropdown degrades to a
+   native `<select>`), never a hole.
 2. **`resolveModuleDefinitions()` is async and must finish before `create()`.** A builder's render
    is synchronous and never owns module I/O.
 

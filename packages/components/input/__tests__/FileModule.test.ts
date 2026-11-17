@@ -86,7 +86,8 @@ describe("file input module", () => {
     // The field is its own builder: it used to be built with `{ formId }` only, so a
     // form field could never publish while the form itself published fine.
     const emit = vi.fn();
-    const adapter = inputFormAdapter.load({ builderConfig: { emit } } as any);
+    // No modules, no file capability: the field must be told which module it runs on.
+    const adapter = inputFormAdapter.load({ builderConfig: { emit }, inputModules: [fileUploaderInputModule] } as any);
     const field = adapter.renderField({ type: "file", id: "photo" }, "demo-form");
     const input = field.querySelector("input[type='file']") as HTMLInputElement;
 

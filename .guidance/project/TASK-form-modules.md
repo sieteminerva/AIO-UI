@@ -1,6 +1,12 @@
 # TASK — form modules without a shell (manifest refs vs. definitions)
 
-Recorded 2026-11-17. **A1–A4 landed in batch 52**; the compile-level question in §Decision is still open.
+Recorded 2026-11-17. **A1–A4 landed in batch 52**; **the opt-in split and its graph proof landed in
+batch 53** (see the end of this file). Nothing here is open except the `0.3.0` bump, which belongs to
+B56.
+
+**Status:** `check:bundle` green · `verify` → 82 files, 745 passed, 1 skipped.
+**Next:** B54 — closure + export index (`.guidance/project/TASK-releases-branch.md`).
+
 Owner band: **Framework** (`packages/components/form`, `packages/components/input`,
 `packages/modules/module-loader`), docs touch `docs/agent/handbook.md`.
 
@@ -147,7 +153,7 @@ stack, **not** silently. Until then the docs must not promise "unused modules ar
 they currently promise exactly that, in the two new sections, which is why this decision is not
 cosmetic.
 
-## Decision taken (owner, 2026-11-17): option 2 — and it must be *proved*
+## Decision taken (owner, 2026-11-17): option 2 — and it must be _proved_
 
 > "saya setuju opsi 2, tapi pastikan juga untuk benar-benar tidak ikut ter-compile saat build."
 
@@ -157,10 +163,10 @@ after.
 
 ### B53.1 — Split each registry so data and implementations live in different modules
 
-| Package | Keep (data only, zero adapter imports)                        | Move out (imports implementations)      | New entry                |
-| ------- | ------------------------------------------------------------- | --------------------------------------- | ------------------------ |
-| form    | `FormModuleTypes.ts` (`FORM_MODULE_IDS`, context/types), refs array | `FORM_ADAPTER_DEFINITIONS`, `FORM_ADAPTER_IDS` | `@aio-ui/form/adapters`  |
-| input   | `InputModuleTypes.ts` (ids/types), refs array                  | `INPUT_MODULE_DEFINITIONS`, `INPUT_MODULE_DEFINITION_IDS` | `@aio-ui/input/modules` |
+| Package | Keep (data only, zero adapter imports)                              | Move out (imports implementations)                        | New entry               |
+| ------- | ------------------------------------------------------------------- | --------------------------------------------------------- | ----------------------- |
+| form    | `FormModuleTypes.ts` (`FORM_MODULE_IDS`, context/types), refs array | `FORM_ADAPTER_DEFINITIONS`, `FORM_ADAPTER_IDS`            | `@aio-ui/form/adapters` |
+| input   | `InputModuleTypes.ts` (ids/types), refs array                       | `INPUT_MODULE_DEFINITIONS`, `INPUT_MODULE_DEFINITION_IDS` | `@aio-ui/input/modules` |
 
 The manifest refs stay in the light module (they are strings), which is what makes
 `FORM_ADAPTER_MANIFEST` still harmless to import from the root.
@@ -199,7 +205,7 @@ bundler and record which files it parsed:
      `input-root` never parses `Dropdown/Dropdown.InputModule.ts`,
      `FileUploader/FileUploader.InputModule.ts`, `InputControls/InputControls.InputModule.ts`,
      `Popover.InputModule.ts`.
-   - **positive (the probe is not vacuous):** `form-full` *does* parse all five; `form-root` *does*
+   - **positive (the probe is not vacuous):** `form-full` _does_ parse all five; `form-root` _does_
      parse `Form.ts`, `Input.FormAdapter.ts`, `Input.ts`.
    - A probe that passes because the build failed must be impossible: exit non-zero on a missing
      chunk, and print the parsed list on failure.
@@ -235,13 +241,13 @@ bundler and record which files it parsed:
 
 Three options, stated with what each costs:
 
-| Option | Who is happy | Who pays |
-| ------ | ------------ | -------- |
-| **A — all four auto-included** (today) | a form developer, zero imports | everyone rendering one text field compiles the dropdown builder, the uploader, the action set and the popover: `@aio-ui/input` dist is **591 KB**, and those four are most of it |
-| **B — none by default** (B53) | one text field costs one text field | a payload that relies on dropdown/file/popover *behaviour* loses it silently unless the host declares the modules |
-| **C — a third "essential" preset** | nobody in particular | a preset to keep in sync forever, and a second thing to explain; only worth it if B proves harmful |
+| Option                                 | Who is happy                        | Who pays                                                                                                                                                                         |
+| -------------------------------------- | ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **A — all four auto-included** (today) | a form developer, zero imports      | everyone rendering one text field compiles the dropdown builder, the uploader, the action set and the popover: `@aio-ui/input` dist is **591 KB**, and those four are most of it |
+| **B — none by default** (B53)          | one text field costs one text field | a payload that relies on dropdown/file/popover _behaviour_ loses it silently unless the host declares the modules                                                                |
+| **C — a third "essential" preset**     | nobody in particular                | a preset to keep in sync forever, and a second thing to explain; only worth it if B proves harmful                                                                               |
 
-**The deciding fact is an asymmetry we already have:** the *declarative* path is unaffected.
+**The deciding fact is an asymmetry we already have:** the _declarative_ path is unaffected.
 `FORM_ADAPTER_MANIFEST` lists the four input refs with `scope: "input"`, so every AST / registry app
 — the shell path, the demo, anything built through `ComponentRegistry` — keeps all four with **no
 import at all**. Only the hand-wired JS consumer becomes explicit, and that consumer is exactly the
@@ -250,17 +256,37 @@ one who complained about bundle size.
 **Recommendation: B, with two conditions.**
 
 1. **Measure the degradation matrix before committing to it.** For every declared field type, build
-   it with `modules: []` and assert an element still exists. If a type renders a *hole* rather than a
+   it with `modules: []` and assert an element still exists. If a type renders a _hole_ rather than a
    plainer control, that type belongs in `Input.ts` natively — the module should be an enhancement,
-   never a precondition. Any type that cannot move (because it *is* the module, e.g. `dropdown`) is
+   never a precondition. Any type that cannot move (because it _is_ the module, e.g. `dropdown`) is
    the one case where "auto-include" is the honest answer, and that would become a per-module
    decision rather than a per-layer one.
 2. **One obvious full-stack import.** `@aio-ui/input/modules` = all four, `@aio-ui/form/adapters` =
-   all five, each as the *first* line of its README section, so "saya mau semua" is one import
+   all five, each as the _first_ line of its README section, so "saya mau semua" is one import
    rather than four — the ergonomic cost of B is one line, and it is visible in a diff, unlike an
    invisible 591 KB.
 
 If the owner later disagrees, the switch back is one export in one file: nothing else in the design
 depends on which default wins.
 
+## Landed (batch 53) — opt-in, and proved by the module graph
 
+| Claim (B53)                                                     | What actually shipped                                                                                                                                                                                              |
+| --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| B53.1 split: data vs. implementations                            | `FormRegistry.ts` keeps `FORM_ADAPTER_MANIFEST` + `FormModuleDefinition`; new `FormAdapters.ts` holds `FORM_ADAPTER_DEFINITIONS`/`FORM_ADAPTER_IDS`. `InputRegistry.ts` keeps the manifest + helpers; new `InputModules.ts` holds `INPUT_MODULE_DEFINITIONS`/`INPUT_MODULE_DEFINITION_IDS`. Both roots dropped the definition arrays (manifest/ids/types stay). |
+| B53.2 the default becomes an error, once                           | `FormBuilder` with no modules and no `provideModules()` throws at the top of `prepare()`: *"No modules configured, so not one field can be rendered. Pass the stack: new ModuleLoader(\"form\", FORM_ADAPTER_DEFINITIONS) — those definitions are exported by @aio-ui/form/adapters …"*. `InputBuilder` deliberately does **not** throw: a field without modules is a complete, plainer field (see the matrix). |
+| B53.3 `scripts/bundle-probe.mjs`                                  | Four Vite builds (`form-root`, `input-root`, `form-full`, `input-full`) with ids collected from Vite's `transform`/`load` hooks — Vite 8 no longer fires Rollup's `moduleParsed`, and asserting on bundle text was ruled out up front. Both directions asserted; an empty parse is a failure; failure prints the parsed list. ≈1.3 s, wired as `check:bundle` inside `check`. |
+| B53.4 migration                                                   | Each test now names its stack: `[inputFormAdapter]` for plain-field cases, the full stack for cascade/multistep, `inputModules` for the action set. `FormConfig`, `FormRow`, `FormSubmit`, `FormModules`, `Cascade`, `Input.test`, `InputControls`, `FileModule`, `Modules` touched. READMEs, `docs/agent/handbook.md`, `api-map.json` and `catalogue.json` updated; the demo's asset map gained both new subpaths. |
+| B53.5 what would make it fail                                     | Checked rather than assumed: pointing `form-root` at the adapters produced five findings; `preset = INPUT_MODULE_DEFINITIONS` default parameters are gone from every helper (`mountInputModules`, `mountControls`, `inputFilesOf` now do nothing without a preset). |
+
+**New surface, one line each:** `FormBuilder` gained `config.inputModules` (the field-level preset
+the manifest path used to fill in invisibly), and `Input.ts` renders a native `<select>` for a type
+whose matrix row names no control — so `dropdown` without its module is plainer, not a hole.
+
+**Not done here, on purpose:** the `0.3.0` bump (B56 publishes what the tree says) and the
+`releases` branch work (B54–B56).
+
+## Next
+
+B54 — `scripts/closure.mjs` + `scripts/exports.mjs` + `check:exports`, then B55/B56.
+→ `.guidance/project/TASK-releases-branch.md`

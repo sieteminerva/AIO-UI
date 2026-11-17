@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 import { InputBuilder } from "../Input";
 import { InputAttributeBuilder } from "../Attribute";
 import { INPUT_TYPE_REGISTRY, inputTypeOf, scanInputAttributes } from "../FieldTypes";
-import { INPUT_MODULE_DEFINITIONS } from "../InputRegistry";
+import { INPUT_MODULE_DEFINITIONS } from "../InputModules";
 import { ModuleLoader } from "@aio-ui/module-loader";
 
 /**
@@ -13,7 +13,9 @@ import { ModuleLoader } from "@aio-ui/module-loader";
  */
 
 function build(schema: Record<string, any>, config: Record<string, any> = {}): { container: HTMLElement; control: HTMLElement } {
-  const container = new InputBuilder(config as any).create(schema as any) as HTMLElement;
+  // The layer ships no preset of its own since `0.3.0`, so this file states the one it
+  // exercises. Degradation with no modules at all is pinned in `Modules.test.ts`.
+  const container = new InputBuilder({ modules: INPUT_MODULE_DEFINITIONS, ...config } as any).create(schema as any) as HTMLElement;
   const control = container.querySelector("input, textarea, select") as HTMLElement;
   return { container, control };
 }

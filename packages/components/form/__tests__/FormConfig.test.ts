@@ -1,7 +1,10 @@
 // @vitest-environment happy-dom
 import { describe, expect, it } from "vitest";
 
+import { ModuleLoader } from "@aio-ui/module-loader";
+
 import { FormBuilder } from "../Form";
+import { inputFormAdapter } from "../Input.FormAdapter";
 
 /**
  * Everything `iFormConfig` declares must reach the DOM. These are the keys that used to be
@@ -11,7 +14,7 @@ import { FormBuilder } from "../Form";
 const schema = [{ id: "g", title: "Grup", group: [{ type: "text", id: "name", title: "Nama" }] }];
 
 function build(config: Record<string, any>): HTMLFormElement {
-  return new FormBuilder().create(schema as any, config as any) as HTMLFormElement;
+  return new FormBuilder({ modules: new ModuleLoader("form", [inputFormAdapter]) }).create(schema as any, config as any) as HTMLFormElement;
 }
 
 describe("form header", () => {

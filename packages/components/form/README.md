@@ -129,13 +129,16 @@ element.addEventListener("formSubmit", (event) => console.log(event.detail.data)
 ### Without a shell (direct `new FormBuilder`)
 
 No registry, no `AioApp`: build the form yourself and hand it the modules it may use. Three
-shapes, and only one of them is a loader input.
+shapes, and only one of them is a loader input. **The builder ships no stack of its own** since
+`0.3.0`: the adapters live behind `@aio-ui/form/adapters`, so importing `@aio-ui/form` does not
+compile a single engine.
 
 ```ts
 import { ModuleLoader, resolveModuleDefinitions } from "@aio-ui/module-loader";
-import { FormBuilder, FORM_ADAPTER_DEFINITIONS, FORM_ADAPTER_MANIFEST } from "@aio-ui/form";
+import { FormBuilder, FORM_ADAPTER_MANIFEST } from "@aio-ui/form";
+import { FORM_ADAPTER_DEFINITIONS } from "@aio-ui/form/adapters";
 
-// 1. Everything — one import, the whole default stack.
+// 1. Everything — one import, the whole default stack (five adapters).
 new FormBuilder({ modules: new ModuleLoader("form", FORM_ADAPTER_DEFINITIONS) });
 
 // 2. Only what this form uses. Each adapter is its own subpath, so the rest is never loaded.
@@ -156,9 +159,15 @@ Two rules, both enforced now:
   accepted silently and fail later as `No module rendered the field` — it now throws
   `RegistryError` with code `INVALID_DEFINITION` and names both shapes.
 - **Input sub-modules are not form adapters.** `scope: "input"` entries (`dropdown`, `file`,
-  `controls`, `popover`) are field presets: pass them through `form.provideModules({ id: definition })`,
-  never through `config.modules`. Leave them out entirely and the fields use the input layer's own
-  default preset.
+  `controls`, `popover`) are field presets: pass them through `config.inputModules` (or
+  `form.provideModules({ id: definition })`), never through `config.modules`. Leave them out and
+  every field is a plain labelled control — a dropdown degrades to a native `<select>` built from
+  the same options, never to a hole. Ask for the full layer with one import:
+  `import { INPUT_MODULE_DEFINITIONS } from "@aio-ui/input/modules"`.
+
+A builder with **no** modules throws on the first `create()`, with the import that fixes it: a
+form with no adapter cannot render one field, and failing per field halfway through a schema
+would only hide that.
 
 `resolveModuleDefinitions()` is async and must be awaited **before** `create()`: a builder's render
 is synchronous and never owns module I/O.

@@ -8,7 +8,8 @@ import { ModuleLoader, resolveModuleDefinitions } from "@aio-ui/module-loader";
 import type { iFormModuleContext } from "../FormModuleTypes";
 import { FormBuilder } from "../Form";
 import { inputFormAdapter } from "../Input.FormAdapter";
-import { FORM_ADAPTER_DEFINITIONS, FORM_ADAPTER_IDS, FORM_ADAPTER_MANIFEST } from "../FormRegistry";
+import { FORM_ADAPTER_DEFINITIONS, FORM_ADAPTER_IDS } from "../FormAdapters";
+import { FORM_ADAPTER_MANIFEST } from "../FormRegistry";
 
 /**
  * A form nests another builder, so one manifest carries two layers of modules: the form's
@@ -26,6 +27,16 @@ import { FORM_ADAPTER_DEFINITIONS, FORM_ADAPTER_IDS, FORM_ADAPTER_MANIFEST } fro
 beforeEach(() => {
   document.body.replaceChildren();
 });
+
+/**
+ * A form on the one adapter every field needs.
+ *
+ * Since `0.3.0` there is no default stack, so a test states its contract by naming one: a
+ * plain-field test needs `inputFormAdapter` and nothing else.
+ */
+function stack(): FormBuilder {
+  return new FormBuilder({ modules: new ModuleLoader("form", [inputFormAdapter]) });
+}
 
 /** Minimal adapter that proves it was used: it owns a marker type. */
 function markerAdapter(): iInputAdapter & { seen: string[] } {
@@ -73,7 +84,7 @@ describe("form adapter manifest", () => {
 describe("Form.provideModules", () => {
   it("hands input-scoped modules to the fields instead of letting them default", () => {
     const adapter = markerAdapter();
-    const form = new FormBuilder();
+    const form = stack();
     form.provideModules({ [INPUT_MODULE_IDS.dropdown]: adapter });
 
     const el = form.create([{ type: "text", id: "inherited-field", title: "Field" }] as any) as HTMLElement;
@@ -84,8 +95,8 @@ describe("Form.provideModules", () => {
     expect(input?.dataset.marker).toBe("inherited");
   });
 
-  it("leaves fields on the default preset when no input module was provided", () => {
-    const form = new FormBuilder();
+  it("renders a plain field when no input module was provided", () => {
+    const form = stack();
 
     const el = form.create([{ type: "text", id: "default-field", title: "Field" }] as any) as HTMLElement;
     document.body.appendChild(el);
@@ -93,6 +104,16 @@ describe("Form.provideModules", () => {
     const input = el.querySelector<HTMLInputElement>("#default-field");
     expect(input).not.toBeNull();
     expect(input?.dataset.marker).toBeUndefined();
+  });
+
+  it("fails at the door when the builder has no modules at all", () => {
+    // The fix is one import, so the message names it — and it fires before any field is
+    // built, not once per field halfway through the schema.
+    const form = new FormBuilder();
+
+    expect(() => form.create([{ type: "text", id: "orphan", title: "Field" }] as any)).toThrow(
+      /@aio-ui\/form\/adapters/
+    );
   });
 
   it("runs the initialize phase on a module handed over by a loader", () => {
@@ -171,7 +192,7 @@ describe("hand-wired modules (no registry, no shell)", () => {
     // A host that resolves the whole manifest by hand has both layers in one list. This is the
     // split `Form.provideModules()` performs for a registry-built form, done explicitly.
     const definitions = await resolveModuleDefinitions(FORM_ADAPTER_MANIFEST);
-    const form = new FormBuilder();
+    const form = stack();
     form.provideModules(Object.fromEntries(definitions.map((definition) => [String(definition.id), definition])));
 
     const el = form.create([{ type: "text", id: "routed-field", title: "Field" }] as any) as HTMLElement;

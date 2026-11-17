@@ -213,8 +213,6 @@
       "barrel": "./index.ts",
       "values": [
         "DEFAULT_FORM_MESSAGES",
-        "FORM_ADAPTER_DEFINITIONS",
-        "FORM_ADAPTER_IDS",
         "FORM_ADAPTER_MANIFEST",
         "FORM_MODULE_IDS",
         "FormBuilder",
@@ -278,8 +276,6 @@
       "kind": "package",
       "barrel": "./index.ts",
       "values": [
-        "INPUT_MODULE_DEFINITIONS",
-        "INPUT_MODULE_DEFINITION_IDS",
         "INPUT_MODULE_IDS",
         "INPUT_MODULE_MANIFEST",
         "InputBuilder",

@@ -1,14 +1,13 @@
+// @vitest-environment happy-dom
 import { describe, expect, it } from "vitest";
 
 import { ModuleLoader, resolveModuleDefinitions } from "@aio-ui/module-loader";
 
 import type { iInputAdapter, iInputModuleContext } from "../InputModuleTypes";
-import {
-  INPUT_MODULE_DEFINITION_IDS,
-  INPUT_MODULE_DEFINITIONS,
-  INPUT_MODULE_IDS,
-  INPUT_MODULE_MANIFEST,
-} from "../InputRegistry";
+import { INPUT_MODULE_DEFINITION_IDS, INPUT_MODULE_DEFINITIONS } from "../InputModules";
+import { INPUT_MODULE_IDS, INPUT_MODULE_MANIFEST } from "../InputRegistry";
+import { INPUT_TYPE_REGISTRY } from "../FieldTypes";
+import { InputBuilder } from "../Input";
 
 /**
  * The input layer declares its adapters twice on purpose: definitions (loaded through a
@@ -53,5 +52,49 @@ describe("input module registry", () => {
   it("refuses a manifest ref where a definition is expected", () => {
     // The door exists so this mistake fails at registration, not inside a field later.
     expect(() => new ModuleLoader("input", INPUT_MODULE_MANIFEST as any)).toThrow(/is not a definition/);
+  });
+});
+
+/**
+ * The price of an opt-in stack, measured instead of promised.
+ *
+ * These four modules are an **enhancement**: a field must exist without them, in a plainer
+ * shape, because otherwise "no modules by default" would be a trap for every schema that
+ * happens to declare a dropdown. This matrix is the condition the default hangs on — if a
+ * type ever renders a hole here, either the type moves into `Input.ts` natively or the
+ * default changes back.
+ */
+describe("degradation without modules", () => {
+  const types = Object.keys(INPUT_TYPE_REGISTRY) as Array<keyof typeof INPUT_TYPE_REGISTRY>;
+
+  function render(type: string): HTMLElement {
+    return new InputBuilder({ modules: [] }).create({
+      type,
+      id: `f-${type}`,
+      title: type,
+      config: { options: [{ value: "a", label: "A" }] },
+    } as any) as HTMLElement;
+  }
+
+  it("covers the whole declared matrix", () => {
+    expect(types.length).toBeGreaterThan(10);
+  });
+
+  for (const type of types) {
+    it(`${type} still renders a control`, () => {
+      const element = render(type);
+      const control = element.querySelector("input, textarea, select, button");
+
+      expect(control, `${type} rendered a hole instead of a plainer control`).not.toBeNull();
+    });
+  }
+
+  it("degrades a dropdown to a native select built from the same options", () => {
+    const element = render("dropdown");
+    const select = element.querySelector("select");
+
+    expect(select).not.toBeNull();
+    // Placeholder first, then the declared options — the `@field>select` template owns that order.
+    expect([...select!.querySelectorAll("option")].map((option) => option.value)).toEqual(["", "a"]);
   });
 });

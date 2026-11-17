@@ -7,23 +7,28 @@ export type {
 } from "./Input";
 
 /**
- * The input layer's own sub-modules, in both shapes a host may need.
+ * The input layer's own sub-modules **as data** — the root stays free of the implementations.
  *
- * `INPUT_MODULE_DEFINITIONS` is what a `ModuleLoader` takes (`{ id, load }`) — the full stack,
- * one import. `INPUT_MODULE_MANIFEST` is the same list as manifest refs (`{ id, path, export }`)
- * for an AST that lets `ComponentRegistry` resolve them. A consumer that wants **only some** of
- * them imports the individual definition from its own subpath, so the rest is never instantiated:
+ * `INPUT_MODULE_MANIFEST` is the stack as manifest refs (`{ id, path, export }`) for an AST
+ * that lets `ComponentRegistry` resolve them; `mountInputModules()` / `inputFilesOf()` walk
+ * whatever preset a host hands them and do nothing without one. The live list a
+ * `ModuleLoader` takes (`INPUT_MODULE_DEFINITIONS`, `{ id, load }`) lives in
+ * `@aio-ui/input/modules`, so an app that only needs text fields never compiles the
+ * dropdown builder, the uploader, the control set or the popover — proved by
+ * `scripts/bundle-probe.mjs` against the parsed module graph:
  *
  * ```ts
- * import { dropdownInputModule } from "@aio-ui/input/dropdown/module";
- * new InputBuilder({ modules: [dropdownInputModule] });
+ * import { InputBuilder } from "@aio-ui/input";
+ * import { INPUT_MODULE_DEFINITIONS } from "@aio-ui/input/modules";
+ *
+ * new InputBuilder({ modules: INPUT_MODULE_DEFINITIONS, type: "dropdown", options });
  * ```
  *
- * Order is decorate order (`controls` before `popover`): the preset is a list, not a set.
+ * For one module only, import it from its own subpath (`@aio-ui/input/dropdown/module`, …).
+ * Order in the full stack is decorate order (`controls` before `popover`).
  */
 export {
-  INPUT_MODULE_DEFINITIONS, INPUT_MODULE_DEFINITION_IDS, INPUT_MODULE_IDS, INPUT_MODULE_MANIFEST,
-  inputFilesOf, mountInputModules,
+  INPUT_MODULE_IDS, INPUT_MODULE_MANIFEST, inputFilesOf, mountInputModules,
 } from "./InputRegistry";
 export type {
   InputModuleDefinition, InputModuleId, InputModuleItem, InputModulePreset, iInputAdapter, iInputModuleContext,

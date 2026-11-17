@@ -21,6 +21,10 @@ full stack from the root _and_ per-adapter subpaths; README + handbook recipes a
 **Decided (owner, 2026-11-17):** default becomes opt-in (`@aio-ui/form/adapters`,
 `@aio-ui/input/modules`) — with a `bundle-probe` gate that proves the unused adapters are absent
 from the parsed module graph, not just unused at runtime. `0.3.0`, breaking.
+**Input default:** recommended *none* (B), because the declarative path (`FORM_ADAPTER_MANIFEST`)
+already keeps all four input modules for registry/AST apps — only the hand-wired consumer becomes
+explicit. Condition: the degradation matrix must first show no field type turns into a hole.
+**Next:** B53 — opt-in presets + `bundle-probe`.
 → `.guidance/project/TASK-form-modules.md`
 
 ### 2. Release — one-command offline installs from an orphan branch
@@ -34,7 +38,10 @@ built dependency dirs into `<stage>/node_modules/@aio-ui/`.
 shipped two ways — embedded (mode A, one URL) or declared (`install/<pkg>.txt`, mode B, one command,
 deduped). `scripts/exports.mjs` + a `check:exports` gate end the four-way export-map recomputation
 and catch a subpath whose file `files[]` excludes.
-**Needs the owner:** the size budget (proposed 25 MB total).
+**Budget measured:** mode A = 6.1 MB raw ≈ 2.2 MB gz (heaviest closure `form` 1.17 MB), so the
+proposed 25 MB would never fire; replaced by three gates — per tarball ≤ 2 MB, per version ≤ 8 MB,
+repo growth ≤ 3 MB gz.
+**Next:** B54 — `closure.mjs` + `exports.mjs` + `check:exports`.
 → `.guidance/project/TASK-releases-branch.md`
 
 ### 3. Carried queue — the small fixes that keep §16 honest

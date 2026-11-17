@@ -227,3 +227,40 @@ bundler and record which files it parsed:
 - Leaving `preset = INPUT_MODULE_DEFINITIONS` as a default parameter somewhere in `input` — the
   graph edge survives the move and the probe should then fail, which is the point.
 
+## The input modules default — analysis (owner's question, 2026-11-17)
+
+> "...untuk input ini yang saya masih bimbang, apakah dropdown, file-uploader, controls itu baiknya
+> memang auto included atau defaultnya terpisah ... kalau orang yang cuma butuh input text kan ga
+> guna build codenya jadi besar."
+
+Three options, stated with what each costs:
+
+| Option | Who is happy | Who pays |
+| ------ | ------------ | -------- |
+| **A — all four auto-included** (today) | a form developer, zero imports | everyone rendering one text field compiles the dropdown builder, the uploader, the action set and the popover: `@aio-ui/input` dist is **591 KB**, and those four are most of it |
+| **B — none by default** (B53) | one text field costs one text field | a payload that relies on dropdown/file/popover *behaviour* loses it silently unless the host declares the modules |
+| **C — a third "essential" preset** | nobody in particular | a preset to keep in sync forever, and a second thing to explain; only worth it if B proves harmful |
+
+**The deciding fact is an asymmetry we already have:** the *declarative* path is unaffected.
+`FORM_ADAPTER_MANIFEST` lists the four input refs with `scope: "input"`, so every AST / registry app
+— the shell path, the demo, anything built through `ComponentRegistry` — keeps all four with **no
+import at all**. Only the hand-wired JS consumer becomes explicit, and that consumer is exactly the
+one who complained about bundle size.
+
+**Recommendation: B, with two conditions.**
+
+1. **Measure the degradation matrix before committing to it.** For every declared field type, build
+   it with `modules: []` and assert an element still exists. If a type renders a *hole* rather than a
+   plainer control, that type belongs in `Input.ts` natively — the module should be an enhancement,
+   never a precondition. Any type that cannot move (because it *is* the module, e.g. `dropdown`) is
+   the one case where "auto-include" is the honest answer, and that would become a per-module
+   decision rather than a per-layer one.
+2. **One obvious full-stack import.** `@aio-ui/input/modules` = all four, `@aio-ui/form/adapters` =
+   all five, each as the *first* line of its README section, so "saya mau semua" is one import
+   rather than four — the ergonomic cost of B is one line, and it is visible in a diff, unlike an
+   invisible 591 KB.
+
+If the owner later disagrees, the switch back is one export in one file: nothing else in the design
+depends on which default wins.
+
+

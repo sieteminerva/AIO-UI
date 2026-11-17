@@ -165,11 +165,49 @@ reads entry points, and `catalogue.mjs` reads READMEs. Four readers, four chance
 
 **Still open — needs the owner:**
 
-1. **Size budget.** Proposed: refuse to publish above **25 MB total** for the 40 tarballs, and print
-   the heaviest five closures in the dry run. A budget chosen after measuring is not a budget.
+1. ~~Size budget~~ — **measured, see below. The proposed single 25 MB number is withdrawn.**
 2. **Whether `form` → `input` stays a peer on `main`.** Bundling makes it work for a consumer, but a
    `dependencies` entry would let npm resolve it for a plain `npm install @aio-ui/form` from the CDN
    registry — a different distribution story (fase 7), not this batch.
+
+## Size budget — measured, not guessed (2026-11-17)
+
+Throwaway measurement over the built tree (35 internal packages, `dist` + `src`):
+
+| Fact | Value |
+| ---- | ----- |
+| all internal `dist` combined | **4.5 MB** |
+| mode A total (Σ of every package's closure) | **6.1 MB raw ≈ 2.2 MB gzipped** |
+| heaviest closure | `@aio-ui/form` 1.17 MB / 6 packages |
+| next | `table` 1.07, `id-address` 1.06, `message` 0.89, `input` 0.49 (2 pkgs), `modules` 0.29 (7 pkgs) |
+| single packages | `input` 591 KB, `core` 410 KB, `form` 403 KB, `base` 211 KB |
+
+**A 25 MB total budget is ~11× reality, so it would never fire — it is a wish, not a gate.** A gate
+that cannot trip is worse than none: it documents a limit nobody is near and hides the moment a
+staging bug doubles a tarball.
+
+Three numbers instead, each catching a different failure:
+
+| Gate | Number | Catches | When it trips |
+| ---- | ------ | ------- | ------------- |
+| per tarball | **≤ 2.0 MB raw** (heaviest measured 1.17) | a staging bug that copies the tree twice (source + dist + node_modules), or a new heavy dependency | refuse to pack that package; print its closure |
+| per version total | **≤ 8.0 MB raw** (measured 6.1, +30 % headroom) | slow growth spread across many packages | refuse to publish; list the five heaviest |
+| repo growth | **≤ 3 MB gzipped per version** (measured 2.2) | the only *permanent* cost — every `vX/` stays in git forever | warn and require an explicit `--allow-growth` |
+
+Why each direction is bad:
+
+- **Too tight** (say 6 MB): the honest build trips the gate on the very first run, the natural
+  response is to raise the number without measuring, and the gate loses its meaning. It also pushes
+  everyone to mode B for no reason — mode B is not smaller, it is *deduped*, and its cost is
+  correctness of a generated line rather than bytes.
+- **Too loose** (25 MB): a 4× regression stays invisible, and the branch grows by up to 25 MB per
+  release forever. Git never forgets, so `git clone --branch releases` degrades for every future
+  contributor.
+- **Right size**: the number moves only when someone *decides* to grow, and the diff that made it
+  grow is named in the failure message.
+
+Mode B costs nothing in this budget (`install/*.txt` is a few KB); its risk is completeness of the
+generated line, which is why the verification section installs from `install/<pkg>.txt` once.
 
 ## Verification (the honest one)
 

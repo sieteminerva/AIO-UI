@@ -184,10 +184,10 @@ machine shape — it cannot tell you that a payload is valid. That needs a per-c
 `form` and `input` each ship optional sub-modules. They are described in **two shapes that look
 alike**, and only one of them can be registered:
 
-| Shape        | Looks like                                     | Consumed by                                                       |
-| ------------ | ---------------------------------------------- | ----------------------------------------------------------------- |
-| **ref**      | `{ id, path: "@aio-ui/form/cascade-adapter", export: "cascadeFormAdapter" }` | `ComponentRegistry`, `resolveModuleDefinitions()` |
-| **definition** | `{ id, load: (context) => … }`               | `ModuleLoader`, `config.modules`                                  |
+| Shape          | Looks like                                                                   | Consumed by                                       |
+| -------------- | ---------------------------------------------------------------------------- | ------------------------------------------------- |
+| **ref**        | `{ id, path: "@aio-ui/form/cascade-adapter", export: "cascadeFormAdapter" }` | `ComponentRegistry`, `resolveModuleDefinitions()` |
+| **definition** | `{ id, load: (context) => … }`                                               | `ModuleLoader`, `config.modules`                  |
 
 A ref handed to a loader now throws `RegistryError` with code `INVALID_DEFINITION` — it used to be
 accepted and surface much later as `No module rendered the field`.

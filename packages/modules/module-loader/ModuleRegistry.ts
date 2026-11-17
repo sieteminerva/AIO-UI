@@ -110,9 +110,9 @@ export class ModuleRegistry<TContext = unknown, TResult = unknown> {
       throw new RegistryError(
         "INVALID_DEFINITION",
         `[${this.scope}] module "${String(ref?.id ?? "?")}" is not a definition — ${shape}. ` +
-          `A loader takes definitions (in this package: FORM_ADAPTER_DEFINITIONS, or one adapter ` +
-          `exported from its own subpath). Manifest refs belong to ComponentRegistry, or can be ` +
-          `resolved first with resolveModuleDefinitions().`,
+        `A loader takes definitions (in this package: FORM_ADAPTER_DEFINITIONS, or one adapter ` +
+        `exported from its own subpath). Manifest refs belong to ComponentRegistry, or can be ` +
+        `resolved first with resolveModuleDefinitions().`,
         { scope: this.scope, id: String(ref?.id ?? "?") },
       );
     }

@@ -70,7 +70,7 @@ export async function resolveModuleDefinitions<TContext = unknown, TResult = unk
         throw new RegistryError(
           "INVALID_DEFINITION",
           `Module ref "${ref.id}" names no "export". A ref must say which symbol it wants ` +
-            `(for example export: "validationFormAdapter") — this resolver does not guess.`,
+          `(for example export: "validationFormAdapter") — this resolver does not guess.`,
           { scope: "module-loader", id: ref.id },
         );
       }
@@ -114,8 +114,8 @@ export async function resolveModuleDefinitions<TContext = unknown, TResult = unk
       throw new RegistryError(
         "INVALID_DEFINITION",
         `Module ref "${ref.id}" → "${ref.path}" exports "${ref.export}", which is not a module ` +
-          `definition (no load()). Export the definition itself — every adapter in this repo ` +
-          `does, for example "validationFormAdapter".`,
+        `definition (no load()). Export the definition itself — every adapter in this repo ` +
+        `does, for example "validationFormAdapter".`,
         { scope: "module-loader", id: ref.id },
       );
     }

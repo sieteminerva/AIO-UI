@@ -105,7 +105,7 @@ describe("resolveModuleDefinitions", () => {
   it("rejects a symbol that is not a definition", async () => {
     await expect(
       resolveModuleDefinitions([refs[0]], {
-        import: async () => ({ validationFormAdapter: class NotADefinition {} }),
+        import: async () => ({ validationFormAdapter: class NotADefinition { } }),
       }),
     ).rejects.toThrow(/is not a module definition/);
   });

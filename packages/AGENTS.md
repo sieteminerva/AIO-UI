@@ -61,7 +61,7 @@ npm run verify:pkgs      # ~2 m 23 s: + build 40 packages + example builds — b
 
 - `docs/framework/COMPONENT-CONVENTIONS.md`, `scripts/new-component.md` — writing a component.
 - `docs/framework/DEMO.md` — demo routes and `manifest.ts`.
-- `packages/core/ComponentRegistry.md` — registry/loader internals.
+- `packages/core/src/ComponentRegistry.md` — registry/loader internals.
 - Do **not** read `docs/generator/apps-script-integration.md` or `orchestrator/**` from this band.
 
 ## `isRoot` — decided and implemented (`core/src/DOMRenderer.ts`, `dd34f2d`)

@@ -337,7 +337,7 @@ make a built tree readable, synchronously, with no browser and no stylesheet wai
 | `builder.inspect()` | `{ html, keys, hierarchy, namespace, records }` | `@aio-ui/base` |
 | `inspectPage(root)` | `{ html, records, nodeCount }`                  | `@aio-ui/core` |
 
-Mechanics and the four guarantees live in `docs/framework/DOMRenderer.md` § _Inspecting a built
+Mechanics and the four guarantees live in `packages/core/src/DOMRenderer.md` § _Inspecting a built
 tree_. **This section is the ritual built on top of them** — the part an agent must actually do.
 
 > **Two audiences, two documents.** This section is for an agent **changing this repository**. An

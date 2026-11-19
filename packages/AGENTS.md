@@ -94,7 +94,7 @@ expect(html).toContain("alpha");
 `inspect()` is synchronous, deterministic and needs no stylesheet loader — the same payload
 inspects to the same data twice. Assert the cheapest sufficient fact (presence, shape, one
 value), and prove the negative for a hold or a fallback (`[data-skeleton]` must be absent).
-Mechanics: `docs/framework/DOMRenderer.md` § *Inspecting a built tree*.
+Mechanics: `packages/core/src/DOMRenderer.md` § *Inspecting a built tree*.
 
 ## Verify
 

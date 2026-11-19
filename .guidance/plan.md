@@ -171,7 +171,7 @@ The two sides already speak the same shapes; the preset must reuse them, not inv
 
 | Direction       | Shape                                                                                                                  |
 | --------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| Content AST     | `iBasicNode[]` / `iNodeContent` with token keys: `#id`, `.class`, `tag`, `>child` (`docs/DOMRenderer.md`)              |
+| Content AST     | `iBasicNode[]` / `iNodeContent` with token keys: `#id`, `.class`, `tag`, `>child` (`packages/core/src/DOMRenderer.md`) |
 | Builder payload | `{ builder, content }` or `{ builder: "form", config, schema }`; the wizard sends exactly this                         |
 | Server → client | `{ statusCode, success, message, data, meta? }`; `data` is the payload, `meta` carries pagination links                |
 | Build result    | `{ status: "success" \| "partial" \| "error", meta, data: { sheet, repo, live, guide, message } }`                     |

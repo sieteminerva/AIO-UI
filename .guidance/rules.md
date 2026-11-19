@@ -13,7 +13,7 @@
 ## Info
 
 - the landing page content is in `src\content.ts` store in `HomepageContent` var
-  to understand the mechanism how it build and what the output will be read `src\lib\Modules\DOMRenderer.md`
+  to understand the mechanism how it build and what the output will be read `packages\core\src\DOMRenderer.md`
 
 ## Requirements
 

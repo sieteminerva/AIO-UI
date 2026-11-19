@@ -30,7 +30,7 @@ Do not optimize for a generic portfolio template. Preserve the personal history,
 ## Content and Rendering Notes
 
 - Page content is represented as `iNodeContent` objects and rendered through `DOMRenderer`.
-- Read `src/lib/Modules/DOMRenderer.md` when changing the content schema or renderer behavior.
+- Read `packages/core/src/DOMRenderer.md` when changing the content schema or renderer behavior.
 - The application must remain readable on mobile devices.
 - The application should provide both dark and light themes.
 - Forms and future content modules should follow the same visual and animation language as the rest of the site.

@@ -44,7 +44,7 @@ ordinary website.**
   → [`docs/framework/APP-TOKENS.md`](docs/framework/APP-TOKENS.md)
 - **A static site needs nothing but `DOMRenderer`** — describe the tree as an object, get native
   HTML back. No build step, no runtime.
-  → [`docs/framework/DOMRenderer.md`](docs/framework/DOMRenderer.md)
+  → [`packages/core/src/DOMRenderer.md`](packages/core/src/DOMRenderer.md)
 - **Prototyping is instant, and the style stays yours** — take a markup snippet you already like,
   split it into `@templateKey` selectors, and you have a component.
   → [`scripts/new-component.md`](scripts/new-component.md)
@@ -215,27 +215,27 @@ Working areas — `orchestrator/` is tracked; `.draft/` and `.archives/` are loc
 
 ## Where to look
 
-| I need…                                      | Read                                                                                                                  |
-| -------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| Product vision, market framing               | `docs/generator/presentation0.md`                                                                                     |
-| How generated sites are produced (Rajutan)   | `.guidance/RAJUTAN.md`                                                                                                |
-| Why / long-term order                        | `.guidance/plan.md`                                                                                                   |
-| What is next + what is running (per band)    | `.guidance/project/STATUS.md` (logbook) → `framework.md`, `gallery.md`, `generator.md`                                |
-| Rules an agent must follow                   | `.guidance/AGENT_RULES.md`, `.guidance/mandatory/`                                                                    |
-| **An agent building WITH the framework**     | `docs/agent/handbook.md` — loop, builder table, verification, failure → action                                        |
-| Prompt templates — session / batch / handoff | `.guidance/PROMPTS.md`                                                                                                |
-| Renderer internals                           | `docs/framework/DOMRenderer.md`                                                                                       |
-| Component conventions / template / data      | `docs/framework/COMPONENT-CONVENTIONS.md`, `scripts/new-component.md`, `docs/framework/COMPONENT-DATA.md`             |
-| Input field types & actions                  | `docs/framework/FIELD-TYPES.md`, `docs/framework/INPUT-ACTIONS.md`                                                    |
-| App shell (`AioApp`)                         | `docs/framework/APP.md`, `docs/framework/API.md`                                                                      |
-| Dependency rules                             | `docs/framework/BOUNDARIES.md` (+ enforced by `scripts/bounds.mjs`)                                                   |
-| Import path policy (root barrel vs subpath)  | `docs/framework/PUBLIC-API.md`                                                                                        |
-| Events bus                                   | `docs/framework/eventbus.MD`                                                                                          |
-| Address picker                               | `docs/framework/idAddress.MD`, `packages/components/id-address/README.MD`                                             |
-| Sheets CMS / REST API / deployment           | `docs/generator/GoogleSheets CMS/`                                                                                    |
-| Apps Script orchestrator flow                | `docs/generator/apps-script-integration.md`                                                                           |
-| Generator engine internals                   | `orchestrator/README.md`                                                                                              |
-| The AI prompt that writes content            | `orchestrator/prompt.content.md`                                                                                      |
+| I need…                                      | Read                                                                                                      |
+| -------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| Product vision, market framing               | `docs/generator/presentation0.md`                                                                         |
+| How generated sites are produced (Rajutan)   | `.guidance/RAJUTAN.md`                                                                                    |
+| Why / long-term order                        | `.guidance/plan.md`                                                                                       |
+| What is next + what is running (per band)    | `.guidance/project/STATUS.md` (logbook) → `framework.md`, `gallery.md`, `generator.md`                    |
+| Rules an agent must follow                   | `.guidance/AGENT_RULES.md`, `.guidance/mandatory/`                                                        |
+| **An agent building WITH the framework**     | `docs/agent/handbook.md` — loop, builder table, verification, failure → action                            |
+| Prompt templates — session / batch / handoff | `.guidance/PROMPTS.md`                                                                                    |
+| Renderer internals                           | `packages/core/src/DOMRenderer.md`                                                                        |
+| Component conventions / template / data      | `docs/framework/COMPONENT-CONVENTIONS.md`, `scripts/new-component.md`, `docs/framework/COMPONENT-DATA.md` |
+| Input field types & actions                  | `docs/framework/FIELD-TYPES.md`, `docs/framework/INPUT-ACTIONS.md`                                        |
+| App shell (`AioApp`)                         | `docs/framework/APP.md`, `docs/framework/API.md`                                                          |
+| Dependency rules                             | `docs/framework/BOUNDARIES.md` (+ enforced by `scripts/bounds.mjs`)                                       |
+| Import path policy (root barrel vs subpath)  | `docs/framework/PUBLIC-API.md`                                                                            |
+| Events bus                                   | `docs/framework/eventbus.MD`                                                                              |
+| Address picker                               | `docs/framework/idAddress.MD`, `packages/components/id-address/README.MD`                                 |
+| Sheets CMS / REST API / deployment           | `docs/generator/GoogleSheets CMS/`                                                                        |
+| Apps Script orchestrator flow                | `docs/generator/apps-script-integration.md`                                                               |
+| Generator engine internals                   | `orchestrator/README.md`                                                                                  |
+| The AI prompt that writes content            | `orchestrator/prompt.content.md`                                                                          |
 
 ## Conventions in one screen
 

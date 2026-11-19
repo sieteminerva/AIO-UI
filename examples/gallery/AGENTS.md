@@ -24,7 +24,7 @@ design/software/making/music — do **not** reduce it to a generic template.
 
 - Page content is `iNodeContent` objects rendered through `DOMRenderer`.
 - Content/copy lives in `src/content/` (`copy.md`); pages in `src/pages/`.
-- Read `docs/framework/DOMRenderer.md` only when changing the content schema or renderer behaviour.
+- Read `packages/core/src/DOMRenderer.md` only when changing the content schema or renderer behaviour.
 - Uses `article`, `masonry`, `form`, `table`, `rating` components.
 
 ## Commands

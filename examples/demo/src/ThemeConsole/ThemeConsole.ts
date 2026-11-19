@@ -1,5 +1,5 @@
 import type { iBuilderConfig, iBuilderRegistry, iElementProperty } from "@aio-ui/core/interface";
-import { Builder } from "@aio-ui/frameworks";
+import { Builder } from "@aio-ui/base";
 
 // 🧩 The theme builder is instantiated BY THIS builder (no ComponentRegistry
 // entry needed), so its module rides along with the console instead of being

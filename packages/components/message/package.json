@@ -1,6 +1,6 @@
 {
   "name": "@aio-ui/message",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "type": "module",
   "files": [
     "dist",
@@ -25,10 +25,10 @@
     }
   },
   "peerDependencies": {
-    "@aio-ui/base": "^0.2.3",
-    "@aio-ui/core": "^0.2.3",
-    "@aio-ui/form": "^0.2.3",
-    "@aio-ui/module-loader": "^0.2.3"
+    "@aio-ui/base": "^0.2.4",
+    "@aio-ui/core": "^0.2.4",
+    "@aio-ui/form": "^0.2.4",
+    "@aio-ui/module-loader": "^0.2.4"
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",

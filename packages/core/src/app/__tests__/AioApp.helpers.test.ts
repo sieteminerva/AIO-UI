@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { blockToNode, isPageDocument, normalizeRoute, pageToNode } from "@aio-ui/app";
+import { blockToNode, isPageDocument, normalizeRoute, pageToNode } from "../index";
 
 /**
  * The entry itself needs a DOM to test end to end; these helpers are pure, so

@@ -13,9 +13,6 @@
   --pricing-card-surface-muted: var(--app-surface-muted, rgba(244, 238, 226, 0.7));
 }
 
-/* The cards live in `.row > .column > .card`, and `.row` centres its items by default, so
-   every column used to shrink to its own content. Stretch instead, so the card boxes share
-   one height and only the real difference — the featured middle plan — is bigger. */
 .row:has(> .column > .card.pricing) {
   align-items: stretch;
   gap: calc(var(--app-gap, 2em) * 0.2);
@@ -30,20 +27,26 @@
 }
 
 .card.pricing {
+  /* Jadikan container agar bisa membaca tinggi/lebar kartu lewat unit cqh & cqi */
+  container-type: size;
+  container-name: pricing-card;
+
+  /* Base font-size kartu otomatis beradaptasi terhadap tinggi (480px) & lebar kolom */
+  font-size: clamp(0.75rem, min(3.2cqh, 4.2cqi), 1rem);
+  line-height: 1.35;
+
   text-align: center;
   transition:
     transform 0.3s ease,
     box-shadow 0.3s ease;
   display: flex;
   flex-direction: column;
-  /* Fill the column it was given: the row stretches its columns (below), and the plan
-     button is pushed to the bottom by `margin-top: auto`. Without this the cards ended on
-     three different baselines whenever the feature lists differed in length. */
   height: 100%;
-  border-radius: 1.3em;
-  background-color: transparent;
   max-height: 480px;
   overflow: hidden;
+  border-radius: 1.3em;
+  background-color: transparent;
+
   &:hover {
     transform: translateY(-5px);
     box-shadow: 0 24px 48px rgba(91, 63, 134, 0.2);
@@ -63,9 +66,10 @@
   }
 
   & .header {
-    padding-bottom: 0rem;
+    padding-bottom: 0;
     & .eyebrow {
-      font-size: 1.1rem;
+      /* Skala adaptif relatif terhadap font-size kartu */
+      font-size: clamp(0.85rem, 3.6cqh, 1.1rem);
       color: var(--pricing-card-accent-color);
       border: none;
       margin-bottom: 0;
@@ -77,23 +81,37 @@
     border: 0;
     height: 1px;
     background: var(--pricing-card-border-color);
-    margin: 1rem 0;
+    /* Gunakan em agar jarak menyusut bersama font-size saat tinggi terbatas */
+    margin: clamp(0.45em, 1.8cqh, 1em) 0;
   }
 
   & .body {
     text-align: center;
+    flex: 1 1 auto;
+    min-height: 0; /* Wajib agar flex child mau menyusut di dalam max-height: 480px */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  /* Jika ada elemen harga utama (misal .price / h2 / h3) di dalam .body atau .header */
+  & :is(.price, h2, h3) {
+    font-size: clamp(1.35rem, min(6.5cqh, 9cqi), 2.25rem);
+    line-height: 1.1;
+    margin: 0.2em 0;
   }
 
   & .features {
-    margin: 1.5rem 0;
+    margin: clamp(0.5em, 2.2cqh, 1.5em) 0;
     list-style: none;
     padding: 0;
     & li {
-      padding: 0.5rem 0;
+      font-size: clamp(0.75rem, 2.9cqh, 0.95rem);
+      padding: clamp(0.2em, 0.9cqh, 0.5em) 0;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 0.75rem;
+      gap: 0.6em;
       &::before {
         content: "";
         color: var(--pricing-card-accent-color);
@@ -104,9 +122,12 @@
 
   & .actions {
     margin-top: auto;
-    padding-top: 1rem;
+    padding-top: clamp(0.5em, 1.8cqh, 1em);
+    flex-shrink: 0; /* Tombol CTA tidak pernah terpotong */
     & .button {
       width: 100%;
+      font-size: clamp(0.8rem, 3cqh, 1rem);
+      padding-block: clamp(0.45em, 1.4cqh, 0.75em);
     }
   }
 }

@@ -18,10 +18,8 @@ describe("plan — base layer", () => {
     const result = plan(galleryPreset);
     expect(specifiers(result.assets)).toEqual(
       expect.arrayContaining([
-        "@aio-ui/frameworks",
         "@aio-ui/core",
         "@aio-ui/base",
-        "@aio-ui/app",
         "@aio-ui/router",
         "@aio-ui/theme",
         "@aio-ui/theme-default",

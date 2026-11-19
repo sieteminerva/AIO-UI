@@ -1,6 +1,6 @@
 # AioApp — Framework Entry
 
-`AioApp` (`packages/app/src/AioApp.ts`) is the framework entry point. It is the only
+`AioApp` (`packages/core/src/app/AioApp.ts`) is the framework entry point. It is the only
 class an application has to instantiate, and every adapter it consumes is a
 **registered module** — nothing is instantiated outside and handed in silently:
 
@@ -117,10 +117,10 @@ arguments a router cannot know by itself arrive through it.
 | `animation` | `AnimationsService` | `@aio-ui/animations`    |
 | `events`    | `EventEmitter`      | `@aio-ui/event-emitter` |
 | `http`      | `HttpService`       | `@aio-ui/http-service`  |
-| `storage`   | `AppStorage`        | `@aio-ui/app`           |
+| `storage`   | `AppStorage`        | `@aio-ui/core`          |
 
-`@aio-ui/app` itself imports **types only** — no renderer, router, animation or
-collector is bundled with it. Deriving component names goes through
+`AioApp` lives inside `@aio-ui/core` since `0.2.4` (it only ever imported core types, so a
+separate package bought an install edge and no isolation). Deriving component names goes through
 `iComponentRegistryPort.collect(source)`, and the renderer must be registered like any
 other module, so the app adds zero bytes of core to a project that swaps it out.
 

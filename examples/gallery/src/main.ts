@@ -1,8 +1,8 @@
 import { ComponentRegistry } from '@aio-ui/core';
 import { DOMRenderer } from '@aio-ui/core';
 import { isStyleInjected, replaceLazyCss } from '@aio-ui/core';
-import { AioApp, AppStorage } from '@aio-ui/app';
-import type { iComponentRoute } from '@aio-ui/app';
+import { AioApp, AppStorage } from '@aio-ui/core';
+import type { iComponentRoute } from '@aio-ui/core';
 import { AnimationsService } from '@aio-ui/animations';
 import { HashRouter } from '@aio-ui/router';
 import { HomepageContent } from './content/home';

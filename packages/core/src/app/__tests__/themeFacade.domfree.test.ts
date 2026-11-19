@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { AioApp } from "@aio-ui/app";
+import { AioApp } from "../index";
 
 /**
  * The theme facade is registration plus one navigation call. `render()` needs a real

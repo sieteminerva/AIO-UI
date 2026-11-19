@@ -1,6 +1,6 @@
 # TASK — Package restructure: one core, honest edges, one bundle
 
-**Status:** P0 landed (edge manifests, `check:edges`) · next P1 (DOMRenderer folder + kit) · branch `main` @ `af9e364` + uncommitted batch
+**Status:** P0, P2, P3, P4 landed (uncommitted batch) · P1 deferred · branch `main` @ `02c11c6`
 **Queue entry:** `packages/components/TASKS.md` §0 · **Band:** `packages/**` (Framework)
 
 ## Goal
@@ -74,7 +74,12 @@ repeated on a package that already needs `base` (it arrives through base's insta
 Proof: `aio-ui-accordion` tarball alone in `temp/consumer` installed its closure (base, core,
 utilities, skeleton), `tsc --noEmit` clean, runtime import resolved. `verify` → 875 pass.
 
-### P1 — DOMRenderer becomes self-describing
+### P1 — DOMRenderer becomes self-describing (deferred)
+
+Deferred on purpose: the kit has **no consumer until P5**. P0/P2/P3/P4 do not need it, and
+shipping a generated 900-line copy of the renderer without a caller is dead weight. Do P1 when
+P5 (`@aio-ui/dom-renderer` as its own package) is actually wanted. The rest of the P1 design
+below stands.
 
 - `core/src/DOMRenderer/` folder with `index.ts` barrel (pattern: `core/src/Registry/`), the class
   moved verbatim, and a local `types.ts`: `DefaultSelectors`, `iNodeContent`, `iNodeRecordItem`,
@@ -154,6 +159,6 @@ only changes after P2 (the core barrel gains `AioApp`), and then `--write` is th
 
 ## Next
 
-Start **P1**: move `DOMRenderer` into `core/src/DOMRenderer/` with a local `types.ts`, then generate
-`DOMRenderer.kit.ts` with `scripts/build-renderer-kit.mjs` and guard it with a differential test
-(core renderer vs kit, identical `inspectPage().html`).
+The restructure is done except **P1** (deferred to P5) and one wiring step: `publish-cdn.mjs`
+and `release.mjs` do not ship the four bundle artefacts yet — add them to the branch root and to
+`releases/v<version>/` when the next release is cut, and record their names in `registry.json`.

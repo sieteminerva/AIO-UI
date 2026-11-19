@@ -10,9 +10,9 @@
  * must be able to do.
  */
 
-import type { iBuilderRegistry } from "@aio-ui/core/registry";
-import type { iEventCallback, iEventEmit } from "@aio-ui/core/events";
-import type { iNodeContent } from "@aio-ui/core/node";
+import type { iBuilderRegistry } from "../types/registry";
+import type { iEventCallback, iEventEmit } from "../types/events";
+import type { iNodeContent } from "../types/node";
 
 /** Minimal route state the shell consumes. Mirrors `iRouteState` in `@aio-ui/router`. */
 export interface iAppRouteState {

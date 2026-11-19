@@ -15,7 +15,7 @@ together with `typecheck`, `test` and `build`.
 ```txt
 styles        (CSS only, imports nothing)
 utilities  →  core (types only)
-core       →  utilities
+core       →  utilities  (+ installs styles, imports nothing from it)
 base       →  core, utilities  (+ installs skeleton, imports nothing from it)
 modules/*  →  core, utilities
 themes/*   →  core, utilities

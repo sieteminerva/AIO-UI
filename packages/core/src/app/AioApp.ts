@@ -24,10 +24,10 @@
  *   know are skipped and reported, never thrown (the LITE promise).
  */
 
-import type { iBasicNode, iNodeContent } from "@aio-ui/core/node";
-import type { iBuilderRegistry } from "@aio-ui/core/registry";
-import type { iPagePhase } from "@aio-ui/core/events";
-import type { iThemeModule } from "@aio-ui/core/page";
+import type { iBasicNode, iNodeContent } from "../types/node";
+import type { iBuilderRegistry } from "../types/registry";
+import type { iPagePhase } from "../types/events";
+import type { iThemeModule } from "../types/page";
 
 import type {
   iAnimationPort,

@@ -40,13 +40,10 @@ export interface CatalogueEntry {
  * utilities every builder imports, and the theme registry.
  */
 export const BASE_ASSETS: PresetAsset[] = [
-  // One door for core + base + app. The three roots below it are listed too,
-  // because the kit's own `export * from "@aio-ui/core"` is a bare specifier the
-  // browser must find in the import map (prefixes only cover subpaths).
-  { specifier: "@aio-ui/frameworks", styles: [], package: "@aio-ui/frameworks" },
+  // Core is one door since `0.2.4`: the app shell moved in, so a generated site
+  // imports `AioApp`, `DOMRenderer` and `ComponentRegistry` from the same package.
   { specifier: "@aio-ui/core", styles: [], package: "@aio-ui/core" },
   { specifier: "@aio-ui/base", styles: [], package: "@aio-ui/base" },
-  { specifier: "@aio-ui/app", styles: [], package: "@aio-ui/app" },
   // The generated app always routes through the hash router, even for one page:
   // AioApp's route pipeline is what renders a page at all.
   { specifier: "@aio-ui/router", styles: [], package: "@aio-ui/router" },

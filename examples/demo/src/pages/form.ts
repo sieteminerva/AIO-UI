@@ -1,4 +1,4 @@
-import type { iPageContent, iPageController, iPageContext, iPageReadyContext } from "@aio-ui/app";
+import type { iPageContent, iPageController, iPageContext, iPageReadyContext } from "@aio-ui/core";
 import { releaseBuilders } from "@aio-ui/core";
 
 import { mountInto } from "../dom";

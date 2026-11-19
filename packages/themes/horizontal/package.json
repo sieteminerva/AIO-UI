@@ -1,13 +1,13 @@
 {
   "name": "@aio-ui/theme-horizontal",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "type": "module",
   "files": [
     "dist",
     "src"
   ],
   "peerDependencies": {
-    "@aio-ui/core": "^0.2.3"
+    "@aio-ui/core": "^0.2.4"
   },
   "exports": {
     ".": {

@@ -1,6 +1,6 @@
 {
   "name": "@aio-ui/form",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "type": "module",
   "files": [
     "dist",
@@ -9,15 +9,15 @@
     "adapters"
   ],
   "dependencies": {
-    "@aio-ui/input": "^0.2.3"
+    "@aio-ui/input": "^0.2.4"
   },
   "peerDependencies": {
-    "@aio-ui/base": "^0.2.3",
-    "@aio-ui/core": "^0.2.3",
-    "@aio-ui/http-service": "^0.2.3",
-    "@aio-ui/message": "^0.2.3",
-    "@aio-ui/module-loader": "^0.2.3",
-    "@aio-ui/utilities": "^0.2.3"
+    "@aio-ui/base": "^0.2.4",
+    "@aio-ui/core": "^0.2.4",
+    "@aio-ui/http-service": "^0.2.4",
+    "@aio-ui/message": "^0.2.4",
+    "@aio-ui/module-loader": "^0.2.4",
+    "@aio-ui/utilities": "^0.2.4"
   },
   "exports": {
     ".": {

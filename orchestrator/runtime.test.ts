@@ -27,7 +27,7 @@ describe("emitRuntime — index.html", () => {
     expect(html).toContain('<script type="importmap">');
     // The `imports` wrapper is mandatory; without it browsers ignore the map.
     expect(html).toContain('"imports": {');
-    expect(html).toContain('"@aio-ui/frameworks"');
+    expect(html).toContain('"@aio-ui/core"');
   });
 
   it("carries the site copy into title, description and theme", () => {
@@ -97,7 +97,7 @@ describe("emitRuntime — page definitions", () => {
   it("declares one page definition per route and hands it to registerPage", () => {
     const { "app.js": app } = build(storePreset);
 
-    expect(app).toContain('import { ComponentRegistry, DOMRenderer, AioApp } from "@aio-ui/frameworks";');
+    expect(app).toContain('import { ComponentRegistry, DOMRenderer, AioApp } from "@aio-ui/core";');
     expect(app).toContain("const pageDefinitions = [");
     // Served to a browser as-is: `import type` and `: Type[]` are syntax errors there,
     // and either one silently prevents the whole site from booting.

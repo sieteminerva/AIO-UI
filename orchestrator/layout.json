@@ -1,14 +1,4 @@
 {
-  "@aio-ui/app": {
-    "dir": "packages/app",
-    "entry": "dist/index.js",
-    "stylesRoot": "dist",
-    "subpaths": {
-      ".": "dist/index.js",
-      "./ports": "dist/ports.js",
-      "./types": "dist/types.js"
-    }
-  },
   "@aio-ui/base": {
     "dir": "packages/base",
     "entry": "dist/index.js",
@@ -32,6 +22,7 @@
       "./content": "dist/types/content.js",
       "./page": "dist/types/page.js",
       "./renderer": "dist/types/renderer.js",
+      "./app": "dist/app/index.js",
       "./api": "dist/types/api.js"
     }
   },
@@ -183,6 +174,9 @@
       "./file-uploader/module": "dist/FileUploader/FileUploader.InputModule.js",
       "./controls/module": "dist/InputControls/InputControls.InputModule.js",
       "./popover/module": "dist/Popover.InputModule.js",
+      "./picker": "dist/InputPicker/InputPicker.js",
+      "./picker.css": "dist/InputPicker/InputPicker.css",
+      "./picker/module": "dist/InputPicker/InputPicker.inputModules.js",
       "./input.css": "dist/input.css"
     }
   },
@@ -378,14 +372,6 @@
   },
   "@aio-ui/theme-horizontal": {
     "dir": "packages/themes/horizontal",
-    "entry": "dist/index.js",
-    "stylesRoot": "dist",
-    "subpaths": {
-      ".": "dist/index.js"
-    }
-  },
-  "@aio-ui/frameworks": {
-    "dir": "packages/kits/frameworks",
     "entry": "dist/index.js",
     "stylesRoot": "dist",
     "subpaths": {

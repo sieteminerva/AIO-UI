@@ -10,10 +10,9 @@
   },
   "dependencies": {
     "@aio-ui/animations": "*",
-    "@aio-ui/app": "*",
+    "@aio-ui/core": "*",
     "@aio-ui/article": "*",
     "@aio-ui/base": "*",
-    "@aio-ui/core": "*",
     "@aio-ui/event-emitter": "*",
     "@aio-ui/form": "*",
     "@aio-ui/http-service": "*",

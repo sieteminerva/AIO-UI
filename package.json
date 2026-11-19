@@ -1,7 +1,7 @@
 {
   "name": "aio-ui",
   "private": true,
-  "version": "0.2.3",
+  "version": "0.2.4",
   "type": "module",
   "workspaces": [
     "packages/*",
@@ -34,6 +34,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "build:pkgs": "node scripts/build-pack.mjs --build",
+    "build:bundle": "node scripts/build-bundle.mjs",
     "check:api": "node scripts/api.mjs --check",
     "check:catalogue": "node scripts/catalogue.mjs --check",
     "catalogue": "node scripts/catalogue.mjs",

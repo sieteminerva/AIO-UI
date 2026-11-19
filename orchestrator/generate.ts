@@ -105,7 +105,7 @@ function buildDevProject(preset: iWebPreset, planned: PresetPlan): Record<string
   const imports = [
     `import { ComponentRegistry } from "@aio-ui/core";`,
     `import { DOMRenderer } from "@aio-ui/core";`,
-    `import { AioApp } from "@aio-ui/app";`,
+    `import { AioApp } from "@aio-ui/core";`,
     `import { HashRouter } from "@aio-ui/router";`,
   ];
   if (has("http-service")) imports.push(`import { HttpService } from "@aio-ui/http-service";`);

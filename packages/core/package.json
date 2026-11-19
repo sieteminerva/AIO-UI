@@ -1,13 +1,14 @@
 {
   "name": "@aio-ui/core",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "type": "module",
   "files": [
     "dist",
     "src"
   ],
   "dependencies": {
-    "@aio-ui/utilities": "^0.2.3"
+    "@aio-ui/utilities": "^0.2.4",
+    "@aio-ui/styles": "^0.2.4"
   },
   "exports": {
     ".": {
@@ -54,6 +55,11 @@
       "development": "./src/types/renderer.ts",
       "types": "./dist/types/renderer.d.ts",
       "default": "./dist/types/renderer.js"
+    },
+    "./app": {
+      "development": "./src/app/index.ts",
+      "types": "./dist/app/index.d.ts",
+      "default": "./dist/app/index.js"
     },
     "./api": {
       "development": "./src/types/api.ts",

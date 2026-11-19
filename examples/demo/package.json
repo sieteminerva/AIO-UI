@@ -11,9 +11,8 @@
   "dependencies": {
     "@aio-ui/accordion": "*",
     "@aio-ui/animations": "*",
-    "@aio-ui/app": "*",
-    "@aio-ui/carousel": "*",
     "@aio-ui/core": "*",
+    "@aio-ui/carousel": "*",
     "@aio-ui/event-emitter": "*",
     "@aio-ui/fabmenu": "*",
     "@aio-ui/footer": "*",

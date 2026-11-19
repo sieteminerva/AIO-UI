@@ -1,5 +1,5 @@
 import type { iBuilderConfig, iBuilderRegistry, iElementProperty } from "@aio-ui/core/interface";
-import { Builder } from "@aio-ui/frameworks";
+import { Builder } from "@aio-ui/base";
 import {
   ColorThemeKit,
   DEFAULT_THEME_ITEMS,

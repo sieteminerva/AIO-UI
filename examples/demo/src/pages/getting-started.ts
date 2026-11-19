@@ -1,4 +1,4 @@
-import type { iPageContent, iPageController } from "@aio-ui/app";
+import type { iPageContent, iPageController } from "@aio-ui/core";
 
 // The contract is not restated here: it is `docs/framework/APP.md`, imported as text at
 // build time. Only the demo-specific parts (install, import map, which module fills which

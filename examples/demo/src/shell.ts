@@ -8,7 +8,7 @@
  * `#kitchen` and `#modules` pass the docs aside; `#getting-started`, `#product`, `#article`
  * and `#form` are single-column.
  */
-import type { iPageContent } from "@aio-ui/app";
+import type { iPageContent } from "@aio-ui/core";
 
 import { themeSwitcher } from "./theme-switcher";
 

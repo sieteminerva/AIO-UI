@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { AppStorage } from "@aio-ui/app";
+import { AppStorage } from "../index";
 
 /**
  * The built-in storage port has no DOM dependency, so the parts that carry real

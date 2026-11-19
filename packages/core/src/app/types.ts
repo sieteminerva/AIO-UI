@@ -9,8 +9,8 @@
  * here; anything else belongs to a package it receives through `iAppDeps`.
  */
 
-import type { iBasicNode, iNodeContent } from "@aio-ui/core/node";
-import type { iThemeModule } from "@aio-ui/core/page";
+import type { iBasicNode, iNodeContent } from "../types/node";
+import type { iThemeModule } from "../types/page";
 import type {
   iAnimationPort,
   iAppRouteState,

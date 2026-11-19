@@ -41,6 +41,8 @@ const SKIP = new Set(["node_modules", "dist", "__tests__", "temp"]);
 const PEER = new Set(["core", "base"]);
 /** Edges that arrive through another package's install edge, never repeated per package. */
 const PROVIDED = { skeleton: "base" };
+/** Install-only edges: declared so a consumer cannot forget them, never imported by JS. */
+const INSTALL_ONLY = { base: ["skeleton"], core: ["styles"] };
 /** Manifest key order, so a rewrite never reshuffles a file for no reason. */
 const ORDER = [
   "name",
@@ -163,7 +165,9 @@ for (const [short, edges] of desired) {
   const missing = [...edges].filter(([name]) => !declared.has(name));
   const wrong = [...edges].filter(([name, field]) => declared.has(name) && declared.get(name) !== field);
   const provided = [...declared.keys()].filter((name) => PROVIDED[name] && declared.has(PROVIDED[name]));
-  const unused = [...declared.keys()].filter((name) => !edges.has(name) && !provided.includes(name));
+  const unused = [...declared.keys()].filter(
+    (name) => !edges.has(name) && !provided.includes(name) && !(INSTALL_ONLY[short] ?? []).includes(name),
+  );
   if (missing.length || wrong.length || provided.length || unused.length)
     report.push({ short, missing, wrong, provided, unused });
 }

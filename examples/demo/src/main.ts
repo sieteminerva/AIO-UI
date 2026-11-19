@@ -6,7 +6,7 @@ import {
   isStyleInjected,
   replaceLazyCss,
   type iComponentModuleRef,
-} from '@aio-ui/frameworks';
+} from '@aio-ui/core';
 import { AnimationsService, EventEmitter, HttpService, HashRouter, ThemeRenderer } from '@aio-ui/modules';
 import { DefaultTheme, CyberpunkTheme, } from '@aio-ui/themes';
 
@@ -42,7 +42,7 @@ import { ModulesPage } from './pages/modules';
 import { ProductPage } from './pages/product';
 import { componentAssets } from './registry.assets';
 import { productModules } from '@aio-ui/product';
-import type { iComponentRoute } from '@aio-ui/frameworks';
+import type { iComponentRoute } from '@aio-ui/core';
 
 /**
  * Dev-only: an edited component stylesheet arrives as text, not as a reload.

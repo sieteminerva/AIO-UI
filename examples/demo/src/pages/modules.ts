@@ -1,4 +1,4 @@
-import type { iPageContent, iPageController, iPageContext } from "@aio-ui/app";
+import type { iPageContent, iPageController, iPageContext } from "@aio-ui/core";
 
 import type { iDemoModule } from "../modules";
 import { MODULES, moduleForFragment, moduleHash } from "../modules";

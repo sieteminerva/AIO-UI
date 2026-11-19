@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { AioApp } from "@aio-ui/app";
+import { AioApp } from "../index";
 
 /**
  * Registration is pure: it never touches the DOM, so its rules can be pinned down

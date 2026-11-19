@@ -6,9 +6,9 @@
 
 ## Live claims
 
-| Agent       | Band      | Task                                                               | Write scope                                                                                   | Started    | Checkpoint                 | State   |
-| ----------- | --------- | ------------------------------------------------------------------ | --------------------------------------------------------------------------------------------- | ---------- | -------------------------- | ------- |
-| copilot c59 | Framework | TASK-restructure P0: edge manifests (`scripts/edges.mjs`) | `packages/**`, `scripts/**`, `docs/framework/**`, `temp/**` | 2026-11-19 | `/memories/session/c59.md` | active |
+| Agent | Band | Task | Write scope | Started | Checkpoint | State |
+| ----- | ---- | ---- | ----------- | ------- | ---------- | ----- |
+| —     | —    | —    | —           | —       | —          | —     |
 
 ## Row shape
 

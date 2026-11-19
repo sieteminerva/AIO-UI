@@ -4,13 +4,13 @@
 > **only** after the user picks it — never "to orient" (`AGENT_RULES.md` §13). Rewritten each
 > session, newest on top. One card = one line + one pointer.
 
-### 1. Restructure P0 — manifests tell the truth (uncommitted)
+### 1. Restructure P0 — manifests tell the truth (`02c11c6`)
 
 `scripts/edges.mjs` derives every `@aio-ui/*` edge from source and joins `npm run check` as
 `check:edges`: 85 edges over 40 packages, `core`/`base` peer, `skeleton` never repeated. Proof: an
 accordion tarball alone installed its whole closure in `temp/consumer` and type-checked.
 **Open:** the rest of the restructure — P1 DOMRenderer folder + kit, P2 `app`→`core` at 0.2.4,
-P3 styles as core dependency, P4 one-file `AioUI` bundle. Nothing is committed yet.
+P3 styles as core dependency, P4 one-file `AioUI` bundle.
 → `docs/framework/TASK-restructure.md`
 
 ### 2. Release — separate modules from an orphan branch

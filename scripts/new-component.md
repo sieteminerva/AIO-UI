@@ -1,7 +1,7 @@
 # Component template
 
 The skeleton behind every new component, plus the generator that stamps it out.
-Conventions the output follows: [`COMPONENT-CONVENTIONS.md`](./COMPONENT-CONVENTIONS.md).
+Conventions the output follows: [`COMPONENT-CONVENTIONS.md`](../docs/COMPONENT-CONVENTIONS.md).
 
 ## Files
 
@@ -67,6 +67,7 @@ each one is a decision, not a copy-paste:
 | `packages/core/src/types/registry.ts`                       | `badge: any;` in `iBuilderRegistry` (the `builderId` must typecheck) |
 | Host asset map, e.g. `examples/demo/src/registry.assets.ts` | `modules` + `styles` entries with **static** specifiers              |
 | Content or demo table                                       | `builder: "badge"` on the node it _is_, or a demo manifest row       |
+| `packages/components/<kebab>/package.json`                  | `node scripts/edges.mjs --apply` — the scaffold declares no edge, so `check:edges` stays red until `base`/`core` are peer-declared |
 
 Then `npm install` once so the workspace link for `@aio-ui/<kebab>` exists (new package
 folders are picked up by the `packages/components/*` workspace glob).

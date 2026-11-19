@@ -49,7 +49,8 @@ One monorepo, four working bands. **Start here, then open the band's `AGENTS.md`
   (`.guidance/AGENT_RULES.md` §16). "It looks right" is not a proof, and a gate that was
   already green proves nothing about a feature that did not exist when it ran.
 - **Gates by tier, not by habit** (`AGENT_RULES.md` §4): the inner loop is `dev`/`build` and nothing
-  else; `npm run check` (~12 s) before a commit that touched a type, an `exports` map or a README
+  else; `npm run check` (~12 s) before a commit that touched a type, an `exports` map, an import
+  edge or a README
   table; `npm run verify` (~54 s, adds the tests) **once** at the end of a batch; `npm run verify:pkgs`
   (~2 m 23 s) before a release. Every tier reads source, so none needs a prior build.
 - Answer in **Bahasa Indonesia**; repo artifacts (code, comments, docs, copy) stay **English**.

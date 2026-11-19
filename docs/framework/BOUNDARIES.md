@@ -6,8 +6,9 @@ must satisfy these; a violation is a bug even if the bundler happens to resolve 
 These rules are **enforced**, not advisory: `npm run check:bounds`
 (`scripts/bounds.mjs`) walks every package and fails on an illegal edge, a non-type
 `app → core` import, an undeclared deep import, an `import.meta.glob` outside the host,
-or a reintroduced `paths`/`alias` entry. `npm run verify` runs it together with
-`typecheck`, `test` and `build`.
+or a reintroduced `paths`/`alias` entry; `npm run check:edges` (`scripts/edges.mjs`) fails
+when a manifest does not declare what its source imports. `npm run verify` runs both
+together with `typecheck`, `test` and `build`.
 
 ## Dependency graph
 

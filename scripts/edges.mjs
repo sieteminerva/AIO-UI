@@ -27,14 +27,32 @@ import { dirname } from "node:path";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const SCOPE = "@aio-ui/";
-const SECTIONS = ["packages", "packages/components", "packages/modules", "packages/themes", "packages/kits", "packages/utilities", "packages/styles"];
+const SECTIONS = [
+  "packages",
+  "packages/components",
+  "packages/modules",
+  "packages/themes",
+  "packages/kits",
+  "packages/utilities",
+  "packages/styles",
+];
 const SOURCE = /\.(ts|tsx|mts|js|mjs)$/;
 const SKIP = new Set(["node_modules", "dist", "__tests__", "temp"]);
 const PEER = new Set(["core", "base"]);
 /** Edges that arrive through another package's install edge, never repeated per package. */
 const PROVIDED = { skeleton: "base" };
 /** Manifest key order, so a rewrite never reshuffles a file for no reason. */
-const ORDER = ["name", "version", "type", "files", "dependencies", "peerDependencies", "optionalDependencies", "exports", "scripts"];
+const ORDER = [
+  "name",
+  "version",
+  "type",
+  "files",
+  "dependencies",
+  "peerDependencies",
+  "optionalDependencies",
+  "exports",
+  "scripts",
+];
 
 const args = process.argv.slice(2);
 const apply = args.includes("--apply");
@@ -146,7 +164,8 @@ for (const [short, edges] of desired) {
   const wrong = [...edges].filter(([name, field]) => declared.has(name) && declared.get(name) !== field);
   const provided = [...declared.keys()].filter((name) => PROVIDED[name] && declared.has(PROVIDED[name]));
   const unused = [...declared.keys()].filter((name) => !edges.has(name) && !provided.includes(name));
-  if (missing.length || wrong.length || provided.length || unused.length) report.push({ short, missing, wrong, provided, unused });
+  if (missing.length || wrong.length || provided.length || unused.length)
+    report.push({ short, missing, wrong, provided, unused });
 }
 
 const kind = (field) => (field === "peerDependencies" ? "peer" : field === "dependencies" ? "dependency" : field);
@@ -163,14 +182,21 @@ function rewrite(short) {
   const edges = new Map([...FIELD(short)].sort((a, b) => a[0].localeCompare(b[0])));
   for (const [name, field] of desired.get(short)) edges.set(name, field);
 
-  const bags = { dependencies: {}, peerDependencies: {}, optionalDependencies: { ...(manifest.optionalDependencies ?? {}) } };
+  const bags = {
+    dependencies: {},
+    peerDependencies: {},
+    optionalDependencies: { ...(manifest.optionalDependencies ?? {}) },
+  };
   for (const field of ["dependencies", "peerDependencies"]) {
     for (const [key, range] of Object.entries(manifest[field] ?? {})) if (!key.startsWith(SCOPE)) bags[field][key] = range;
   }
   for (const [name, field] of edges) {
     if (PROVIDED[name] && edges.has(PROVIDED[name])) continue; // arrives through the provider
     const key = `${SCOPE}${name}`;
-    const range = manifest.dependencies?.[key] ?? manifest.peerDependencies?.[key] ?? `^${packages.get(name)?.version ?? manifest.version}`;
+    const range =
+      manifest.dependencies?.[key] ??
+      manifest.peerDependencies?.[key] ??
+      `^${packages.get(name)?.version ?? manifest.version}`;
     bags[field][key] = range;
   }
 

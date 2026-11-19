@@ -36,8 +36,8 @@ nobody reads is the most expensive habit in this repo.
 | **Batch**      | `npm run verify`                    | **~54 s**     | **once**, at the end of a batch (`check` + the full test suite)                                   |
 | **Release**    | `npm run verify:pkgs`               | **~2 m 23 s** | before a release, or when the work depends on emitted `dist/`                                     |
 
-Split by what each tier reads, not by importance: `check` is typecheck + `bounds` + `bundle` + `api` +
-`catalogue` + `version` (the last four finish in about a second each; `bundle` is ~1.3 s of Vite
+Split by what each tier reads, not by importance: `check` is typecheck + `bounds` + `edges` + `bundle` + `api` +
+`catalogue` + `version` (the last five finish in about a second each; `bundle` is ~1.3 s of Vite
 builds), `verify` adds the tests — which are ~43 s of the 54 — and `verify:pkgs` adds `build:pkgs`
 (~85 s) and the example builds.
 

@@ -391,7 +391,7 @@ styles included. `vitest` excludes the generated trees (`cdn-tree`, `cdn-smoke`,
 
 ## 4. Verification gate (all projects)
 
-`npm run verify` = typecheck → `check:bounds` → `check:api` → `check:catalogue` → version → `test`,
+`npm run verify` = typecheck → `check:bounds` → `check:edges` → `check:api` → `check:catalogue` → version → `test`,
 reading source only via `customConditions: development`. `npm run verify:pkgs` adds `build:pkgs`
 (`dist` + `.d.ts` + copied CSS) and the example builds. Current: **710 tests / 81 files**
 (+1 opt-in CDN smoke skipped),

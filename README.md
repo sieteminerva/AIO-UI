@@ -128,6 +128,7 @@ npm run verify         # the full gate — run before claiming anything works
 | Build every package (`dist` + `.d.ts` + CSS) | `npm run build:pkgs`                                      |
 | Typecheck the workspace                      | `npm run typecheck`                                       |
 | Dependency-edge check                        | `npm run check:bounds`                                    |
+| Declared-edge check (source vs manifest)     | `npm run check:edges` (writer: `scripts/edges.mjs --apply`) |
 | Public-surface check                         | `npm run check:api` (snapshot: `scripts/api.mjs --write`) |
 | Tests                                        | `npm test` (`vitest run`)                                 |
 | Version report / check                       | `npm run version:report` · `npm run version:check`        |
@@ -168,6 +169,7 @@ npm run verify         # the full gate — run before claiming anything works
 ├── scripts/                build & release tooling (node, dry-run by default)
 │   ├── build-pack.mjs      per-package dist build in dependency order
 │   ├── bounds.mjs          dependency-edge enforcement
+│   ├── edges.mjs           source imports → manifest edges (check:edges)
 │   ├── version.mjs         fixed versioning across all packages
 │   ├── release.mjs         tarballs + registry.json + layout.json + checksums
 │   └── new-component.mjs   scaffold a component package
@@ -242,7 +244,8 @@ Working areas — `orchestrator/` is tracked; `.draft/` and `.archives/` are loc
 - **Definitions + manifest.** `*_DEFINITIONS` are live objects; `*_MANIFEST` lists paths
   and ids. `scope` states intent, **ids decide**.
 - **Tokens at `:root`**, themes put `--app-*` on `body[data-theme]`.
-- **Boundaries are mechanical** — `npm run check:bounds` fails an undeclared import edge.
+- **Boundaries are mechanical** — `npm run check:bounds` fails an undeclared import edge, and
+  `npm run check:edges` fails a manifest that does not declare what its source imports.
 - **Barrels are curated** — a package `index.ts` lists its exports; `export *` is only
   allowed in an aggregator, and `npm run check:api` fails when the surface drifts.
 - **Fixed versioning** — one number for every package; peers are rewritten together.

@@ -28,7 +28,7 @@ npm run build:pkgs       # build all 37 packages (scripts/build-pack.mjs)
 npm run test             # vitest run
 npm run new:component <name>   # scaffold from templates/component/
 npm run dev:demo         # run the showcase demo
-npm run check            # ~12 s: typecheck + bounds + api + catalogue + version
+npm run check            # ~12 s: typecheck + bounds + edges + api + catalogue + version
 npm run verify           # ~54 s: check + the test suite — once per batch
 npm run verify:pkgs      # ~2 m 23 s: + build 40 packages + example builds — before a release
 ```

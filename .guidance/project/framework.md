@@ -10,7 +10,7 @@ Why / stages: `.guidance/plan-framework.md`. Engineering rules:
 | --- | ------------------------ | ----------- | -------------------------------------------------------------------------------------------------------------------------- |
 | 1   | Theme console view (fab) | in progress | `examples/demo/src/ThemeConsole/TASKS.md` — view composed, gate green; open: page-only sections in the popover             |
 | 2   | Inspect surface (b43)    | in progress | `inspect()` + `inspectPage()` landed and green; open: dead relay removal, `#cleanupMap` reset, Topik A (`iComponentInput`) |
-| 3   | Package restructure      | in progress | P0 edge manifests landed (`check:edges`); P1 DOMRenderer folder + kit next → `docs/framework/TASK-restructure.md`           |
+| 3   | Package restructure      | in progress | P0 edge manifests landed (`check:edges`); P1 DOMRenderer folder + kit next → `docs/framework/TASK-restructure.md`          |
 
 ## Next
 

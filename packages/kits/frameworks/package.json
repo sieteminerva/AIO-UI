@@ -7,17 +7,19 @@
     "dist",
     "*.ts"
   ],
+  "dependencies": {
+    "@aio-ui/app": "^0.2.3"
+  },
+  "peerDependencies": {
+    "@aio-ui/base": "^0.2.3",
+    "@aio-ui/core": "^0.2.3"
+  },
   "exports": {
     ".": {
       "development": "./index.ts",
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     }
-  },
-  "dependencies": {
-    "@aio-ui/base": "^0.2.3",
-    "@aio-ui/core": "^0.2.3",
-    "@aio-ui/app": "^0.2.3"
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",

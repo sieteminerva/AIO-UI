@@ -38,13 +38,16 @@
       "types": "./dist/IdAddress.FormAdapter.d.ts",
       "default": "./dist/IdAddress.FormAdapter.js"
     },
-    "./id-address.css": "./id-address.css"
+    "./id-address.css": {
+      "types": "./id-address.css.d.ts",
+      "default": "./id-address.css"
+    }
   },
   "peerDependencies": {
-    "@aio-ui/http-service": "^0.2.3",
-    "@aio-ui/module-loader": "^0.2.3",
     "@aio-ui/core": "^0.2.3",
-    "@aio-ui/form": "^0.2.3"
+    "@aio-ui/form": "^0.2.3",
+    "@aio-ui/http-service": "^0.2.3",
+    "@aio-ui/module-loader": "^0.2.3"
   },
   "peerDependenciesMeta": {
     "@aio-ui/form": {

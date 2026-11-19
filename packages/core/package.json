@@ -6,6 +6,9 @@
     "dist",
     "src"
   ],
+  "dependencies": {
+    "@aio-ui/utilities": "^0.2.3"
+  },
   "exports": {
     ".": {
       "development": "./src/index.ts",

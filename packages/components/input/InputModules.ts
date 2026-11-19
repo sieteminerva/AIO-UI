@@ -18,6 +18,7 @@
 import { dropdownInputModule } from "./Dropdown/Dropdown.InputModule";
 import { fileUploaderInputModule } from "./FileUploader/FileUploader.InputModule";
 import { inputControlsInputModule } from "./InputControls/InputControls.InputModule";
+import { pickerInputModule } from "./InputPicker/InputPicker.inputModules";
 import { popoverInputModule } from "./Popover.InputModule";
 import type { InputModuleDefinition } from "./InputModuleTypes";
 
@@ -35,6 +36,7 @@ import type { InputModuleDefinition } from "./InputModuleTypes";
  */
 export const INPUT_MODULE_DEFINITIONS: InputModuleDefinition[] = [
   dropdownInputModule,
+  pickerInputModule,
   fileUploaderInputModule,
   inputControlsInputModule,
   popoverInputModule,

@@ -57,9 +57,10 @@ function specifierOf(file, packagesDir) {
 
   const relative = toPosix(path.relative(found.dir, file));
   for (const [subpath, target] of Object.entries(found.pkg.exports ?? {})) {
-    // Conditional exports (objects) are skipped: stylesheets are published as strings.
-    if (typeof target !== "string") continue;
-    if (toPosix(target).replace(/^\.\//, "") !== relative) continue;
+    // A stylesheet export is `{ types, default }`: the sheet is the `default` target.
+    const published = typeof target === "string" ? target : target?.default;
+    if (typeof published !== "string") continue;
+    if (toPosix(published).replace(/^\.\//, "") !== relative) continue;
 
     const clean = subpath.replace(/^\.\//, "");
     return clean && clean !== "." ? `${found.pkg.name}/${clean}` : found.pkg.name;

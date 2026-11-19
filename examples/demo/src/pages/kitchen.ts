@@ -42,7 +42,7 @@ function mountMain(host: HTMLElement, entry: iDemoEntry, build: BuildFn): void {
           { id: "panel-api", content: apiPanel(entry, build) },
         ],
       },
-      config: { menuPosition: "top", tabStyle: "folder" },
+      config: { menuPosition: "top", appearance: "folder" },
     }),
   );
 

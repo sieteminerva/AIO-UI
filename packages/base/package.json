@@ -6,6 +6,10 @@
     "dist",
     "src"
   ],
+  "dependencies": {
+    "@aio-ui/skeleton": "^0.2.3",
+    "@aio-ui/utilities": "^0.2.3"
+  },
   "peerDependencies": {
     "@aio-ui/core": "^0.2.3"
   },

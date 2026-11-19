@@ -1,0 +1,320 @@
+/* ==========================================================================
+   InputPicker — a grid of choices behind one control.
+
+   Same family as the rest of the field layer: the tokens below are the only
+   picker-private values, and every one of them derives from an `--input-*`
+   token, so a theme retunes the field and the picker follows. The sheet has one
+   root selector (`.field .picker[data-kind]`); every rule nests under it with `&`.
+   `[data-kind]` is not decoration: `ColorTheme` already uses `.field .picker` for a
+   `input[type=color]`, and this sheet must not restyle it.
+   ========================================================================== */
+
+:root,
+[data-theme] {
+  --picker-gap: 0.35rem;
+  --picker-panel-max-height: 16rem;
+  --picker-surface: var(--input-picker-background, #ffffff);
+  --picker-border-color: var(--input-border-color, currentColor);
+  --picker-accent-color: var(--input-primary-color, currentColor);
+  --picker-text-color: var(--input-text-color, currentColor);
+  --picker-muted-color: var(--input-placeholder-color, grey);
+  --picker-radius: var(--input-border-radius, 0.55em);
+  --picker-duration: var(--input-popup-duration, 150ms);
+}
+
+.field .picker[data-kind] {
+  /* Fix it should be under field as our conventions */
+  position: relative;
+  display: block;
+  inline-size: 100%;
+  font-size: var(--input-font-size);
+  color: var(--picker-text-color);
+
+  /* ---- trigger ------------------------------------------------------- */
+  & .trigger {
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    inline-size: 100%;
+    margin: 0;
+    padding: 0.5em 0.75em;
+    font: inherit;
+    text-align: start;
+    color: inherit;
+    background: var(--input-background-color);
+    border: 1px solid var(--picker-border-color);
+    border-radius: var(--picker-radius);
+    cursor: pointer;
+    transition:
+      border-color var(--picker-duration) ease,
+      background var(--picker-duration) ease;
+
+    &:hover {
+      border-color: var(--picker-accent-color);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--picker-accent-color);
+      outline-offset: 2px;
+    }
+
+    &[aria-expanded="true"] {
+      border-color: var(--picker-accent-color);
+    }
+  }
+
+  & .trigger .preview {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    inline-size: 1.75rem;
+    block-size: 1.75rem;
+
+    &:empty {
+      display: none;
+    }
+  }
+
+  & .trigger .label {
+    flex: 1 1 auto;
+    min-inline-size: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    &.is-placeholder {
+      color: var(--picker-muted-color);
+    }
+  }
+
+  /* ---- panel --------------------------------------------------------- */
+  & .panel {
+    display: none;
+    box-sizing: border-box;
+    position: fixed;
+    inset: auto;
+    margin: 0;
+    padding: 0.5rem;
+    inline-size: min(22rem, calc(100vw - 2rem));
+    background: var(--picker-surface);
+    border: 1px solid var(--picker-border-color);
+    border-radius: var(--picker-radius);
+    box-shadow: 0 18px 38px -18px rgb(0 0 0 / 0.45);
+
+    &[data-open="true"] {
+      display: block;
+    }
+  }
+
+  /* Inline look: the grid belongs to the page, so the panel becomes a framed box — a
+     header row with the filter at the end, then a scrolling grid of quiet cells. Active
+     keeps the accent border, the way the reference icon picker does. */
+  &[data-expanded="true"] .panel {
+    position: static;
+    display: block;
+    inline-size: 100%;
+    padding: 0.5rem;
+    background: var(--picker-surface);
+    border: 1px solid color-mix(in srgb, var(--picker-border-color) 30%, transparent);
+    border-radius: calc(var(--picker-radius) * 0.9);
+    box-shadow: none;
+    overflow: hidden;
+    scrollbar-gutter: stable;
+  }
+
+  &[data-expanded="true"] .search {
+    inline-size: 50%;
+    margin: 0 0 0.5rem auto;
+    padding: 0.25em 0.5em;
+    font-size: 0.75em;
+  }
+
+  &[data-expanded="true"] .grid {
+    gap: 0.35rem;
+    max-block-size: 9.4rem;
+    padding-right: 0.5em;
+  }
+
+  &[data-expanded="true"] .cell {
+    display: flex;
+    background: color-mix(in srgb, var(--picker-surface) 94%, var(--picker-text-color));
+    border-color: transparent;
+    border-radius: calc(var(--picker-radius) * 0.65);
+    aspect-ratio: 1/1;
+    align-items: center;
+    justify-content: center;
+
+    &:hover {
+      background: color-mix(in srgb, var(--picker-surface) 88%, var(--picker-text-color));
+      border-color: transparent;
+      transform: none;
+    }
+
+    &[aria-selected="true"] {
+      border-color: var(--picker-accent-color);
+      background: color-mix(in srgb, var(--picker-accent-color) 10%, var(--picker-surface));
+      box-shadow: none;
+    }
+  }
+
+  /* ---- filter -------------------------------------------------------- */
+  & .search {
+    box-sizing: border-box;
+    inline-size: 100%;
+    margin: 0 0 0.5rem auto;
+    padding: 0.4em 0.6em;
+    font: inherit;
+    color: inherit;
+    background: var(--input-background-color);
+    border: 1px solid var(--picker-border-color);
+    border-radius: calc(var(--picker-radius) * 0.8);
+
+    &:focus-visible {
+      outline: 2px solid var(--picker-accent-color);
+      outline-offset: 1px;
+    }
+  }
+
+  /* ---- grid ---------------------------------------------------------- */
+  & .grid {
+    display: grid;
+    grid-template-columns: repeat(var(--picker-columns, 6), minmax(0, 1fr));
+    gap: var(--picker-gap);
+    max-block-size: var(--picker-panel-max-height);
+    overflow: auto;
+  }
+
+  & .cell {
+    box-sizing: border-box;
+    display: grid;
+    justify-items: center;
+    align-items: center;
+    gap: 0.15rem;
+    padding: 0.4rem 0.25rem;
+    font: inherit;
+    color: inherit;
+    background: var(--picker-surface);
+    border: 1px solid var(--picker-border-color);
+    border-radius: calc(var(--picker-radius) * 0.7);
+    cursor: pointer;
+    transition:
+      border-color var(--picker-duration) ease,
+      background var(--picker-duration) ease,
+      transform var(--picker-duration) ease;
+
+    &:hover {
+      border-color: var(--picker-accent-color);
+      transform: translateY(-1px);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--picker-accent-color);
+      outline-offset: 1px;
+    }
+
+    &[hidden] {
+      display: none;
+    }
+
+    &[aria-selected="true"] {
+      border-color: var(--picker-accent-color);
+      background: color-mix(in srgb, var(--picker-accent-color) 10%, transparent);
+      box-shadow: inset 0 0 0 1px var(--picker-accent-color);
+    }
+
+    & .preview {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      inline-size: 1.75rem;
+      block-size: 1.75rem;
+    }
+
+    & .name {
+      max-inline-size: 100%;
+      font-size: 0.7em;
+      line-height: 1.2;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+
+  /* An icon grid is self-evident: the caption would only shrink the glyphs. */
+  &[data-kind="icon"] .cell .name {
+    display: none;
+  }
+
+  /* ---- visuals ------------------------------------------------------- */
+  & .icon {
+    --icon-size: 24px;
+    color: var(--picker-accent-color);
+  }
+
+  & .image {
+    display: block;
+    inline-size: 100%;
+    block-size: 100%;
+    object-fit: cover;
+    border-radius: calc(var(--picker-radius) * 0.5);
+  }
+
+  & .swatch {
+    display: block;
+    inline-size: 100%;
+    block-size: 100%;
+    border-radius: calc(var(--picker-radius) * 0.5);
+    background: var(--picker-swatch, currentColor);
+    box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.15);
+  }
+
+  & .letter {
+    display: grid;
+    place-items: center;
+    inline-size: 1.75rem;
+    block-size: 1.75rem;
+    font-weight: 600;
+    border-radius: calc(var(--picker-radius) * 0.5);
+    background: color-mix(in srgb, var(--picker-accent-color) 14%, transparent);
+  }
+
+  /* ---- empty state --------------------------------------------------- */
+  & .empty {
+    margin: 0.5rem 0;
+    font-size: 0.85em;
+    text-align: center;
+    color: var(--picker-muted-color);
+
+    &[hidden] {
+      display: none;
+    }
+  }
+
+  /* The hidden input carries the value; it is never a visible box. */
+  & .value {
+    display: none;
+  }
+}
+
+/* Anchor the popover to the trigger where the platform understands anchors; without
+   them the panel is a fixed box and the host's own layout decides where it lands. */
+@supports (anchor-name: --picker) {
+  .field .picker[data-kind] .panel {
+    inset-block-start: anchor(bottom);
+    inset-inline-start: anchor(left);
+    inline-size: anchor-size(width);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .field .picker[data-kind] .trigger,
+  .field .picker[data-kind] .cell {
+    transition: none;
+  }
+
+  .field .picker[data-kind] .cell:hover {
+    transform: none;
+  }
+}

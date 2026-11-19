@@ -140,6 +140,8 @@ export const DEMO: iDemoEntry[] = [
         { title: "Apakah bisa reschedule?", description: "Ya, jika operasional dibatalkan karena cuaca." },
       ],
     },
+    config: { appearance: "compact", autoClose: true, expanded: true },
+    note: "config: { appearance: compact, autoClose: true, expanded: true } → one open row at a time",
   },
   {
     name: "carousel",

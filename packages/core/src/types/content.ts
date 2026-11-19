@@ -73,6 +73,11 @@ export interface iFormGroupNode {
   group: Array<iBasicInputNode | HTMLElement | string>;
 }
 
+export interface iElementAnimation {
+  in?: string;
+  out?: string;
+}
+
 // =========================================
 // 2. INPUT & FORM
 // =========================================

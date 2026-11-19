@@ -8,6 +8,17 @@
     "*.css",
     "adapters"
   ],
+  "dependencies": {
+    "@aio-ui/input": "^0.2.3"
+  },
+  "peerDependencies": {
+    "@aio-ui/base": "^0.2.3",
+    "@aio-ui/core": "^0.2.3",
+    "@aio-ui/http-service": "^0.2.3",
+    "@aio-ui/message": "^0.2.3",
+    "@aio-ui/module-loader": "^0.2.3",
+    "@aio-ui/utilities": "^0.2.3"
+  },
   "exports": {
     ".": {
       "development": "./index.ts",
@@ -19,7 +30,10 @@
       "types": "./dist/FormAdapters.d.ts",
       "default": "./dist/FormAdapters.js"
     },
-    "./Form.css": "./Form.css",
+    "./Form.css": {
+      "types": "./Form.css.d.ts",
+      "default": "./Form.css"
+    },
     "./FormLayout": {
       "development": "./FormLayout.ts",
       "types": "./dist/FormLayout.d.ts",
@@ -65,17 +79,6 @@
       "types": "./dist/adapters/Validation.d.ts",
       "default": "./dist/adapters/Validation.js"
     }
-  },
-  "peerDependencies": {
-    "@aio-ui/base": "^0.2.3",
-    "@aio-ui/core": "^0.2.3",
-    "@aio-ui/http-service": "^0.2.3",
-    "@aio-ui/message": "^0.2.3",
-    "@aio-ui/module-loader": "^0.2.3",
-    "@aio-ui/utilities": "^0.2.3"
-  },
-  "dependencies": {
-    "@aio-ui/input": "^0.2.3"
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",

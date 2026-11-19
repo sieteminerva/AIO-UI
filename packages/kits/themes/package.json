@@ -15,8 +15,8 @@
     }
   },
   "dependencies": {
-    "@aio-ui/theme-default": "^0.2.3",
     "@aio-ui/theme-cyberpunk": "^0.2.3",
+    "@aio-ui/theme-default": "^0.2.3",
     "@aio-ui/theme-horizontal": "^0.2.3"
   },
   "scripts": {

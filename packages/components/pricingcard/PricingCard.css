@@ -1,5 +1,5 @@
 /* Pricing Table Styling
-
+  // TODO make fontsize adaptive => font-size: clamp()
    Every rule is rooted at `.card.pricing`. The sheet used to read four names that no
    package declares (`--border-soft`, `--accent`, `--surface-strong`, `--shadow-soft`), so
    the card border, the featured accent and its wash were all guaranteed-invalid and
@@ -11,6 +11,22 @@
   --pricing-card-accent-color: var(--app-accent-color, #b47828);
   --pricing-card-surface-strong: var(--app-surface-strong, #ffffff);
   --pricing-card-surface-muted: var(--app-surface-muted, rgba(244, 238, 226, 0.7));
+}
+
+/* The cards live in `.row > .column > .card`, and `.row` centres its items by default, so
+   every column used to shrink to its own content. Stretch instead, so the card boxes share
+   one height and only the real difference — the featured middle plan — is bigger. */
+.row:has(> .column > .card.pricing) {
+  align-items: stretch;
+  gap: calc(var(--app-gap, 2em) * 0.2);
+}
+
+.column:has(> .card.pricing) {
+  display: flex;
+}
+
+.column > .card.pricing {
+  flex: 1 1 auto;
 }
 
 .card.pricing {
@@ -26,91 +42,73 @@
   height: 100%;
   border-radius: 1.3em;
   background-color: transparent;
-}
+  max-height: 480px;
+  overflow: hidden;
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 24px 48px rgba(91, 63, 134, 0.2);
+  }
 
-/* The cards live in `.row > .column > .card`, and `.row` centres its items by default, so
-   every column used to shrink to its own content. Stretch instead, so the card boxes share
-   one height and only the real difference — the featured middle plan — is bigger. */
-.row:has(> .column > .card.pricing) {
-  align-items: stretch;
-}
+  &:not(.is-featured) {
+    border: 2px solid var(--pricing-card-border-color);
+  }
 
-.column:has(> .card.pricing) {
-  display: flex;
-}
+  &.is-featured {
+    border: 2px solid var(--pricing-card-accent-color);
+    background: linear-gradient(to bottom, var(--pricing-card-surface-strong), var(--pricing-card-surface-muted));
+    transform: scale(1.05);
+    &:hover {
+      transform: scale(1.05) translateY(-5px);
+    }
+  }
 
-.column > .card.pricing {
-  flex: 1 1 auto;
-}
+  & .header {
+    padding-bottom: 0rem;
+    & .eyebrow {
+      font-size: 1.1rem;
+      color: var(--pricing-card-accent-color);
+      border: none;
+      margin-bottom: 0;
+      letter-spacing: 0.05em;
+    }
+  }
 
-.card.pricing:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 24px 48px rgba(91, 63, 134, 0.2);
-}
+  & .divider {
+    border: 0;
+    height: 1px;
+    background: var(--pricing-card-border-color);
+    margin: 1rem 0;
+  }
 
-.card.pricing:not(.is-featured) {
-  border: 2px solid var(--pricing-card-border-color);
-}
+  & .body {
+    text-align: center;
+  }
 
-.card.pricing.is-featured {
-  border: 2px solid var(--pricing-card-accent-color);
-  background: linear-gradient(to bottom, var(--pricing-card-surface-strong), var(--pricing-card-surface-muted));
-  transform: scale(1.05);
-}
+  & .features {
+    margin: 1.5rem 0;
+    list-style: none;
+    padding: 0;
+    & li {
+      padding: 0.5rem 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      &::before {
+        content: "";
+        color: var(--pricing-card-accent-color);
+        font-weight: bold;
+      }
+    }
+  }
 
-.card.pricing.is-featured:hover {
-  transform: scale(1.05) translateY(-5px);
-}
-
-.card.pricing .header {
-  padding-bottom: 0rem;
-}
-
-.card.pricing .header .eyebrow {
-  font-size: 1.1rem;
-  color: var(--pricing-card-accent-color);
-  border: none;
-  margin-bottom: 0;
-  letter-spacing: 0.05em;
-}
-
-.card.pricing .divider {
-  border: 0;
-  height: 1px;
-  background: var(--pricing-card-border-color);
-  margin: 1rem 0;
-}
-
-.card.pricing .body {
-  text-align: center;
-}
-
-.card.pricing .features {
-  margin: 1.5rem 0;
-  list-style: none;
-  padding: 0;
-}
-
-.card.pricing .features li {
-  padding: 0.5rem 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
-}
-
-.card.pricing .features li::before {
-  content: "";
-  color: var(--pricing-card-accent-color);
-  font-weight: bold;
-}
-
-.card.pricing .actions {
-  margin-top: auto;
-  padding-top: 1rem;
-}
-.card.pricing .actions .button {
-  width: 100%;
+  & .actions {
+    margin-top: auto;
+    padding-top: 1rem;
+    & .button {
+      width: 100%;
+    }
+  }
 }
 
 @media (min-width: 900px) {

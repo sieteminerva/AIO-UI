@@ -105,3 +105,7 @@ writes a rule for `[data-skeleton]`.
 2. Import `@aio-ui/skeleton/Skeleton.css` with the app shell, next to `@aio-ui/styles`.
 3. Add a loader for `@aio-ui/skeleton` to the host's asset map when a manifest declares it.
 4. Implement `loading()` in the components that want a precise mockup.
+
+No component package depends on this one. `@aio-ui/base` lists it under `dependencies` (an
+install-only edge: it imports nothing from it), so a project that installs a component's
+prerequisites gets the mockup primitive once instead of every tarball repeating it.

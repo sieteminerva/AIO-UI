@@ -15,7 +15,7 @@ or a reintroduced `paths`/`alias` entry. `npm run verify` runs it together with
 styles        (CSS only, imports nothing)
 utilities  →  core (types only)
 core       →  utilities
-base       →  core, utilities
+base       →  core, utilities  (+ installs skeleton, imports nothing from it)
 modules/*  →  core, utilities
 themes/*   →  core, utilities
 components/* → base, core, utilities, module-loader, themes
@@ -24,6 +24,13 @@ examples/* →  anything
 
 `module-loader` is split out of `modules/` on purpose: it is the plug-in kernel used by
 components that have sub-modules, not an app-level utility.
+
+`skeleton` is the one **install-only** edge: `@aio-ui/base` lists it under `dependencies`
+so a project that installs a component's prerequisites gets the hydration mockup once,
+instead of every component repeating the same dependency. `base` imports nothing from it —
+the edge exists in the install graph, not in the module graph, and `check:bounds` (which
+reads imports) stays a tree. `skeleton` peer-depends on `base` for `Builder`, which npm
+resolves from the same tree; nothing else may depend on `skeleton` directly.
 
 `themes/` is a group of its own (not a sub-folder of `modules/`) because a theme is an
 **add-on**, not a service: a project installs the themes it ships and nothing else. The
@@ -70,6 +77,11 @@ imports it once.
 
 10. Components are optional. A missing module is a normal state, so registration and
     lookup must not assume presence.
+
+11. Every `@aio-ui/*` import a package makes is declared in its manifest. `check:edges`
+    derives the edge from source — `core`/`base` peer, the rest dependency — and never
+    repeats `skeleton`, which arrives with `base`. This is what makes one tarball
+    installable on its own.
 
 ## Known issue
 

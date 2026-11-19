@@ -41,6 +41,7 @@ export const componentAssets = {
     "@aio-ui/input/file-uploader/module": () => import("@aio-ui/input/file-uploader/module"),
     "@aio-ui/input/controls/module": () => import("@aio-ui/input/controls/module"),
     "@aio-ui/input/popover/module": () => import("@aio-ui/input/popover/module"),
+    "@aio-ui/input/picker/module": () => import("@aio-ui/input/picker/module"),
     // The opt-in stacks, for a host that wants the whole layer in one import instead of
     // nine manifest refs. Every exact `exports` subpath is mapped here — a prefix cannot
     // add `.js`, so a missing key is a runtime 404, not a slow path.
@@ -66,6 +67,7 @@ export const componentAssets = {
     "@aio-ui/input/dropdown.css": () => import("@aio-ui/input/dropdown.css?inline"),
     "@aio-ui/input/file-uploader.css": () => import("@aio-ui/input/file-uploader.css?inline"),
     "@aio-ui/input/controls.css": () => import("@aio-ui/input/controls.css?inline"),
+    "@aio-ui/input/picker.css": () => import("@aio-ui/input/picker.css?inline"),
     "@aio-ui/message/Message.css": () => import("@aio-ui/message/Message.css?inline"),
     "@aio-ui/id-address/id-address.css": () => import("@aio-ui/id-address/id-address.css?inline"),
     "@aio-ui/markdown/Markdown.css": () => import("@aio-ui/markdown/Markdown.css?inline"),

@@ -8,25 +8,28 @@
     "*.css",
     "adapters"
   ],
-  "exports": {
-    ".": {
-      "development": "./index.ts",
-      "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
-    },
-    "./Table.css": "./Table.css",
-    "./adapters/FormAdapter": {
-      "development": "./adapters/FormAdapter.ts",
-      "types": "./dist/adapters/FormAdapter.d.ts",
-      "default": "./dist/adapters/FormAdapter.js"
-    }
-  },
   "peerDependencies": {
     "@aio-ui/base": "^0.2.3",
     "@aio-ui/core": "^0.2.3",
     "@aio-ui/form": "^0.2.3",
     "@aio-ui/module-loader": "^0.2.3",
     "@aio-ui/utilities": "^0.2.3"
+  },
+  "exports": {
+    ".": {
+      "development": "./index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./Table.css": {
+      "types": "./Table.css.d.ts",
+      "default": "./Table.css"
+    },
+    "./adapters/FormAdapter": {
+      "development": "./adapters/FormAdapter.ts",
+      "types": "./dist/adapters/FormAdapter.d.ts",
+      "default": "./dist/adapters/FormAdapter.js"
+    }
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",

@@ -19,7 +19,7 @@
           "tables": []
         },
         "Config": {
-          "text": "",
+          "text": "`animation` is stamped on the root as `data-animation`; an object writes `custom` and passes its\n`in` keyframe name through `--accordion-anim-in-name`. A native `<details>` closes in one frame, so\nno `out` keyframe is wired.\n\n### Appearance\n\n`appearance` is stamped on the root `.accordion` as `data-appearance`, so the sheet can frame the\nwhole group instead of every panel. Combine it with `autoClose: true` for the settings-panel shape:\none bordered list where only one row is open at a time.",
           "examples": [],
           "tables": [
             {
@@ -29,6 +29,26 @@
                 "Meaning"
               ],
               "rows": [
+                {
+                  "option": "`appearance`",
+                  "default": "`\"default\"`",
+                  "meaning": "`default | compact` — stamped on the root as `data-appearance`"
+                },
+                {
+                  "option": "`autoClose`",
+                  "default": "`false`",
+                  "meaning": "Opening one section closes the others (one native `name` per instance)"
+                },
+                {
+                  "option": "`expanded`",
+                  "default": "`false`",
+                  "meaning": "`true` opens every section, `string[]` opens the listed `id`/`key`/title"
+                },
+                {
+                  "option": "`animation`",
+                  "default": "`true`",
+                  "meaning": "`false | \"slide\" | \"fade\" | \"slide-fade\" | { in? }` — open motion"
+                },
                 {
                   "option": "`selectors`",
                   "default": "see defaults",
@@ -43,6 +63,22 @@
                   "option": "`namespace`",
                   "default": "`null`",
                   "meaning": "Prefix for generated ids"
+                }
+              ]
+            },
+            {
+              "columns": [
+                "`appearance`",
+                "Look"
+              ],
+              "rows": [
+                {
+                  "appearance": "`default`",
+                  "look": "A stack of cards: each panel has its own frame, shadow and `+`/`−` marker"
+                },
+                {
+                  "appearance": "`compact`",
+                  "look": "One framed list: the frame sits on the root, hairlines divide the rows, no shadow; the marker is the global `arrow.left` icon (masked, accent-coloured) pointing down while closed and left while open; hover and the open row take a 4–6 % accent tint"
                 }
               ]
             }
@@ -143,6 +179,26 @@
                   "token": "`--accordion-font-size`",
                   "derivesFrom": "`--app-font-size-base`",
                   "usedFor": "Summary and body size"
+                },
+                {
+                  "token": "`--accordion-anim-duration`",
+                  "derivesFrom": "literal (component-private)",
+                  "usedFor": "Open/close transition time"
+                },
+                {
+                  "token": "`--accordion-anim-easing`",
+                  "derivesFrom": "literal (component-private)",
+                  "usedFor": "Open/close easing curve"
+                },
+                {
+                  "token": "`--accordion-fade-duration`",
+                  "derivesFrom": "literal (component-private)",
+                  "usedFor": "Opacity transition time"
+                },
+                {
+                  "token": "`--accordion-icon-arrow`",
+                  "derivesFrom": "global `arrow.left` SVG (literal)",
+                  "usedFor": "Compact marker mask"
                 }
               ]
             }
@@ -2039,7 +2095,7 @@
     "input": {
       "package": "@aio-ui/input",
       "title": "Input",
-      "lead": "Input renders **one form field** — label, control, info line — and the shell around it\n(switch, file chip, action buttons, popover). A field is a field with or without a form\naround it, so nothing in this package is scoped under `.form`; rows, fieldsets and\nmultistep layout belong to `@aio-ui/form`.\n\nSub-modules extend the field without changing the builder: `dropdown` (select/search),\n`file-uploader`, `controls` (action buttons) and `popover`. Each one is an `iInputAdapter`\nthat the builder resolves once per `prepare()` and disposes on teardown.\n\n<!-- part: id=payload -->",
+      "lead": "Input renders **one form field** — label, control, info line — and the shell around it\n(switch, file chip, action buttons, popover). A field is a field with or without a form\naround it, so nothing in this package is scoped under `.form`; rows, fieldsets and\nmultistep layout belong to `@aio-ui/form`.\n\nSub-modules extend the field without changing the builder: `dropdown` (select/search),\n`picker` (a grid of icons, swatches or images), `file-uploader`, `controls` (action buttons)\nand `popover`. Each one is an `iInputAdapter` that the builder resolves once per `prepare()`\nand disposes on teardown.\n\n<!-- part: id=payload -->",
       "sections": {
         "Payload": {
           "text": "The payload is a **single record** (`iBasicInputNode`), not a list. Useful fields:\n`value`, `rows`/`cols` (textarea), `step` (numeric increment, defaults to `\"any\"`),\n`multiple`, `disabled`, `readonly`, `editable` (skips the automatic read-only lock when\naction buttons are present), `info`, `position` (`top | left | right | bottom`),\n`dropdown` (forwarded to the dropdown module), `popover`, `onFileSelected`,\n`onValueChange` and `calculator` (calculation strategy for a readonly total).\n\n`useLabel`, `view`, `thumbnail`, `maxUpload`, `maxFileSize`, `groupUnallowed` and\n`createEventListener` are consumed by the file module.\n\n<!-- part: id=config role=contract -->",
@@ -2052,7 +2108,7 @@
           "tables": []
         },
         "Config": {
-          "text": "`modules: null` is a complete field: a plain labelled control. The four sub-modules are an\nenhancement, not a precondition — see below. Pass an already-resolved adapter array when a\nparent already loaded the set: the field then never loads or unloads modules the host owns\n(that is what `Form` does).\n\n<!-- part: id=modules -->\n\n### Modules — load only what you use\n\nFour sub-modules hang off the field: `dropdown` (a whole builder), `file` (the uploader),\n`controls` (the action set) and `popover`. **None of them is compiled into the package root**\nsince `0.2.2` — `scripts/bundle-probe.mjs` proves it against the parsed module graph. Ask for\nall four with one import:\n\nEach has its own `*/module` entry too, so a consumer can take one without instantiating the\nother three:\n\nThe two shapes, and what each is for:\n\n- `INPUT_MODULE_DEFINITIONS` (`@aio-ui/input/modules`) — what `modules` and `ModuleLoader` take:\n  `{ id, load }`.\n- `INPUT_MODULE_MANIFEST` (root) — the same list as `{ id, path, export }` refs, for an AST whose\n  host lets `ComponentRegistry` (or `resolveModuleDefinitions()`) resolve them. Strings only, which\n  is why the root can export it without pulling a single module in.\n\n**A ref is not a definition.** Handing a ref to a loader now throws\n`RegistryError` / `INVALID_DEFINITION` at registration instead of failing later as a field with\nno control. Order is decorate order (`controls` before `popover`); a trimmed preset that keeps\n`popover` but drops `controls` still works, it just anchors to the field wrapper instead.\n\n**What a missing module costs — and says.** A field is never a hole, and a degradation is\nnever silent. `packages/components/input/Missing.ts` is the single voice:\n\nEvery warning is one `console.warn` **and** a `moduleMissing` event through `config.emit`\n(`{ builder, capability, module, fix, consequence, severity }`), so an app can surface it in\nits own UI instead of reading a console. The throws name the capability, the module id and the\none subpath that fixes it — a declared action set that renders no buttons is a hole, not a\nplainer control, so a warning would not be enough. `__tests__/Modules.test.ts` walks every\ndeclared type with `modules: []` and asserts a control still exists; `__tests__/Missing.test.ts`\npins the sentences.\n\n<!-- part: id=nodes role=contract -->",
+          "text": "`modules: null` is a complete field: a plain labelled control. The four sub-modules are an\nenhancement, not a precondition — see below. Pass an already-resolved adapter array when a\nparent already loaded the set: the field then never loads or unloads modules the host owns\n(that is what `Form` does).\n\n<!-- part: id=modules -->\n\n### Modules — load only what you use\n\nFive sub-modules hang off the field: `dropdown` (a whole builder), `picker` (a grid behind\none control), `file` (the uploader), `controls` (the action set) and `popover`. **None of them\nis compiled into the package root** since `0.2.2` — `scripts/bundle-probe.mjs` proves it\nagainst the parsed module graph. Ask for all five with one import:\n\nA `picker` field is one grid behind one control — icons, swatches or images. The settings\nare flat on `config`, next to `options`, in the same vocabulary the rest of a schema uses:\n\n`style` decides what a cell draws: `icon` (a global `i.icon.<name>` class, the option value\nby default), `image` / `media` (`src`), `swatch` (`color`). The value reaches the form through\na hidden input named after the field, joined with commas when `isMultiple` is on.\n\nEach has its own `*/module` entry too, so a consumer can take one without instantiating the\nother four:\n\nThe two shapes, and what each is for:\n\n- `INPUT_MODULE_DEFINITIONS` (`@aio-ui/input/modules`) — what `modules` and `ModuleLoader` take:\n  `{ id, load }`.\n- `INPUT_MODULE_MANIFEST` (root) — the same list as `{ id, path, export }` refs, for an AST whose\n  host lets `ComponentRegistry` (or `resolveModuleDefinitions()`) resolve them. Strings only, which\n  is why the root can export it without pulling a single module in.\n\n**A ref is not a definition.** Handing a ref to a loader now throws\n`RegistryError` / `INVALID_DEFINITION` at registration instead of failing later as a field with\nno control. Order is decorate order (`controls` before `popover`); a trimmed preset that keeps\n`popover` but drops `controls` still works, it just anchors to the field wrapper instead.\n\n**What a missing module costs — and says.** A field is never a hole, and a degradation is\nnever silent. `packages/components/input/Missing.ts` is the single voice:\n\nEvery warning is one `console.warn` **and** a `moduleMissing` event through `config.emit`\n(`{ builder, capability, module, fix, consequence, severity }`), so an app can surface it in\nits own UI instead of reading a console. The throws name the capability, the module id and the\none subpath that fixes it — a declared action set that renders no buttons is a hole, not a\nplainer control, so a warning would not be enough. `__tests__/Modules.test.ts` walks every\ndeclared type with `modules: []` and asserts a control still exists; `__tests__/Missing.test.ts`\npins the sentences.\n\n<!-- part: id=nodes role=contract -->",
           "examples": [
             {
               "lang": "ts",
@@ -2060,7 +2116,11 @@
             },
             {
               "lang": "ts",
-              "code": "import { dropdownInputModule } from \"@aio-ui/input/dropdown/module\";\nimport { inputControlsInputModule } from \"@aio-ui/input/controls/module\";\n\nnew InputBuilder({ modules: [dropdownInputModule, inputControlsInputModule] });"
+              "code": "{\n  type: \"picker\",\n  id: \"featureIcon\",\n  title: \"Pilih ikon\",\n  value: \"gear\",\n  config: {\n    // The choices are the field's own `options` (`{ value, label }` plus `icon` / `src` /\n    // `color`), exactly the shape a select uses. A string option is `{ value, label }`.\n    options: [\"gear\", \"user\", \"checkmark\"],\n    style: \"icon\",      // icon | image | media | swatch — what a cell draws\n    column: 6,          // grid tracks, the same word a row layout uses\n    expanded: false,    // true = print the grid inline, no trigger/popover\n    searchable: true,   // adds the filter box\n    isMultiple: false,  // several cells at once\n  },\n}"
+            },
+            {
+              "lang": "ts",
+              "code": "import { dropdownInputModule } from \"@aio-ui/input/dropdown/module\";\nimport { pickerInputModule } from \"@aio-ui/input/picker/module\";\nimport { inputControlsInputModule } from \"@aio-ui/input/controls/module\";\n\nnew InputBuilder({ modules: [dropdownInputModule, pickerInputModule, inputControlsInputModule] });"
             }
           ],
           "tables": [
@@ -2107,6 +2167,11 @@
               "rows": [
                 {
                   "capabilityMissing": "`dropdown`",
+                  "whatTheFieldDoes": "native `<select>` over the same options",
+                  "signal": "**warn**, once per builder + capability"
+                },
+                {
+                  "capabilityMissing": "`picker`",
                   "whatTheFieldDoes": "native `<select>` over the same options",
                   "signal": "**warn**, once per builder + capability"
                 },
@@ -2195,7 +2260,7 @@
           ]
         },
         "Tokens": {
-          "text": "Every token is declared **once**, on `:root, [data-theme]`, in `input.css`. `[data-theme]`\nis required: a theme puts `--app-*` on the shell element, and a custom property is\nsubstituted where it is _declared_. Never redeclare these per `.field` — the whole subtree\nwould inherit the copy and any ancestor override would be shadowed.\n\nOverriding is the third layer: redeclare `--input-*` on any ancestor, leave the package\nalone.\n\n**Colour** (derived from `--app-*`)\n\nDark mode re-derives seven of them in the same file, because the palette inverts the field\n(solid border becomes translucent, tinted surface becomes flat) and no single formula\ncovers both modes.\n\n**File module** (`FileUploader/FileUploader.css`)\n\n**Metrics and motion** (`input.css`)\n\n`--input-font-size`, `--input-label-size` (`0.75 × font-size`), `--input-border-radius`,\n`--input-line-height`, `--input-icon-size`, `--input-min-height`, `--input-picker-height`\n(`3 × line-height`), `--input-dropdown-arrow-content` (SVG data URI),\n`--input-dropdown-transition-delay`, `--input-popup-duration`, `--input-popup-easing`,\n`--input-popup-distance`.\n\nThe loading spinner is **not** an input token: it is shared with the form package and lives\nin the app layer as `--app-spinner-content`.\n\n<!-- part: id=wiring role=contract -->",
+          "text": "Every token is declared **once**, on `:root, [data-theme]`, in `input.css`. `[data-theme]`\nis required: a theme puts `--app-*` on the shell element, and a custom property is\nsubstituted where it is _declared_. Never redeclare these per `.field` — the whole subtree\nwould inherit the copy and any ancestor override would be shadowed.\n\nOverriding is the third layer: redeclare `--input-*` on any ancestor, leave the package\nalone.\n\n**Colour** (derived from `--app-*`)\n\nDark mode re-derives seven of them in the same file, because the palette inverts the field\n(solid border becomes translucent, tinted surface becomes flat) and no single formula\ncovers both modes.\n\n**File module** (`FileUploader/FileUploader.css`)\n\n**Picker module** (`InputPicker/InputPicker.css`) — declared on `:root, [data-theme]`, every\none derived from the field layer so a theme retunes the picker with the field:\n\n**Metrics and motion** (`input.css`)\n\n`--input-font-size`, `--input-label-size` (`0.75 × font-size`), `--input-border-radius`,\n`--input-line-height`, `--input-icon-size`, `--input-min-height`, `--input-picker-height`\n(`3 × line-height`), `--input-dropdown-arrow-content` (SVG data URI),\n`--input-dropdown-transition-delay`, `--input-popup-duration`, `--input-popup-easing`,\n`--input-popup-distance`.\n\nThe loading spinner is **not** an input token: it is shared with the form package and lives\nin the app layer as `--app-spinner-content`.\n\n<!-- part: id=wiring role=contract -->",
           "examples": [],
           "tables": [
             {
@@ -2297,11 +2362,55 @@
                   "derivesFrom": "`--app-status-warning`"
                 }
               ]
+            },
+            {
+              "columns": [
+                "Token",
+                "Derives from"
+              ],
+              "rows": [
+                {
+                  "token": "`--picker-surface`",
+                  "derivesFrom": "`--input-picker-background`"
+                },
+                {
+                  "token": "`--picker-border-color`",
+                  "derivesFrom": "`--input-border-color`"
+                },
+                {
+                  "token": "`--picker-accent-color`",
+                  "derivesFrom": "`--input-primary-color`"
+                },
+                {
+                  "token": "`--picker-text-color`",
+                  "derivesFrom": "`--input-text-color`"
+                },
+                {
+                  "token": "`--picker-muted-color`",
+                  "derivesFrom": "`--input-placeholder-color`"
+                },
+                {
+                  "token": "`--picker-radius`",
+                  "derivesFrom": "`--input-border-radius`"
+                },
+                {
+                  "token": "`--picker-duration`",
+                  "derivesFrom": "`--input-popup-duration`"
+                },
+                {
+                  "token": "`--picker-gap`",
+                  "derivesFrom": "literal 0.35rem (component-private)"
+                },
+                {
+                  "token": "`--picker-panel-max-height`",
+                  "derivesFrom": "literal 16rem (component-private)"
+                }
+              ]
             }
           ]
         },
         "Wiring checklist": {
-          "text": "1. `\"input\"` is already in `iBuilderRegistry` (`packages/core/src/types/registry.ts`).\n2. Map `@aio-ui/input`, `@aio-ui/input/input.css` and every sub-module subpath you use\n   (`./dropdown`, `./dropdown.css`, `./controls`, `./controls.css`, `./file-uploader`,\n   `./file-uploader.css`, `./popover/module`) in the host asset map — every exact `exports`\n   key, since a prefix cannot add `.js`.\n3. List it in the host's route plan: `registerModule(components, [{ route, components: [\"input\"] }])`.",
+          "text": "1. `\"input\"` is already in `iBuilderRegistry` (`packages/core/src/types/registry.ts`).\n2. Map `@aio-ui/input`, `@aio-ui/input/input.css` and every sub-module subpath you use\n   (`./dropdown`, `./dropdown.css`, `./picker`, `./picker.css`, `./controls`, `./controls.css`,\n   `./file-uploader`, `./file-uploader.css`, `./popover/module`) in the host asset map — every\n   exact `exports` key, since a prefix cannot add `.js`.\n3. List it in the host's route plan: `registerModule(components, [{ route, components: [\"input\"] }])`.",
           "examples": [],
           "tables": []
         }
@@ -4731,7 +4840,7 @@
           ]
         },
         "Wiring checklist": {
-          "text": "1. Add `\"skeleton\"` to `iBuilderRegistry` in `packages/core/src/types/registry.ts` — done.\n2. Import `@aio-ui/skeleton/Skeleton.css` with the app shell, next to `@aio-ui/styles`.\n3. Add a loader for `@aio-ui/skeleton` to the host's asset map when a manifest declares it.\n4. Implement `loading()` in the components that want a precise mockup.",
+          "text": "1. Add `\"skeleton\"` to `iBuilderRegistry` in `packages/core/src/types/registry.ts` — done.\n2. Import `@aio-ui/skeleton/Skeleton.css` with the app shell, next to `@aio-ui/styles`.\n3. Add a loader for `@aio-ui/skeleton` to the host's asset map when a manifest declares it.\n4. Implement `loading()` in the components that want a precise mockup.\n\nNo component package depends on this one. `@aio-ui/base` lists it under `dependencies` (an\ninstall-only edge: it imports nothing from it), so a project that installs a component's\nprerequisites gets the mockup primitive once instead of every tarball repeating it.",
           "examples": [],
           "tables": []
         }
@@ -4753,7 +4862,7 @@
           "tables": []
         },
         "Config": {
-          "text": "",
+          "text": "### Appearance\n\n`appearance` is stamped on the root as `data-appearance` (omitted for `default`) and every value\nfollows `menuPosition`, so the strip reads the same on all four sides:\n\n`animation` is stamped as `data-animation` too: `false` writes `none`, an object writes `custom` and\nsets `--tab-anim-in` / `--tab-anim-out` to the keyframe names it carries.",
           "examples": [],
           "tables": [
             {
@@ -4769,19 +4878,29 @@
                   "meaning": "`top | bottom | left | right` — which side the strip sits on"
                 },
                 {
-                  "option": "`variant`",
+                  "option": "`appearance`",
                   "default": "`\"default\"`",
-                  "meaning": "`default | folder` — folder tabs on a ruled edge (top position)"
+                  "meaning": "`default | folder | underline | segmented` — look of the strip"
+                },
+                {
+                  "option": "`active`",
+                  "default": "`0`",
+                  "meaning": "Tab active on first paint: index, button id, or label/title"
+                },
+                {
+                  "option": "`animation`",
+                  "default": "`true`",
+                  "meaning": "`true | false | { in?, out? }` — panel motion; names are `@keyframes`"
                 },
                 {
                   "option": "`lazyload`",
-                  "default": "`false`",
+                  "default": "`true`",
                   "meaning": "Build a panel only when it is first activated"
                 },
                 {
                   "option": "`destroyPrevious`",
                   "default": "`false`",
-                  "meaning": "Empty the previous panel on switch, forcing a fresh build"
+                  "meaning": "Empty the previous panel on switch, after its `out` animation has finished"
                 },
                 {
                   "option": "`container`",
@@ -4790,18 +4909,42 @@
                 },
                 {
                   "option": "`name`",
-                  "default": "`\"\"`",
+                  "default": "generated",
                   "meaning": "Namespace for the generated button/panel ids"
                 },
                 {
                   "option": "`minHeight`",
-                  "default": "—",
+                  "default": "`\"400px\"`",
                   "meaning": "Minimum body height, in any CSS length"
                 },
                 {
                   "option": "`selectors`",
                   "default": "defaults",
                   "meaning": "Per-key tag/class override"
+                }
+              ]
+            },
+            {
+              "columns": [
+                "Value",
+                "Look"
+              ],
+              "rows": [
+                {
+                  "value": "`default`",
+                  "look": "Gradient pill on the active tab"
+                },
+                {
+                  "value": "`folder`",
+                  "look": "File-folder tabs on the panel's rule; equal widths, active cut into the panel"
+                },
+                {
+                  "value": "`underline`",
+                  "look": "Labels only, with a rule that grows under (or beside) the active label"
+                },
+                {
+                  "value": "`segmented`",
+                  "look": "One inset rail with a lifted active segment"
                 }
               ]
             }
@@ -4952,6 +5095,26 @@
                   "token": "`--tab-divider-color`",
                   "derivesFrom": "literal (component-private)",
                   "usedFor": "Footer hairline"
+                },
+                {
+                  "token": "`--tab-border-color`",
+                  "derivesFrom": "`--app-border-color`",
+                  "usedFor": "Folder/underline/segmented rule and inactive borders"
+                },
+                {
+                  "token": "`--tab-folder-surface`",
+                  "derivesFrom": "`--app-surface-background-color`",
+                  "usedFor": "Active folder tab surface, segmented segment"
+                },
+                {
+                  "token": "`--tab-folder-hover`",
+                  "derivesFrom": "`--app-surface-muted`",
+                  "usedFor": "Resting wash of an inactive folder tab, segmented rail"
+                },
+                {
+                  "token": "`--tab-border-width`",
+                  "derivesFrom": "`2px`",
+                  "usedFor": "Thickness of the rules the active tab cuts through"
                 }
               ]
             }

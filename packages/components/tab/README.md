@@ -21,16 +21,33 @@ Each payload entry becomes one button and one panel; the panel body reads `eyebr
 
 ## Config
 
-| Option            | Default     | Meaning                                                          |
-| ----------------- | ----------- | ---------------------------------------------------------------- |
-| `menuPosition`    | `"top"`     | `top \| bottom \| left \| right` — which side the strip sits on  |
-| `variant`         | `"default"` | `default \| folder` — folder tabs on a ruled edge (top position) |
-| `lazyload`        | `false`     | Build a panel only when it is first activated                    |
-| `destroyPrevious` | `false`     | Empty the previous panel on switch, forcing a fresh build        |
-| `container`       | `null`      | External element to host the tab instead of a built root         |
-| `name`            | `""`        | Namespace for the generated button/panel ids                     |
-| `minHeight`       | —           | Minimum body height, in any CSS length                           |
-| `selectors`       | defaults    | Per-key tag/class override                                       |
+| Option            | Default     | Meaning                                                                    |
+| ----------------- | ----------- | -------------------------------------------------------------------------- |
+| `menuPosition`    | `"top"`     | `top \| bottom \| left \| right` — which side the strip sits on            |
+| `appearance`      | `"default"` | `default \| folder \| underline \| segmented` — look of the strip          |
+| `active`          | `0`         | Tab active on first paint: index, button id, or label/title                |
+| `animation`       | `true`      | `true \| false \| { in?, out? }` — panel motion; names are `@keyframes`    |
+| `lazyload`        | `true`      | Build a panel only when it is first activated                              |
+| `destroyPrevious` | `false`     | Empty the previous panel on switch, after its `out` animation has finished |
+| `container`       | `null`      | External element to host the tab instead of a built root                   |
+| `name`            | generated   | Namespace for the generated button/panel ids                               |
+| `minHeight`       | `"400px"`   | Minimum body height, in any CSS length                                     |
+| `selectors`       | defaults    | Per-key tag/class override                                                 |
+
+### Appearance
+
+`appearance` is stamped on the root as `data-appearance` (omitted for `default`) and every value
+follows `menuPosition`, so the strip reads the same on all four sides:
+
+| Value       | Look                                                                          |
+| ----------- | ----------------------------------------------------------------------------- |
+| `default`   | Gradient pill on the active tab                                               |
+| `folder`    | File-folder tabs on the panel's rule; equal widths, active cut into the panel |
+| `underline` | Labels only, with a rule that grows under (or beside) the active label        |
+| `segmented` | One inset rail with a lifted active segment                                   |
+
+`animation` is stamped as `data-animation` too: `false` writes `none`, an object writes `custom` and
+sets `--tab-anim-in` / `--tab-anim-out` to the keyframe names it carries.
 
 ## Nodes
 
@@ -57,18 +74,22 @@ Declared once on `:root, [data-theme]` in `Tab.css`, each deriving from an app t
 fallback, so a theme retunes the app token and the sheet follows. Redeclare any token below on an
 ancestor to retheme the tab alone.
 
-| Token                     | Derives from                | Used for                                                   |
-| ------------------------- | --------------------------- | ---------------------------------------------------------- |
-| `--tab-accent-strong`     | `--app-accent-strong`       | Strip hairline, resting button text, gradient end, eyebrow |
-| `--tab-accent-color`      | `--app-accent-color`        | Active gradient start                                      |
-| `--tab-label-color`       | `--app-text-accent-color`   | `.btn-label`, footer text                                  |
-| `--tab-text-color`        | `--app-text-color`          | Panel description                                          |
-| `--tab-title-color`       | `--app-text-heading-color`  | Panel title                                                |
-| `--tab-active-foreground` | `--app-text-on-accent`      | Text on the active button                                  |
-| `--tab-spinner`           | `--app-spinner-content`     | Loading spinner artwork                                    |
-| `--tab-hover-wash`        | literal (component-private) | Button hover wash                                          |
-| `--tab-active-shadow`     | literal (component-private) | Active button shadow                                       |
-| `--tab-divider-color`     | literal (component-private) | Footer hairline                                            |
+| Token                     | Derives from                     | Used for                                                   |
+| ------------------------- | -------------------------------- | ---------------------------------------------------------- |
+| `--tab-accent-strong`     | `--app-accent-strong`            | Strip hairline, resting button text, gradient end, eyebrow |
+| `--tab-accent-color`      | `--app-accent-color`             | Active gradient start                                      |
+| `--tab-label-color`       | `--app-text-accent-color`        | `.btn-label`, footer text                                  |
+| `--tab-text-color`        | `--app-text-color`               | Panel description                                          |
+| `--tab-title-color`       | `--app-text-heading-color`       | Panel title                                                |
+| `--tab-active-foreground` | `--app-text-on-accent`           | Text on the active button                                  |
+| `--tab-spinner`           | `--app-spinner-content`          | Loading spinner artwork                                    |
+| `--tab-hover-wash`        | literal (component-private)      | Button hover wash                                          |
+| `--tab-active-shadow`     | literal (component-private)      | Active button shadow                                       |
+| `--tab-divider-color`     | literal (component-private)      | Footer hairline                                            |
+| `--tab-border-color`      | `--app-border-color`             | Folder/underline/segmented rule and inactive borders       |
+| `--tab-folder-surface`    | `--app-surface-background-color` | Active folder tab surface, segmented segment               |
+| `--tab-folder-hover`      | `--app-surface-muted`            | Resting wash of an inactive folder tab, segmented rail     |
+| `--tab-border-width`      | `2px`                            | Thickness of the rules the active tab cuts through         |
 
 `--tab-active-foreground` is the WCAG-picked foreground for a brand fill; do not point it at a
 background token, or the active label loses its contrast.

@@ -7,13 +7,23 @@
     "*.ts",
     "*.css"
   ],
+  "dependencies": {
+    "@aio-ui/utilities": "^0.2.3"
+  },
+  "peerDependencies": {
+    "@aio-ui/base": "^0.2.3",
+    "@aio-ui/core": "^0.2.3"
+  },
   "exports": {
     ".": {
       "development": "./index.ts",
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
-    "./Masonry.css": "./Masonry.css"
+    "./Masonry.css": {
+      "types": "./Masonry.css.d.ts",
+      "default": "./Masonry.css"
+    }
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",

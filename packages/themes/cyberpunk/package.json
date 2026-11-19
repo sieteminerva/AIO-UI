@@ -15,7 +15,10 @@
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
-    "./CyberpunkTheme.css": "./src/CyberpunkTheme.css"
+    "./CyberpunkTheme.css": {
+      "types": "./src/CyberpunkTheme.css.d.ts",
+      "default": "./src/CyberpunkTheme.css"
+    }
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",

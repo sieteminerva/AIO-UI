@@ -155,26 +155,25 @@
   }
 
   /* ====================================================
-     📁 FOLDER VARIANT (`config.variant: "folder"`)
-     A strip of file-folder tabs sitting on a ruled edge. Only the active tab is a real tab:
-     it lifts onto the panel surface and erases the rule beneath it. Top position only — a
-     folder divider only reads along the top rule of its panel.
+     📁 FOLDER VARIANT (`appearance: "folder"`)
+     A strip of file-folder tabs sitting on a ruled edge of the panel. Only the active tab is a
+     real tab: it lifts onto the panel surface and erases the rule beneath it. The rule — and
+     therefore the folder — follows `menuPosition`: a top rule for `top`, a bottom rule for
+     `bottom`, and a side rule for `left` / `right`, where the folder is cut horizontally.
      ==================================================== */
-  &[data-menu="top"][data-tab-style="folder"] {
+  &[data-appearance="folder"] {
     gap: 0;
 
     & > .menu {
       gap: 0;
       padding: 0 0.75rem;
-      align-items: flex-end;
-      border-bottom: var(--tab-border-width) solid var(--tab-border-color);
+      background: transparent;
     }
 
     & > .menu > .button {
       width: auto;
       padding: 0.55rem 1.1rem;
-      border: 1px solid transparent;
-      border-radius: 0.75rem 0.75rem 0 0;
+      border: var(--tab-border-width) solid transparent;
       background: transparent;
       color: var(--tab-label-color);
       box-shadow: none;
@@ -187,13 +186,8 @@
       &.active {
         background-color: var(--tab-folder-surface);
         border-color: var(--tab-border-color);
-        border-bottom-color: var(--tab-folder-surface);
-        border-width: var(--tab-border-width);
         color: var(--tab-accent-strong);
         box-shadow: none;
-        /* one pixel over the rule, so the active tab is visually continuous with the panel */
-        margin-bottom: -2px;
-        padding-bottom: calc(0.55rem + 2px);
 
         & .btn-label {
           color: var(--tab-accent-strong);
@@ -204,14 +198,251 @@
       }
     }
 
-    & .body {
+    & > .body {
       border: var(--tab-border-width) solid var(--tab-border-color);
       padding: 1em;
-      border-top-color: transparent;
     }
 
-    &[data-menu="left"][data-tab-style="folder"] {
-      
+    /* TOP — tabs sit on the panel's top rule and are cut at the bottom. */
+    &[data-menu="top"] {
+      & > .menu {
+        align-items: flex-end;
+        border-bottom: var(--tab-border-width) solid var(--tab-border-color);
+      }
+
+      & > .menu > .button {
+        /* the strip is split evenly: folders of one set share one width */
+        flex-grow: 1;
+        flex-shrink: 1;
+        flex-basis: 0;
+        min-width: 0;
+        border-radius: 0.75rem 0.75rem 0 0;
+
+        &.active {
+          border-bottom-color: var(--tab-folder-surface);
+          /* ride over the rule, so tab and panel read as one surface */
+          margin-bottom: calc(var(--tab-border-width) * -1);
+          padding-bottom: calc(0.55rem + var(--tab-border-width));
+        }
+      }
+
+      & > .body {
+        border-top-color: transparent;
+      }
+    }
+
+    /* BOTTOM — the mirror of top: tabs hang under the panel and are cut at the top. */
+    &[data-menu="bottom"] {
+      & > .menu {
+        align-items: flex-start;
+        border-top: var(--tab-border-width) solid var(--tab-border-color);
+      }
+
+      & > .menu > .button {
+        flex-grow: 1;
+        flex-shrink: 1;
+        flex-basis: 0;
+        min-width: 0;
+        border-radius: 0 0 0.75rem 0.75rem;
+
+        &.active {
+          border-top-color: var(--tab-folder-surface);
+          margin-top: calc(var(--tab-border-width) * -1);
+          padding-top: calc(0.55rem + var(--tab-border-width));
+        }
+      }
+
+      & > .body {
+        border-bottom-color: transparent;
+      }
+    }
+
+    /* LEFT — a vertical strip cut along the panel's left edge. The rail is the menu's own
+       right border; the active tab stretches over it, so the two read as one surface. */
+    &[data-menu="left"] {
+      & > .menu {
+        flex-direction: column;
+        padding: 0.75rem 0;
+        border-right: var(--tab-border-width) solid var(--tab-border-color);
+        max-width: 150px;
+      }
+
+      & > .menu > .button {
+        flex: 0 0 auto;
+        border-radius: 0.75rem 0 0 0.75rem;
+
+        &.active {
+          border-right-color: var(--tab-folder-surface);
+          margin-right: calc(var(--tab-border-width) * -1);
+          padding-right: calc(1.1rem + var(--tab-border-width));
+        }
+      }
+
+      & > .body {
+        border-left-color: transparent;
+      }
+    }
+
+    /* RIGHT — the mirror of left: the strip is cut along the panel's right edge. */
+    &[data-menu="right"] {
+      & > .menu {
+        flex-direction: column;
+        padding: 0.75rem 0;
+        border-left: var(--tab-border-width) solid var(--tab-border-color);
+        max-width: 150px;
+      }
+
+      & > .menu > .button {
+        flex: 0 0 auto;
+        border-radius: 0 0.75rem 0.75rem 0;
+
+        &.active {
+          border-left-color: var(--tab-folder-surface);
+          margin-left: calc(var(--tab-border-width) * -1);
+          padding-left: calc(1.1rem + var(--tab-border-width));
+        }
+      }
+
+      & > .body {
+        border-right-color: transparent;
+      }
+    }
+  }
+
+  /* ====================================================
+     ✏️ UNDERLINE VARIANT (`appearance: "underline"`)
+     Labels only, with a rule on the panel-facing edge of the strip; the active label grows
+     that rule. The edge follows `menuPosition`, so a left menu underlines down its side.
+     ==================================================== */
+  &[data-appearance="underline"] {
+    & > .menu {
+      gap: 1rem;
+      padding: 0;
+    }
+
+    & > .menu > .button {
+      position: relative;
+      width: auto;
+      padding: 0.55rem 0;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      box-shadow: none;
+
+      &:hover {
+        background: transparent;
+        transform: none;
+      }
+
+      &.active {
+        background: transparent;
+        box-shadow: none;
+        color: var(--tab-accent-strong);
+
+        & .btn-label,
+        & .btn-title {
+          color: inherit;
+        }
+      }
+
+      &::after {
+        content: "";
+        position: absolute;
+        background: transparent;
+        transition: background-color 0.2s ease;
+      }
+
+      &.active::after {
+        background: var(--tab-accent-strong);
+      }
+    }
+
+    &[data-menu="top"] > .menu {
+      border-bottom: 1px solid var(--tab-border-color);
+    }
+    &[data-menu="top"] > .menu > .button::after {
+      inset: auto 0 -1px 0;
+      height: var(--tab-border-width);
+    }
+
+    &[data-menu="bottom"] > .menu {
+      border-top: 1px solid var(--tab-border-color);
+    }
+    &[data-menu="bottom"] > .menu > .button::after {
+      inset: -1px 0 auto 0;
+      height: var(--tab-border-width);
+    }
+
+    &[data-menu="left"] > .menu,
+    &[data-menu="right"] > .menu {
+      width: 250px;
+      flex-shrink: 0;
+    }
+
+    &[data-menu="left"] > .menu {
+      border-right: 1px solid var(--tab-border-color);
+    }
+    &[data-menu="left"] > .menu > .button {
+      width: 100%;
+      &::after {
+        inset: 0 -1px 0 auto;
+        width: var(--tab-border-width);
+      }
+    }
+
+    &[data-menu="right"] > .menu {
+      border-left: 1px solid var(--tab-border-color);
+    }
+    &[data-menu="right"] > .menu > .button {
+      width: 100%;
+      &::after {
+        inset: 0 auto 0 -1px;
+        width: var(--tab-border-width);
+      }
+    }
+  }
+
+  /* ====================================================
+     🔲 SEGMENTED VARIANT (`appearance: "segmented"`)
+     One inset rail with a lifted active segment: a pill along the top/bottom edge, a
+     rounded column along the left/right one.
+     ==================================================== */
+  &[data-appearance="segmented"] {
+    & > .menu {
+      gap: 0.25rem;
+      padding: 0.25rem;
+      background: var(--tab-folder-hover);
+      border: 1px solid var(--tab-border-color);
+      border-radius: 1rem;
+    }
+
+    & > .menu > .button {
+      border: 0;
+      border-radius: 0.75rem;
+      background: transparent;
+      box-shadow: none;
+
+      &:hover {
+        background: var(--tab-folder-surface);
+        transform: none;
+      }
+
+      &.active {
+        background: var(--tab-folder-surface);
+        box-shadow: var(--tab-active-shadow);
+        color: var(--tab-accent-strong);
+
+        & .btn-label,
+        & .btn-title {
+          color: inherit;
+        }
+      }
+    }
+
+    /* A vertical strip reads better with the rail squared against the panel edge. */
+    &[data-menu="left"] > .menu,
+    &[data-menu="right"] > .menu {
+      border-radius: 0.75rem;
     }
   }
 
@@ -221,12 +452,25 @@
   & > .body {
     position: relative;
     padding: 1rem 0;
-    height: 100%;
+    /* Fill the strip, but never clip a tall panel: `min-height` lets the body grow and take
+       the menu with it, while a fixed `height` would pin the panel to the strip's height. */
+    min-height: 100%;
     flex: 1;
+    /* The percentage has to include the padding and the border, or the panel ends up taller
+       than the strip beside it — the folder rail then stops short and the rule reads broken. */
+    box-sizing: border-box;
 
     /* 🟢 RE-ANCHOR: Mencari kelas .panel ksatria, bukan .tab-panel purba! */
     & > .panel {
-      animation: tabFadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      animation: var(--tab-anim-in, tabFadeIn) var(--tab-anim-duration, 0.4s) cubic-bezier(0.16, 1, 0.3, 1) forwards;
+
+      /* On its way out: it leaves the flow so the incoming panel takes its place. */
+      &.is-leaving {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        animation-name: var(--tab-anim-out, tabFadeOut);
+      }
 
       &.hidden {
         display: none !important;
@@ -257,6 +501,11 @@
         }
       }
     }
+  }
+
+  /* `animation: false` disables the entrance fade entirely. */
+  &[data-animation="none"] > .body > .panel {
+    animation: none;
   }
 
   /* FOOTER STYLING */
@@ -297,5 +546,17 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+/* The mirror image, used when a panel is wiped while leaving (`destroyPrevious`). */
+@keyframes tabFadeOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-6px);
   }
 }

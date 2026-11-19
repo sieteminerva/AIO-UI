@@ -7,15 +7,28 @@
     "*.ts",
     "*.css"
   ],
+  "peerDependencies": {
+    "@aio-ui/base": "^0.2.3",
+    "@aio-ui/core": "^0.2.3"
+  },
   "exports": {
     ".": {
       "development": "./index.ts",
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
-    "./ProductCard.css": "./ProductCard.css",
-    "./ProductDetail.css": "./ProductDetail.css",
-    "./ProductGrid.css": "./ProductGrid.css"
+    "./ProductCard.css": {
+      "types": "./ProductCard.css.d.ts",
+      "default": "./ProductCard.css"
+    },
+    "./ProductDetail.css": {
+      "types": "./ProductDetail.css.d.ts",
+      "default": "./ProductDetail.css"
+    },
+    "./ProductGrid.css": {
+      "types": "./ProductGrid.css.d.ts",
+      "default": "./ProductGrid.css"
+    }
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",

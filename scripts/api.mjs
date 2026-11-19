@@ -96,7 +96,9 @@ function parseBarrel(source) {
 function shapeOf(dir) {
   const manifest = manifestOf(dir);
   const root = manifest.exports?.["."];
-  const barrel = root && typeof root === "object" ? root.development : root;
+  // `development` is the source barrel; a stylesheet-only package (`@aio-ui/styles`) has
+  // no condition to read it from, so its `default` — the sheet itself — is the surface.
+  const barrel = typeof root === "string" ? root : (root?.development ?? root?.default);
   if (!barrel) return null;
 
   const full = join(dir, barrel);

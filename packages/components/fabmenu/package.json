@@ -7,13 +7,20 @@
     "*.ts",
     "*.css"
   ],
+  "peerDependencies": {
+    "@aio-ui/base": "^0.2.3",
+    "@aio-ui/core": "^0.2.3"
+  },
   "exports": {
     ".": {
       "development": "./index.ts",
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
-    "./FabMenu.css": "./FabMenu.css"
+    "./FabMenu.css": {
+      "types": "./FabMenu.css.d.ts",
+      "default": "./FabMenu.css"
+    }
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",

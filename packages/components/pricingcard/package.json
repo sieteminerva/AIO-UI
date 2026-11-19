@@ -7,13 +7,20 @@
     "*.ts",
     "*.css"
   ],
+  "peerDependencies": {
+    "@aio-ui/base": "^0.2.3",
+    "@aio-ui/core": "^0.2.3"
+  },
   "exports": {
     ".": {
       "development": "./index.ts",
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
-    "./PricingCard.css": "./PricingCard.css"
+    "./PricingCard.css": {
+      "types": "./PricingCard.css.d.ts",
+      "default": "./PricingCard.css"
+    }
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",

@@ -1,76 +1,52 @@
-> **STEP 0 — logbook, then claim (mandatory, first action of any session):** `git log --oneline -8`,
-> then `git status --short`, then read **only** `.guidance/project/STATUS.md` — the logbook: three
-> cards, each a one-line summary plus the link to the real detail. Report the three, say the detail
-> is **not** read yet, and ask which card to continue. Open `TASKS.md`, `TASK-*.md` or a band file
-> only **after** the user picks. Then read the claim board `.guidance/project/AGENTS.md` and take
-> your row **before the first edit** — overlapping a live row is a stop-and-ask, not an override.
-> Every finished action category leaves **3 pointer lines** (`CHANGED →`, `PROVED →`, `NEXT →`);
-> see `.guidance/AGENT_RULES.md` §10 (checkpoint), §11 (claims), §13 (logbook), §14 (pre-compact
-> handoff at ~80k), §15 (commit message shape) and §16 (**proof of render** — the inspection
-> ritual every batch that changes output must run).
+> **Session Start (Fast Path):**
+>
+> - If the user gave a specific task: check `git status --short`, claim your row in `.guidance/project/AGENTS.md` (stop if overlapping), and start immediately.
+> - If no specific task was given: run `git log --oneline -5`, read **only** `.guidance/project/STATUS.md` (3 cards), report them without opening detail files, and ask which card to continue.
+> - End every finished action category with **3 pointer lines**: `CHANGED →`, `PROVED →`, `NEXT →`. See `.guidance/AGENT_RULES.md` (§10–§16) only when committing, handing off at ~80k tokens, or running proof-of-render.
 
-# AGENTS.md — Generator band (`orchestrator/**`)
+# AGENTS.md — Generator Band (`orchestrator/**`)
 
-Rajutan: turns a business profile into a `preset.json`, then a **build-free** website whose
-framework code is served from a pinned CDN tag.
-
-## Engine (`orchestrator/`)
-
-`types` → `catalogue` → `plan` → `parse` → `ai` → `emit` → `runtime` → `generate`, plus
-`scenarios` and tests. `orchestrator/` is tracked (the rest of `.draft/` is gitignored).
+Rajutan: turns a business profile into `preset.json`, then a **build-free** website whose framework code loads from a pinned CDN tag (plus an optional local Vite `dev/` copy).
 
 ## Pipeline
 
-```
+```text
 wizard → orchestrator (Apps Script, engine bundled) → preset.json
-      → plan() → emit()/runtime()/generate() → 5 static files
-      → GitHub repo → Pages/Cloudflare; data stays in the client's Sheets `/exec`
+      → plan() → emit() / runtime() / generate() → 5 static files
+      → GitHub repo → Pages/Cloudflare; data stays in client's Sheets `/exec`
 ```
 
-Generated output = `preset.json`, `index.html`, `app.js`, `server/adapter.json`, `FLOW.md`.
-The framework is licensed via the CDN tag, never copied into the client repo.
+- **Engine modules:** `types` → `catalogue` → `plan` → `parse` → `ai` → `emit` → `runtime` → `generate` (plus `scenarios` and `*.test.ts`).
+- **Generated output:** `preset.json`, `index.html`, `app.js`, `server/adapter.json`, `FLOW.md`. Framework assets load via CDN tag, never copied into client repos.
 
-## Hard rules (do not regress)
+## Hard Rules (Do Not Regress)
 
-1. **Import map needs the `"imports"` wrapper.** `runtime.ts` serialises `site.importMap`
-   (object), not `.imports` (map) — without the wrapper browsers ignore it.
-2. **Map every package root + every exact `exports` subpath.** `emit.ts` `exact()` covers this.
-3. **CSS subpaths prefer `dist/`.**
-4. **A builder node key must be a real tag** (`div#masonry`); `parsePreset()` rejects
-   `<masonry>`-style keys.
-5. **Form sub-module refs need `export: "<symbol>"`** — otherwise `Form` renders nothing when
-   `multistep: true`.
-6. **Generated runtime mounts builders itself** (`mount()` over `preset.pages`); `DOMRenderer`
-   never builds builder nodes.
-7. **`app.js` is served to a browser as-is** — no `import type`, no type annotations: either one is
-   a SyntaxError and the whole site never boots, while every unit test stays green.
-   `runtime.test.ts` guards `/^import type /m` and `/pageDefinitions:\s/`.
-8. **A page's preload list is computed, not written by hand** — `pageRequires()` = the `builder`
-   words in that page's content, minus `input` / `dropdown` / `input-controls`, emitted as
-   `pageDefinitions = [{ route, requires }]` → `registerPage`. `release.test.ts` proves every word
-   has a registration **and** an import-map key.
-9. **`parsePreset()` reports `INVALID_SHAPE`** for a non-string `builder` — the array shape fails
-   validation instead of being dropped silently.
+1. **Apps Script portability:** `plan`, `parse`, `ai`, `emit`, `runtime`, and `generate` must never import `node:*`, call `fetch`, or touch the filesystem (data in → file map out). Only `*.test.ts` and `layout.mjs` may use Node APIs.
+2. **Import map wrapper:** `runtime.ts` must serialise `{ "imports": site.importMap }`, never a bare map object.
+3. **Exact subpaths + prefixes:** Map every package root, every exact `exports` subpath (`emit.ts` `exact()`), and directory prefixes (`@aio-ui/utilities/`). CSS subpaths prefer `dist/`.
+4. **Real HTML tag keys:** A builder node key must be a real tag (`div#masonry`); `parsePreset()` rejects custom-element builder keys (`<masonry>`).
+5. **Explicit symbol exports:** Form sub-module refs require `export: "<symbol>"` so `multistep` and adapters resolve cleanly.
+6. **Runtime mounts builders:** `mount()` walks `preset.pages`; `DOMRenderer` never builds builder nodes automatically.
+7. **Browser-ready `app.js`:** Zero `import type` or TypeScript annotations in emitted `app.js` (guarded by `runtime.test.ts`).
+8. **Computed preload list:** `pageRequires()` derives `pageDefinitions = [{ route, requires }]` from `preset.pages` (excluding `input`, `dropdown`, `input-controls`).
+9. **Strict shape validation:** `parsePreset()` emits `INVALID_SHAPE` for non-string `builder` values.
+10. **Tag immutability:** Never force-move a version tag jsDelivr has already served; bump the version for any fix. Never push `main` to the legacy `rajutan` remote.
 
 ## Commands
 
 ```bash
-npx vitest run orchestrator                 # engine suite
+npx vitest run orchestrator                         # run generator test suite
+npx tsc -p orchestrator/tsconfig.json               # isolated typecheck
 node orchestrator/layout.mjs --out orchestrator/layout.json
-node scripts/release.mjs --version 0.1.0 --apply
-node scripts/publish-cdn.mjs --apply         # cdn branch + move tag (push)
-SMOKE_BASE=https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.1/ \
-  npx vitest run orchestrator/release.test.ts
-node .draft/smoke/serve.mjs 5300             # open /.draft/cdn-smoke/store/#checkout
+node scripts/release.mjs --version <ver> --apply    # build release tarballs + metadata
+node scripts/publish-cdn.mjs --apply                # publish unpacked tree to `cdn` + tag
+SMOKE_BASE=https://jsdelivr.net \
+  npx vitest run orchestrator/release.test.ts       # live CDN smoke test
+node .draft/smoke/serve.mjs 5300                    # preview /.draft/cdn-smoke/store/#checkout
 ```
 
-## Release state
+## Context Routing (Read Only When Needed)
 
-Not tracked here. Facts and dates: `.guidance/project/generator.md` (`## Landed`); the release
-walkthrough is `docs/live-cdn-repo.md`. One rule stays: never push `main` to the `rajutan` remote.
-
-## Read when relevant
-
-`docs/generator/apps-script-integration.md` (backend/Sheets/Gemini flow), `orchestrator/README.md`,
-`orchestrator/prompt.content.md`. Do **not** read `packages/components/**` docs unless the task
-changes the framework contract.
+- **Apps Script / Sheets / Gemini flow:** `docs/generator/apps-script-integration.md`
+- **Release & CDN walkthrough:** `docs/live-cdn-repo.md` and `.guidance/project/generator.md`
+- **Component contracts:** Do **not** read `packages/components/**` unless the task modifies framework contracts.

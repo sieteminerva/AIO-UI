@@ -6,7 +6,9 @@
 
 ## Live claims
 
-_No live writer. Add a row here before your first edit — see the rules below._
+| Agent       | Band      | Task                                                               | Write scope                                                                                   | Started    | Checkpoint                 | State   |
+| ----------- | --------- | ------------------------------------------------------------------ | --------------------------------------------------------------------------------------------- | ---------- | -------------------------- | ------- |
+| copilot c59 | Framework | TASK-restructure P0: edge manifests (`scripts/edges.mjs`) | `packages/**`, `scripts/**`, `docs/framework/**`, `temp/**` | 2026-11-19 | `/memories/session/c59.md` | active |
 
 ## Row shape
 

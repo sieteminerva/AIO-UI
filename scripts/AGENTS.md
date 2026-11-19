@@ -26,6 +26,7 @@ it in the same commit as a flag or an output path.
 | `publish-cdn.mjs`   | unpack the 39 tarballs onto the orphan `cdn` branch, render its `README.md`, **tag the new version** (`--apply`), then push                                |
 | `version.mjs`       | version report / `--check` (currently a fixed `0.1.1` across 39 packages)                                                                                  |
 | `bounds.mjs`        | dependency-boundary check (`check:bounds`)                                                                                                                 |
+| `edges.mjs`         | every `@aio-ui/*` import a package makes vs what its manifest declares (`check:edges`); `--apply` writes `dependencies`/`peerDependencies` — core/base peer, the rest dependency, an existing peer never demoted. Unused edges are reported, not deleted |
 | `api.mjs`           | public-API surface check (`check:api`); `--write` regenerates `docs/framework/api-map.json`                                                                |
 | `catalogue.mjs`     | compile `packages/components/**/README.md` into `docs/framework/catalogue.json` (`--apply`); `--check` fails on drift |
 | `session.mjs`       | run the session rituals instead of reading them: `start` (STEP 0), `cp` (CP-3), `end` (§14). Read-only; prompts on a TTY, takes flags otherwise |

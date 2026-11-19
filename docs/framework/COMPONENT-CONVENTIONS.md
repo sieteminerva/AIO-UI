@@ -497,6 +497,10 @@ Anything that needs a real DOM belongs in the demo page, not the suite.
 - Declare `readonly stylesheet = "./MyWidget.css"` **and** pass
   `stylesheet: "@aio-ui/my-widget/MyWidget.css"` in the host manifest. The registry
   derives it from the script path when the manifest omits it.
+- The shipped `exports` entry for that sheet is `{ "types": "./MyWidget.css.d.ts", "default":
+"./MyWidget.css" }`. `scripts/build-pack.mjs --apply` writes the declaration; never hand-write
+  it, and never ask a consumer to declare `*.css` — a plain Vite project has no `vite/client`
+  types, and the CSS import has to type-check without them.
 - **Never `import "./MyWidget.css"` inside the builder.** The bundler resolves that
   statically, so the sheet rides inside the JS chunk and the loader injects the same
   rules a second time — the opposite of loading the component on demand. Instead

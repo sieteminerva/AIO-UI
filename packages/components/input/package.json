@@ -8,8 +8,15 @@
     "*.css",
     "Dropdown",
     "FileUploader",
-    "InputControls"
+    "InputControls",
+    "InputPicker"
   ],
+  "peerDependencies": {
+    "@aio-ui/base": "^0.2.3",
+    "@aio-ui/core": "^0.2.3",
+    "@aio-ui/module-loader": "^0.2.3",
+    "@aio-ui/utilities": "^0.2.3"
+  },
   "exports": {
     ".": {
       "development": "./index.ts",
@@ -61,19 +68,28 @@
       "types": "./dist/Dropdown/Dropdown.d.ts",
       "default": "./dist/Dropdown/Dropdown.js"
     },
-    "./dropdown.css": "./Dropdown/Dropdown.css",
+    "./dropdown.css": {
+      "types": "./Dropdown/Dropdown.css.d.ts",
+      "default": "./Dropdown/Dropdown.css"
+    },
     "./file-uploader": {
       "development": "./FileUploader/FileUploader.ts",
       "types": "./dist/FileUploader/FileUploader.d.ts",
       "default": "./dist/FileUploader/FileUploader.js"
     },
-    "./file-uploader.css": "./FileUploader/FileUploader.css",
+    "./file-uploader.css": {
+      "types": "./FileUploader/FileUploader.css.d.ts",
+      "default": "./FileUploader/FileUploader.css"
+    },
     "./controls": {
       "development": "./InputControls/InputControls.ts",
       "types": "./dist/InputControls/InputControls.d.ts",
       "default": "./dist/InputControls/InputControls.js"
     },
-    "./controls.css": "./InputControls/inputControls.css",
+    "./controls.css": {
+      "types": "./InputControls/inputControls.css.d.ts",
+      "default": "./InputControls/inputControls.css"
+    },
     "./dropdown/module": {
       "development": "./Dropdown/Dropdown.InputModule.ts",
       "types": "./dist/Dropdown/Dropdown.InputModule.d.ts",
@@ -94,13 +110,24 @@
       "types": "./dist/Popover.InputModule.d.ts",
       "default": "./dist/Popover.InputModule.js"
     },
-    "./input.css": "./input.css"
-  },
-  "peerDependencies": {
-    "@aio-ui/base": "^0.2.3",
-    "@aio-ui/core": "^0.2.3",
-    "@aio-ui/module-loader": "^0.2.3",
-    "@aio-ui/utilities": "^0.2.3"
+    "./picker": {
+      "development": "./InputPicker/InputPicker.ts",
+      "types": "./dist/InputPicker/InputPicker.d.ts",
+      "default": "./dist/InputPicker/InputPicker.js"
+    },
+    "./picker.css": {
+      "types": "./InputPicker/InputPicker.css.d.ts",
+      "default": "./InputPicker/InputPicker.css"
+    },
+    "./picker/module": {
+      "development": "./InputPicker/InputPicker.inputModules.ts",
+      "types": "./dist/InputPicker/InputPicker.inputModules.d.ts",
+      "default": "./dist/InputPicker/InputPicker.inputModules.js"
+    },
+    "./input.css": {
+      "types": "./input.css.d.ts",
+      "default": "./input.css"
+    }
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",

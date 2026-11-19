@@ -6,6 +6,9 @@
     "dist",
     "src"
   ],
+  "peerDependencies": {
+    "@aio-ui/core": "^0.2.3"
+  },
   "exports": {
     ".": {
       "development": "./src/index.ts",

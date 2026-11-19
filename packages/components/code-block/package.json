@@ -7,13 +7,20 @@
     "*.ts",
     "*.css"
   ],
+  "peerDependencies": {
+    "@aio-ui/base": "^0.2.3",
+    "@aio-ui/core": "^0.2.3"
+  },
   "exports": {
     ".": {
       "development": "./index.ts",
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
-    "./CodeBlock.css": "./CodeBlock.css"
+    "./CodeBlock.css": {
+      "types": "./CodeBlock.css.d.ts",
+      "default": "./CodeBlock.css"
+    }
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",

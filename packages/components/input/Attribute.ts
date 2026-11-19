@@ -58,6 +58,7 @@ export class InputAttributeBuilder {
     number: { placeholder: "Enter a number", value: 50, min: 0, max: 100, step: 1 },
     select: { placeholder: "Select an option", range: "sheet_range", form: "form_id", multiple: false },
     dropdown: { placeholder: "Select an option", range: "sheet_range", form: "form_id", multiple: false },
+    picker: { placeholder: "Select an option", multiple: false },
     checkbox: { value: "default_value", checked: false },
     radio: { value: "default_value", range: "sheet_range" },
     range: { value: 50, min: 0, max: 100, step: 1, orient: "horizontal" },

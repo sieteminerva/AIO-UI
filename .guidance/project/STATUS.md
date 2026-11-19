@@ -4,14 +4,15 @@
 > **only** after the user picks it — never "to orient" (`AGENT_RULES.md` §13). Rewritten each
 > session, newest on top. One card = one line + one pointer.
 
-### 1. Restructure P0 — manifests tell the truth (`02c11c6`)
+### 1. Restructure landed at 0.2.4 (`07126a0`, unpushed)
 
-`scripts/edges.mjs` derives every `@aio-ui/*` edge from source and joins `npm run check` as
-`check:edges`: 85 edges over 40 packages, `core`/`base` peer, `skeleton` never repeated. Proof: an
-accordion tarball alone installed its whole closure in `temp/consumer` and type-checked.
-**Open:** the rest of the restructure — P1 DOMRenderer folder + kit, P2 `app`→`core` at 0.2.4,
-P3 styles as core dependency, P4 one-file `AioUI` bundle.
-→ `docs/framework/TASK-restructure.md`
+`@aio-ui/app` and `kits/frameworks` are gone: `AioApp` lives in `core/src/app/` (+ `@aio-ui/core/app`),
+`core` installs `styles`, manifests are derived from source by `check:edges`, and
+`npm run build:bundle` emits the two-link `aio-ui{,.min}.{js,css}` pair (105 names / 37 packages).
+Gate: `verify:pkgs` → 861 pass / 15 skip, 37 built, both example builds green.
+**Open:** P1 (DOMRenderer folder + kit) deferred to P5; bundle artefacts are not wired into
+`release.mjs`/`publish-cdn.mjs`; nothing is pushed.
+→ `docs/framework/TASK-restructure.md` · `docs/releases/v0.2.4.md`
 
 ### 2. Release — separate modules from an orphan branch
 

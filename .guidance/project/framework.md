@@ -10,10 +10,15 @@ Why / stages: `.guidance/plan-framework.md`. Engineering rules:
 | --- | ------------------------ | ----------- | -------------------------------------------------------------------------------------------------------------------------- |
 | 1   | Theme console view (fab) | in progress | `examples/demo/src/ThemeConsole/TASKS.md` — view composed, gate green; open: page-only sections in the popover             |
 | 2   | Inspect surface (b43)    | in progress | `inspect()` + `inspectPage()` landed and green; open: dead relay removal, `#cleanupMap` reset, Topik A (`iComponentInput`) |
-| 3   | Package restructure      | in progress | P0 edge manifests landed (`check:edges`); P1 DOMRenderer folder + kit next → `docs/framework/TASK-restructure.md`          |
+
 
 ## Next
 
+- **0.2.4 release** — `release.mjs` + `publish-cdn.mjs` must ship the four bundle artefacts
+  (`aio-ui{,.min}.{js,css}`) at the branch root and name them in `registry.json`; the scripts exist
+  (`npm run build:bundle`) but nothing publishes them yet. Cut it only when the user says so.
+- **P5 (only if wanted)** — `DOMRenderer` folder + generated kit, then its own package; P1 in
+  `docs/framework/TASK-restructure.md` is the design.
 - **B54 (remaining) — one export index** — `scripts/exports.mjs` → `docs/framework/exports.json` +
   a `check:exports` gate that fails when a subpath's file is excluded by `files[]` (today's silent
   404 at install time). Four scripts stop recomputing the export map (closure + bundle + publish

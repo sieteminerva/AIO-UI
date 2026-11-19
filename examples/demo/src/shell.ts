@@ -43,6 +43,7 @@ const TOP_NAV: iTopGroup[] = [
     children: [
       { label: "Getting Started", href: "#getting-started", route: "getting-started" },
       { label: "Modules", href: "#modules", route: "modules" },
+      { label: "Data Binding", href: "#data-binding", route: "data-binding" },
     ],
   },
   {

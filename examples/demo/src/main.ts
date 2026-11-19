@@ -34,6 +34,7 @@ import './style.css';
 import { DEMO, manifestFor } from './manifest';
 import { bootTheme } from './theme-config';
 import { ArticlePage } from './pages/article';
+import { DataBindingPage } from './pages/data-binding';
 import { FormPage } from './pages/form';
 import { formManifest } from './form/schema';
 import { GettingStartedPage } from './pages/getting-started';
@@ -92,6 +93,8 @@ const componentRoutes: iComponentRoute[] = [
   { route: 'getting-started', components: ['menu', 'code-block', 'markdown', 'fab-menu'] },
   // The modules docs reuse the same `menu` builder for their sidebar.
   { route: 'modules', components: ['menu', 'markdown', 'fab-menu'] },
+  // The data-binding guide is prose only: the shell menu and host chrome, no builder body.
+  { route: 'data-binding', components: ['menu', 'fab-menu'] },
   { route: 'kitchen', components: [...DEMO.map((entry) => entry.name), 'menu', 'fab-menu', 'code-block', 'markdown'] },
   { route: 'product', components: ['product', 'menu', 'fab-menu'] },
   { route: 'article', components: ['article', 'menu', 'fab-menu'] },
@@ -160,6 +163,7 @@ async function start(container: HTMLElement) {
     // Behavior per route; their content comes from the controller.
     .registerPage('getting-started', GettingStartedPage)
     .registerPage('modules', ModulesPage)
+    .registerPage('data-binding', DataBindingPage)
     .registerPage('kitchen', KitchenPage)
     .registerPage('product', ProductPage)
     .registerPage('article', ArticlePage)

@@ -153,12 +153,34 @@ export class ColorThemeBuilder extends Builder<ColorThemeElementType, iColorThem
     })) as iColorizerState;
   }
 
+  /**
+   * 🧠 THE MODEL — the one object this builder writes to.
+   *
+   * Returning the proxy (not the raw seed) is what makes every write reach the mirror:
+   * the base wires `[data-bind]` controls against this object and repaints each scope.
+   */
+  protected model(): Record<string, any> {
+    return this.#state;
+  }
+
+  /**
+   * 🎨 THE MIRROR'S OTHER HALF — everything that is not a control value.
+   *
+   * Runs once per wired scope, inside the base's single effect: tokens on the one host,
+   * the report/strips/mixer chrome, and the broadcast the preview listens to. Control
+   * values are already handled by `data-bind` before this runs.
+   */
+  protected paint(scope: HTMLElement): void {
+    const theme = this.deriveTheme();
+    this.#paintTokens(theme);
+    this.#broadcastTokens(theme);
+    this.sync(scope, theme);
+  }
+
   /** Abort controller for cleaning up event listeners on destroy. */
   #abort = new AbortController();
   /** Whether this instance has already announced its first paint (see initialize()). */
   #announced = false;
-  /** 🧲 Unwatch functions for the reactive root sync registered in initialize(). */
-  #unwatch: Array<() => void> = [];
 
   constructor(config: Partial<iColorThemeConfig>) {
     super();
@@ -743,7 +765,6 @@ export class ColorThemeBuilder extends Builder<ColorThemeElementType, iColorThem
   public initialize(root?: HTMLElement): void {
     if (!root) return;
 
-    this.bindState(root, this.#state);
     this.sync(root, this.deriveTheme());
     this.#paintTokens(this.deriveTheme());
 
@@ -754,17 +775,6 @@ export class ColorThemeBuilder extends Builder<ColorThemeElementType, iColorThem
     if (!this.#announced) {
       this.#announced = true;
       this.#broadcastTokens(this.deriveTheme());
-    }
-
-    if (!this.#unwatch.length) {
-      this.#unwatch.push(this.proxyRuntime.watchEffect(() => {
-        const theme = this.deriveTheme();
-        // Tokens are painted on ONE host (caller's root, else my own root) —
-        // never per attached scope. Panels inherit them via the cascade.
-        this.#paintTokens(theme);
-        this.#broadcastTokens(theme);
-        for (const scope of this.scopes()) this.sync(scope, theme);
-      }));
     }
 
     this.initializeActions();
@@ -834,8 +844,8 @@ export class ColorThemeBuilder extends Builder<ColorThemeElementType, iColorThem
   }
 
   public destroy(): void {
-    for (const unwatch of this.#unwatch) unwatch();
-    this.#unwatch.length = 0;
     this.#abort.abort();
+    // The base releases the mirror (listeners + effect) and unmounts the root.
+    super.destroy("@colorizer");
   }
 }

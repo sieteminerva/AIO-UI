@@ -13,10 +13,16 @@ The base builder should stay focused on lifecycle and DOM creation. Reactive sta
 
 ## Basic usage
 
-```ts
-import { BuilderProxy } from "./src/lib/Modules/BuilderProxy";
+> ⚠️ **Builders do not call this module directly any more.** Declare `model()` on the
+> builder: the base wires every `[data-bind]` control in each scope it renders, one
+> delegated listener pair per scope and one effect per instance (`Binding.ts`), and
+> releases it in `destroy()`/`detach()`. The methods below are the primitives that
+> adapter uses — reach for them directly only when building tooling.
 
-const runtime = new BuilderProxy(builder.storage);
+```ts
+import { BuilderProxy } from "./BuilderProxy";
+
+const runtime = new BuilderProxy(builder.storage.proxy);
 
 const state = runtime.makeReactive(
   "@form",
@@ -65,7 +71,7 @@ This will:
 When the model changes programmatically, you can update the mounted form back to the DOM using:
 
 ```ts
-this.syncBoundState(root, this.#state);
+this.proxyRuntime.sync(root, this.#state);
 ```
 
 That gives a lightweight Angular-like model binding without needing a full framework.
@@ -73,18 +79,19 @@ That gives a lightweight Angular-like model binding without needing a full frame
 ## Example in a builder
 
 ```ts
-public prepare(content: any) {
-  const root = this.render("@container", content) as HTMLElement;
-  this.#state = this.setProxy("@container", {
-    title: "Hello",
-    disabled: false,
-  }, () => {
-    this.syncBoundState(root, this.#state);
-    this.refresh(root);
-  });
+// The builder declares its model once; the base does the wiring.
+readonly #model = this.setProxy("@container", { title: "Hello", disabled: false });
 
-  this.bindState(root, this.#state);
-  return root;
+protected model() {
+  return this.#model;           // ALWAYS the proxy, never a plain object
+}
+
+protected paint(scope: HTMLElement) {
+  scope.querySelector("h1")!.textContent = this.#model.title;
+}
+
+public prepare(content: any) {
+  return this.render("@container", content) as HTMLElement;
 }
 ```
 

@@ -1,7 +1,8 @@
 import type { iBuilderRegistry, iBuilderConfig, iElementProperty, iNodeRecordItem, iNodeRecordRelations } from "@aio-ui/core/interface";
 // import { TemplateRegistry } from "@aio-ui/template-registry";
 // import { ElementCreatedEventBus } from "../Services/EventBus";
-import { BuilderProxy } from "./BaseAdapters/BuilderProxy";
+import { Binding } from "./BaseAdapters/Binding";
+import { BuilderProxy, isReactive } from "./BaseAdapters/BuilderProxy";
 import { holdUntilStyled } from "./BaseAdapters/Hydration";
 import { setBuilderAdapter } from "@aio-ui/core";
 import { getTemplates } from "@aio-ui/core";
@@ -393,8 +394,37 @@ export abstract class Builder<TType extends string = string, TConfig extends iBu
    */
   protected loading?(content: any, config: TConfig): HTMLElement | null | undefined;
 
+  /**
+   * 🧠 THE MODEL — the one object this builder may write to.
+   *
+   * Optional, and the whole binding seam hangs off it: declare `model()` and the base
+   * connects every scope it hands to `initialize()` (the root from `create()`, the key
+   * from `attach()`, the element from `project()`), mirrors its `[data-bind]` controls
+   * both ways, and releases the wire in `destroy()`/`detach()`. A builder without
+   * `model()` keeps today's behaviour: no listeners, no effect, nothing to leak.
+   *
+   * One model per builder. A second object is a second source of truth, and a component
+   * with two of them starts disagreeing with itself.
+   *
+   * @returns A plain object; the base wraps it in the reactive proxy exactly once.
+   */
+  protected model?(): Record<string, any>;
+
+  /**
+   * 🎨 THE OTHER HALF OF THE MIRROR — draw what is not a control value.
+   *
+   * Text, classes, tokens and derived markup cannot be expressed as `data-bind`, so the
+   * builder paints them here. Runs inside the same effect as the control refresh, once
+   * per scope, and must be idempotent: it renders current state, it does not diff.
+   *
+   * @param scope - the root or projected/mounted element being repainted.
+   * @param model - the reactive model, the same object `model()` returned.
+   */
+  protected paint?(scope: HTMLElement, model: Record<string, any>): void;
+
   constructor() {
     this.proxyRuntime = new BuilderProxy(this.storage.proxy);
+    this.#bindings = new Binding(this.proxyRuntime);
   }
 
   /**
@@ -527,6 +557,9 @@ export abstract class Builder<TType extends string = string, TConfig extends iBu
 
   protected proxyRuntime: BuilderProxy;
 
+  /** Owns the model ↔ DOM wire for every wired scope (see `BaseAdapters/Binding`). */
+  readonly #bindings: Binding;
+
   protected setProxy(
     key: string,
     payload: any,
@@ -587,6 +620,7 @@ export abstract class Builder<TType extends string = string, TConfig extends iBu
 
       // Detonasi event bindings interaktif klik browser
       this.initialize(DOMTree, content);
+      this.#wire(DOMTree);
 
       this.hierarchy.update();
       // console.log("hierarchy", this.hierarchy.get(), identity);
@@ -795,6 +829,7 @@ export abstract class Builder<TType extends string = string, TConfig extends iBu
     if (childBuilder) {
       childBuilder.#projected.set(childTypeKey, { slot: slotKey, element, receptacle });
       childBuilder.initialize(element, payload);
+      childBuilder.#wire(element);
     }
 
     return element;
@@ -884,6 +919,7 @@ export abstract class Builder<TType extends string = string, TConfig extends iBu
     // attaching configurator + output + mode to one instance stays in sync
     // without duplicating anything.
     this.initialize(element, payload);
+    this.#wire(element);
     return this;
   }
 
@@ -898,6 +934,7 @@ export abstract class Builder<TType extends string = string, TConfig extends iBu
     for (const [typeKey, entry] of this.#projected) {
       if (entry.slot !== slotKey) continue;
       if (entry.element.parentNode) entry.element.replaceWith(entry.receptacle);
+      this.#bindings.unwire(entry.element);
       this.#projected.delete(typeKey);
     }
     return this;
@@ -924,6 +961,37 @@ export abstract class Builder<TType extends string = string, TConfig extends iBu
       scopes.push(element);
     }
     return scopes;
+  }
+
+  /**
+   * 🔌 WIRE ONE SCOPE — the seam every `[data-bind]` control hangs off.
+   *
+   * A no-op unless the builder declares `model()`: the presence of that hook is the whole
+   * opt-in, the same way `loading()` opts into its own mockup. Called right after
+   * `initialize()` at the three places a scope starts living, so a builder wires its
+   * commands first and the controls second.
+   *
+   * @param scope - root element, attached key, or mounted child element.
+   */
+  #wire(scope: HTMLElement): void {
+    if (typeof this.model !== "function") return;
+    const model = this.model();
+    if (!model) return;
+
+    // 🔍 A raw object is a half-binding that fails silently: hydration reads it once,
+    // but every later write bypasses the `set` trap, so the mirror never fires. The
+    // convention is one proxy per builder (`this.setProxy(...)`, cached), so say so
+    // instead of wiring a model that cannot notify.
+    if (!isReactive(model)) {
+      console.warn(
+        `[Builder:${String(this.builderId)}] model() returned a plain object. ` +
+        `Create it once with this.setProxy(...) and return that proxy, or writes to it will never reach the mirror.`,
+      );
+      return;
+    }
+
+    const paint = typeof this.paint === "function" ? this.paint.bind(this) : undefined;
+    this.#bindings.wire(scope, model, paint);
   }
 
 
@@ -965,6 +1033,9 @@ export abstract class Builder<TType extends string = string, TConfig extends iBu
         data: null // Bebas dari tracking rawDataNode kotor
       });
     }
+
+    // 💀 The mirror dies first: after this, no effect can touch a detached tree.
+    this.#bindings.dispose();
 
     // ====================================================
     // 🔮 THE ANCESTRAL POINTER EXTRACTOR (EVAKUASI DARI MAP POOL)

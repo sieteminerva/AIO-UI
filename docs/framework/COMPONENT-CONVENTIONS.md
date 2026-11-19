@@ -9,7 +9,7 @@ Scaffold one with:
 node scripts/new-component.mjs my-widget --title "My Widget"
 ```
 
-Files and placeholders are described in [`COMPONENT-TEMPLATE.md`](./COMPONENT-TEMPLATE.md).
+Files and placeholders are described in [`scripts/new-component.md`](../../scripts/new-component.md).
 
 ---
 

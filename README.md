@@ -47,7 +47,7 @@ ordinary website.**
   → [`docs/framework/DOMRenderer.md`](docs/framework/DOMRenderer.md)
 - **Prototyping is instant, and the style stays yours** — take a markup snippet you already like,
   split it into `@templateKey` selectors, and you have a component.
-  → [`docs/framework/COMPONENT-TEMPLATE.md`](docs/framework/COMPONENT-TEMPLATE.md)
+  → [`scripts/new-component.md`](scripts/new-component.md)
 - **An agent can build with it unattended** — a page is data, and the built tree can be read back
   (`inspectPage` / `inspect`) instead of eyeballed. The loop, the builder table and the failure
   table live in one file written for that agent.
@@ -123,18 +123,18 @@ npm run dev:demo       # examples/demo
 npm run verify         # the full gate — run before claiming anything works
 ```
 
-| Task                                         | Command                                                   |
-| -------------------------------------------- | --------------------------------------------------------- |
-| Build every package (`dist` + `.d.ts` + CSS) | `npm run build:pkgs`                                      |
-| Typecheck the workspace                      | `npm run typecheck`                                       |
-| Dependency-edge check                        | `npm run check:bounds`                                    |
+| Task                                         | Command                                                     |
+| -------------------------------------------- | ----------------------------------------------------------- |
+| Build every package (`dist` + `.d.ts` + CSS) | `npm run build:pkgs`                                        |
+| Typecheck the workspace                      | `npm run typecheck`                                         |
+| Dependency-edge check                        | `npm run check:bounds`                                      |
 | Declared-edge check (source vs manifest)     | `npm run check:edges` (writer: `scripts/edges.mjs --apply`) |
-| Public-surface check                         | `npm run check:api` (snapshot: `scripts/api.mjs --write`) |
-| Tests                                        | `npm test` (`vitest run`)                                 |
-| Version report / check                       | `npm run version:report` · `npm run version:check`        |
-| Bump all packages                            | `node scripts/version.mjs --apply --version 0.1.1`        |
-| Release artefacts (local, dry-run first)     | `node scripts/release.mjs --version 0.1.1`                |
-| Publish CDN tree + move the version tag      | `node scripts/publish-cdn.mjs --apply`                    |
+| Public-surface check                         | `npm run check:api` (snapshot: `scripts/api.mjs --write`)   |
+| Tests                                        | `npm test` (`vitest run`)                                   |
+| Version report / check                       | `npm run version:report` · `npm run version:check`          |
+| Bump all packages                            | `node scripts/version.mjs --apply --version 0.1.1`          |
+| Release artefacts (local, dry-run first)     | `node scripts/release.mjs --version 0.1.1`                  |
+| Publish CDN tree + move the version tag      | `node scripts/publish-cdn.mjs --apply`                      |
 
 ## Repository structure
 
@@ -225,7 +225,7 @@ Working areas — `orchestrator/` is tracked; `.draft/` and `.archives/` are loc
 | **An agent building WITH the framework**     | `docs/agent/handbook.md` — loop, builder table, verification, failure → action                                        |
 | Prompt templates — session / batch / handoff | `.guidance/PROMPTS.md`                                                                                                |
 | Renderer internals                           | `docs/framework/DOMRenderer.md`                                                                                       |
-| Component conventions / template / data      | `docs/framework/COMPONENT-CONVENTIONS.md`, `docs/framework/COMPONENT-TEMPLATE.md`, `docs/framework/COMPONENT-DATA.md` |
+| Component conventions / template / data      | `docs/framework/COMPONENT-CONVENTIONS.md`, `scripts/new-component.md`, `docs/framework/COMPONENT-DATA.md`             |
 | Input field types & actions                  | `docs/framework/FIELD-TYPES.md`, `docs/framework/INPUT-ACTIONS.md`                                                    |
 | App shell (`AioApp`)                         | `docs/framework/APP.md`, `docs/framework/API.md`                                                                      |
 | Dependency rules                             | `docs/framework/BOUNDARIES.md` (+ enforced by `scripts/bounds.mjs`)                                                   |

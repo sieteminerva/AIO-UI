@@ -65,7 +65,7 @@ perView + 1`), so with 4 slides and `slidesPerView: 2` there are 2 stops and 3 d
    `alt` is separate from `title` so an image block needs no heading.
 
 New components start from the scaffold, not from an existing file:
-`node scripts/new-component.mjs <name>` → [`COMPONENT-TEMPLATE.md`](./COMPONENT-TEMPLATE.md),
+`node scripts/new-component.mjs <name>` → [`scripts/new-component.md`](../../scripts/new-component.md),
 conventions in [`COMPONENT-CONVENTIONS.md`](./COMPONENT-CONVENTIONS.md). The demo's route
 split (element vs page components) is described in [`DEMO.md`](./DEMO.md).
 

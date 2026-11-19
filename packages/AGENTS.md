@@ -59,7 +59,7 @@ npm run verify:pkgs      # ~2 m 23 s: + build 40 packages + example builds — b
 
 ## Read when relevant (do NOT read by default)
 
-- `docs/framework/COMPONENT-CONVENTIONS.md`, `docs/framework/COMPONENT-TEMPLATE.md` — writing a component.
+- `docs/framework/COMPONENT-CONVENTIONS.md`, `scripts/new-component.md` — writing a component.
 - `docs/framework/DEMO.md` — demo routes and `manifest.ts`.
 - `packages/core/ComponentRegistry.md` — registry/loader internals.
 - Do **not** read `docs/generator/apps-script-integration.md` or `orchestrator/**` from this band.

@@ -1,4 +1,4 @@
-# FabMenu (`@aio-ui/fabmenu`)
+# FabMenu (`@aio-ui/fab-menu`)
 
 FabMenu is the floating action button: a trigger in a viewport corner that opens a panel of
 labelled options. It closes on selection (configurable), on a second trigger press, and after an
@@ -71,6 +71,6 @@ to override at the layer level; restyle through `config.selectors` if a host nee
 ## Wiring checklist
 
 1. Add `"fab-menu"` to `iBuilderRegistry` in `packages/core/src/types/registry.ts`.
-2. Add a loader for `@aio-ui/fabmenu` to the host's asset map.
-3. Add a `stylesheet` loader for `@aio-ui/fabmenu/FabMenu.css`.
+2. Add a loader for `@aio-ui/fab-menu` to the host's asset map.
+3. Add a `stylesheet` loader for `@aio-ui/fab-menu/FabMenu.css`.
 4. List it in the host's route plan: `registerModule(components, [{ route, components: ["fab-menu"] }])`.

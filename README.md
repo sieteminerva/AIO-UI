@@ -158,9 +158,9 @@ npm run verify         # the full gate — run before claiming anything works
 │   │   ├── frameworks/     @aio-ui/frameworks = core + base + app
 │   │   ├── modules/        @aio-ui/modules = module-loader + the runtime modules
 │   │   └── themes/         @aio-ui/themes = the three themes
-│   └── components/         accordion article badge carousel fabmenu footer form
+│   └── components/         accordion article badge carousel fab-menu footer form
 │                           id-address input masonry menu message modal
-│                           modeswitcher pricingcard product rating section tab table
+│                           mode-switcher pricing-card product rating section tab table
 │
 ├── examples/               host applications that prove the framework
 │   ├── gallery/            gallery/profile model (routes, content, assets)

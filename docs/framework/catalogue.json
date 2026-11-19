@@ -1061,8 +1061,8 @@
         }
       }
     },
-    "fabmenu": {
-      "package": "@aio-ui/fabmenu",
+    "fab-menu": {
+      "package": "@aio-ui/fab-menu",
       "title": "FabMenu",
       "lead": "FabMenu is the floating action button: a trigger in a viewport corner that opens a panel of\nlabelled options. It closes on selection (configurable), on a second trigger press, and after an\nidle `duration` with no interaction.\n\nThe sheet positions it `fixed` with a very large `z-index`, so a host that needs it contained (a\npreview frame, a split pane) must override both — the demo does exactly that for its Display panel.",
       "sections": {
@@ -1176,7 +1176,7 @@
           "tables": []
         },
         "Wiring checklist": {
-          "text": "1. Add `\"fab-menu\"` to `iBuilderRegistry` in `packages/core/src/types/registry.ts`.\n2. Add a loader for `@aio-ui/fabmenu` to the host's asset map.\n3. Add a `stylesheet` loader for `@aio-ui/fabmenu/FabMenu.css`.\n4. List it in the host's route plan: `registerModule(components, [{ route, components: [\"fab-menu\"] }])`.",
+          "text": "1. Add `\"fab-menu\"` to `iBuilderRegistry` in `packages/core/src/types/registry.ts`.\n2. Add a loader for `@aio-ui/fab-menu` to the host's asset map.\n3. Add a `stylesheet` loader for `@aio-ui/fab-menu/FabMenu.css`.\n4. List it in the host's route plan: `registerModule(components, [{ route, components: [\"fab-menu\"] }])`.",
           "examples": [],
           "tables": []
         }
@@ -3712,8 +3712,8 @@
         }
       }
     },
-    "modeswitcher": {
-      "package": "@aio-ui/modeswitcher",
+    "mode-switcher": {
+      "package": "@aio-ui/mode-switcher",
       "title": "ModeSwitcher",
       "lead": "A pill toggle that flips the document between light and dark mode. It reads the browser mode on\nconstruction, writes it onto the document, and keeps the thumb position in sync — it does not own a\ntheme, it only switches the mode the theme layer reacts to.",
       "sections": {
@@ -3833,14 +3833,14 @@
           ]
         },
         "Wiring checklist": {
-          "text": "1. Add `\"mode-switcher\"` to `iBuilderRegistry` in `packages/core/src/types/registry.ts`.\n2. Add a loader for `@aio-ui/modeswitcher/ModeSwitcher` to the host's asset map.\n3. Add a `stylesheet` loader for `@aio-ui/modeswitcher/ModeSwitcher.css`.\n4. List it in the host's route plan: `registerModule(components, [{ route, components: [\"mode-switcher\"] }])`.",
+          "text": "1. Add `\"mode-switcher\"` to `iBuilderRegistry` in `packages/core/src/types/registry.ts`.\n2. Add a loader for `@aio-ui/mode-switcher/ModeSwitcher` to the host's asset map.\n3. Add a `stylesheet` loader for `@aio-ui/mode-switcher/ModeSwitcher.css`.\n4. List it in the host's route plan: `registerModule(components, [{ route, components: [\"mode-switcher\"] }])`.",
           "examples": [],
           "tables": []
         }
       }
     },
-    "pricingcard": {
-      "package": "@aio-ui/pricingcard",
+    "pricing-card": {
+      "package": "@aio-ui/pricing-card",
       "title": "PricingCard",
       "lead": "PricingCard renders one card per record: a header with a divider, a feature list, a price line and an\naction button. Because it is a card **group**, its root is a `div.row` and each card is wrapped in a\n`div.column` — the grid comes from the host layout.",
       "sections": {
@@ -3975,7 +3975,7 @@
           ]
         },
         "Wiring checklist": {
-          "text": "1. Add `\"pricing-card\"` to `iBuilderRegistry` in `packages/core/src/types/registry.ts`.\n2. Add a loader for `@aio-ui/pricingcard` to the host's asset map.\n3. Add a `stylesheet` loader for `@aio-ui/pricingcard/PricingCard.css`.\n4. List it in the host's route plan: `registerModule(components, [{ route, components: [\"pricing-card\"] }])`.",
+          "text": "1. Add `\"pricing-card\"` to `iBuilderRegistry` in `packages/core/src/types/registry.ts`.\n2. Add a loader for `@aio-ui/pricing-card` to the host's asset map.\n3. Add a `stylesheet` loader for `@aio-ui/pricing-card/PricingCard.css`.\n4. List it in the host's route plan: `registerModule(components, [{ route, components: [\"pricing-card\"] }])`.",
           "examples": [],
           "tables": []
         }

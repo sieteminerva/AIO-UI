@@ -1,6 +1,6 @@
 # TASK — Package restructure: one core, honest edges, one bundle
 
-**Status:** P0, P2, P3, P4 landed (uncommitted batch) · P1 deferred · branch `main` @ `02c11c6`
+**Status:** P0, P2, P3, P4, P5 landed · P1 landed as a generated kit · branch `main` @ `07126a0`+
 **Queue entry:** `packages/components/TASKS.md` §0 · **Band:** `packages/**` (Framework)
 
 ## Goal
@@ -74,12 +74,13 @@ repeated on a package that already needs `base` (it arrives through base's insta
 Proof: `aio-ui-accordion` tarball alone in `temp/consumer` installed its closure (base, core,
 utilities, skeleton), `tsc --noEmit` clean, runtime import resolved. `verify` → 875 pass.
 
-### P1 — DOMRenderer becomes self-describing (deferred)
+### P1 — DOMRenderer becomes self-describing ✅
 
-Deferred on purpose: the kit has **no consumer until P5**. P0/P2/P3/P4 do not need it, and
-shipping a generated 900-line copy of the renderer without a caller is dead weight. Do P1 when
-P5 (`@aio-ui/dom-renderer` as its own package) is actually wanted. The rest of the P1 design
-below stands.
+The kit has no consumer inside the framework, which is why it was deferred once. It is now built
+because `@aio-ui/dom-renderer` (P5) exists for projects migrating *without* the framework.
+Generated into `packages/modules/dom-renderer/src/DOMRenderer.ts` by
+`scripts/build-renderer-kit.mjs`; `check:kit` guards the bytes, `__tests__/kit.test.ts` guards the
+behaviour (same markup, same record keys as core).
 
 - `core/src/DOMRenderer/` folder with `index.ts` barrel (pattern: `core/src/Registry/`), the class
   moved verbatim, and a local `types.ts`: `DefaultSelectors`, `iNodeContent`, `iNodeRecordItem`,
@@ -129,10 +130,11 @@ below stands.
 - Proof: byte sizes (raw + gzip), module count, and a `temp/` HTML page that loads only the two
   links and renders one route (`inspectPage` output pasted into the report).
 
-### P5 — deferred
+### P5 — `@aio-ui/dom-renderer` ✅
 
-- Promote `@aio-ui/dom-renderer` to its own package and let `core` re-export it. Only after P4;
-  nothing in P0–P4 depends on it.
+- A real package under `packages/modules/dom-renderer` (a module band folder, no dependency, no
+  peer), README follows the module skeleton (`Payload`/`Config`/`Nodes`/`Tokens`/`Methods`/
+  `Wiring checklist`). `core` does **not** re-export it: the point is that it stands alone.
 
 ## Which manifest system guards what
 

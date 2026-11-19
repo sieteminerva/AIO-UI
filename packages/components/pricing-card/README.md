@@ -1,4 +1,4 @@
-# PricingCard (`@aio-ui/pricingcard`)
+# PricingCard (`@aio-ui/pricing-card`)
 
 PricingCard renders one card per record: a header with a divider, a feature list, a price line and an
 action button. Because it is a card **group**, its root is a `div.row` and each card is wrapped in a
@@ -69,6 +69,6 @@ and the featured accent/wash never applied.
 ## Wiring checklist
 
 1. Add `"pricing-card"` to `iBuilderRegistry` in `packages/core/src/types/registry.ts`.
-2. Add a loader for `@aio-ui/pricingcard` to the host's asset map.
-3. Add a `stylesheet` loader for `@aio-ui/pricingcard/PricingCard.css`.
+2. Add a loader for `@aio-ui/pricing-card` to the host's asset map.
+3. Add a `stylesheet` loader for `@aio-ui/pricing-card/PricingCard.css`.
 4. List it in the host's route plan: `registerModule(components, [{ route, components: ["pricing-card"] }])`.

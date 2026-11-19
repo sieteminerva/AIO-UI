@@ -1,5 +1,4 @@
 /* Pricing Table Styling
-  // TODO make fontsize adaptive => font-size: clamp()
    Every rule is rooted at `.card.pricing`. The sheet used to read four names that no
    package declares (`--border-soft`, `--accent`, `--surface-strong`, `--shadow-soft`), so
    the card border, the featured accent and its wash were all guaranteed-invalid and
@@ -11,15 +10,19 @@
   --pricing-card-accent-color: var(--app-accent-color, #b47828);
   --pricing-card-surface-strong: var(--app-surface-strong, #ffffff);
   --pricing-card-surface-muted: var(--app-surface-muted, rgba(244, 238, 226, 0.7));
+  --pricing-font-size: var(--app-font-size, 1.1rem);
 }
 
 .row:has(> .column > .card.pricing) {
   align-items: stretch;
   gap: calc(var(--app-gap, 2em) * 0.2);
+  height: max-content;
+  /* overflow: hidden; */
 }
 
 .column:has(> .card.pricing) {
   display: flex;
+  height: 100%;
 }
 
 .column > .card.pricing {
@@ -27,14 +30,13 @@
 }
 
 .card.pricing {
-  /* Jadikan container agar bisa membaca tinggi/lebar kartu lewat unit cqh & cqi */
-  container-type: size;
-  container-name: pricing-card;
+  /* Hanya inline-size (lebar) agar tinggi konten normal dan TIDAK gepeng */
+  container-type: inline-size;
 
-  /* Base font-size kartu otomatis beradaptasi terhadap tinggi (480px) & lebar kolom */
-  font-size: clamp(0.75rem, min(3.2cqh, 4.2cqi), 1rem);
+  /* Adaptif berdasarkan lebar kolom & tinggi viewport (480px cap), berakar pada --pricing-font-size */
+  font-size: clamp(0.8rem, min(4.2cqi, 2.2vh), var(--pricing-font-size));
   line-height: 1.35;
-
+  padding: 1em;
   text-align: center;
   transition:
     transform 0.3s ease,
@@ -43,6 +45,7 @@
   flex-direction: column;
   height: 100%;
   max-height: 480px;
+  min-height: 350px;
   overflow: hidden;
   border-radius: 1.3em;
   background-color: transparent;
@@ -68,8 +71,7 @@
   & .header {
     padding-bottom: 0;
     & .eyebrow {
-      /* Skala adaptif relatif terhadap font-size kartu */
-      font-size: clamp(0.85rem, 3.6cqh, 1.1rem);
+      font-size: clamp(0.85rem, 4.5cqi, var(--pricing-font-size));
       color: var(--pricing-card-accent-color);
       border: none;
       margin-bottom: 0;
@@ -81,33 +83,31 @@
     border: 0;
     height: 1px;
     background: var(--pricing-card-border-color);
-    /* Gunakan em agar jarak menyusut bersama font-size saat tinggi terbatas */
-    margin: clamp(0.45em, 1.8cqh, 1em) 0;
+    margin: clamp(0.45em, 2.5cqi, 0.9em) 0;
   }
 
   & .body {
     text-align: center;
     flex: 1 1 auto;
-    min-height: 0; /* Wajib agar flex child mau menyusut di dalam max-height: 480px */
+    min-height: 0;
     display: flex;
     flex-direction: column;
     justify-content: center;
   }
 
-  /* Jika ada elemen harga utama (misal .price / h2 / h3) di dalam .body atau .header */
   & :is(.price, h2, h3) {
-    font-size: clamp(1.35rem, min(6.5cqh, 9cqi), 2.25rem);
+    font-size: clamp(1.4rem, 9cqi, calc(var(--pricing-font-size) * 2.1));
     line-height: 1.1;
-    margin: 0.2em 0;
+    margin: 0.15em 0;
   }
 
   & .features {
-    margin: clamp(0.5em, 2.2cqh, 1.5em) 0;
+    margin: clamp(0.5em, 3cqi, 1.2em) 0;
     list-style: none;
     padding: 0;
     & li {
-      font-size: clamp(0.75rem, 2.9cqh, 0.95rem);
-      padding: clamp(0.2em, 0.9cqh, 0.5em) 0;
+      font-size: clamp(0.78rem, 3.8cqi, calc(var(--pricing-font-size) * 0.92));
+      padding: clamp(0.2em, 1.2cqi, 0.45em) 0;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -122,12 +122,12 @@
 
   & .actions {
     margin-top: auto;
-    padding-top: clamp(0.5em, 1.8cqh, 1em);
-    flex-shrink: 0; /* Tombol CTA tidak pernah terpotong */
+    padding-top: clamp(0.4em, 2cqi, 0.85em);
+    flex-shrink: 0;
     & .button {
       width: 100%;
-      font-size: clamp(0.8rem, 3cqh, 1rem);
-      padding-block: clamp(0.45em, 1.4cqh, 0.75em);
+      font-size: clamp(0.82rem, 4cqi, var(--pricing-font-size));
+      padding-block: clamp(0.45em, 1.8cqi, 0.75em);
     }
   }
 }

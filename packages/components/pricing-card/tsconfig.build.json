@@ -10,10 +10,10 @@
     "outDir": "./dist",
     "rootDir": ".",
     "paths": {
-      "@aio-ui/pricingcard": [
+      "@aio-ui/pricing-card": [
         "./index.ts"
       ],
-      "@aio-ui/pricingcard/*": [
+      "@aio-ui/pricing-card/*": [
         "./*"
       ]
     }

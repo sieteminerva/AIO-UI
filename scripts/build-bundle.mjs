@@ -29,7 +29,15 @@ import { dirname } from "node:path";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const SCOPE = "@aio-ui/";
-const GROUPS = ["packages", "packages/components", "packages/modules", "packages/themes", "packages/kits", "packages/utilities", "packages/styles"];
+const GROUPS = [
+  "packages",
+  "packages/components",
+  "packages/modules",
+  "packages/themes",
+  "packages/kits",
+  "packages/utilities",
+  "packages/styles",
+];
 const WORK = join(ROOT, "temp", "bundle");
 
 const args = process.argv.slice(2);
@@ -64,16 +72,27 @@ function names(file) {
     .replace(/\/\*[\s\S]*?\*\//g, "")
     .replace(/^\s*\/\/.*$/gm, "");
   const out = [];
-  for (const match of text.matchAll(/export\s+(?:declare\s+)?(?:abstract\s+)?(?:class|function|const|let)\s+([A-Za-z_$][\w$]*)/g)) out.push(match[1]);
+  for (const match of text.matchAll(
+    /export\s+(?:declare\s+)?(?:abstract\s+)?(?:class|function|const|let)\s+([A-Za-z_$][\w$]*)/g,
+  ))
+    out.push(match[1]);
   for (const match of text.matchAll(/export\s*\{([^}]*)\}/g)) {
     for (const part of match[1].split(",")) {
       const piece = part.trim();
       if (!piece) continue;
-      out.push(piece.split(/\s+as\s+/).pop().trim());
+      out.push(
+        piece
+          .split(/\s+as\s+/)
+          .pop()
+          .trim(),
+      );
     }
   }
   return [...new Set(out.filter(Boolean))];
 }
+
+/** Standalone doors that must not join the namespace (they duplicate core's exports). */
+const EXCLUDE = new Set(["dom-renderer"]);
 
 // ---- 1. Packages with a runtime entry ------------------------------------
 const packages = [];
@@ -81,10 +100,11 @@ for (const dir of dirs()) {
   const manifest = JSON.parse(readFileSync(join(dir, "package.json"), "utf8"));
   const name = String(manifest.name ?? "");
   if (!name.startsWith(SCOPE)) continue;
+  const short = name.slice(SCOPE.length);
+  if (EXCLUDE.has(short)) continue;
   const root = manifest.exports?.["."];
   const entry = typeof root === "string" ? root : root?.development;
   if (!entry || !/\.(ts|mts|js|mjs)$/.test(entry)) continue;
-  const short = name.slice(SCOPE.length);
   packages.push({ dir, name, short, entry: join(dir, entry), names: names(join(dir, entry)) });
 }
 packages.sort((a, b) => a.short.localeCompare(b.short));
@@ -154,9 +174,7 @@ if (missing.length) {
   process.exit(1);
 }
 
-const css = sheets
-  .map((sheet) => `@import ${JSON.stringify(slash(relative(WORK, sheet.path)))};`)
-  .join("\n");
+const css = sheets.map((sheet) => `@import ${JSON.stringify(slash(relative(WORK, sheet.path)))};`).join("\n");
 
 writeFileSync(join(WORK, "entry.js"), js);
 writeFileSync(join(WORK, "entry.css"), `${css}\n`);

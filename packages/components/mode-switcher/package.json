@@ -1,5 +1,5 @@
 {
-  "name": "@aio-ui/pricingcard",
+  "name": "@aio-ui/mode-switcher",
   "version": "0.2.4",
   "type": "module",
   "files": [
@@ -17,9 +17,9 @@
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
-    "./PricingCard.css": {
-      "types": "./PricingCard.css.d.ts",
-      "default": "./PricingCard.css"
+    "./ModeSwitcher.css": {
+      "types": "./ModeSwitcher.css.d.ts",
+      "default": "./ModeSwitcher.css"
     }
   },
   "scripts": {

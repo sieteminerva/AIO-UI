@@ -199,8 +199,8 @@ all enforced rather than agreed:
 ### Root barrels
 
 Added `.` to the 15 single-builder component packages (`accordion`, `article`, `badge`,
-`carousel`, `fabmenu`, `footer`, `masonry`, `menu`, `modal`, `modeswitcher`,
-`pricingcard`, `product`, `rating`, `section`, `tab`), plus `module-loader` and
+`carousel`, `fab-menu`, `footer`, `masonry`, `menu`, `modal`, `mode-switcher`,
+`pricing-card`, `product`, `rating`, `section`, `tab`), plus `module-loader` and
 `utilities`. Each barrel is `export * from "./<Entry>";` — the exports are the same
 names that were already public, so nothing new leaks. `product` exports its three
 builders from one place.

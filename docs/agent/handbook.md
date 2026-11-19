@@ -116,7 +116,7 @@ not listed, the package README `## Payload` is the only authority — read it, d
 | `badge`             | `@aio-ui/badge`                 | see README                                                                                    |
 | `carousel`          | `@aio-ui/carousel`              | `{ content: [{ title, description, image }] }`                                                |
 | `dropdown`          | `@aio-ui/input/dropdown/module` | see README                                                                                    |
-| `fab-menu`          | `@aio-ui/fabmenu`               | `{ title, actions: [{ label }] }` — **no** `content` wrapper                                  |
+| `fab-menu`          | `@aio-ui/fab-menu`               | `{ title, actions: [{ label }] }` — **no** `content` wrapper                                  |
 | `footer`            | `@aio-ui/footer`                | `{ content: { company, columns: [{ title?, description?, actions?: [{ label, href? }] }] } }` |
 | `form`              | `@aio-ui/form`                  | `{ config: { fields: [...] } }` — see README for field types                                  |
 | `input`             | `@aio-ui/input`                 | see README                                                                                    |
@@ -125,8 +125,8 @@ not listed, the package README `## Payload` is the only authority — read it, d
 | `menu`              | `@aio-ui/menu`                  | `{ content: { navigations: [{ href, label, title }] } }`                                      |
 | `message`           | `@aio-ui/message`               | see README                                                                                    |
 | `modal`             | `@aio-ui/modal`                 | `{ content }` + `config: { id, title }`                                                       |
-| `mode-switcher`     | `@aio-ui/modeswitcher`          | `{}`                                                                                          |
-| `pricing-card`      | `@aio-ui/pricingcard`           | **array** of `{ header, body: [{ title }], price, action: { label } }`                        |
+| `mode-switcher`     | `@aio-ui/mode-switcher`          | `{}`                                                                                          |
+| `pricing-card`      | `@aio-ui/pricing-card`           | **array** of `{ header, body: [{ title }], price, action: { label } }`                        |
 | `product-card`      | `@aio-ui/product`               | `{ uid, name, category, title, description, price, colors, artwork }`                         |
 | `product-card-grid` | `@aio-ui/product`               | `{ content: { data: [<product-card payload>] } }`                                             |
 | `product-detail`    | `@aio-ui/product`               | `{ uid, category, title, description, price, currency, colors, artwork }`                     |

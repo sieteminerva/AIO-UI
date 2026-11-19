@@ -8,18 +8,18 @@
     "declarationMap": true,
     "sourceMap": true,
     "outDir": "./dist",
-    "rootDir": ".",
+    "rootDir": "./src",
     "paths": {
-      "@aio-ui/modeswitcher": [
-        "./index.ts"
+      "@aio-ui/dom-renderer": [
+        "./src/index.ts"
       ],
-      "@aio-ui/modeswitcher/*": [
-        "./*"
+      "@aio-ui/dom-renderer/*": [
+        "./src/*"
       ]
     }
   },
   "include": [
-    "**/*.ts"
+    "src"
   ],
   "exclude": [
     "dist/**",

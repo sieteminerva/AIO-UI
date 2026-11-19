@@ -99,8 +99,8 @@
       "./CodeBlock.css": "dist/CodeBlock.css"
     }
   },
-  "@aio-ui/fabmenu": {
-    "dir": "packages/components/fabmenu",
+  "@aio-ui/fab-menu": {
+    "dir": "packages/components/fab-menu",
     "entry": "dist/index.js",
     "stylesRoot": "dist",
     "subpaths": {
@@ -226,8 +226,8 @@
       "./Modal.css": "dist/Modal.css"
     }
   },
-  "@aio-ui/modeswitcher": {
-    "dir": "packages/components/modeswitcher",
+  "@aio-ui/mode-switcher": {
+    "dir": "packages/components/mode-switcher",
     "entry": "dist/index.js",
     "stylesRoot": "dist",
     "subpaths": {
@@ -235,8 +235,8 @@
       "./ModeSwitcher.css": "dist/ModeSwitcher.css"
     }
   },
-  "@aio-ui/pricingcard": {
-    "dir": "packages/components/pricingcard",
+  "@aio-ui/pricing-card": {
+    "dir": "packages/components/pricing-card",
     "entry": "dist/index.js",
     "stylesRoot": "dist",
     "subpaths": {
@@ -311,6 +311,14 @@
       "./behaviours": "dist/behaviours/registry.js",
       "./behaviours/*": "dist/behaviours/*.js",
       "./canvas/*": "dist/canvas/*.js"
+    }
+  },
+  "@aio-ui/dom-renderer": {
+    "dir": "packages/modules/dom-renderer",
+    "entry": "dist/index.js",
+    "stylesRoot": "dist",
+    "subpaths": {
+      ".": "dist/index.js"
     }
   },
   "@aio-ui/event-emitter": {

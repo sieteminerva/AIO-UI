@@ -1,4 +1,4 @@
-# ModeSwitcher (`@aio-ui/modeswitcher`)
+# ModeSwitcher (`@aio-ui/mode-switcher`)
 
 A pill toggle that flips the document between light and dark mode. It reads the browser mode on
 construction, writes it onto the document, and keeps the thumb position in sync — it does not own a
@@ -42,6 +42,6 @@ literal fallback. Redeclare a `--mode-switcher-*` token on an ancestor to rethem
 ## Wiring checklist
 
 1. Add `"mode-switcher"` to `iBuilderRegistry` in `packages/core/src/types/registry.ts`.
-2. Add a loader for `@aio-ui/modeswitcher/ModeSwitcher` to the host's asset map.
-3. Add a `stylesheet` loader for `@aio-ui/modeswitcher/ModeSwitcher.css`.
+2. Add a loader for `@aio-ui/mode-switcher/ModeSwitcher` to the host's asset map.
+3. Add a `stylesheet` loader for `@aio-ui/mode-switcher/ModeSwitcher.css`.
 4. List it in the host's route plan: `registerModule(components, [{ route, components: ["mode-switcher"] }])`.

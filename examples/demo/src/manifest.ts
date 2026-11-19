@@ -287,8 +287,8 @@ export const DEMO: iDemoEntry[] = [
   },
   {
     name: "fab-menu",
-    path: "@aio-ui/fabmenu",
-    stylesheet: "@aio-ui/fabmenu/FabMenu.css",
+    path: "@aio-ui/fab-menu",
+    stylesheet: "@aio-ui/fab-menu/FabMenu.css",
     category: "navigation",
     tier: "intermediate",
     kind: "element",
@@ -302,8 +302,8 @@ export const DEMO: iDemoEntry[] = [
   },
   {
     name: "mode-switcher",
-    path: "@aio-ui/modeswitcher",
-    stylesheet: "@aio-ui/modeswitcher/ModeSwitcher.css",
+    path: "@aio-ui/mode-switcher",
+    stylesheet: "@aio-ui/mode-switcher/ModeSwitcher.css",
     category: "chrome",
     tier: "intermediate",
     kind: "element",
@@ -311,8 +311,8 @@ export const DEMO: iDemoEntry[] = [
   },
   {
     name: "pricing-card",
-    path: "@aio-ui/pricingcard",
-    stylesheet: "@aio-ui/pricingcard/PricingCard.css",
+    path: "@aio-ui/pricing-card",
+    stylesheet: "@aio-ui/pricing-card/PricingCard.css",
     category: "content",
     tier: "basic",
     kind: "element",

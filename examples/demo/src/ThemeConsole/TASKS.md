@@ -9,7 +9,7 @@ its page, its `componentRoutes` entry and its nav leaf are gone.
 
 ## What exists (committed `6ace4d2`, `FabMenu.css` tokens in batch 39)
 
-- `packages/components/fabmenu/FabMenu.ts` — an `actions` entry **or** the whole payload may be an
+- `packages/components/fab-menu/FabMenu.ts` — an `actions` entry **or** the whole payload may be an
   `HTMLElement`, mounted as-is. Same contract `tab`/`form`/`modal` already had; README documents it
   under `### Element payload`.
 - `examples/demo/src/ThemeConsole/` — `ThemeConsoleBuilder` owns the chrome. `config.slots`

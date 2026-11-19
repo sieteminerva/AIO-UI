@@ -309,7 +309,7 @@ by an agent with no context.
 
 - **Types:** `feat` new capability · `fix` defect · `style` CSS/formatting only · `refactor` shape
   without behaviour change · `docs` · `test` · `perf` · `chore` deps, config, generated maps.
-- **Scopes:** a package (`menu`, `core`, `fabmenu`), a band (`demo`, `generator`, `guidance`), or
+- **Scopes:** a package (`menu`, `core`, `fab-menu`), a band (`demo`, `generator`, `guidance`), or
   `repo` when it crosses bands. Comma list only when the commit really is one change.
 - **Evidence in every bullet:** the command and its number (`npm run verify → 690 pass / 1 skip`),
   or `path:symbol` plus the measured value (`Menu.css → panel 205×86 at 1280px`).

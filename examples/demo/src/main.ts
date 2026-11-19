@@ -135,7 +135,7 @@ async function start(container: HTMLElement) {
     // it, `Form.provideModules()` partitions it, and the page only supplies a schema.
     .register('form', pageComponent('@aio-ui/form', '@aio-ui/form/Form.css', formManifest(), 'FormBuilder'))
     // The theme switcher is a fab menu with per-item handlers, so it needs config too.
-    .register('fab-menu', pageComponent('@aio-ui/fabmenu', '@aio-ui/fabmenu/FabMenu.css'))
+    .register('fab-menu', pageComponent('@aio-ui/fab-menu', '@aio-ui/fab-menu/FabMenu.css'))
     // The docs shell: `menu` is one builder with two shapes, `top` and `sidebar`.
     .register("menu", pageComponent("@aio-ui/menu", "@aio-ui/menu/Menu.css", undefined, "MenuBuilder"))
     // The docs pages render the repository's own Markdown — one builder, one sheet.

@@ -166,6 +166,23 @@
         "iStyleLoader"
       ]
     },
+    "@aio-ui/dom-renderer": {
+      "kind": "package",
+      "barrel": "./src/index.ts",
+      "values": [
+        "DOMRenderer",
+        "inspectPage"
+      ],
+      "types": [
+        "BuilderName",
+        "DefaultSelectors",
+        "iMetadataContext",
+        "iNodeContent",
+        "iNodeRecordItem",
+        "iNodeRecordRelations",
+        "iPageInspection"
+      ]
+    },
     "@aio-ui/event-emitter": {
       "kind": "package",
       "barrel": "./index.ts",
@@ -176,7 +193,7 @@
         "iPageEvents"
       ]
     },
-    "@aio-ui/fabmenu": {
+    "@aio-ui/fab-menu": {
       "kind": "package",
       "barrel": "./index.ts",
       "values": [
@@ -337,7 +354,7 @@
         "iModalControls"
       ]
     },
-    "@aio-ui/modeswitcher": {
+    "@aio-ui/mode-switcher": {
       "kind": "package",
       "barrel": "./index.ts",
       "values": [
@@ -377,7 +394,7 @@
       "values": [],
       "types": []
     },
-    "@aio-ui/pricingcard": {
+    "@aio-ui/pricing-card": {
       "kind": "package",
       "barrel": "./index.ts",
       "values": [

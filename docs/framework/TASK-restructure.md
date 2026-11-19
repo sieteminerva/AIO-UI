@@ -77,7 +77,7 @@ utilities, skeleton), `tsc --noEmit` clean, runtime import resolved. `verify` �
 ### P1 — DOMRenderer becomes self-describing ✅
 
 The kit has no consumer inside the framework, which is why it was deferred once. It is now built
-because `@aio-ui/dom-renderer` (P5) exists for projects migrating *without* the framework.
+because `@aio-ui/dom-renderer` (P5) exists for projects migrating _without_ the framework.
 Generated into `packages/modules/dom-renderer/src/DOMRenderer.ts` by
 `scripts/build-renderer-kit.mjs`; `check:kit` guards the bytes, `__tests__/kit.test.ts` guards the
 behaviour (same markup, same record keys as core).

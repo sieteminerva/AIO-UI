@@ -6,23 +6,23 @@
 >
 > Batch 41 (2026-11-21): binding seam and the ViewFactory port are done and dropped from here.
 
-### 1. Release 0.2.4 — live
+### 1. `union` in `iContentSpec` — live (do this first)
+
+Seven builders still use the `{ t: "any" }` escape, so only their `example` is validated. **Open:**
+add `union` + `element` to `iContentSpec`, make `check()` pick the first fitting branch, narrow
+`code-block`, `fab-menu`, `markdown`, `masonry`, `modal`, `product`, `rating`, and extend both
+contract tests. Gate `npm run verify`; the detail doc ends with the release hand-off.
+→ `docs/framework/TASK-content-union.md`
+
+### 2. Release 0.2.4 — after the union card
 
 Restructure at 0.2.4 landed (`07126a0`+): 39 packages, `@aio-ui/dom-renderer` ships alone, folders
 match their builder word. `0.2.3` is live on `releases` (jsDelivr 200). **Open:** the bundled rewrite
 (doc §2) and the four bundle artefacts — `release.mjs` / `publish-cdn.mjs` must place
 `aio-ui{,.min}.{js,css}` at the branch root and name them in `registry.json`; then §5 +
 `version.mjs --apply --version 0.2.4` → `verify:pkgs` → `release.mjs` → `publish-releases.mjs` →
-`publish-cdn.mjs`. Cut only when the owner says so.
+`publish-cdn.mjs`. Implement up to `verify:pkgs`, then **stop and ask** — the owner cuts it.
 → `docs/framework/TASK-releases-branch.md` · `docs/releases/v0.2.4.md`
-
-### 2. `union` in `iContentSpec` — deferred
-
-Seven builders use `{ t: "any" }` because their payload is a union of shapes or may carry a DOM
-element. **Open:** add `{ t: "union", of: [...] }` to `iContentSpec`, narrow `code-block`,
-`fab-menu`, `markdown`, `masonry`, `modal`, `product`, `rating`, keep `normalize()` total and
-idempotent, and extend `packages/components/contracts.test.ts` with one invalid example per shape.
-→ `docs/framework/COMPONENT-CONVENTIONS.md` §4 ("Known limit")
 
 ## Map
 

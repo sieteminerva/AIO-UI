@@ -160,11 +160,11 @@ Landed 2026-11-18 for the plain (non-bundled) tarballs; the bundled rewrite is �
 | ----- | ----------------------------------------------------------- | ------------------ |
 | B53   | form/input default opt-in + `bundle-probe` proof (§form)    | —                  |
 | B53b  | missing-module warnings/throws + form owns the full stack   | B53                |
-| B54a  | `releases` branch + `./releases` worktree + both publishers   | ✅ 2026-11-18      |
-| B54   | `closure.mjs` ✅ · `exports.mjs` + `check:exports` open        | B53b (exits/sizes) |
-| B55   | `release.mjs` two modes ✅ (B default, A via `--bundle`)        | B54                |
-| B56   | `0.2.3` bump + verify:pkgs + publish ✅                        | B53b–B55           |
-| B57   | manual: Releases-page assets (`publish-release-assets.mjs`)   | B56                |
+| B54a  | `releases` branch + `./releases` worktree + both publishers | ✅ 2026-11-18      |
+| B54   | `closure.mjs` ✅ · `exports.mjs` + `check:exports` open     | B53b (exits/sizes) |
+| B55   | `release.mjs` two modes ✅ (B default, A via `--bundle`)    | B54                |
+| B56   | `0.2.3` bump + verify:pkgs + publish ✅                     | B53b–B55           |
+| B57   | manual: Releases-page assets (`publish-release-assets.mjs`) | B56                |
 
 ## Decisions
 

@@ -6,14 +6,17 @@ Why / stages: `.guidance/plan-framework.md`. Engineering rules:
 
 ## Active (max 3)
 
-| #   | Task                     | State       | Gate                                                                                                                                    |
-| --- | ------------------------ | ----------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | Theme console view (fab) | in progress | `examples/demo/src/ThemeConsole/TASKS.md` — view composed, gate green; open: page-only sections in the popover                          |
+| #   | Task                     | State       | Gate                                                                                                                                |
+| --- | ------------------------ | ----------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Theme console view (fab) | in progress | `examples/demo/src/ThemeConsole/TASKS.md` — view composed, gate green; open: page-only sections in the popover                      |
 | 2   | Inspect surface (b43)    | in progress | `inspect()` + `inspectPage()` landed and green; `inspect().issues` shipped (batch E); open: dead relay removal, `#cleanupMap` reset |
+| 3   | Content contract union   | next        | `docs/framework/TASK-content-union.md` `## Next` — 7 builders out of `{ t: "any" }`; gate `npm run verify`                          |
 
 ## Next
 
-- **0.2.4 release** — `release.mjs` + `publish-cdn.mjs` must ship the four bundle artefacts
+- **`union` first (live)** — `docs/framework/TASK-content-union.md`: `union` + `element` in
+  `iContentSpec`, narrow the seven contracts, extend both test files.
+- **0.2.4 release (after union)** — `release.mjs` + `publish-cdn.mjs` must ship the four bundle artefacts
   (`aio-ui{,.min}.{js,css}`) at the branch root and name them in `registry.json`; the scripts exist
   (`npm run build:bundle`) but nothing publishes them yet. Cut it only when the user says so.
 - **P5** — landed: `packages/modules/dom-renderer` + generated kit (`check:kit`). Only reopen if the

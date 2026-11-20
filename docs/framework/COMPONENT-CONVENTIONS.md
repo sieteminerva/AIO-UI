@@ -268,12 +268,12 @@ is deferred, not forgotten.
 
 One name per layer; a synonym is a guess waiting to happen.
 
-| Layer                    | Word        | Anchor                                                       |
-| ------------------------ | ----------- | ------------------------------------------------------------ |
-| page entry               | **node**    | `iBasicBuilderNode` — schema + directives                    |
-| builder door             | **schema**  | `create(schema)`, `manifest.schema` override                 |
-| component payload        | **content** | `schema.content`, typed by `iBuilderRegistry[K]`             |
-| content after processing | **payload** | proxy, `template(typeKey, el, payload)`, `iNodeRecordItem`    |
+| Layer                    | Word        | Anchor                                                     |
+| ------------------------ | ----------- | ---------------------------------------------------------- |
+| page entry               | **node**    | `iBasicBuilderNode` — schema + directives                  |
+| builder door             | **schema**  | `create(schema)`, `manifest.schema` override               |
+| component payload        | **content** | `schema.content`, typed by `iBuilderRegistry[K]`           |
+| content after processing | **payload** | proxy, `template(typeKey, el, payload)`, `iNodeRecordItem` |
 
 `schema` may also mean "specification" (a field spec, `contract.schema`); it never means a value at
 the page-tree layer. **No payload field may be named `content`** — inner keys use domain words.

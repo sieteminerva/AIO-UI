@@ -10,23 +10,23 @@ Why / stages: `.guidance/plan-framework.md`. Engineering rules:
 | --- | ------------------------ | ----------- | ----------------------------------------------------------------------------------------------------------------------------------- |
 | 1   | Theme console view (fab) | in progress | `examples/demo/src/ThemeConsole/TASKS.md` — view composed, gate green; open: page-only sections in the popover                      |
 | 2   | Inspect surface (b43)    | in progress | `inspect()` + `inspectPage()` landed and green; `inspect().issues` shipped (batch E); open: dead relay removal, `#cleanupMap` reset |
-| 3   | Content contract union   | next        | `docs/framework/TASK-content-union.md` `## Next` — 7 builders out of `{ t: "any" }`; gate `npm run verify`                          |
+| 3   | Release automation (b44) | next        | `docs/framework/TASK-release-automation.md` — `session.mjs end` hang fix, then `release-doc.mjs` co-design                          |
 
 ## Next
 
-- **`union` first (live)** — `docs/framework/TASK-content-union.md`: `union` + `element` in
-  `iContentSpec`, narrow the seven contracts, extend both test files.
-- **0.2.4 release (after union)** — `release.mjs` + `publish-cdn.mjs` must ship the four bundle artefacts
-  (`aio-ui{,.min}.{js,css}`) at the branch root and name them in `registry.json`; the scripts exist
-  (`npm run build:bundle`) but nothing publishes them yet. Cut it only when the user says so.
+- **Release automation (live)** — `docs/framework/TASK-release-automation.md`: make
+  `session.mjs end` prompts opt-in (winpty makes `isTTY` true and blocks agents), then build
+  `scripts/release-doc.mjs` so every release note generates and probes its CDN table.
+- **Official release** — waits for the `store` / `profile` / `blog` reference apps (`gallery`
+  exists). `v0.2.4` itself is live; GitHub release assets are the owner's token-gated step.
 - **P5** — landed: `packages/modules/dom-renderer` + generated kit (`check:kit`). Only reopen if the
   renderer needs another standalone seam.
 - **B54 (remaining) — one export index** — `scripts/exports.mjs` → `docs/framework/exports.json` +
   a `check:exports` gate that fails when a subpath's file is excluded by `files[]` (today's silent
   404 at install time). Four scripts stop recomputing the export map (closure + bundle + publish
   already landed). → `docs/framework/TASK-releases-branch.md`
-- **Mode A polish** — `install/<pkg>.txt` for the declared/bundled fallback, and the size gate the
-  plan asked for (mode B is 1.18 MB, mode A 6.27 MB; both measured, neither gated).
+- **Mode A polish** — `install/<pkg>.txt` for the declared/bundled fallback. The size gate the plan
+  asked for landed in `release.mjs` (2 / 8 / 3 MB + `--allow-growth`).
 - `scripts/proof.mjs --report`: list every component package and whether it carries an `inspect()`
   assertion. Report-only at first (the gap list is the ratchet); make it a `verify` gate once the 20
   packages are covered, so §16 stops depending on discipline.
@@ -46,6 +46,10 @@ Why / stages: `.guidance/plan-framework.md`. Engineering rules:
   `FormModuleRegistry`.
 
 ## Landed
+
+- **Batch 42–44 (2026-11-21)** — `union` + `element` in `iContentSpec` (7 builders narrowed);
+  `v0.2.4` published on `releases` + tag in mode B (39 tarballs, 1.29 MB) with the bundled pair at
+  the branch root; the release note carries the full 131-row live CDN table.
 
 - **Batch 54–56** — the release is a real pipeline: `scripts/closure.mjs` (40 packages, 51 edges,
   21 leaves, one real cycle `form ⇄ message`), `release.mjs` in two modes (**B default**: internal

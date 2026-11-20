@@ -4,19 +4,26 @@
 > **only** after the user picks it — never "to orient" (`AGENT_RULES.md` §13). Rewritten each
 > session, newest on top. One card = one line + one pointer.
 >
-> Batch 43 (2026-11-21): `v0.2.4` published on `releases` + tag, mode B, bundle pair at the branch
-> root. Batch 42: `union` + `element` landed in `iContentSpec`.
+> Batch 44 (2026-11-21): `v0.2.4` note carries the full live CDN table (131 rows) and the step is
+> now mandatory; `session.mjs end` hang diagnosed. Batch 43: `v0.2.4` published, mode B.
 
-### 1. Official release — live, waiting on three references
+### 1. Fix `session.mjs end` + design release automation — next
+
+`session.mjs end` blocks forever because the `node` alias (winpty) makes `isTTY` true, so six
+prompts wait for a human that is not there; proven — non-TTY runs exit in 1 s, winpty blocks until
+Enter is pressed six times. **Open:** make prompts opt-in plus a 2 s escape, print steps 1–9 before
+asking, then co-design `scripts/release-doc.mjs` so every release note generates its CDN table and
+probes it (four owner questions are in the doc).
+→ `docs/framework/TASK-release-automation.md`
+
+### 2. Official release — `v0.2.4` live, waiting on three references
 
 `v0.2.4` is live (39 packages, mode B, jsDelivr 200 on registry + both minified files, raw tarball
 200, checksums match). **Open:** the official release waits for the `store`, `profile`, `blog`
-reference apps (`gallery` exists); the only manual pipeline step left is
-`publish-release-assets.mjs` when the owner wants GitHub release assets. Facts, numbers and the
-updated pre-flight checklist are in the release doc.
+reference apps (`gallery` exists); GitHub release assets are cut by the owner with a token.
 → `docs/releases/v0.2.4.md` · `docs/live-cdn-repo.md` §9
 
-### 2. Optional hardening — `check:exports`
+### 3. Optional hardening — `check:exports`
 
 `release.mjs` still derives subpaths with its own `subpathsOf()`. The planned `exports.json` +
 `check:exports` gate (a subpath pointing at a file `files[]` excludes is a silent 404 today) is

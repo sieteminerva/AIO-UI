@@ -259,6 +259,28 @@ value instead of dropping it. `normalizePayload()` still owns _transformations_ 
 entries, deriving labels); the contract owns _shape_. `packages/components/contracts.test.ts`
 validates `example` for every builder that declares one, so the sample cannot drift.
 
+**Known limit:** a payload that is a union of shapes, or that may carry a DOM element, uses
+`{ t: "any" }`, so only its `example` is validated (today: `code-block`, `fab-menu`, `markdown`,
+`masonry`, `modal`, `product`, `rating`). Closing that needs a `union` member in `iContentSpec`; it
+is deferred, not forgotten.
+
+### The four layers, one word each
+
+One name per layer; a synonym is a guess waiting to happen.
+
+| Layer                    | Word        | Anchor                                                       |
+| ------------------------ | ----------- | ------------------------------------------------------------ |
+| page entry               | **node**    | `iBasicBuilderNode` — schema + directives                    |
+| builder door             | **schema**  | `create(schema)`, `manifest.schema` override                 |
+| component payload        | **content** | `schema.content`, typed by `iBuilderRegistry[K]`             |
+| content after processing | **payload** | proxy, `template(typeKey, el, payload)`, `iNodeRecordItem`    |
+
+`schema` may also mean "specification" (a field spec, `contract.schema`); it never means a value at
+the page-tree layer. **No payload field may be named `content`** — inner keys use domain words.
+
+Who owns a key: changes what is rendered → content; changes the host/root element → node or config;
+comes from theme/emitter/app → config; describes a shape → `contract.schema`.
+
 ---
 
 ## 5. `prepare(content)` — build the tree

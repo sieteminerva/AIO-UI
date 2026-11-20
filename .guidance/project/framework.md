@@ -9,13 +9,10 @@ Why / stages: `.guidance/plan-framework.md`. Engineering rules:
 | #   | Task                     | State       | Gate                                                                                                                                    |
 | --- | ------------------------ | ----------- | --------------------------------------------------------------------------------------------------------------------------------------- |
 | 1   | Theme console view (fab) | in progress | `examples/demo/src/ThemeConsole/TASKS.md` — view composed, gate green; open: page-only sections in the popover                          |
-| 2   | Inspect surface (b43)    | in progress | `inspect()` + `inspectPage()` landed and green; open: dead relay removal, `#cleanupMap` reset, Topik A (`iComponentInput`)              |
-| 3   | Input normalisation      | in progress | A + B + C + D landed (`npm run verify` → 873 pass / 15 skip); E next — `docs/framework/TASK-input-normalisation.md` `## Next — batch E` |
+| 2   | Inspect surface (b43)    | in progress | `inspect()` + `inspectPage()` landed and green; `inspect().issues` shipped (batch E); open: dead relay removal, `#cleanupMap` reset |
 
 ## Next
 
-- **README payload clarifications** — `packages/components/TASKS.md`: add one line to every
-  component README naming the payload-shape authority; batch D's shapes are now the only ones.
 - **0.2.4 release** — `release.mjs` + `publish-cdn.mjs` must ship the four bundle artefacts
   (`aio-ui{,.min}.{js,css}`) at the branch root and name them in `registry.json`; the scripts exist
   (`npm run build:bundle`) but nothing publishes them yet. Cut it only when the user says so.

@@ -4,6 +4,19 @@ Recorded 2026-11-17. Partially landed 2026-11-18 (the branch, the worktree, the 
 Owner band: **Tooling** (`scripts/release.mjs`, `scripts/releases-worktree.mjs`,
 `scripts/publish-releases.mjs`, `scripts/publish-cdn.mjs`).
 
+**Status:** pipeline landed 2026-11-18 for the plain (non-bundled) tarballs; the bundled rewrite (§2)
+and the `publish-cdn.mjs` `node_modules` assertion (§5.5) are open.
+
+## Next (cold start — 0.2.4)
+
+1. `scripts/release.mjs` `--bundle` per §2 (`scripts/closure.mjs` already emits the graph).
+2. Wire the four bundle artefacts: `npm run build:bundle` writes `aio-ui{,.min}.{js,css}`;
+   `release.mjs` copies them into `releases/vX/` and names them in `registry.json`;
+   `publish-cdn.mjs` places them at the branch root.
+3. Add the §5.5 assertion: a staged tree containing `node_modules/` fails the cdn publish.
+4. Gate: `npm run verify:pkgs` (~2 m 23 s), then `version.mjs --apply --version 0.2.4` and the
+   three publishers. Cut only when the owner says so.
+
 ## Goal
 
 `main` stays source-only (no binaries, fast clone), and there is no manual web-UI upload:

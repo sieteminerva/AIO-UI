@@ -6,22 +6,23 @@
 >
 > Batch 41 (2026-11-21): binding seam and the ViewFactory port are done and dropped from here.
 
-### 1. Input normalisation — `create(schema)` + content-once
+### 1. Release 0.2.4 — live
 
-**A–E landed** (2026-11-21): the door is `create(schema)`, no payload carries a `content` field,
-and every builder declares `static contract` (`schema` / `example` / `legacy`). `create()`
-normalises against it and `inspect().issues` reports the verdict; 22 examples are validated in CI.
-Component READMEs now state the factory / CSS-library contract and show the assembled markup.
-**Open:** nothing — task closed, the detail doc keeps the history.
-→ `docs/framework/TASK-input-normalisation.md`
-
-### 2. Release 0.2.4 — HELD until normalisation lands
-
-Restructure landed at 0.2.4 (`07126a0`+): 39 packages, `@aio-ui/dom-renderer` ships alone,
-component folders match their builder word; `0.2.3` is live on the `releases` branch with
-jsDelivr 200. **Open:** the four bundle artefacts are not wired into `release.mjs` /
-`publish-cdn.mjs`; release-page assets stay owner-manual.
+Restructure at 0.2.4 landed (`07126a0`+): 39 packages, `@aio-ui/dom-renderer` ships alone, folders
+match their builder word. `0.2.3` is live on `releases` (jsDelivr 200). **Open:** the bundled rewrite
+(doc §2) and the four bundle artefacts — `release.mjs` / `publish-cdn.mjs` must place
+`aio-ui{,.min}.{js,css}` at the branch root and name them in `registry.json`; then §5 +
+`version.mjs --apply --version 0.2.4` → `verify:pkgs` → `release.mjs` → `publish-releases.mjs` →
+`publish-cdn.mjs`. Cut only when the owner says so.
 → `docs/framework/TASK-releases-branch.md` · `docs/releases/v0.2.4.md`
+
+### 2. `union` in `iContentSpec` — deferred
+
+Seven builders use `{ t: "any" }` because their payload is a union of shapes or may carry a DOM
+element. **Open:** add `{ t: "union", of: [...] }` to `iContentSpec`, narrow `code-block`,
+`fab-menu`, `markdown`, `masonry`, `modal`, `product`, `rating`, keep `normalize()` total and
+idempotent, and extend `packages/components/contracts.test.ts` with one invalid example per shape.
+→ `docs/framework/COMPONENT-CONVENTIONS.md` §4 ("Known limit")
 
 ## Map
 

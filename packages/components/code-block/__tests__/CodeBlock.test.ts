@@ -26,10 +26,6 @@ describe("Code Block payload", () => {
     expect(normalizePayload("npm run verify")).toEqual([{ code: "npm run verify" }]);
   });
 
-  it("unwraps { content }", () => {
-    expect(normalizePayload({ content: { code: "x" } })).toEqual([{ code: "x" }]);
-  });
-
   it("returns an empty list for nothing usable", () => {
     expect(normalizePayload(null)).toEqual([]);
     expect(normalizePayload(undefined)).toEqual([]);

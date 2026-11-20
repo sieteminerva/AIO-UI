@@ -33,14 +33,14 @@ function mountMain(host: HTMLElement, entry: iDemoEntry, build: BuildFn): void {
         body: [
           {
             id: "panel-display",
-            content: {
+            panel: {
               eyebrow: `${entry.category} · ${entry.tier}`,
               title: entry.name,
               description: `build("${entry.name}", { content: payload })`,
             },
           },
-          { id: "panel-usage", content: usagePanel(entry, build) },
-          { id: "panel-api", content: apiPanel(entry, build) },
+          { id: "panel-usage", panel: usagePanel(entry, build) },
+          { id: "panel-api", panel: apiPanel(entry, build) },
         ],
       },
       config: { menuPosition: "top", appearance: "folder" },

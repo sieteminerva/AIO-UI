@@ -414,11 +414,11 @@
       "lead": "A stacked list of label/description pairs rendered as self-contained cards. It is the smallest\ncard surface in the library: no interaction, no state, only a container that turns its payload\ninto rows.",
       "sections": {
         "Payload": {
-          "text": "Accepted shapes: `[...]`, `{ items: [...] }`, `{ content: [...] }`, a single record, or\nnothing. `normalizePayload()` is the only place that decides this.",
+          "text": "The payload **is** the item list — `content` appears only in the node wrapper, never here.\n\nAccepted shapes: `[...]`, `{ items: [...] }`, a single record, or nothing. `normalizePayload()`\nis the only place that decides this.",
           "examples": [
             {
               "lang": "ts",
-              "code": "{\n  content: [{ label: \"…\", description: \"…\" }];\n}"
+              "code": "[{ label: \"…\", description: \"…\" }];"
             }
           ],
           "tables": []
@@ -792,10 +792,6 @@
                 {
                   "shape": "`\"…\"`",
                   "result": "source only, no caption"
-                },
-                {
-                  "shape": "`{ content: … }`",
-                  "result": "the registry's default unwrapping"
                 },
                 {
                   "shape": "`{}` / `null` / `undefined`",
@@ -2839,11 +2835,11 @@
       "lead": "A cascading gallery: one grid whose column count comes from CSS, a category filter with a sliding\nhighlight, lazy images, batched paging and a keyboard-driven lightbox. `Masonry.css` ships with the\npackage and the registry injects it, so the markup below is the whole contract.",
       "sections": {
         "Payload": {
-          "text": "A bare array is wrapped into `{ content: […] }` automatically. The array itself is read from\n`content`, **not** from `items` — older drafts of this document showed `{ items: […] }`, which renders\nan empty grid. Each entry becomes one card; `category` feeds the filter bar, and the filter list is\nderived from the data, never declared. Items may also be pre-built `HTMLElement`s.",
+          "text": "A bare array is wrapped into `{ items: […] }` automatically. The array itself is read from\n`items`; `content` appears only in the node wrapper. Each entry becomes one card; `category` feeds\nthe filter bar, and the filter list is derived from the data, never declared. Items may also be\npre-built `HTMLElement`s.",
           "examples": [
             {
               "lang": "ts",
-              "code": "{\n  id: \"marketing-gallery\",\n  className: \"section masonry gallery\",\n  content: [\n    { image: \"https://…\", category: \"Branding\", title: \"Project A\", description: \"Design work\" },\n    { image: \"https://…\", category: \"Web\", title: \"Project B\" },\n  ],\n}"
+              "code": "{\n  id: \"marketing-gallery\",\n  className: \"section masonry gallery\",\n  items: [\n    { image: \"https://…\", category: \"Branding\", title: \"Project A\", description: \"Design work\" },\n    { image: \"https://…\", category: \"Web\", title: \"Project B\" },\n  ],\n}"
             }
           ],
           "tables": []
@@ -3845,7 +3841,7 @@
       "lead": "PricingCard renders one card per record: a header with a divider, a feature list, a price line and an\naction button. Because it is a card **group**, its root is a `div.row` and each card is wrapped in a\n`div.column` — the grid comes from the host layout.",
       "sections": {
         "Payload": {
-          "text": "A single record or an array of records. Accepted aliases: `title` for `header`, `content` for\n`body`. `config` takes no options — the card is entirely payload-driven.\n\n`price` is formatted with `Intl.NumberFormat(\"id-ID\", { currency: \"IDR\" })` and printed inside a\n`strong`; the surrounding sentence is fixed copy (`Mulai dari … / pax`).",
+          "text": "A single record or an array of records. Accepted alias: `title` for `header`; the feature list is\n`body`. `config` takes no options — the card is entirely payload-driven.\n\n`price` is formatted with `Intl.NumberFormat(\"id-ID\", { currency: \"IDR\" })` and printed inside a\n`strong`; the surrounding sentence is fixed copy (`Mulai dari … / pax`).",
           "examples": [
             {
               "lang": "ts",
@@ -4418,11 +4414,11 @@
       "lead": "One row of 2–3 content columns. Each column stacks image → eyebrow → title →\ndescription → actions. The column count is decided by CSS, not by the payload: the grid\n`auto-fit`s as many 18rem tracks as fit, and collapses to one column under `768px` with\nthe image spanning the full row.",
       "sections": {
         "Payload": {
-          "text": "A column whose own fields look like a block is treated as one block, so\n`content: [{ eyebrow, title, description, imageUrl, actions }]` also works.\n`normalizeColumns()` is the only place that decides this.",
+          "text": "The payload **is** the column list — `content` appears only in the node wrapper. A column owns its\nblock list under `blocks`.\n\nA column whose own fields look like a block is treated as one block, so\n`[{ eyebrow, title, description, imageUrl, actions }]` also works. `normalizeColumns()` is the only\nplace that decides this.",
           "examples": [
             {
               "lang": "ts",
-              "code": "{\n  id?: string,\n  className?: string,\n  content: [\n    {\n      className?: string,\n      content: [\n        { imageUrl? | image?, alt?, eyebrow?, title?, description?, actions? }\n      ]\n    }\n  ]\n}"
+              "code": "[\n  {\n    className?: string,\n    blocks: [\n      { imageUrl? | image?, alt?, eyebrow?, title?, description?, actions? }\n    ]\n  }\n]"
             }
           ],
           "tables": []
@@ -4438,6 +4434,11 @@
                 "Meaning"
               ],
               "rows": [
+                {
+                  "option": "`id`",
+                  "default": "—",
+                  "meaning": "Root element id (host-level, never from payload)"
+                },
                 {
                   "option": "`className`",
                   "default": "—",

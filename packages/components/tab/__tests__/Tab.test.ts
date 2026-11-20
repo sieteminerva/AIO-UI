@@ -21,7 +21,7 @@ function build(content: any, config: Record<string, any> = {}): HTMLElement {
 
 const content = {
   menu: [{ label: "Satu", title: "Satu" }],
-  body: [{ content: { title: "Isi", description: "Desc" } }],
+  body: [{ panel: { title: "Isi", description: "Desc" } }],
 };
 
 describe("tab", () => {
@@ -60,7 +60,7 @@ describe("tab", () => {
         { label: "Satu", title: "Satu" },
         { label: "Dua", title: "Dua" },
       ],
-      body: [{ content: { title: "A" } }, { content: { title: "B" } }],
+      body: [{ panel: { title: "A" } }, { panel: { title: "B" } }],
     });
     const items = root.querySelectorAll(".menu button.button");
 
@@ -98,7 +98,7 @@ describe("tab", () => {
           { label: "Satu", title: "Satu" },
           { label: "Dua", title: "Dua" },
         ],
-        body: [{ content: { title: "A" } }, { content: { title: "B" } }],
+        body: [{ panel: { title: "A" } }, { panel: { title: "B" } }],
       },
       { active: "Dua" },
     );
@@ -132,7 +132,7 @@ describe("tab", () => {
           { label: "Satu", title: "Satu" },
           { label: "Dua", title: "Dua" },
         ],
-        body: [{ content: { title: "A" } }, { content: { title: "B" } }],
+        body: [{ panel: { title: "A" } }, { panel: { title: "B" } }],
       },
     }) as HTMLElement;
     const panels = root.querySelectorAll<HTMLElement>(".body .panel");

@@ -36,10 +36,9 @@ describe("masonry", () => {
     expect(rendered[0].querySelector(".desc")?.textContent).toBe("First");
   });
 
-  it("accepts the { content } envelope", () => {
-    const root = build({ content: items });
-
-    expect(root.querySelectorAll(".grid .item")).toHaveLength(2);
+  it("accepts the { items } envelope and no longer { content }", () => {
+    expect(build({ items }).querySelectorAll(".grid .item")).toHaveLength(2);
+    expect(build({ content: items }).querySelectorAll(".grid .item")).toHaveLength(0);
   });
 
   it("derives the filter categories from the records", () => {

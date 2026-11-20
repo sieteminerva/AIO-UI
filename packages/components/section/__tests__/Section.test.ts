@@ -13,8 +13,8 @@ import { normalizeColumns } from "../Section.engine";
 describe("Section columns", () => {
   it("reads the documented column-of-blocks shape", () => {
     const columns = normalizeColumns([
-      { className: "column half", content: [{ eyebrow: "E", title: "T" }] },
-      { content: [{ imageUrl: "x.png" }] },
+      { className: "column half", blocks: [{ eyebrow: "E", title: "T" }] },
+      { blocks: [{ imageUrl: "x.png" }] },
     ]);
 
     expect(columns).toHaveLength(2);
@@ -60,8 +60,8 @@ describe("Section build", () => {
   it("takes root id and className from config, columns from content", () => {
     const root = new SectionBuilder({ id: "demo-section", className: "demo" }).create({
       content: [
-        { className: "column half", content: [{ title: "A" }] },
-        { className: "column half", content: [{ imageUrl: "x.png" }] },
+        { className: "column half", blocks: [{ title: "A" }] },
+        { className: "column half", blocks: [{ imageUrl: "x.png" }] },
       ],
     }) as HTMLElement;
 

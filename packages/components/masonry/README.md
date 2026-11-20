@@ -10,17 +10,17 @@ package and the registry injects it, so the markup below is the whole contract.
 {
   id: "marketing-gallery",
   className: "section masonry gallery",
-  content: [
+  items: [
     { image: "https://…", category: "Branding", title: "Project A", description: "Design work" },
     { image: "https://…", category: "Web", title: "Project B" },
   ],
 }
 ```
 
-A bare array is wrapped into `{ content: […] }` automatically. The array itself is read from
-`content`, **not** from `items` — older drafts of this document showed `{ items: […] }`, which renders
-an empty grid. Each entry becomes one card; `category` feeds the filter bar, and the filter list is
-derived from the data, never declared. Items may also be pre-built `HTMLElement`s.
+A bare array is wrapped into `{ items: […] }` automatically. The array itself is read from
+`items`; `content` appears only in the node wrapper. Each entry becomes one card; `category` feeds
+the filter bar, and the filter list is derived from the data, never declared. Items may also be
+pre-built `HTMLElement`s.
 
 ## Config
 

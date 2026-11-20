@@ -117,12 +117,10 @@ export const DEMO: iDemoEntry[] = [
     category: "content",
     tier: "basic",
     kind: "element",
-    payload: {
-      content: [
-        { label: "Template", description: "Dihasilkan oleh scripts/new-component.mjs" },
-        { label: "Konvensi", description: "ELEMENT_KEYS, selectors, prepare, template, initialize" },
-      ],
-    },
+    payload: [
+      { label: "Template", description: "Dihasilkan oleh scripts/new-component.mjs" },
+      { label: "Konvensi", description: "ELEMENT_KEYS, selectors, prepare, template, initialize" },
+    ],
     config: { emphasis: true },
     note: "scaffolded: node scripts/new-component.mjs badge",
   },
@@ -149,15 +147,14 @@ export const DEMO: iDemoEntry[] = [
     category: "content",
     tier: "advanced",
     kind: "element",
-    // Shape from `content.ts:37` — slides are `title` + `description` + `image`.
-    payload: {
-      content: [
-        { title: "Eksplorasi Keindahan", description: "Perjalanan privat yang tenang.", image: image("Slide 1") },
-        { title: "Pantai Pasir Putih", description: "Pemandangan sunset yang luar biasa.", image: image("Slide 2") },
-        { title: "Aktivitas Menyenangkan", description: "Snorkeling untuk semua umur.", image: image("Slide 3") },
-        { title: "Pulau Pramuka", description: "Penangkaran penyu dan mangrove.", image: image("Slide 4") },
-      ],
-    },
+    // Shape from `content.ts:37` — slides are `title` + `description` + `image`, and the
+    // payload is the slide array directly (no `{ content }` envelope).
+    payload: [
+      { title: "Eksplorasi Keindahan", description: "Perjalanan privat yang tenang.", image: image("Slide 1") },
+      { title: "Pantai Pasir Putih", description: "Pemandangan sunset yang luar biasa.", image: image("Slide 2") },
+      { title: "Aktivitas Menyenangkan", description: "Snorkeling untuk semua umur.", image: image("Slide 3") },
+      { title: "Pulau Pramuka", description: "Penangkaran penyu dan mangrove.", image: image("Slide 4") },
+    ],
     // Two slides per view, so the sliding path and the reduced dot count are exercised
     // instead of the default single-slide fade.
     config: { slidesPerView: 1, animation: "slide-left", showControl: true, showNavigation: true, vertical: false },
@@ -190,10 +187,8 @@ export const DEMO: iDemoEntry[] = [
     tier: "advanced",
     kind: "element",
     payload: {
-      content: {
-        menu: ["Panel A", "Panel B"],
-        body: [{ content: "Isi panel A" }, { content: "Isi panel B" }],
-      },
+      menu: ["Panel A", "Panel B"],
+      body: [{ panel: "Isi panel A" }, { panel: "Isi panel B" }],
     },
     // The docs shell already shows the default look on every page, so the demo shows the
     // other one: folder tabs on a ruled edge.
@@ -213,7 +208,7 @@ export const DEMO: iDemoEntry[] = [
     payload: [
       {
         className: "column half",
-        content: [
+        blocks: [
           {
             eyebrow: "Private trip",
             title: "Dua kolom, satu baris.",
@@ -225,7 +220,7 @@ export const DEMO: iDemoEntry[] = [
       },
       {
         className: "column half",
-        content: [{ imageUrl: image("Section media"), alt: "Ilustrasi kolom media" }],
+        blocks: [{ imageUrl: image("Section media"), alt: "Ilustrasi kolom media" }],
       },
     ],
     config: { id: "demo-section", className: "demo" },
@@ -238,29 +233,27 @@ export const DEMO: iDemoEntry[] = [
     category: "layout",
     tier: "basic",
     kind: "element",
-    // Row 1 = `content.columns` (any count), row 2 = copyright. Columns are free-form:
+    // Row 1 = `columns` (any count), row 2 = copyright. Columns are free-form:
     // the first carries title + description, the second only actions.
     payload: {
-      content: {
-        id: "contact-section",
-        company: "Agen Wisata SeribuTrip",
-        columns: [
-          {
-            title: "Agen Wisata SeribuTrip",
-            description: "Operator lokal resmi yang mengedepankan kenyamanan dan ketepatan.",
-          },
-          {
-            title: "Kontak & Informasi",
-            actions: [
-              { label: "email", href: "halo@seributrip.id" },
-              { label: "phone", href: "+628123456789" },
-              { label: "address", href: "Dermaga 16 Marina Ancol, Jakarta" },
-            ],
-          },
-        ],
-      },
+      id: "contact-section",
+      company: "Agen Wisata SeribuTrip",
+      columns: [
+        {
+          title: "Agen Wisata SeribuTrip",
+          description: "Operator lokal resmi yang mengedepankan kenyamanan dan ketepatan.",
+        },
+        {
+          title: "Kontak & Informasi",
+          actions: [
+            { label: "email", href: "halo@seributrip.id" },
+            { label: "phone", href: "+628123456789" },
+            { label: "address", href: "Dermaga 16 Marina Ancol, Jakarta" },
+          ],
+        },
+      ],
     },
-    note: "row 1 = content.columns[] (dynamic), row 2 = copyright",
+    note: "row 1 = columns[] (dynamic), row 2 = copyright",
   },
   {
     name: "menu",
@@ -488,11 +481,12 @@ export const DEMO: iDemoEntry[] = [
     category: "layout",
     tier: "advanced",
     kind: "element",
-    // The array lives under `content` — `{ items }` renders an empty grid.
+    // The array lives under `items` — the same word `iNormalizedColumn` uses for a column's
+    // block list.
     payload: {
       id: "demo-masonry",
       className: "section masonry gallery",
-      content: [
+      items: [
         { image: image("Branding 1"), category: "Branding", title: "Identitas", description: "Logotype dan panduan warna." },
         { image: image("Web 1"), category: "Web", title: "Landing page", description: "Satu halaman, satu tujuan." },
         { image: image("Branding 2"), category: "Branding", title: "Kemasan", description: "Cetak dan digital." },

@@ -16,9 +16,9 @@ describe("Badge payload", () => {
     expect(normalizePayload([{ label: "a" }, { label: "b" }])).toHaveLength(2);
   });
 
-  it("accepts { items } and { content }", () => {
+  it("accepts { items } and no longer a { content } envelope", () => {
     expect(normalizePayload({ items: [{ label: "a" }] })).toHaveLength(1);
-    expect(normalizePayload({ content: [{ label: "a" }, { label: "b" }] })).toHaveLength(2);
+    expect(normalizePayload({ content: [{ label: "a" }] })).toEqual([]);
   });
 
   it("treats a single record as one item", () => {

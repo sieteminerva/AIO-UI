@@ -231,8 +231,8 @@ export class CarouselBuilder extends Builder<CarouselElementType, iCarouselConfi
 
         // 🧱 BANGUN KERANGKA UTAMA: Kunci config runtime lalu rakit balok track + slides.
         // Dilewati pasif pada jalur bootstrapper manual (run) — slides/track sudah hidup di DOM.
-        // `content` may arrive wrapped (`{ content: [...] }`) or bare (`[...]`); both work.
-        const slideData = Array.isArray(payload) ? payload : payload?.content;
+        // The payload is the slide array directly; there is no `{ content }` wrapper.
+        const slideData = Array.isArray(payload) ? payload : undefined;
         if (this.slides.length === 0 && Array.isArray(slideData)) {
           this.rConfig = this.resolveRuntimeConfig(el, payload, slideData.length);
 
@@ -679,7 +679,7 @@ export class CarouselBuilder extends Builder<CarouselElementType, iCarouselConfi
       }
     }
 
-    totalSlides = totalSlides ?? (Array.isArray(payload) ? payload.length : (payload?.content?.length ?? 0));
+    totalSlides = totalSlides ?? (Array.isArray(payload) ? payload.length : 0);
 
     mergeAttributes({ ...secureAttributes, ...dataAttrs });
 

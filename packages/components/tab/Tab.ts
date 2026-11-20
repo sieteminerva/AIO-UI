@@ -47,7 +47,7 @@ export interface iTabConfig extends iBuilderConfig<TabElementType> {
 
 export type iTabMenuProperty = { label: string; title: string; link?: string; id?: string, className?: string } | iBasicNode;
 export type iTabItemContent = { title?: string; eyebrow?: string; description?: string; } | iBasicNode;
-export type iTabItemProperty = { id?: string; className?: string; content: iTabItemContent } | HTMLElement;
+export type iTabItemProperty = { id?: string; className?: string; panel: iTabItemContent } | HTMLElement;
 export type iTabFooterProperty = { id?: string; className?: string; text: string };
 
 export interface iTabContent {
@@ -145,7 +145,7 @@ export class TabBuilder extends Builder<TabElementType, iTabConfig> {
   public prepare(data: any, _config?: Partial<iTabConfig>): HTMLElement {
     if (_config) this.config = this.resolveConfig(this.config, _config);
 
-    const content: iTabContent = data?.content || data || { body: [] };
+    const content: iTabContent = data ?? { body: [] };
 
     this.items = content.body || [];
     this.currentTabIndex = 0;
@@ -356,7 +356,7 @@ export class TabBuilder extends Builder<TabElementType, iTabConfig> {
   private _renderPanelContent(panel: HTMLElement, item: any, index: number): void {
     if (panel.dataset.loaded === "true") return;
 
-    const content = item?.content ? item.content : item;
+    const content = item?.panel ? item.panel : item;
 
     if (content instanceof HTMLElement) {
       panel.append(content);

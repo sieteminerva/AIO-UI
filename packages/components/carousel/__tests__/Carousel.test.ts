@@ -6,7 +6,7 @@ import { CarouselBuilder } from "../Carousel";
 /**
  * Carousel owns a timer, so every test pins the options that keep it inert (`autoPlay: false`).
  *
- * Payload is a bare array of slides; `prepare()` also accepts `{ content: [...] }`.
+ * Payload is a bare array of slides, exactly what the registry hands `prepare()`.
  */
 
 const slides = [
@@ -29,11 +29,11 @@ describe("carousel", () => {
     expect(rendered[0].querySelector(".desc")?.textContent).toBe("One");
   });
 
-  it("accepts the wrapped { content } shape as well", () => {
-    // The door consumes one wrapper; the builder's own unwrap survives until batch C.
+  it("no longer unwraps a { content } envelope", () => {
+    // The payload is the slide array; a `{ content }` object renders nothing.
     const root = build({ content: slides });
 
-    expect(root.querySelectorAll(".slide")).toHaveLength(2);
+    expect(root.querySelectorAll(".slide")).toHaveLength(0);
   });
 
   it("renders controls and navigation dots", () => {

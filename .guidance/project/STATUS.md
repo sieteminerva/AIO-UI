@@ -8,10 +8,10 @@
 
 ### 1. Input normalisation — `create(schema)` + content-once
 
-**A + B + C landed** (2026-11-21): the door is `create(schema)`, the registry wraps node→schema
-by `builder`, the compensation unwraps are gone, and `section` root id/className come from config.
-**Open:** D — `content` appears once (one commit per component); start at the doc's
-`## Next — batch D`.
+**A + B + C + D landed** (2026-11-21): the door is `create(schema)`, the registry wraps node→schema
+by `builder`, the compensation unwraps are gone, no payload carries a `content` field any more, and
+`section` root id/className come from config. **Open:** E — a declared content contract per builder;
+start at the doc's `## Next — batch E`.
 → `docs/framework/TASK-input-normalisation.md`
 
 ### 2. Release 0.2.4 — HELD until normalisation lands

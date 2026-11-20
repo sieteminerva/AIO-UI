@@ -109,31 +109,31 @@ These keys are **reserved** and never become elements: `content`, `onCreated`, `
 Payload shapes below are the ones **verified by rendering** in this repository. Where the shape is
 not listed, the package README `## Payload` is the only authority — read it, do not infer it.
 
-| Word                | Package                         | Payload                                                                                       |
-| ------------------- | ------------------------------- | --------------------------------------------------------------------------------------------- |
-| `accordion`         | `@aio-ui/accordion`             | `{ content: [{ title, description }] }`                                                       |
-| `article`           | `@aio-ui/article`               | see README                                                                                    |
-| `badge`             | `@aio-ui/badge`                 | see README                                                                                    |
-| `carousel`          | `@aio-ui/carousel`              | `{ content: [{ title, description, image }] }`                                                |
-| `dropdown`          | `@aio-ui/input/dropdown/module` | see README                                                                                    |
-| `fab-menu`          | `@aio-ui/fab-menu`               | `{ title, actions: [{ label }] }` — **no** `content` wrapper                                  |
-| `footer`            | `@aio-ui/footer`                | `{ content: { company, columns: [{ title?, description?, actions?: [{ label, href? }] }] } }` |
-| `form`              | `@aio-ui/form`                  | `{ config: { fields: [...] } }` — see README for field types                                  |
-| `input`             | `@aio-ui/input`                 | see README                                                                                    |
-| `input-controls`    | `@aio-ui/input/controls/module` | see README                                                                                    |
-| `masonry`           | `@aio-ui/masonry`               | see README                                                                                    |
-| `menu`              | `@aio-ui/menu`                  | `{ content: { navigations: [{ href, label, title }] } }`                                      |
-| `message`           | `@aio-ui/message`               | see README                                                                                    |
-| `modal`             | `@aio-ui/modal`                 | `{ content }` + `config: { id, title }`                                                       |
-| `mode-switcher`     | `@aio-ui/mode-switcher`          | `{}`                                                                                          |
-| `pricing-card`      | `@aio-ui/pricing-card`           | **array** of `{ header, body: [{ title }], price, action: { label } }`                        |
-| `product-card`      | `@aio-ui/product`               | `{ uid, name, category, title, description, price, colors, artwork }`                         |
-| `product-card-grid` | `@aio-ui/product`               | `{ content: { data: [<product-card payload>] } }`                                             |
-| `product-detail`    | `@aio-ui/product`               | `{ uid, category, title, description, price, currency, colors, artwork }`                     |
-| `rating`            | `@aio-ui/rating`                | see README                                                                                    |
-| `section`           | `@aio-ui/section`               | `{ content: [{ content: [{ imageUrl?, eyebrow?, title?, description?, actions? }] }] }`       |
-| `tab`               | `@aio-ui/tab`                   | `{ content: { menu: string[], body: any[] } }`                                                |
-| `table`             | `@aio-ui/table`                 | see README                                                                                    |
+| Word                | Package                         | Payload                                                                                             |
+| ------------------- | ------------------------------- | --------------------------------------------------------------------------------------------------- |
+| `accordion`         | `@aio-ui/accordion`             | `[{ title, description }]`                                                                          |
+| `article`           | `@aio-ui/article`               | see README                                                                                          |
+| `badge`             | `@aio-ui/badge`                 | see README                                                                                          |
+| `carousel`          | `@aio-ui/carousel`              | `[{ title, description, image }]`                                                                   |
+| `dropdown`          | `@aio-ui/input/dropdown/module` | see README                                                                                          |
+| `fab-menu`          | `@aio-ui/fab-menu`              | `{ title, actions: [{ label }] }` — **no** `content` wrapper                                        |
+| `footer`            | `@aio-ui/footer`                | `{ company, columns: [{ title?, description?, actions?: [{ label, href? }] }] }`                    |
+| `form`              | `@aio-ui/form`                  | `{ config: { fields: [...] } }` — see README for field types                                        |
+| `input`             | `@aio-ui/input`                 | see README                                                                                          |
+| `input-controls`    | `@aio-ui/input/controls/module` | see README                                                                                          |
+| `masonry`           | `@aio-ui/masonry`               | see README                                                                                          |
+| `menu`              | `@aio-ui/menu`                  | `{ navigations: [{ href, label, title }] }`                                                         |
+| `message`           | `@aio-ui/message`               | see README                                                                                          |
+| `modal`             | `@aio-ui/modal`                 | `{ content }` + `config: { id, title }`                                                             |
+| `mode-switcher`     | `@aio-ui/mode-switcher`         | `{}`                                                                                                |
+| `pricing-card`      | `@aio-ui/pricing-card`          | **array** of `{ header, body: [{ title }], price, action: { label } }`                              |
+| `product-card`      | `@aio-ui/product`               | `{ uid, name, category, title, description, price, colors, artwork }`                               |
+| `product-card-grid` | `@aio-ui/product`               | `{ data: [<product-card payload>] }` or a bare array                                                |
+| `product-detail`    | `@aio-ui/product`               | `{ uid, category, title, description, price, currency, colors, artwork }`                           |
+| `rating`            | `@aio-ui/rating`                | see README                                                                                          |
+| `section`           | `@aio-ui/section`               | `[{ blocks: [{ imageUrl?, eyebrow?, title?, description?, actions? }] }]` (root id/class in config) |
+| `tab`               | `@aio-ui/tab`                   | `{ menu: string[], body: [{ panel: any }] }`                                                        |
+| `table`             | `@aio-ui/table`                 | see README                                                                                          |
 
 Reserved-but-unimplemented words — using one is a defect, not a shortcut: `color-theme`, `editor`,
 `form-editor`.

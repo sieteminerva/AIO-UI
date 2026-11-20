@@ -93,7 +93,8 @@ export class InputControlsBuilder extends Builder<InputControlsElementType> {
    * 🧱 METODE PREPARE
    */
   public prepare(payload: any): HTMLElement {
-    const content = payload.content;
+    // The payload is the control spec directly; there is no `{ content }` wrapper.
+    const content = payload;
 
     const actions: iInputActionDefinition[] = content.actions ?? [];
     const position = content.position;

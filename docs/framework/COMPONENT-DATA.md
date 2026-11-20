@@ -5,23 +5,27 @@ Measured, not guessed: every shape below was taken from the production content f
 `examples/demo` (`#kitchen`). Each row of `examples/demo/src/manifest.ts` carries the
 same note, so the demo doubles as the evidence.
 
-Status is what the demo reports, not what the docs wish.
+Status is what the demo reports, not what the docs wish. **Batch D (input normalisation) landed:**
+every payload below is the value the registry hands the builder — `content` now appears only in
+the node wrapper, never inside a payload.
 
 ## Verified
 
-| Component       | Input shape (what `build(name, payload)` receives)                                                                   | Evidence                                        |
-| --------------- | -------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------- | --- | ---------------- | ----------------------------------------------------------------------------------------------------- | ------------------------------------------------------- | --- | ------- | ------------------------------------------------------------------------------------ | -------------------------------------------- |
-| `accordion`     | `{ content: [{ title, description }] }`                                                                              | `content.ts:308`                                |
-| `carousel`      | `{ content: [{ title, description, image }] }`                                                                       | `content.ts:37`                                 |
-| `tab`           | `{ content: { menu: string[], body: any[] } }`                                                                       | gallery `content/blog` usage                    |
-| `section`       | `{ id, className, content: [ { className, content: [ { imageUrl, eyebrow, title, description, actions? } ] } ] }`    | `content.ts:296`                                |
-| `footer`        | `{ content: { id?, company, copyright?, columns: [{ title?, description?, actions?: [{ label, href\|value }] }] } }` | `.archives/travel-trip/main.ts:61`              |
-| `menu`          | `{ content: { navigations: [{ href, label, title }], actions: [] } }`                                                | rendered nav                                    |
-| `fab-menu`      | `{ title, actions: [{ label }] }` — **no** `content` wrapper                                                         | `prepare()` reads `content.actions`             |
-| `mode-switcher` | `{}`                                                                                                                 | self-contained                                  |
-| `pricing-card`  | **array** of `{ header, body: [{ title, className? }], price, action: { label } }`                                   | `content.ts:531`                                |
-| `product-card`  | `{ uid, name, category, title, description, price, colors: [{ name, value }], artwork: { src } }`                    | `content.ts:692`                                |
-| `product-grid`  | `{ content: { data: [<product-card payload>] } }`                                                                    | `ProductGrid.prepare` reads `data.content.data` |     | `product-detail` | `{ uid, category, title, description, price, currency, colors: [{ name, value }], artwork: { src } }` | `pages/product.ts` — one record, `onBack`/`onAddToCart` |     | `modal` | `{ content }` (string or nodes) + `config: { id, title, destroyOnClose?, onReady? }` | `Modal.ts` — `prepare()` returns the element |
+| Component        | Input shape (what `build(name, payload)` receives)                                                                   | Evidence                                                |
+| ---------------- | -------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
+| `accordion`      | `[{ title, description }]`                                                                                           | `content.ts:308`                                        |
+| `carousel`       | `[{ title, description, image }]`                                                                                    | `content.ts:37`                                         |
+| `tab`            | `{ menu: string[], body: [{ panel: any }] }`                                                                         | gallery `content/blog` usage                            |
+| `section`        | `[{ className?, blocks: [ { imageUrl?, eyebrow?, title?, description?, actions? } ] }]` (`id`/`className` in config) | `content.ts:296`                                        |
+| `footer`         | `{ id?, company, copyright?, columns: [{ title?, description?, actions?: [{ label, href\|value }] }] }`              | `.archives/travel-trip/main.ts:61`                      |
+| `menu`           | `{ navigations: [{ href, label, title }], actions: [] }`                                                             | rendered nav                                            |
+| `fab-menu`       | `{ title, actions: [{ label }] }` — **no** `content` wrapper                                                         | `prepare()` reads `content.actions`                     |
+| `mode-switcher`  | `{}`                                                                                                                 | self-contained                                          |
+| `pricing-card`   | **array** of `{ header, body: [{ title, className? }], price, action: { label } }`                                   | `content.ts:531`                                        |
+| `product-card`   | `{ uid, name, category, title, description, price, colors: [{ name, value }], artwork: { src } }`                    | `content.ts:692`                                        |
+| `product-grid`   | `{ data: [<product-card payload>] }` or a bare array                                                                 | `ProductGrid` reads `{ data }` / array                  |
+| `product-detail` | `{ uid, category, title, description, price, currency, colors: [{ name, value }], artwork: { src } }`                | `pages/product.ts` — one record, `onBack`/`onAddToCart` |
+| `modal`          | `{ content }` (string or nodes) + `config: { id, title, destroyOnClose?, onReady? }`                                 | `Modal.ts` — `prepare()` returns the element            |
 
 ## Rules that came out of measuring
 
@@ -33,15 +37,15 @@ Status is what the demo reports, not what the docs wish.
 3. **`schema: data` vs `content` unwrapping is a manifest choice.** The gallery manifests
    pick `data.content`; the demo hands the payload straight over as `schema`. Both are
    valid — the payload contract is per component, the registry is neutral.
-4. **Some builders want a node, some want the raw record.** `fab-menu` reads
-   `content.actions`; `product-card` reads `content.content ?? content`. That difference is
-   the main obstacle to one universal input shape (see analysis below).
+4. **Every builder wants the raw record.** After batch D no builder unwraps a payload-level
+   `content`; `fab-menu` reads `actions`, `product-card` reads the record directly. The only
+   `content` left is the node/schema wrapper the registry consumes.
 5. **`modal` is element-returning like everything else, but its lifecycle is opt-in.**
    `prepare()` returns the overlay element (no auto-append to `document.body`), so the
    registry can mount it. `destroyOnClose: true` makes the instance **single-use** — closing
    destroys it, and calling `open()` afterwards only warns. To keep a modal reusable across
    renders, use `destroyOnClose: false` and grab the handle from `config.onReady(controls)`.
-6. **`footer` is two rows, not a list of records.** Row 1 is `content.columns[]` (any count,
+6. **`footer` is two rows, not a list of records.** Row 1 is `columns[]` (any count,
    auto-fitted by CSS); row 2 is the copyright line generated from `company` plus the live
    year, overridable with `copyright: "… {year} … {company} …"`. Each column is free-form —
    title only, actions only, or both — and absent parts are not rendered at all. A payload

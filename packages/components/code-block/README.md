@@ -18,7 +18,6 @@ Accepted shapes:
 | `{ blocks: [ … ] }`           | several labelled blocks in one call |
 | `[…]`                         | bare array of the records above     |
 | `"…"`                         | source only, no caption             |
-| `{ content: … }`              | the registry's default unwrapping   |
 | `{}` / `null` / `undefined`   | nothing renders                     |
 
 `normalizePayload()` is the only place that decides this, and it is exported so the contract is

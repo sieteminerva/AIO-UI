@@ -172,7 +172,8 @@ export class ArticleBuilder extends Builder<ArticleElementType, iArticleConfig> 
    * Interaksi terpasang via bindInteractions().
    */
   public prepare(content: any, _config?: Required<iArticleConfig>): HTMLElement {
-    this.currentRawServerResponse = content?.content || content || {};
+    // The payload is the response envelope directly; there is no `{ content }` wrapper.
+    this.currentRawServerResponse = content ?? {};
 
     // Fresh render pass: forget the previous list and record index.
     this.listElement = null;

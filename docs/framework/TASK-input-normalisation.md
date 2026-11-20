@@ -1,6 +1,6 @@
 # TASK — input normalisation (schema door, content-once)
 
-**Status:** batches A, B and C landed 2026-11-21. Batch D is the live step; E is open.
+**Status:** batches A, B, C and D landed 2026-11-21. Batch E (contract) is the live step.
 Supersedes `packages/components/DISCUSSION_ANALYSIS.md` (scratch, untracked).
 
 ## Landed — batch A (2026-11-21)
@@ -50,6 +50,21 @@ Supersedes `packages/components/DISCUSSION_ANALYSIS.md` (scratch, untracked).
   wrapper in `InputControls.InputModule.ts` is unchanged.
 - Proof: `npm run verify` → 86 files / 874 passed, 15 skipped. `Section.test.ts` asserts 2
   `.section-column` nodes and root id/className from config.
+
+## Landed — batch D (2026-11-21)
+
+- Every payload-level `content` is gone from the 15 listed components. Whole-payload cases became
+  the payload (`article`, `badge`, `carousel`, `footer`, `input-controls`, `tab` top-level);
+  one-field cases were renamed: `masonry` → `items`, `section` column → `blocks`, `tab` item →
+  `panel`, `table` adapter spec → `data`, and `pricing-card` dropped its `body` alias.
+- Legacy unwraps deleted: `CodeBlock` `{ content }`, `ProductCard` `content?.content`, `Article`,
+  `Carousel` (payload and `totalSlides`), `Tab` top-level.
+- Docs updated: each touched README `## Payload`, `docs/agent/handbook.md` word table, and
+  `docs/framework/COMPONENT-DATA.md` (whose broken table was repaired).
+- Deviation from "one commit per component": the demo/gallery rows share one
+  `examples/demo/src/manifest.ts`, so D landed as one batch commit rather than 15.
+- Proof: `npm run verify` → 86 files / 873 passed, 15 skipped. Negative tests lock the removal —
+  badge/carousel/masonry assert a `{ content }` payload renders nothing or yields `[]`.
 
 ## Decision (approved 2026-11-21)
 
@@ -133,7 +148,7 @@ node or config; comes from theme/emitter/app → config; describes a shape → `
   `config.id` / `config.className` or the node, never from content.
 - Proof: `npm run verify`; snapshots identical.
 
-### D — `content` appears once (one commit per component)
+### D — `content` appears once (one commit per component) ✅ landed 2026-11-21
 
 Payloads carrying a `content` field today: `accordion`, `article`, `badge`, `carousel`,
 `code-block`, `footer`, `form`, `input-controls`, `masonry`, `menu`, `pricing-card`, `product`,
@@ -158,8 +173,8 @@ as `legacy`. Then update `iBuilderRegistry` (`core/types/registry.ts:47-84`; `se
 
 - `core/src/DOMRenderer/index.ts:569-572` already discriminates with `value.builder`; the registry
   is the only component that does not. Aligning them adds no per-component knowledge.
-- `Section.ts:92` passes the whole payload to `render("@section")` — that is how root id/className
-  arrives today.
+- Root id/className are config-only now (`Section.ts` `@section`); a payload `id`/`className` is
+  ignored on purpose.
 - `FormAdapters.ts:15,29` JSDoc shows `new FormBuilder({ modules, schema })`; nothing reads it.
 - `manifest.ts` comment above `manifestFor` (the "two authoring modes" paragraph) becomes obsolete
   in B.
@@ -168,14 +183,15 @@ as `legacy`. Then update `iBuilderRegistry` (`core/types/registry.ts:47-84`; `se
 - `examples/gallery/src/content/wizard.ts:468` calls `builderFn("form", wizard)` directly from
   `onCreated` — it bypasses any host adapter, which is why B must fix the node, not the adapter.
 
-## Next — batch D (start cold)
+## Next — batch E (start cold)
 
-Goal: `content` appears exactly once — inside `schema`. One component per commit. See
-`### D — content appears once` above for the per-component rule and the `section` proven shape.
+Goal: a declared content contract per builder. See `### E — contract` above.
 
-Start with the cheapest payload that **is** the whole thing→new shape, then the field renames.
-Retype `iBuilderRegistry` entries and README payload sections, run `npm run catalogue:apply`, and
-keep the `input-controls` real `content` field in mind (its rename lands here, not in C).
+1. Add `static contract: iContentContract = { schema, example, legacy }` to a cheap builder first
+   (`badge` or `carousel`); put `iContentContract` in `core/types`.
+2. `normalize(contract, content)` → `{ content, issues }` inside `create()`: total, idempotent,
+   never throws; issues surface through `inspect()`.
+3. CI: `validate(example)` produces zero issues for every builder that declares a contract.
 
-Gate per commit: `npm run verify`. Proof per commit: element counts for that component's demo
-route and the gallery page — before/after, a number.
+Gate: `npm run verify`. Proof: `inspect()` issue count per example — 0 for a valid shape, ≥1 for a
+deliberately bad one.

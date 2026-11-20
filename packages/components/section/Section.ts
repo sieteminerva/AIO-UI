@@ -9,7 +9,7 @@ import { normalizeColumns } from "./Section.engine";
  * Section — one row of 2–3 content columns.
  *
  * ```ts
- * { content: [ { className?, content: [ { eyebrow, title, description, imageUrl, actions } ] }, … ] }
+ * [ { className?, blocks: [ { eyebrow, title, description, imageUrl, actions } ] }, … ]
  * ```
  *
  * A column is either a wrapper of blocks (`content: [...]`) or a block itself, so both the
@@ -37,7 +37,7 @@ export interface iSectionBlock {
 
 export interface iSectionColumn extends iSectionBlock {
   className?: string;
-  content?: iSectionBlock[] | HTMLElement;
+  blocks?: iSectionBlock[] | HTMLElement;
 }
 
 export interface iSectionConfig extends iBuilderConfig<SectionElementType> {

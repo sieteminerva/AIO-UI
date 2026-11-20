@@ -6,9 +6,9 @@
 
 ## Live claims
 
-| Agent | Band | Task | Write scope | Started | Checkpoint | State |
-| ----- | ---- | ---- | ----------- | ------- | ---------- | ----- |
-| —     | —    | —    | —           | —       | —          | —     |
+| Agent       | Band      | Task                                                 | Write scope                                                                                                                                                                                   | Started    | Checkpoint                     | State  |
+| ----------- | --------- | ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- | ------------------------------ | ------ |
+| copilot b43 | Framework | Input normalisation batch D — `content` appears once | `packages/components/**/*.ts`, `packages/components/*/README.md`, `packages/core/src/types/registry.ts`, `examples/demo/src/manifest.ts`, `docs/framework/**`, `packages/components/TASKS.md` | 2026-11-21 | `/memories/session/batch-d.md` | active |
 
 ## Row shape
 

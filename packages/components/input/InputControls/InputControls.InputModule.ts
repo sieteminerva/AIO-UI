@@ -54,13 +54,11 @@ class InputControlsInputModule implements iInputAdapter {
 
     return new InputControlsBuilder(this.#context.builderConfig as any).create({
       content: {
-        content: {
-          scope,
-          parentElement: scope,
-          position: spec.position || "right",
-          actions,
-          input: spec.input ?? null,
-        },
+        scope,
+        parentElement: scope,
+        position: spec.position || "right",
+        actions,
+        input: spec.input ?? null,
       },
     });
   }

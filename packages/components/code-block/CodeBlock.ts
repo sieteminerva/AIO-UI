@@ -160,7 +160,6 @@ export function normalizePayload(data: any): iCodeBlockEntry[] {
   if (Array.isArray(data)) return collect(data);
   if (Array.isArray(data.blocks)) return collect(data.blocks);
   if (typeof data.code === "string") return collect(data);
-  if (data.content !== undefined) return collect(data.content);
 
   return [];
 }

@@ -21,7 +21,7 @@ import { mountControls } from "../InputRegistry";
 /** Builds a controls set for a scope, the way the input module does. */
 function controls(scope: HTMLElement, actions: Array<Record<string, any>>) {
   const node = new InputControlsBuilder({} as any).create({
-    content: { content: { scope, parentElement: scope, position: "right", actions, input: null } },
+    content: { scope, parentElement: scope, position: "right", actions, input: null },
   });
   scope.appendChild(node);
   return node;

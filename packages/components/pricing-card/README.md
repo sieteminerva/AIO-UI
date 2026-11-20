@@ -17,7 +17,7 @@ action button. Because it is a card **group**, its root is a `div.row` and each 
 ];
 ```
 
-A single record or an array of records. Accepted aliases: `title` for `header`, `content` for
+A single record or an array of records. Accepted alias: `title` for `header`; the feature list is
 `body`. `config` takes no options — the card is entirely payload-driven.
 
 `price` is formatted with `Intl.NumberFormat("id-ID", { currency: "IDR" })` and printed inside a

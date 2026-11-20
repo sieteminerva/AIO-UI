@@ -47,16 +47,16 @@ class TableFormAdapter {
   /**
    * Builds a table for a group schema and wires its submit button.
    *
-   * @param spec - The `table` descriptor: `{ content, id? }`.
+   * @param spec - The `table` descriptor: `{ data, id? }`.
    * @param target - Fieldset and submit button the table belongs to.
-   * @returns The table container, or `null` when the spec has no content.
+   * @returns The table container, or `null` when the spec has no data.
    */
   public renderTable(spec: any, target: iFormTableTarget): HTMLElement[] | null {
-    if (!spec || spec.content === undefined) return null;
+    if (!spec || spec.data === undefined) return null;
 
     // Step 1: Build the table through its own builder.
     const table = new TableBuilder();
-    const tableEl = table.create({ content: spec.content });
+    const tableEl = table.create({ content: spec.data });
     if (spec.id) tableEl.id = spec.id;
 
     // Step 2: The group button appends the group's current values as a row.

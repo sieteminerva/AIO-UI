@@ -38,15 +38,15 @@ function mountMain(host: HTMLElement, topic: iFormTopic, build: BuildFn): void {
         body: [
           {
             id: "panel-display",
-            content: {
+            panel: {
               eyebrow: `Form · ${topic.group}`,
               title: topic.label,
               // The description is the README's own opening sentence, not a second copy.
               description: leadSentence(readmeFor(topic.source)),
             },
           },
-          { id: "panel-usage", content: formUsagePanel(topic, build) },
-          { id: "panel-api", content: formApiPanel(topic, build) },
+          { id: "panel-usage", panel: formUsagePanel(topic, build) },
+          { id: "panel-api", panel: formApiPanel(topic, build) },
         ],
       },
       config: { menuPosition: "top" },

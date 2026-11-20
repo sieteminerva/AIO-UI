@@ -105,7 +105,7 @@ export class PricingCardBuilder extends Builder<PricingCardElementType, iPricing
           card.append(header, divider)
         }
 
-        const bodyContent = (payload.body ?? payload.content) || [];
+        const bodyContent = payload.body || [];
         if (bodyContent.length > 0) {
           const body = this.render("@card>body", bodyContent)!
           card.append(body)

@@ -7,29 +7,29 @@ the image spanning the full row.
 
 ## Payload
 
+The payload **is** the column list — `content` appears only in the node wrapper. A column owns its
+block list under `blocks`.
+
 ```ts
-{
-  id?: string,
-  className?: string,
-  content: [
-    {
-      className?: string,
-      content: [
-        { imageUrl? | image?, alt?, eyebrow?, title?, description?, actions? }
-      ]
-    }
-  ]
-}
+[
+  {
+    className?: string,
+    blocks: [
+      { imageUrl? | image?, alt?, eyebrow?, title?, description?, actions? }
+    ]
+  }
+]
 ```
 
 A column whose own fields look like a block is treated as one block, so
-`content: [{ eyebrow, title, description, imageUrl, actions }]` also works.
-`normalizeColumns()` is the only place that decides this.
+`[{ eyebrow, title, description, imageUrl, actions }]` also works. `normalizeColumns()` is the only
+place that decides this.
 
 ## Config
 
 | Option      | Default      | Meaning                                           |
 | ----------- | ------------ | ------------------------------------------------- |
+| `id`        | —            | Root element id (host-level, never from payload)  |
 | `className` | —            | Extra class added to the root, e.g. `"container"` |
 | `selectors` | see defaults | Per-key tag/class override                        |
 | `themeId`   | `"default"`  | Passed through to the theme                       |

@@ -6,14 +6,14 @@ into rows.
 
 ## Payload
 
+The payload **is** the item list — `content` appears only in the node wrapper, never here.
+
 ```ts
-{
-  content: [{ label: "…", description: "…" }];
-}
+[{ label: "…", description: "…" }];
 ```
 
-Accepted shapes: `[...]`, `{ items: [...] }`, `{ content: [...] }`, a single record, or
-nothing. `normalizePayload()` is the only place that decides this.
+Accepted shapes: `[...]`, `{ items: [...] }`, a single record, or nothing. `normalizePayload()`
+is the only place that decides this.
 
 ## Config
 

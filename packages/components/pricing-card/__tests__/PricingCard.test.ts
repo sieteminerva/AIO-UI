@@ -30,8 +30,8 @@ describe("pricing card", () => {
     expect(price).toContain("250.000");
   });
 
-  it("accepts title/content as aliases for header/body", () => {
-    const root = build([{ title: "Alias", content: [{ title: "Fitur" }] }]);
+  it("accepts `title` as an alias for `header`", () => {
+    const root = build([{ title: "Alias", body: [{ title: "Fitur" }] }]);
 
     expect(root.querySelector(".header span")?.textContent).toBe("Alias");
     expect(root.querySelector(".features li.item")?.textContent).toBe("Fitur");

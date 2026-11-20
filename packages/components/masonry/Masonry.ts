@@ -197,12 +197,12 @@ export class MasonryBuilder extends Builder<MasonryElementType, iMasonryConfig> 
       normalizedData = {
         id: this.config.container instanceof HTMLElement ? this.config.container.id : "masonry-legacy-root",
         className: "section masonry gallery",
-        content: data // Alirkan array lama ke saku content standar v2
+        items: data // Bare array is the item list; the payload key is `items`.
       };
     }
 
     // Pasok data array murni ksatria Anda ke Immutable Setter Tracker
-    this.items = normalizedData.content || [];
+    this.items = normalizedData.items || [];
     this.displayedCount = 0;
     this.currentPage = 1; // Reset nomor halaman awal
 

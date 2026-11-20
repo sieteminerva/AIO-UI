@@ -1,7 +1,7 @@
 # TASK — input normalisation (schema door, content-once)
 
-**Status:** batches A, B, C and D landed 2026-11-21. Batch E (contract) is the live step.
-Supersedes `packages/components/DISCUSSION_ANALYSIS.md` (scratch, untracked).
+**Status:** batches A, B, C, D and E landed 2026-11-21. The task is closed.
+Superseded `packages/components/DISCUSSION_ANALYSIS.md` (scratch, deleted 2026-11-21).
 
 ## Landed — batch A (2026-11-21)
 
@@ -162,12 +162,26 @@ Rule: a `content` that **is** the whole payload → the value becomes the payloa
 as `legacy`. Then update `iBuilderRegistry` (`core/types/registry.ts:47-84`; `section` is currently
 `iBuilderContent[]`), the README payload sections, and `npm run catalogue:apply`.
 
-### E — contract
+### E — contract ✅ landed 2026-11-21
 
-- `static contract: iContentContract = { schema, example, legacy }` per builder;
-  `normalize(contract, content)` → `{ content, issues }` inside `create()`; total function,
-  idempotent, never throws; issues surface through `inspect()`.
-- CI: `validate(example)` must produce zero issues for every builder that declares a contract.
+- `iContentSpec` / `iContentContract` / `iContentIssue` live in `core/src/types/content.ts` (types
+  only, no component table in core).
+- `normalize(contract, content)` in `base/src/BaseAdapters/ContentContract.ts`: total (never
+  throws), idempotent, legacy spellings resolved once, unknown fields warned **and kept**.
+  `validate()` is the verdict-only form.
+- `Builder.contract` (static, optional) is read by `create()`; `inspect()` returns `issues`.
+- 22 builders declare a contract. `@aio-ui/id-address` is a plugin, not a builder, so it takes no
+  content payload.
+  - `list.single` wraps one record, which is how `accordion`, `badge`, `form`, `menu`,
+    `pricing-card`, `section` and `tab` stay usable with a single entry.
+  - `badge` keeps `{ items }` as a declared `legacy` spelling (warning, not an error).
+  - Payloads that are a union of shapes or may carry a DOM element (`code-block`, `fab-menu`,
+    `markdown`, `masonry`, `modal`, `product`, `rating`) use `{ t: "any" }` with a validated
+    `example`.
+- CI: `packages/components/contracts.test.ts` validates every declared `example` (0 issues) and
+  proves `normalize` is idempotent on it.
+- Proof: `npm run verify` green; `ContentContract.test.ts` pins 0 issues for a valid payload and 1
+  for a broken one through `inspect().issues`.
 
 ## Traps (verified, do not rediscover)
 
@@ -183,15 +197,10 @@ as `legacy`. Then update `iBuilderRegistry` (`core/types/registry.ts:47-84`; `se
 - `examples/gallery/src/content/wizard.ts:468` calls `builderFn("form", wizard)` directly from
   `onCreated` — it bypasses any host adapter, which is why B must fix the node, not the adapter.
 
-## Next — batch E (start cold)
+## Closed
 
-Goal: a declared content contract per builder. See `### E — contract` above.
+All five batches landed 2026-11-21. `packages/components/DISCUSSION_ANALYSIS.md` (scratch) was
+deleted in the same batch; this file is the durable record.
 
-1. Add `static contract: iContentContract = { schema, example, legacy }` to a cheap builder first
-   (`badge` or `carousel`); put `iContentContract` in `core/types`.
-2. `normalize(contract, content)` → `{ content, issues }` inside `create()`: total, idempotent,
-   never throws; issues surface through `inspect()`.
-3. CI: `validate(example)` produces zero issues for every builder that declares a contract.
-
-Gate: `npm run verify`. Proof: `inspect()` issue count per example — 0 for a valid shape, ≥1 for a
-deliberately bad one.
+Gate was `npm run verify`; proof was `inspect().issues` — 0 for a valid shape, ≥1 for a
+deliberately bad one, plus one validated `example` per builder in `packages/components/contracts.test.ts`.

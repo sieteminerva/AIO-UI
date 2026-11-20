@@ -8,10 +8,11 @@
 
 ### 1. Input normalisation — `create(schema)` + content-once
 
-**A + B + C + D landed** (2026-11-21): the door is `create(schema)`, the registry wraps node→schema
-by `builder`, the compensation unwraps are gone, no payload carries a `content` field any more, and
-`section` root id/className come from config. **Open:** E — a declared content contract per builder;
-start at the doc's `## Next — batch E`.
+**A–E landed** (2026-11-21): the door is `create(schema)`, no payload carries a `content` field,
+and every builder declares `static contract` (`schema` / `example` / `legacy`). `create()`
+normalises against it and `inspect().issues` reports the verdict; 22 examples are validated in CI.
+Component READMEs now state the factory / CSS-library contract and show the assembled markup.
+**Open:** nothing — task closed, the detail doc keeps the history.
 → `docs/framework/TASK-input-normalisation.md`
 
 ### 2. Release 0.2.4 — HELD until normalisation lands

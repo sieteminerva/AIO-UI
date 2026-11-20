@@ -1,4 +1,4 @@
-import type { iElementProperty, iBuilderConfig, iBuilderRegistry } from "@aio-ui/core/interface";
+import type { iElementProperty, iBuilderConfig, iBuilderRegistry, iContentContract } from "@aio-ui/core/interface";
 import { Builder } from "@aio-ui/base";
 import { Skeleton } from "@aio-ui/skeleton";
 import { ModuleLoader } from "@aio-ui/module-loader";
@@ -50,6 +50,7 @@ export type InputType =
   | "number"
   | "select"
   | "dropdown"
+  | "picker"
   | "actions"
   | "checkbox"
   | "radio"
@@ -226,6 +227,24 @@ export class InputBuilder extends Builder<InputElementType, iInputConfig> {
   readonly builderId: keyof iBuilderRegistry = "input";
   readonly name: keyof iBuilderRegistry = "input";
   readonly stylesheet: string = "./input.css";
+
+  /** One field node. The full field vocabulary belongs to `iBasicInputNode`, so it stays open. */
+  static readonly contract: iContentContract = {
+    schema: {
+      t: "record",
+      open: true,
+      of: {
+        type: { t: "string" },
+        id: { t: "string" },
+        name: { t: "string" },
+        title: { t: "string" },
+        label: { t: "string" },
+        placeholder: { t: "string" },
+        required: { t: "boolean" },
+      },
+    },
+    example: { type: "text", id: "email", title: "Email address", placeholder: "you@example.com" },
+  };
 
   #input: iBasicInputNode = {};
 
@@ -490,22 +509,25 @@ export class InputBuilder extends Builder<InputElementType, iInputConfig> {
     }
 
     if (!inputEl) {
-      // A matrix row with no control of its own is a type owned by a module (`dropdown`).
-      // A module may only *enhance* a field, never be the only way it exists: without the
-      // module the same options render as a native `<select>` — plainer, not a hole. That
-      // is what makes "no modules by default" an honest default instead of a trap.
+      // A matrix row with no control of its own is a type owned by a module (`dropdown`,
+      // `picker`). A module may only *enhance* a field, never be the only way it exists:
+      // without the module the same options render as a native `<select>` — plainer, not a
+      // hole. That is what makes "no modules by default" an honest default instead of a trap.
       inputEl = controlKey
         ? this.render("@field>input", this.#input)!
         : this.render("@field>select", this.#input)!;
 
       // Falling back is the degradation made visible: this branch only runs when the type
-      // has no control of its own (`dropdown`), so the fact is reported from here instead
-      // of being inferred later.
+      // has no control of its own, so the fact is reported from here instead of being
+      // inferred later. The message names the type that was asked for, not one module.
       if (!controlKey) {
+        const type = String(this.#input.type ?? "");
+        const module = (INPUT_MODULE_IDS as Record<string, string>)[type] ?? type;
+
         this.#missing(
-          "dropdown",
-          INPUT_MODULE_IDS.dropdown,
-          "@aio-ui/input/dropdown/module (dropdownInputModule)",
+          type,
+          module,
+          `@aio-ui/input/${module}/module (${module}InputModule)`,
           "the field falls back to a native select over the same options."
         );
       }

@@ -5,6 +5,6 @@
  *
  * Not published: `index.ts` is the only entry and does not mention this file.
  */
-/** `{ content: { data: [...] } }`, `{ content: [...] }`, `[...]`, `{ data: [...] }`. */
+/** `[...]` or `{ data: [...] }` — the registry hands the payload directly, no `{ content }` envelope. */
 export declare function normalizeProducts(data: any): any[];
 //# sourceMappingURL=ProductGrid.engine.d.ts.map

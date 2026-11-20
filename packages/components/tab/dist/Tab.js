@@ -4,6 +4,38 @@ export class TabBuilder extends Builder {
     builderId = "tab";
     name = "tab";
     stylesheet = "./Tab.css";
+    static contract = {
+        schema: {
+            t: "record",
+            open: true,
+            of: {
+                menu: {
+                    t: "list",
+                    single: true,
+                    of: {
+                        t: "record",
+                        open: true,
+                        of: {
+                            label: { t: "string" },
+                            title: { t: "string" },
+                            id: { t: "string" },
+                            className: { t: "string" },
+                        },
+                    },
+                },
+                body: {
+                    t: "list",
+                    single: true,
+                    of: { t: "record", open: true, of: { panel: { t: "any" }, body: { t: "any" } } },
+                },
+                footer: { t: "any" },
+            },
+        },
+        example: {
+            menu: [{ label: "Overview", title: "Overview" }],
+            body: [{ panel: { title: "Overview", description: "…" } }],
+        },
+    };
     // ENKAPSULASI: Menyimpan data body tab secara aman & terisolasi
     #items = [];
     // STATE MANAGEMENT INTERNAL
@@ -47,11 +79,13 @@ export class TabBuilder extends Builder {
             themeId: "default",
             container: null,
             menuPosition: "top",
-            tabStyle: "default",
+            appearance: "default",
             lazyload: true,
             name: "tab-" + Math.random().toString(36).substring(7),
             minHeight: "400px",
             destroyPrevious: false,
+            active: 0,
+            animation: true,
             selectors: defaultTabSelectors,
             namespace: null,
             emit: () => { }
@@ -77,7 +111,7 @@ export class TabBuilder extends Builder {
     prepare(data, _config) {
         if (_config)
             this.config = this.resolveConfig(this.config, _config);
-        const content = data?.content || data || { body: [] };
+        const content = data ?? { body: [] };
         this.items = content.body || [];
         this.currentTabIndex = 0;
         return this.render("@tab", content);
@@ -90,8 +124,9 @@ export class TabBuilder extends Builder {
                 el.classList.add("tab");
                 el.dataset.menu = this.config.menuPosition;
                 // Only a non-default look is stamped: the default markup stays `tab position-top`.
-                if (this.config.tabStyle !== "default")
-                    el.dataset.tabStyle = this.config.tabStyle;
+                if (this.config.appearance !== "default")
+                    el.dataset.appearance = this.config.appearance;
+                this.applyAnimation(el);
                 el.style.minHeight = this.config.minHeight;
                 if (this.config.container instanceof HTMLElement) {
                     el.id = this.config.container.id || el.id;
@@ -249,8 +284,8 @@ export class TabBuilder extends Builder {
             this._boundKeyDownHandler = (e) => this._handleKeyDown(e);
             menuElement.addEventListener("keydown", this._boundKeyDownHandler);
         }
-        // Jalankan navigasi awal ke indeks 0 secara otomatis tanpa merusak sirkuit
-        this.navigateTo(0);
+        // Navigasi awal mengikuti `config.active`: indeks, id tombol, label, atau judul.
+        this.navigateTo(this.config.active);
         // console.log("[Tabs v2] Dynamic accessibility tab list initialized successfully.");
     }
     /**
@@ -259,7 +294,7 @@ export class TabBuilder extends Builder {
     _renderPanelContent(panel, item, index) {
         if (panel.dataset.loaded === "true")
             return;
-        const content = item?.content ? item.content : item;
+        const content = item?.panel ? item.panel : item;
         if (content instanceof HTMLElement) {
             panel.append(content);
         }
@@ -271,22 +306,7 @@ export class TabBuilder extends Builder {
         this.config.emit?.("tabs:content-loaded", { index, element: panel });
     }
     navigateTo(target) {
-        let targetIndex = -1;
-        // A. Skenario Jalur Indeks Angka (Direct Index Targetting)
-        if (typeof target === "number") {
-            targetIndex = target;
-        }
-        // B. Skenario Jalur String ID (Custom Identity Targetting)
-        else {
-            // 🧙‍♂️ DIRECT MEMORY ACCESIBILITY: Jepret seluruh barisan tombol secara instan dari saku RAM!
-            const buttons = this.load("@tab>menu")?.querySelectorAll("button");
-            for (let i = 0; i < buttons.length; i++) {
-                if (buttons[i].id === target) {
-                    targetIndex = i;
-                    break;
-                }
-            }
-        }
+        const targetIndex = this.resolve(target);
         // Gerbang Pengaman: Cegah eksekusi jika nomor indeks melompat di luar pagar batas array
         if (targetIndex < 0 || targetIndex >= this.#items.length)
             return;
@@ -304,8 +324,8 @@ export class TabBuilder extends Builder {
     }
     _handleChange(index) {
         // Jemput seluruh pasukan elemen hidup secara adil dan bersih menggunakan tanda "all"
-        const buttons = this.load("@tab>menu")?.querySelectorAll("button");
-        const panels = this.load("@tab>body")?.querySelectorAll(".panel");
+        const buttons = this.buttons();
+        const panels = Array.from(this.load("@tab>body")?.querySelectorAll(".panel") ?? []);
         // ====================================================
         // 🫗 FASE 1: LIKUIDASI KONDISI AKTIF PADA TAB SEBELUMNYA
         // ====================================================
@@ -316,15 +336,7 @@ export class TabBuilder extends Builder {
             prevBtn.setAttribute("tabindex", "-1");
         }
         if (panels[this.currentTabIndex]) {
-            const prevPanel = panels[this.currentTabIndex];
-            // 💣 destroyPrevious: Hancurkan isi panel sebelumnya begitu ditinggalkan,
-            // lalu reset penanda `loaded` agar konten dimuat ulang segar saat kembali nanti.
-            if (this.config.destroyPrevious) {
-                prevPanel.replaceChildren();
-                prevPanel.dataset.loaded = "false";
-            }
-            prevPanel.classList.add("hidden");
-            prevPanel.style.display = "none";
+            this.leave(panels[this.currentTabIndex]);
         }
         // ====================================================
         // 🌟 FASE 2: DETONASI NYALA PADA TAB BARU TUJUAN USER
@@ -365,8 +377,79 @@ export class TabBuilder extends Builder {
             });
         }
     }
+    /** `animation: false` disables panel motion, `true` keeps the default fade, and an object
+     *  carries `@keyframes` names the sheet reads through two custom properties. */
+    applyAnimation(root) {
+        const animation = this.config.animation;
+        if (animation === false) {
+            root.dataset.animation = "none";
+            return;
+        }
+        if (animation && typeof animation === "object") {
+            root.dataset.animation = "custom";
+            if (animation.in)
+                root.style.setProperty("--tab-anim-in", animation.in);
+            if (animation.out)
+                root.style.setProperty("--tab-anim-out", animation.out);
+        }
+    }
+    buttons() {
+        return Array.from(this.load("@tab>menu")?.querySelectorAll("button") ?? []);
+    }
+    /** A number is an index; a string is matched against the button id, the panel it controls,
+     *  then its label and title — so `active` accepts whichever the caller already has. */
+    resolve(target) {
+        if (typeof target === "number")
+            return target;
+        const buttons = this.buttons();
+        for (let i = 0; i < buttons.length; i += 1) {
+            const button = buttons[i];
+            if (button.id === target ||
+                button.getAttribute("aria-controls") === target ||
+                button.querySelector(".btn-label")?.textContent === target ||
+                button.querySelector(".btn-title")?.textContent === target) {
+                return i;
+            }
+        }
+        return -1;
+    }
+    /** Hide the panel we just left. With `destroyPrevious` its content is wiped — but only
+     *  after the `out` animation ends, so the wipe never reads as a jump. */
+    leave(panel) {
+        const hide = () => {
+            panel.classList.add("hidden");
+            panel.style.display = "none";
+        };
+        const wipe = () => {
+            panel.replaceChildren();
+            panel.dataset.loaded = "false";
+        };
+        if (!this.config.destroyPrevious) {
+            hide();
+            return;
+        }
+        if (!this.config.animation) {
+            wipe();
+            hide();
+            return;
+        }
+        let settled = false;
+        const finish = () => {
+            if (settled)
+                return;
+            settled = true;
+            panel.removeEventListener("animationend", finish);
+            panel.classList.remove("is-leaving");
+            wipe();
+            hide();
+        };
+        panel.classList.add("is-leaving");
+        panel.addEventListener("animationend", finish);
+        // A keyframe that never resolves leaves no `animationend`; never strand the panel.
+        setTimeout(finish, 700);
+    }
     _handleKeyDown(e) {
-        const buttons = this.load("@tab>menu")?.querySelectorAll("button");
+        const buttons = this.buttons();
         if (!buttons || !buttons.length)
             return;
         let nextIndex = this.currentTabIndex;

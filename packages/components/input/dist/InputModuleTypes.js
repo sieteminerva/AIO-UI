@@ -12,5 +12,6 @@ export const INPUT_MODULE_IDS = {
     file: "file",
     controls: "controls",
     popover: "popover",
+    picker: "picker",
 };
 //# sourceMappingURL=InputModuleTypes.js.map

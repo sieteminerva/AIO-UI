@@ -52,7 +52,7 @@ class InputFormAdapter {
    * `namespace` and `emit` instead of starting blank — and so does its adapter set.
    */
   public renderField(input: any, formId: string): HTMLElement {
-    return new InputBuilder({ ...this.#context.builderConfig, formId, modules: this.#preset } as any).create(input);
+    return new InputBuilder({ ...this.#context.builderConfig, formId, modules: this.#preset } as any).create({ content: input });
   }
 
   /**

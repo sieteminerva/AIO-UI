@@ -90,6 +90,14 @@ export class MarkdownBuilder extends Builder {
     builderId = "markdown";
     name = "markdown";
     stylesheet = "./Markdown.css";
+    /** `{ source }` or a bare string; anything else is not a document. */
+    static contract = {
+        schema: {
+            t: "union",
+            of: [{ t: "record", open: true, of: { source: { t: "string", req: true } } }, { t: "string" }],
+        },
+        example: { source: "# Title\n\nSome **text**." },
+    };
     config;
     /**
      * 🪶 LOADING MOCKUP — heading, paragraph, subheading, paragraph, fence, closing line:

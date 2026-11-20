@@ -19,7 +19,7 @@
  * counts are declared per real component (`ProductCard` mirrors its display/swatches/
  * caption/button rhythm, `Table` mirrors its header and row height).
  */
-import type { iBuilderConfig, iBuilderRegistry } from "@aio-ui/core/interface";
+import type { iBuilderConfig, iBuilderRegistry, iContentContract } from "@aio-ui/core/interface";
 import { Builder } from "@aio-ui/base";
 /** The shapes the sheet knows how to skin. */
 export type SkeletonShape = "stack" | "row" | "line" | "bone" | "circle";
@@ -97,6 +97,8 @@ export declare class SkeletonBuilder extends Builder<SkeletonElementType, iSkele
     readonly builderId: keyof iBuilderRegistry;
     readonly name: keyof iBuilderRegistry;
     readonly stylesheet: string;
+    /** One `iSkeletonSpec`, merged over `config.spec`. */
+    static readonly contract: iContentContract;
     config: Required<iSkeletonConfig>;
     constructor(config?: Partial<iSkeletonConfig>);
     prepare(content: any): HTMLElement;

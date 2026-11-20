@@ -51,36 +51,48 @@ const baseInputConfig = {
 
 export class InputAttributeBuilder {
 
-  // Type-specific overrides (minimal defaults per type)
-  static inputs: Record<InputType, Partial<Record<InputAttributeType, string | number | boolean>>> = {
-    text: { placeholder: "Enter text", maxlength: 255 },
-    textarea: { placeholder: "Enter your message", rows: 3, cols: 30 },
-    number: { placeholder: "Enter a number", value: 50, min: 0, max: 100, step: 1 },
-    select: { placeholder: "Select an option", range: "sheet_range", form: "form_id", multiple: false },
-    dropdown: { placeholder: "Select an option", range: "sheet_range", form: "form_id", multiple: false },
-    checkbox: { value: "default_value", checked: false },
-    radio: { value: "default_value", range: "sheet_range" },
-    range: { value: 50, min: 0, max: 100, step: 1, orient: "horizontal" },
-    actions: {},
-    date: { min: "yyyy-MM-dd", max: "yyyy-MM-dd" },
-    time: {},
-    "datetime-local": { min: "YYYY-MM-DDTHH:mm", max: "YYYY-MM-DDTHH:mm" },
-    file: {
-      accept: "image/*,.pdf",
-      multiple: false,
-      "data-max-upload": 10,
-      "data-max-file-size": 5,
-      "data-group-unallowed": true,
-      "data-thumbnail": true,
-      "data-view": "thumbnails",
-    },
-    color: { value: "#000000" },
-    email: { placeholder: "Enter email" },
-    password: { placeholder: "Enter password", minlength: 8, maxlength: 255 },
-    url: { placeholder: "Enter URL", pattern: "https://.*" },
-    tel: { placeholder: "Enter phone number", pattern: "" },
-    hidden: { value: "hidden_value" },
-  };
+  /**
+   * Type-specific overrides (minimal defaults per type).
+   *
+   * `config` is the one non-attribute slot. A type whose content *is* a declaration rather
+   * than a value — `actions` — carries it here, so a field of that type is born with an
+   * action set instead of an empty control row. Every other type leaves it out.
+   */
+  static inputs: Record<
+    InputType,
+    Partial<Record<InputAttributeType, string | number | boolean>> & { config?: Record<string, unknown> }
+  > = {
+      text: { placeholder: "Enter text", maxlength: 255 },
+      textarea: { placeholder: "Enter your message", rows: 3, cols: 30 },
+      number: { placeholder: "Enter a number", value: 50, min: 0, max: 100, step: 1 },
+      select: { placeholder: "Select an option", range: "sheet_range", form: "form_id", multiple: false },
+      dropdown: { placeholder: "Select an option", range: "sheet_range", form: "form_id", multiple: false },
+      picker: { placeholder: "Select an option", multiple: false },
+      checkbox: { value: "default_value", checked: false },
+      radio: { value: "default_value", range: "sheet_range" },
+      range: { value: 50, min: 0, max: 100, step: 1, orient: "horizontal" },
+      // The field *is* its buttons: `editor` (edit + save) is the pair the old action input
+      // always carried, and the lock policy comes with it.
+      actions: { config: { actions: ["editor"] } },
+      date: { min: "yyyy-MM-dd", max: "yyyy-MM-dd" },
+      time: {},
+      "datetime-local": { min: "YYYY-MM-DDTHH:mm", max: "YYYY-MM-DDTHH:mm" },
+      file: {
+        accept: "image/*,.pdf",
+        multiple: false,
+        "data-max-upload": 10,
+        "data-max-file-size": 5,
+        "data-group-unallowed": true,
+        "data-thumbnail": true,
+        "data-view": "thumbnails",
+      },
+      color: { value: "#000000" },
+      email: { placeholder: "Enter email" },
+      password: { placeholder: "Enter password", minlength: 8, maxlength: 255 },
+      url: { placeholder: "Enter URL", pattern: "https://.*" },
+      tel: { placeholder: "Enter phone number", pattern: "" },
+      hidden: { value: "hidden_value" },
+    };
 
   // Generic attribute definitions
   static attributes: Partial<Record<InputAttributeType, iAttributeProperty>> = {
@@ -205,7 +217,7 @@ export class InputAttributeBuilder {
         input: attrType,
         value,
         ...(schemaDef.config ? { config: schemaDef.config } : {}),
-        template: new InputBuilder().create(attrConfig),
+        template: new InputBuilder().create({ content: attrConfig }),
       };
     }
 

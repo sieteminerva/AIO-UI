@@ -1,7 +1,9 @@
-import type { iBuilderRegistry, iBuilderConfig, iElementProperty, iNodeRecordItem, iNodeRecordRelations } from "@aio-ui/core/interface";
+import type { iBuilderRegistry, iBuilderConfig, iContentContract, iContentIssue, iElementProperty, iNodeRecordItem, iNodeRecordRelations } from "@aio-ui/core/interface";
 // import { TemplateRegistry } from "@aio-ui/template-registry";
 // import { ElementCreatedEventBus } from "../Services/EventBus";
-import { BuilderProxy } from "./BaseAdapters/BuilderProxy";
+import { Binding } from "./BaseAdapters/Binding";
+import { BuilderProxy, isReactive } from "./BaseAdapters/BuilderProxy";
+import { normalize } from "./BaseAdapters/ContentContract";
 import { holdUntilStyled } from "./BaseAdapters/Hydration";
 import { setBuilderAdapter } from "@aio-ui/core";
 import { getTemplates } from "@aio-ui/core";
@@ -31,6 +33,8 @@ export interface iBuilderInspection {
   namespace: string | null;
   /** Records stamped on the root. Usually one; a page tree lives in `inspectPage()`. */
   records: iNodeRecordItem[];
+  /** Problems the last `create()` found in the payload, via the builder's `static contract`. */
+  issues: iContentIssue[];
 }
 
 /**
@@ -62,12 +66,12 @@ export interface iBuilderInspection {
  * }
  *
  * const builder = new HeroBuilder();
- * const element = builder.create({ title: "Hello" });
+ * const element = builder.create({ content: { title: "Hello" } });
  *
  * ========== Public Lifecycle API ==========
  *
  * @example
- * builder.create(data, config);
+ * builder.create({ content: data, config });
  * builder.destroy();
  * builder.attach("typeKey", "slotKey", payload);
  * builder.detach("slotKey");
@@ -78,6 +82,21 @@ export interface iBuilderInspection {
  * @author YMGH
  * @version 1.0.0
  */
+/**
+ * The one input a builder accepts: a schema.
+ *
+ * `content` is what the component renders; `config` is merged over the instance's own
+ * configuration. A builder never sees the page node (`builder`, `isRoot`, `attrs`, host
+ * element) — the registry reduces a node to this shape before calling `create()`.
+ *
+ * `content` appears exactly once in the whole chain: here. Nothing below this layer may
+ * name a payload field `content` again.
+ */
+export interface iBuilderSchema<TConfig = any> {
+  content?: any;
+  config?: Partial<TConfig>;
+}
+
 export abstract class Builder<TType extends string = string, TConfig extends iBuilderConfig<TType> = iBuilderConfig<TType>> {
   /**  THE BUILDER CURRENTLY MATERIALIZING — `create()` pins itself here for
    *  the whole duration of prepare()/initialize(), which is exactly the window
@@ -104,6 +123,19 @@ export abstract class Builder<TType extends string = string, TConfig extends iBu
 
 
   static #namespaceStack: string[] = [];
+
+  /**
+   * 🧾 DECLARED PAYLOAD SHAPE — optional, and the only place this builder describes what
+   * `schema.content` may contain. `create()` normalises against it and stores the issues;
+   * `inspect()` reports them. A builder without one is left untouched (the door stays open).
+   *
+   * A contract is data, not code: `{ schema, example, legacy? }`. CI validates `example`
+   * for every builder that declares one, so the sample cannot drift from the shape.
+   */
+  static contract?: iContentContract;
+
+  /** Issues from the last `create()` — cleared and refilled on every build. */
+  #issues: iContentIssue[] = [];
 
   public static resetCounters(): void {
     GLOBAL_INSTANCE_COUNTER.clear();
@@ -393,8 +425,37 @@ export abstract class Builder<TType extends string = string, TConfig extends iBu
    */
   protected loading?(content: any, config: TConfig): HTMLElement | null | undefined;
 
+  /**
+   * 🧠 THE MODEL — the one object this builder may write to.
+   *
+   * Optional, and the whole binding seam hangs off it: declare `model()` and the base
+   * connects every scope it hands to `initialize()` (the root from `create()`, the key
+   * from `attach()`, the element from `project()`), mirrors its `[data-bind]` controls
+   * both ways, and releases the wire in `destroy()`/`detach()`. A builder without
+   * `model()` keeps today's behaviour: no listeners, no effect, nothing to leak.
+   *
+   * One model per builder. A second object is a second source of truth, and a component
+   * with two of them starts disagreeing with itself.
+   *
+   * @returns A plain object; the base wraps it in the reactive proxy exactly once.
+   */
+  protected model?(): Record<string, any>;
+
+  /**
+   * 🎨 THE OTHER HALF OF THE MIRROR — draw what is not a control value.
+   *
+   * Text, classes, tokens and derived markup cannot be expressed as `data-bind`, so the
+   * builder paints them here. Runs inside the same effect as the control refresh, once
+   * per scope, and must be idempotent: it renders current state, it does not diff.
+   *
+   * @param scope - the root or projected/mounted element being repainted.
+   * @param model - the reactive model, the same object `model()` returned.
+   */
+  protected paint?(scope: HTMLElement, model: Record<string, any>): void;
+
   constructor() {
     this.proxyRuntime = new BuilderProxy(this.storage.proxy);
+    this.#bindings = new Binding(this.proxyRuntime);
   }
 
   /**
@@ -527,6 +588,9 @@ export abstract class Builder<TType extends string = string, TConfig extends iBu
 
   protected proxyRuntime: BuilderProxy;
 
+  /** Owns the model ↔ DOM wire for every wired scope (see `BaseAdapters/Binding`). */
+  readonly #bindings: Binding;
+
   protected setProxy(
     key: string,
     payload: any,
@@ -546,23 +610,34 @@ export abstract class Builder<TType extends string = string, TConfig extends iBu
    * node state, renders the component tree, and calls the subclass initializer so interactive
    * bindings are attached only after the DOM has been materialized.
    *
-   * @param content - The source data payload used to construct the component tree.
-   * @param config - Optional runtime overrides merged into the builder configuration.
+   * @param schema - The schema door: `{ content, config }`. `content` is the payload the
+   *   component renders, `config` the runtime overrides merged over the instance config.
    *
    * @returns The root DOM element produced by the builder's prepare/initialize pipeline.
    *
    * @public
    */
 
-  public create(content: any, config?: Partial<TConfig>): HTMLElement {
-    // console.log({ content, config });
+  public create(schema?: iBuilderSchema<TConfig>): HTMLElement {
+    // 🚪 ONE DOOR — a builder receives a schema, never a page node. The registry has
+    // already turned `{ builder, content, config, … }` into this shape; a builder built
+    // directly (a table inside a form field) passes the same shape by hand.
+    const input = schema ?? {};
+    if (input.config) this.config = this.resolveConfig(this.config, input.config);
+
+    // The rendered payload, defaulted once so every builder keeps tolerating an empty
+    // schema (`create()` / `create({})` is a valid call: it renders the component's
+    // empty state, not `undefined.x`).
+    const declared = (this.constructor as typeof Builder).contract;
+    const normalized = normalize(declared, input.content ?? {});
+    this.#issues = normalized.issues;
+    const content = normalized.content;
+
     // 🎨 No component imports its own CSS: the sheet is requested at the end of this
     // method through the stylesheet seam, so a builder created outside the registry (a
     // table inside a form field, a dropdown inside an input) is styled by the same lazy
     // loader the registry uses — a static import would ride in the JS chunk and be
     // injected a second time.
-    const effectiveConfig = config || (content && typeof content === "object" ? (content as any).config : undefined);
-    if (effectiveConfig) this.config = this.resolveConfig(this.config, effectiveConfig);
 
     // Unified identity orchestration: seed, namespace, stack management
     const identity = this.ensureIdentity(content, this.config, { pushNamespace: true, popNamespace: true });
@@ -571,7 +646,7 @@ export abstract class Builder<TType extends string = string, TConfig extends iBu
     this.activeLiveThemeId = this.config?.themeId || document.body.dataset.theme?.replace(/^theme-/, "") || "default";
 
     // 🟢 PROXY-FIRST: Ubah seluruh payload 'content' menjadi Reactive Proxy sejak awal
-    content = this.setProxy(identity.namespace, content);
+    const body = this.setProxy(identity.namespace, content);
 
     // 🧩 CALLER WINDOW — anything instantiated from here on resolves THIS
     // builder as its caller (and therefore as its slot host).
@@ -580,13 +655,14 @@ export abstract class Builder<TType extends string = string, TConfig extends iBu
 
     try {
       // Gunakan 'this.data' (Proxy Matang) untuk proses prepare()
-      const DOMTree = this.prepare(content, this.config) as HTMLElement | null | undefined;
+      const DOMTree = this.prepare(body, this.config) as HTMLElement | null | undefined;
       if (!DOMTree || !(DOMTree instanceof HTMLElement)) {
         throw new Error(`[Builder:${String(this.builderId)}] prepare() returned no valid DOM element. Check selectors, template(), and the builder's render path.`);
       }
 
       // Detonasi event bindings interaktif klik browser
-      this.initialize(DOMTree, content);
+      this.initialize(DOMTree, body);
+      this.#wire(DOMTree);
 
       this.hierarchy.update();
       // console.log("hierarchy", this.hierarchy.get(), identity);
@@ -598,7 +674,7 @@ export abstract class Builder<TType extends string = string, TConfig extends iBu
       // heals itself. A component that implements `loading()` shows its own mockup
       // meanwhile; the rest fall back to the generic shimmer skin.
       const mockup = typeof this.loading === "function"
-        ? () => this.loading!(content, this.config)
+        ? () => this.loading!(body, this.config)
         : null;
       holdUntilStyled(DOMTree, this.#stylesheetSpecifier(), mockup);
 
@@ -795,6 +871,7 @@ export abstract class Builder<TType extends string = string, TConfig extends iBu
     if (childBuilder) {
       childBuilder.#projected.set(childTypeKey, { slot: slotKey, element, receptacle });
       childBuilder.initialize(element, payload);
+      childBuilder.#wire(element);
     }
 
     return element;
@@ -884,6 +961,7 @@ export abstract class Builder<TType extends string = string, TConfig extends iBu
     // attaching configurator + output + mode to one instance stays in sync
     // without duplicating anything.
     this.initialize(element, payload);
+    this.#wire(element);
     return this;
   }
 
@@ -898,6 +976,7 @@ export abstract class Builder<TType extends string = string, TConfig extends iBu
     for (const [typeKey, entry] of this.#projected) {
       if (entry.slot !== slotKey) continue;
       if (entry.element.parentNode) entry.element.replaceWith(entry.receptacle);
+      this.#bindings.unwire(entry.element);
       this.#projected.delete(typeKey);
     }
     return this;
@@ -924,6 +1003,37 @@ export abstract class Builder<TType extends string = string, TConfig extends iBu
       scopes.push(element);
     }
     return scopes;
+  }
+
+  /**
+   * 🔌 WIRE ONE SCOPE — the seam every `[data-bind]` control hangs off.
+   *
+   * A no-op unless the builder declares `model()`: the presence of that hook is the whole
+   * opt-in, the same way `loading()` opts into its own mockup. Called right after
+   * `initialize()` at the three places a scope starts living, so a builder wires its
+   * commands first and the controls second.
+   *
+   * @param scope - root element, attached key, or mounted child element.
+   */
+  #wire(scope: HTMLElement): void {
+    if (typeof this.model !== "function") return;
+    const model = this.model();
+    if (!model) return;
+
+    // 🔍 A raw object is a half-binding that fails silently: hydration reads it once,
+    // but every later write bypasses the `set` trap, so the mirror never fires. The
+    // convention is one proxy per builder (`this.setProxy(...)`, cached), so say so
+    // instead of wiring a model that cannot notify.
+    if (!isReactive(model)) {
+      console.warn(
+        `[Builder:${String(this.builderId)}] model() returned a plain object. ` +
+        `Create it once with this.setProxy(...) and return that proxy, or writes to it will never reach the mirror.`,
+      );
+      return;
+    }
+
+    const paint = typeof this.paint === "function" ? this.paint.bind(this) : undefined;
+    this.#bindings.wire(scope, model, paint);
   }
 
 
@@ -965,6 +1075,9 @@ export abstract class Builder<TType extends string = string, TConfig extends iBu
         data: null // Bebas dari tracking rawDataNode kotor
       });
     }
+
+    // 💀 The mirror dies first: after this, no effect can touch a detached tree.
+    this.#bindings.dispose();
 
     // ====================================================
     // 🔮 THE ANCESTRAL POINTER EXTRACTOR (EVAKUASI DARI MAP POOL)
@@ -1023,7 +1136,7 @@ export abstract class Builder<TType extends string = string, TConfig extends iBu
    *
    * @example
    * const builder = new SectionBuilder(config);
-   * builder.create(payload);
+   * builder.create({ content: payload });
    * const { html, keys } = builder.inspect();
    *
    * @summary Lives in the class body on purpose: `Builder.prototype` is frozen at the
@@ -1039,6 +1152,7 @@ export abstract class Builder<TType extends string = string, TConfig extends iBu
       hierarchy: this.hierarchy.get() as Record<string, iNodeRecordRelations>,
       namespace: this.instanceNamespace,
       records: (root?.getMetadata?.() ?? []) as iNodeRecordItem[],
+      issues: [...this.#issues],
     };
   }
 

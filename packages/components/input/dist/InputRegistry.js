@@ -52,6 +52,7 @@ function adaptersOf(preset, context) {
  */
 export const INPUT_MODULE_MANIFEST = [
     { id: "dropdown", path: "@aio-ui/input/dropdown/module", export: "dropdownInputModule" },
+    { id: "picker", path: "@aio-ui/input/picker/module", export: "pickerInputModule" },
     { id: "file", path: "@aio-ui/input/file-uploader/module", export: "fileUploaderInputModule" },
     { id: "controls", path: "@aio-ui/input/controls/module", export: "inputControlsInputModule" },
     { id: "popover", path: "@aio-ui/input/popover/module", export: "popoverInputModule" },

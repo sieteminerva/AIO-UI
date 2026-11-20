@@ -6,10 +6,17 @@ around it, so nothing in this package is scoped under `.form`; rows, fieldsets a
 multistep layout belong to `@aio-ui/form`.
 
 Sub-modules extend the field without changing the builder: `dropdown` (select/search),
-`file-uploader`, `controls` (action buttons) and `popover`. Each one is an `iInputAdapter`
-that the builder resolves once per `prepare()` and disposes on teardown.
+`picker` (a grid of icons, swatches or images), `file-uploader`, `controls` (action buttons)
+and `popover`. Each one is an `iInputAdapter` that the builder resolves once per `prepare()`
+and disposes on teardown.
 
 <!-- part: id=payload -->
+
+**The builder is an element factory.** It assembles the markup below, and `input.css` only targets
+those classes and tokens. The CSS therefore behaves like a plain CSS library: the same nesting and
+class names written by hand are styled identically. Customise it by overriding a selector, or
+retheme it without touching markup by redeclaring a `--app-*` token on an ancestor (or one
+`--input-*` token for this component only). Nothing here is scoped under `.form`.
 
 ## Payload
 
@@ -54,10 +61,10 @@ parent already loaded the set: the field then never loads or unloads modules the
 
 ### Modules — load only what you use
 
-Four sub-modules hang off the field: `dropdown` (a whole builder), `file` (the uploader),
-`controls` (the action set) and `popover`. **None of them is compiled into the package root**
-since `0.2.2` — `scripts/bundle-probe.mjs` proves it against the parsed module graph. Ask for
-all four with one import:
+Five sub-modules hang off the field: `dropdown` (a whole builder), `picker` (a grid behind
+one control), `file` (the uploader), `controls` (the action set) and `popover`. **None of them
+is compiled into the package root** since `0.2.2` — `scripts/bundle-probe.mjs` proves it
+against the parsed module graph. Ask for all five with one import:
 
 ```ts
 import { InputBuilder } from "@aio-ui/input";
@@ -66,14 +73,41 @@ import { INPUT_MODULE_DEFINITIONS } from "@aio-ui/input/modules";
 new InputBuilder({ modules: INPUT_MODULE_DEFINITIONS });
 ```
 
+A `picker` field is one grid behind one control — icons, swatches or images. The settings
+are flat on `config`, next to `options`, in the same vocabulary the rest of a schema uses:
+
+```ts
+{
+  type: "picker",
+  id: "featureIcon",
+  title: "Pilih ikon",
+  value: "gear",
+  config: {
+    // The choices are the field's own `options` (`{ value, label }` plus `icon` / `src` /
+    // `color`), exactly the shape a select uses. A string option is `{ value, label }`.
+    options: ["gear", "user", "checkmark"],
+    style: "icon",      // icon | image | media | swatch — what a cell draws
+    column: 6,          // grid tracks, the same word a row layout uses
+    expanded: false,    // true = print the grid inline, no trigger/popover
+    searchable: true,   // adds the filter box
+    isMultiple: false,  // several cells at once
+  },
+}
+```
+
+`style` decides what a cell draws: `icon` (a global `i.icon.<name>` class, the option value
+by default), `image` / `media` (`src`), `swatch` (`color`). The value reaches the form through
+a hidden input named after the field, joined with commas when `isMultiple` is on.
+
 Each has its own `*/module` entry too, so a consumer can take one without instantiating the
-other three:
+other four:
 
 ```ts
 import { dropdownInputModule } from "@aio-ui/input/dropdown/module";
+import { pickerInputModule } from "@aio-ui/input/picker/module";
 import { inputControlsInputModule } from "@aio-ui/input/controls/module";
 
-new InputBuilder({ modules: [dropdownInputModule, inputControlsInputModule] });
+new InputBuilder({ modules: [dropdownInputModule, pickerInputModule, inputControlsInputModule] });
 ```
 
 The two shapes, and what each is for:
@@ -95,6 +129,7 @@ never silent. `packages/components/input/Missing.ts` is the single voice:
 | Capability missing | What the field does                            | Signal                                                       |
 | ------------------ | ---------------------------------------------- | ------------------------------------------------------------ |
 | `dropdown`         | native `<select>` over the same options        | **warn**, once per builder + capability                      |
+| `picker`           | native `<select>` over the same options        | **warn**, once per builder + capability                      |
 | `popover`          | `config.popover` ignored, no anchor attached   | **warn**, same dedupe (ids the preset declared, not a guess) |
 | `file`             | plain file input, `onFileSelected` never fires | **warn**                                                     |
 | `controls`         | the field renders, the buttons never exist     | **throw** at the declaration site                            |
@@ -125,6 +160,18 @@ pins the sentences.
 | `@field>info`     | `small`     | `info`                                        |
 
 <!-- part: id=tokens role=contract -->
+
+### Structure
+
+The control element follows `type`; `label`, the control and the `small.info` line are appended
+only when the payload supplies them, and action buttons add `div.controls`.
+
+```html
+<div class="field">
+  <label>Email address</label>
+  <input id="email" type="text" placeholder="you@example.com" />
+</div>
+```
 
 ## Tokens
 
@@ -171,6 +218,21 @@ covers both modes.
 | `--input-file-unallowed-color` | `--app-status-error-fill` |
 | `--input-file-warning-color`   | `--app-status-warning`    |
 
+**Picker module** (`InputPicker/InputPicker.css`) — declared on `:root, [data-theme]`, every
+one derived from the field layer so a theme retunes the picker with the field:
+
+| Token                       | Derives from                        |
+| --------------------------- | ----------------------------------- |
+| `--picker-surface`          | `--input-picker-background`         |
+| `--picker-border-color`     | `--input-border-color`              |
+| `--picker-accent-color`     | `--input-primary-color`             |
+| `--picker-text-color`       | `--input-text-color`                |
+| `--picker-muted-color`      | `--input-placeholder-color`         |
+| `--picker-radius`           | `--input-border-radius`             |
+| `--picker-duration`         | `--input-popup-duration`            |
+| `--picker-gap`              | literal 0.35rem (component-private) |
+| `--picker-panel-max-height` | literal 16rem (component-private)   |
+
 **Metrics and motion** (`input.css`)
 
 `--input-font-size`, `--input-label-size` (`0.75 × font-size`), `--input-border-radius`,
@@ -188,7 +250,7 @@ in the app layer as `--app-spinner-content`.
 
 1. `"input"` is already in `iBuilderRegistry` (`packages/core/src/types/registry.ts`).
 2. Map `@aio-ui/input`, `@aio-ui/input/input.css` and every sub-module subpath you use
-   (`./dropdown`, `./dropdown.css`, `./controls`, `./controls.css`, `./file-uploader`,
-   `./file-uploader.css`, `./popover/module`) in the host asset map — every exact `exports`
-   key, since a prefix cannot add `.js`.
+   (`./dropdown`, `./dropdown.css`, `./picker`, `./picker.css`, `./controls`, `./controls.css`,
+   `./file-uploader`, `./file-uploader.css`, `./popover/module`) in the host asset map — every
+   exact `exports` key, since a prefix cannot add `.js`.
 3. List it in the host's route plan: `registerModule(components, [{ route, components: ["input"] }])`.

@@ -18,12 +18,13 @@ export interface iNormalizedColumn {
 /**
  * Normalize the payload into columns of blocks.
  *
- * Accepts `{ content: [...] }`, a bare array, or a single column object. A column whose
- * own fields look like a block is treated as one block, which is what makes the flat
- * shape work without a nested array of one.
+ * Accepts a column array or a single column object. A column owns its block list under
+ * `blocks`; a column whose own fields look like a block is treated as one block, which is
+ * what makes the flat shape work without a nested array of one.
  */
 export function normalizeColumns(data: any): iNormalizedColumn[] {
-  const content = data?.content ?? data;
+  // The registry hands the payload directly: the column list, never a `{ content }` wrapper.
+  const content = data;
   if (!content) return [];
 
   // `{}` is "nothing", not "one empty column".
@@ -33,7 +34,7 @@ export function normalizeColumns(data: any): iNormalizedColumn[] {
 
   return raw.filter(Boolean).map((column: iSectionColumn) => {
     const className = typeof column.className === "string" ? column.className : undefined;
-    const inner = column.content;
+    const inner = column.blocks;
 
     if (Array.isArray(inner)) {
       return { className, blocks: inner.filter(Boolean) as iSectionBlock[] };

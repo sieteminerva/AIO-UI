@@ -13,7 +13,6 @@ import type { iBadgeItem } from "./Badge";
  *
  *   - `[...]`                      bare array of records
  *   - `{ items: [...] }`           named collection
- *   - `{ content: [...] }`         the registry's default unwrapping
  *   - `{ label, description }`     a single record
  *   - `{}` / `null` / `undefined`  nothing
  */

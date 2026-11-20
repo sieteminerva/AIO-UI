@@ -1,5 +1,5 @@
 
-import type { iElementProperty, iBasicNode, iBuilderConfig } from "@aio-ui/core/interface";
+import type { iElementProperty, iBasicNode, iBuilderConfig, iContentContract } from "@aio-ui/core/interface";
 import { Builder } from "@aio-ui/base";
 import { Skeleton } from "@aio-ui/skeleton";
 import { DEFAULT_MENU_SELECTORS } from "./Menu.kit";
@@ -54,6 +54,36 @@ export class MenuBuilder extends Builder<MenuElementType, iMenuConfig> {
   readonly name = "menu";
   readonly stylesheet = "./Menu.css";
 
+  static readonly contract: iContentContract = {
+    schema: {
+      t: "record",
+      open: true,
+      of: {
+        brand: { t: "any" },
+        actions: { t: "list", of: { t: "any" } },
+        navigations: {
+          t: "list",
+          single: true,
+          of: {
+            t: "record",
+            open: true,
+            of: {
+              label: { t: "string" },
+              href: { t: "string" },
+              className: { t: "string" },
+            },
+          },
+        },
+      },
+    },
+    example: {
+      navigations: [
+        { label: "Home", href: "#home" },
+        { label: "Contact", href: "tel:+620000", className: "button" },
+      ],
+    },
+  };
+
   protected isMenuOpened: boolean = false;
 
   /**
@@ -102,10 +132,8 @@ export class MenuBuilder extends Builder<MenuElementType, iMenuConfig> {
   }
 
   public prepare(content: iBasicNode, _config?: Partial<iMenuConfig>): HTMLElement {
-    // Accepts `{ content: { navigations } }` and `{ navigations }`: the registry unwraps
-    // `node.content`, but a manifest `schema` hands the whole record over.
-    const source: any = (content as any)?.content ?? content;
-    const payload = this.resolvePayload(source);
+    // The registry hands the payload directly: `{ navigations }`, never a `{ content }` wrapper.
+    const payload = this.resolvePayload(content);
 
     const nav = this.render("@menu", payload["@menu"])!;
     const brand = this.render("@menu>brand", payload["@menu>brand"]);
@@ -125,7 +153,7 @@ export class MenuBuilder extends Builder<MenuElementType, iMenuConfig> {
 
     // `type` decides the shell, not the content: a sidebar is the same nav in a wrapper.
     if (this.config.position === "left" || this.config.position === "right") {
-      const sidebar = this.render("@container", source)!;
+      const sidebar = this.render("@container", content)!;
       sidebar.appendChild(nav);
       return sidebar;
     }

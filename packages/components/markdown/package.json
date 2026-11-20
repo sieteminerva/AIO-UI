@@ -1,6 +1,6 @@
 {
   "name": "@aio-ui/markdown",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "type": "module",
   "files": [
     "dist",
@@ -12,10 +12,17 @@
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
-    "./Markdown.css": "./Markdown.css"
+    "./Markdown.css": {
+      "types": "./Markdown.css.d.ts",
+      "default": "./Markdown.css"
+    }
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "@aio-ui/base": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.4/aio-ui-base-0.2.4.tgz",
+    "@aio-ui/core": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.4/aio-ui-core-0.2.4.tgz"
   }
 }

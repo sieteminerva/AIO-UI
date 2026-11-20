@@ -1,4 +1,4 @@
-import type { iBuilderConfig, iBuilderRegistry } from "@aio-ui/core/interface";
+import type { iBuilderConfig, iBuilderRegistry, iContentContract } from "@aio-ui/core/interface";
 import { Builder } from "@aio-ui/base";
 export type FooterElementType = "@footer" | "@footer>row" | "@footer>row>column" | "@footer>row>column>header" | "@footer>row>column>desc" | "@footer>row>column>list" | "@footer>row>column>list>item" | "@footer>copyright";
 /**
@@ -47,6 +47,7 @@ export declare class FooterBuilder extends Builder<FooterElementType, iFooterCon
     readonly builderId: keyof iBuilderRegistry;
     readonly name: keyof iBuilderRegistry;
     readonly stylesheet: string;
+    static readonly contract: iContentContract;
     config: Required<iFooterConfig>;
     /**
      * 🪶 LOADING MOCKUP — three column headers over their link lines, then the copyright row,

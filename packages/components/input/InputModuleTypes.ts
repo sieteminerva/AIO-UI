@@ -17,6 +17,7 @@ export const INPUT_MODULE_IDS = {
   file: "file",
   controls: "controls",
   popover: "popover",
+  picker: "picker",
 } as const;
 
 /** Union of every input sub-module id. */

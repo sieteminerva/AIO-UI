@@ -15,6 +15,29 @@ export class ArticleBuilder extends Builder {
     builderId = "article";
     name = "article";
     stylesheet = "./Article.css";
+    static contract = {
+        schema: {
+            t: "record",
+            open: true,
+            of: {
+                data: {
+                    t: "list",
+                    of: {
+                        t: "record",
+                        open: true,
+                        of: {
+                            slug: { t: "string", req: true },
+                            title: { t: "string" },
+                            thumbnail: { t: "string" },
+                            date: { t: "string" },
+                            body: { t: "string" },
+                        },
+                    },
+                },
+            },
+        },
+        example: { data: [{ slug: "article-1", title: "First article", body: "…" }] },
+    };
     // State internal modul
     currentRawServerResponse = null;
     viewSpecs = [];
@@ -100,7 +123,8 @@ export class ArticleBuilder extends Builder {
      * Interaksi terpasang via bindInteractions().
      */
     prepare(content, _config) {
-        this.currentRawServerResponse = content?.content || content || {};
+        // The payload is the response envelope directly; there is no `{ content }` wrapper.
+        this.currentRawServerResponse = content ?? {};
         // Fresh render pass: forget the previous list and record index.
         this.listElement = null;
         this.records.clear();

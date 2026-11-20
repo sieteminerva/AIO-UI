@@ -90,6 +90,11 @@ export class SkeletonBuilder extends Builder {
     builderId = "skeleton";
     name = "skeleton";
     stylesheet = "./Skeleton.css";
+    /** One `iSkeletonSpec`, merged over `config.spec`. */
+    static contract = {
+        schema: { t: "record", open: true },
+        example: { shape: "line", width: "60%" },
+    };
     config;
     constructor(config = {}) {
         super();

@@ -2,6 +2,20 @@ import { ReactiveGraph } from "./ReactiveGraph";
 
 const IS_PROXY = Symbol("IS_PROXY");
 
+/**
+ * Whether `value` is a proxy this module handed out.
+ *
+ * A builder that keeps writing to the raw object it passed to `makeReactive` bypasses
+ * every `set` trap, so nothing is notified. The base asks this question before it wires a
+ * model, which turns that silent half-binding into one console warning.
+ *
+ * @param value - Anything a builder returned from `model()`.
+ * @returns True only for a live proxy.
+ */
+export function isReactive(value: unknown): boolean {
+  return Boolean(value && typeof value === "object" && (value as any)[IS_PROXY] === true);
+}
+
 export type BindableElement = HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
 
 export class BuilderProxy {
@@ -212,7 +226,7 @@ export class BuilderProxy {
    * the control values automatically. Returns an unwatch function.
    */
   public bindReactive(root: HTMLElement, source: any): () => void {
-    if (!(root instanceof HTMLElement)) return () => {};
+    if (!(root instanceof HTMLElement)) return () => { };
 
     const controls = Array.from(root.querySelectorAll<BindableElement>("[data-bind]"));
 

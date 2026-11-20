@@ -8,6 +8,11 @@ drives `schema.select()` itself.
 
 <!-- part: id=payload -->
 
+**This package creates no markup.** It is a plugin that decorates the level controls a form or page
+already rendered, so its styling contract is the small set of state classes it toggles. That makes
+it a plain CSS library by construction: any markup carrying the same wrappers and state classes is
+styled identically, and the base field look stays with the component that rendered the field.
+
 ## Payload
 
 The engine takes no `content` payload. Its input is the query it sends to a data source:
@@ -106,6 +111,27 @@ so the builder filters the elements it decorates instead of taking every match.
 sheet can be found (its `styles` asset map) — nothing is injected twice.
 
 <!-- part: id=tokens role=contract -->
+
+### Structure
+
+No elements are produced; the plugin expects one carrier per level inside `config.container`. The
+same nesting written by hand works exactly the same way:
+
+```html
+<div class="field" data-level="propinsi">
+  <select data-level="propinsi">
+    …
+  </select>
+</div>
+<div class="field" data-level="kota">
+  <select data-level="kota">
+    …
+  </select>
+</div>
+```
+
+`init()` adds `loading` and `error` to the `.field` wrapper of the level it is waiting on; nothing
+else is stamped.
 
 ## Tokens
 

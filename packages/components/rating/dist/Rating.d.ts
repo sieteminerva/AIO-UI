@@ -1,4 +1,4 @@
-import type { iBuilderConfig, iBuilderRegistry } from "@aio-ui/core/interface";
+import type { iBuilderConfig, iBuilderRegistry, iContentContract } from "@aio-ui/core/interface";
 import { Builder } from "@aio-ui/base";
 export type RatingVisualType = "star" | "round-bar" | "line-bar" | "count-up";
 export type RatingElementType = "@container" | "@rating" | "@rating>track" | "@rating>fill" | "@rating>label" | "@rating>stars-group" | "@rating>stars-item";
@@ -11,6 +11,8 @@ export declare class RatingBuilder extends Builder<RatingElementType, iRatingCon
     readonly builderId: keyof iBuilderRegistry;
     readonly name: keyof iBuilderRegistry;
     readonly stylesheet: string;
+    /** A bare number or `{ value }`; anything else is scored as `0`. */
+    static readonly contract: iContentContract;
     config: Required<iRatingConfig>;
     /**
      * 🪶 LOADING MOCKUP — five stars over the numeric bar, drawn with the mandatory

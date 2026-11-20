@@ -1,4 +1,4 @@
-import type { iBasicNode, iBuilderConfig, iBuilderRegistry } from "@aio-ui/core/interface";
+import type { iBasicNode, iBuilderConfig, iBuilderRegistry, iContentContract } from "@aio-ui/core/interface";
 import { Builder } from "@aio-ui/base";
 export type MasonryElementType = "@container" | "@masonry" | "@masonry>filter" | "@masonry>filter>item" | "@masonry>filter>slider" | "@masonry>item" | "@masonry>item>image" | "@masonry>item>title" | "@masonry>item>desc" | "@masonry>item>actions" | "@masonry>modal" | "@masonry>modal>stage" | "@masonry>modal>image" | "@masonry>modal>caption" | "@masonry>modal>title" | "@masonry>modal>desc" | "@masonry>modal>close" | "@masonry>modal>next" | "@masonry>modal>previous" | "@masonry>spinner" | "@masonry>trigger" | "@masonry>sentinel";
 export interface iMasonryConfig extends iBuilderConfig<MasonryElementType> {
@@ -24,6 +24,8 @@ export declare class MasonryBuilder extends Builder<MasonryElementType, iMasonry
     readonly builderId: keyof iBuilderRegistry;
     readonly name: keyof iBuilderRegistry;
     readonly stylesheet: string;
+    /** `{ items }` or a bare array (the builder wraps it), and an item may be an element. */
+    static readonly contract: iContentContract;
     private displayedCount;
     private selectedCategory;
     private currentPage;

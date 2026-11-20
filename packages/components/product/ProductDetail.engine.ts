@@ -9,8 +9,8 @@ import type { iProductColor, iProductRecord } from "./ProductDetail";
 
 /** One record, accepting the `artwork.src` shape from the Sheets data as well as `imageUrl`. */
 export function normalizeProduct(data: any): iProductRecord {
-  const record = data?.content ?? data;
-  return record && typeof record === "object" ? record : {};
+  // The registry hands the payload directly: a record, never a `{ content }` envelope.
+  return data && typeof data === "object" ? data : {};
 }
 
 

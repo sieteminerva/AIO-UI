@@ -24,6 +24,22 @@ export class FooterBuilder extends Builder {
     builderId = "footer";
     name = "footer";
     stylesheet = "./Footer.css";
+    static contract = {
+        schema: {
+            t: "record",
+            open: true,
+            of: {
+                columns: { t: "list", of: { t: "any" } },
+                copyright: { t: "string" },
+            },
+        },
+        example: {
+            columns: [
+                { title: "Product", description: "Built for teams", actions: [{ label: "Docs", href: "#docs" }] },
+            ],
+            copyright: "© 2026 AIO",
+        },
+    };
     config;
     /**
      * 🪶 LOADING MOCKUP — three column headers over their link lines, then the copyright row,
@@ -64,7 +80,8 @@ export class FooterBuilder extends Builder {
         this.config = this.resolveConfig(defaultConfig, config);
     }
     prepare(data) {
-        const content = data.content || data;
+        // The payload is the footer content directly; there is no `{ content }` wrapper.
+        const content = data ?? {};
         // A footer without `columns[]` is still a footer: fall back to the flat shape so a
         // single-column payload does not need to be wrapped in an array of one.
         const columns = Array.isArray(content.columns) && content.columns.length

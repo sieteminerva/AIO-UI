@@ -5,6 +5,18 @@ export class TableBuilder extends Builder {
     builderId = "table";
     name = "table";
     stylesheet = "./Table.css";
+    static contract = {
+        schema: {
+            t: "record",
+            open: true,
+            of: {
+                header: { t: "list", of: { t: "any" } },
+                body: { t: "list", of: { t: "list", of: { t: "any" } } },
+                footer: { t: "any" },
+            },
+        },
+        example: { header: ["Name", "Qty"], body: [["Coffee", 2]] },
+    };
     // Instance State Variables
     currentPage = 1;
     pageRows = [];

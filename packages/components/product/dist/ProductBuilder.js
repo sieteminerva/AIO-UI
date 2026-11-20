@@ -14,6 +14,18 @@ export class ProductBuilder extends Builder {
     name = "product";
     /** No sheet of its own: the wrapper is one class, and each view brings its stylesheet. */
     stylesheet = "";
+    /** Grid (`[…]` / `{ items }`) or detail (`{ record }`) — the shape picks the view. */
+    static contract = {
+        schema: {
+            t: "union",
+            of: [
+                { t: "list", of: { t: "record", open: true } },
+                { t: "record", open: true, of: { record: { t: "record", open: true } } },
+                { t: "record", open: true, of: { items: { t: "list", of: { t: "record", open: true } } } },
+            ],
+        },
+        example: { items: [{ id: "p1", title: "T-shirt", price: 120000, image: "p1.png" }] },
+    };
     /** The host that currently holds a view; `#show*` replaces its children. */
     #host = null;
     /** The last list rendered, so coming back restores it instead of a single record. */
@@ -35,7 +47,7 @@ export class ProductBuilder extends Builder {
         this.config = this.resolveConfig(defaultConfig, config);
     }
     prepare(data) {
-        const content = data?.content ?? data ?? {};
+        const content = data ?? {};
         const items = this.#items(content);
         const record = content?.record ?? content?.product ?? null;
         const host = this.render("@product", content);
@@ -62,7 +74,7 @@ export class ProductBuilder extends Builder {
     #items(content) {
         if (Array.isArray(content))
             return content.filter(Boolean);
-        for (const key of ["items", "products", "data", "content"]) {
+        for (const key of ["items", "products", "data"]) {
             if (Array.isArray(content?.[key]))
                 return content[key].filter(Boolean);
         }
@@ -81,7 +93,7 @@ export class ProductBuilder extends Builder {
             },
         });
         this.#list = items;
-        const renderedGrid = grid.create({ content: { data: items } });
+        const renderedGrid = grid.create({ content: items });
         if (this.host("grid")) {
             this.project("grid", renderedGrid);
         }

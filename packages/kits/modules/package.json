@@ -1,6 +1,6 @@
 {
   "name": "@aio-ui/modules",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "type": "module",
   "description": "Aggregated public surface for modules.",
   "files": [
@@ -14,12 +14,12 @@
     }
   },
   "dependencies": {
-    "@aio-ui/module-loader": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.3/aio-ui-module-loader-0.2.3.tgz",
-    "@aio-ui/router": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.3/aio-ui-router-0.2.3.tgz",
-    "@aio-ui/http-service": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.3/aio-ui-http-service-0.2.3.tgz",
-    "@aio-ui/event-emitter": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.3/aio-ui-event-emitter-0.2.3.tgz",
-    "@aio-ui/theme": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.3/aio-ui-theme-0.2.3.tgz",
-    "@aio-ui/animations": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.3/aio-ui-animations-0.2.3.tgz"
+    "@aio-ui/animations": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.4/aio-ui-animations-0.2.4.tgz",
+    "@aio-ui/event-emitter": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.4/aio-ui-event-emitter-0.2.4.tgz",
+    "@aio-ui/http-service": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.4/aio-ui-http-service-0.2.4.tgz",
+    "@aio-ui/module-loader": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.4/aio-ui-module-loader-0.2.4.tgz",
+    "@aio-ui/router": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.4/aio-ui-router-0.2.4.tgz",
+    "@aio-ui/theme": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.4/aio-ui-theme-0.2.4.tgz"
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",

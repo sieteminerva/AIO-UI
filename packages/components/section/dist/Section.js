@@ -13,6 +13,46 @@ export class SectionBuilder extends Builder {
     builderId = "section";
     name = "section";
     stylesheet = "./Section.css";
+    /** The payload is the column list; each column owns a `blocks` list. */
+    static contract = {
+        schema: {
+            t: "list",
+            single: true,
+            of: {
+                t: "record",
+                open: true,
+                of: {
+                    className: { t: "string" },
+                    blocks: {
+                        t: "list",
+                        of: {
+                            t: "record",
+                            open: true,
+                            of: {
+                                imageUrl: { t: "string" },
+                                image: { t: "string" },
+                                alt: { t: "string" },
+                                eyebrow: { t: "string" },
+                                title: { t: "string" },
+                                description: { t: "string" },
+                                actions: {
+                                    t: "list",
+                                    of: {
+                                        t: "record",
+                                        open: true,
+                                        of: { label: { t: "string", req: true }, href: { t: "string" }, value: { t: "string" } },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+        },
+        example: [
+            { className: "hero", blocks: [{ eyebrow: "New", title: "Built for teams", description: "…" }] },
+        ],
+    };
     config;
     /**
      * 🪶 LOADING MOCKUP — eyebrow, header, copy and the action row, drawn with the mandatory
@@ -37,6 +77,7 @@ export class SectionBuilder extends Builder {
             selectors: DEFAULT_SELECTORS,
             namespace: null,
             emit: () => { },
+            id: "",
             className: "",
         };
         this.config = this.resolveConfig(defaultConfig, config);
@@ -91,12 +132,10 @@ export class SectionBuilder extends Builder {
     template(typeKey, el, payload) {
         switch (typeKey) {
             case "@section":
-                if (payload?.id)
-                    el.id = payload.id;
-                if (payload?.className)
-                    addClasses(el, payload.className);
-                if (this.config.className)
-                    addClasses(el, this.config.className);
+                // Root identity is host-level: it comes from config, never from the content payload.
+                if (this.config.id)
+                    el.id = this.config.id;
+                addClasses(el, this.config.className);
                 break;
             case "@section>content":
                 if (payload?.className)

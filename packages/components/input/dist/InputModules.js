@@ -17,6 +17,7 @@
 import { dropdownInputModule } from "./Dropdown/Dropdown.InputModule.js";
 import { fileUploaderInputModule } from "./FileUploader/FileUploader.InputModule.js";
 import { inputControlsInputModule } from "./InputControls/InputControls.InputModule.js";
+import { pickerInputModule } from "./InputPicker/InputPicker.inputModules.js";
 import { popoverInputModule } from "./Popover.InputModule.js";
 /**
  * Every adapter the input layer itself provides.
@@ -32,6 +33,7 @@ import { popoverInputModule } from "./Popover.InputModule.js";
  */
 export const INPUT_MODULE_DEFINITIONS = [
     dropdownInputModule,
+    pickerInputModule,
     fileUploaderInputModule,
     inputControlsInputModule,
     popoverInputModule,

@@ -23,7 +23,7 @@
  * `onBack` returns. The host keeps what only it can know: where the data came from and
  * what "add to cart" means.
  */
-import type { iBuilderConfig } from "@aio-ui/core/interface";
+import type { iBuilderConfig, iContentContract } from "@aio-ui/core/interface";
 import { Builder } from "@aio-ui/base";
 import type { iBuilderRegistry } from "@aio-ui/core/interface";
 import type { ProductElementType } from "./Product.kit";
@@ -64,6 +64,8 @@ export declare class ProductBuilder extends Builder<ProductElementType, iProduct
     readonly name: keyof iBuilderRegistry;
     /** No sheet of its own: the wrapper is one class, and each view brings its stylesheet. */
     readonly stylesheet: string;
+    /** Grid (`[…]` / `{ items }`) or detail (`{ record }`) — the shape picks the view. */
+    static readonly contract: iContentContract;
     constructor(config?: Partial<iProductConfig>);
     prepare(data: any): HTMLElement;
     /** The composition root renders no text of its own — the views do. */

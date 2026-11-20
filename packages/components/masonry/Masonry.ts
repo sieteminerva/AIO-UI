@@ -1,4 +1,4 @@
-import type { iElementProperty, iBasicNode, iBuilderConfig, iBuilderRegistry } from "@aio-ui/core/interface";
+import type { iElementProperty, iBasicNode, iBuilderConfig, iBuilderRegistry, iContentContract } from "@aio-ui/core/interface";
 import { Builder } from "@aio-ui/base";
 import { Skeleton } from "@aio-ui/skeleton";
 import { createImageError } from "@aio-ui/utilities";
@@ -55,6 +55,22 @@ export class MasonryBuilder extends Builder<MasonryElementType, iMasonryConfig> 
   readonly builderId: keyof iBuilderRegistry = "masonry";
   readonly name: keyof iBuilderRegistry = "masonry";
   public readonly stylesheet: string = "./Masonry.css";
+
+  /** `{ items }` or a bare array (the builder wraps it), and an item may be an element. */
+  static readonly contract: iContentContract = {
+    schema: {
+      t: "union",
+      of: [
+        {
+          t: "record",
+          open: true,
+          of: { items: { t: "list", req: true, of: { t: "union", of: [{ t: "element" }, { t: "record", open: true }] } } },
+        },
+        { t: "list", of: { t: "union", of: [{ t: "element" }, { t: "record", open: true }] } },
+      ],
+    },
+    example: { items: [{ image: "a.png", category: "Branding", title: "Project A" }] },
+  };
 
   #items: (iBasicNode | HTMLElement)[] = [];
   private displayedCount = 0;
@@ -197,12 +213,12 @@ export class MasonryBuilder extends Builder<MasonryElementType, iMasonryConfig> 
       normalizedData = {
         id: this.config.container instanceof HTMLElement ? this.config.container.id : "masonry-legacy-root",
         className: "section masonry gallery",
-        content: data // Alirkan array lama ke saku content standar v2
+        items: data // Bare array is the item list; the payload key is `items`.
       };
     }
 
     // Pasok data array murni ksatria Anda ke Immutable Setter Tracker
-    this.items = normalizedData.content || [];
+    this.items = normalizedData.items || [];
     this.displayedCount = 0;
     this.currentPage = 1; // Reset nomor halaman awal
 

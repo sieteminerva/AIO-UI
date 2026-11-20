@@ -105,7 +105,7 @@ export class ProductGridBuilder extends Builder<ProductGridElementType, iProduct
       };
 
       // Tembakkan pembuatan bodi fisik JIT membawa data pakaian
-      const cardDOMElement = cardComponent.create(productItem);
+      const cardDOMElement = cardComponent.create({ content: productItem });
 
       if (cardDOMElement instanceof HTMLElement && container) {
         cardDOMElement.dataset.uid = productItem.id;

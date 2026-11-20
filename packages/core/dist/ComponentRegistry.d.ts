@@ -1,17 +1,17 @@
 import type { iBasicNode, iBuilderRegistry } from "./interface";
 import type { iEventEmit } from "./types/events";
 /**
- * Layered config for one build: `theme < emitter < manifest < node`.
+ * Layered config for one build: `theme < emitter < schema`.
  *
  * The emitter sits above the theme so every builder gets a publisher even when a theme
- * configured it, and below the manifest/node so a component can still set its own — or
- * silence it with `emit: null`. Selectors are merged across the three layers so a node
- * that overrides one key keeps the rest.
+ * configured it, and below the schema so a component can still set its own — or silence it
+ * with `emit: null`. Selectors are merged across the layers so a schema that overrides one
+ * key keeps the rest.
  *
  * Pure and exported: the merge is the one part of `build()` that can be pinned down
  * without a DOM.
  */
-export declare function mergeBuildConfig(theme: Record<string, any> | undefined, emitter: iEventEmit | null, manifest: Record<string, any> | undefined, node: Record<string, any> | undefined): Record<string, any>;
+export declare function mergeBuildConfig(theme: Record<string, any> | undefined, emitter: iEventEmit | null, schema: Record<string, any> | undefined): Record<string, any>;
 /**
  * Component manifest — the single registration shape.
  *
@@ -33,8 +33,6 @@ export interface iComponentManifest {
      * this registration means.
      */
     export?: string;
-    /** Default configuration, merged beneath the node's own config. */
-    config?: any;
     /** Payload handed to the builder. When omitted, the node content is used. */
     schema?: any;
     /** Sub-modules this component owns, loaded alongside it. */

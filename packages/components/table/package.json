@@ -1,6 +1,6 @@
 {
   "name": "@aio-ui/table",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "type": "module",
   "files": [
     "dist",
@@ -13,7 +13,10 @@
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
-    "./Table.css": "./Table.css",
+    "./Table.css": {
+      "types": "./Table.css.d.ts",
+      "default": "./Table.css"
+    },
     "./adapters/FormAdapter": {
       "types": "./dist/adapters/FormAdapter.d.ts",
       "default": "./dist/adapters/FormAdapter.js"
@@ -24,10 +27,10 @@
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "@aio-ui/base": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.3/aio-ui-base-0.2.3.tgz",
-    "@aio-ui/core": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.3/aio-ui-core-0.2.3.tgz",
-    "@aio-ui/form": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.3/aio-ui-form-0.2.3.tgz",
-    "@aio-ui/module-loader": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.3/aio-ui-module-loader-0.2.3.tgz",
-    "@aio-ui/utilities": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.3/aio-ui-utilities-0.2.3.tgz"
+    "@aio-ui/base": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.4/aio-ui-base-0.2.4.tgz",
+    "@aio-ui/core": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.4/aio-ui-core-0.2.4.tgz",
+    "@aio-ui/form": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.4/aio-ui-form-0.2.4.tgz",
+    "@aio-ui/module-loader": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.4/aio-ui-module-loader-0.2.4.tgz",
+    "@aio-ui/utilities": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.4/aio-ui-utilities-0.2.4.tgz"
   }
 }

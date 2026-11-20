@@ -1,6 +1,6 @@
 {
   "name": "@aio-ui/section",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "type": "module",
   "files": [
     "dist",
@@ -12,10 +12,17 @@
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
-    "./Section.css": "./Section.css"
+    "./Section.css": {
+      "types": "./Section.css.d.ts",
+      "default": "./Section.css"
+    }
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "@aio-ui/base": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.4/aio-ui-base-0.2.4.tgz",
+    "@aio-ui/core": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.4/aio-ui-core-0.2.4.tgz"
   }
 }

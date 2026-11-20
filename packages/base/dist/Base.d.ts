@@ -1,4 +1,4 @@
-import type { iBuilderRegistry, iBuilderConfig, iElementProperty, iNodeRecordItem, iNodeRecordRelations } from "@aio-ui/core/interface";
+import type { iBuilderRegistry, iBuilderConfig, iContentContract, iContentIssue, iElementProperty, iNodeRecordItem, iNodeRecordRelations } from "@aio-ui/core/interface";
 import { BuilderProxy } from "./BaseAdapters/BuilderProxy";
 export declare const GLOBAL_INSTANCE_COUNTER: Map<string, number>;
 /**
@@ -21,6 +21,8 @@ export interface iBuilderInspection {
     namespace: string | null;
     /** Records stamped on the root. Usually one; a page tree lives in `inspectPage()`. */
     records: iNodeRecordItem[];
+    /** Problems the last `create()` found in the payload, via the builder's `static contract`. */
+    issues: iContentIssue[];
 }
 /**
  * @classdesc
@@ -51,12 +53,12 @@ export interface iBuilderInspection {
  * }
  *
  * const builder = new HeroBuilder();
- * const element = builder.create({ title: "Hello" });
+ * const element = builder.create({ content: { title: "Hello" } });
  *
  * ========== Public Lifecycle API ==========
  *
  * @example
- * builder.create(data, config);
+ * builder.create({ content: data, config });
  * builder.destroy();
  * builder.attach("typeKey", "slotKey", payload);
  * builder.detach("slotKey");
@@ -67,12 +69,35 @@ export interface iBuilderInspection {
  * @author YMGH
  * @version 1.0.0
  */
+/**
+ * The one input a builder accepts: a schema.
+ *
+ * `content` is what the component renders; `config` is merged over the instance's own
+ * configuration. A builder never sees the page node (`builder`, `isRoot`, `attrs`, host
+ * element) — the registry reduces a node to this shape before calling `create()`.
+ *
+ * `content` appears exactly once in the whole chain: here. Nothing below this layer may
+ * name a payload field `content` again.
+ */
+export interface iBuilderSchema<TConfig = any> {
+    content?: any;
+    config?: Partial<TConfig>;
+}
 export declare abstract class Builder<TType extends string = string, TConfig extends iBuilderConfig<TType> = iBuilderConfig<TType>> {
     #private;
     /** 🧩 ROOT of the builder that hosts my projections — the shared ancestor
      *  token vars are painted on; null when I have no caller (standalone). Set
      *  in `attach()` the first time I project into a caller. */
     protected rootElement: HTMLElement | null;
+    /**
+     * 🧾 DECLARED PAYLOAD SHAPE — optional, and the only place this builder describes what
+     * `schema.content` may contain. `create()` normalises against it and stores the issues;
+     * `inspect()` reports them. A builder without one is left untouched (the door stays open).
+     *
+     * A contract is data, not code: `{ schema, example, legacy? }`. CI validates `example`
+     * for every builder that declares one, so the sample cannot drift from the shape.
+     */
+    static contract?: iContentContract;
     static resetCounters(): void;
     /**
      * @description
@@ -220,6 +245,32 @@ export declare abstract class Builder<TType extends string = string, TConfig ext
      *   stylesheet it is standing in for.
      */
     protected loading?(content: any, config: TConfig): HTMLElement | null | undefined;
+    /**
+     * 🧠 THE MODEL — the one object this builder may write to.
+     *
+     * Optional, and the whole binding seam hangs off it: declare `model()` and the base
+     * connects every scope it hands to `initialize()` (the root from `create()`, the key
+     * from `attach()`, the element from `project()`), mirrors its `[data-bind]` controls
+     * both ways, and releases the wire in `destroy()`/`detach()`. A builder without
+     * `model()` keeps today's behaviour: no listeners, no effect, nothing to leak.
+     *
+     * One model per builder. A second object is a second source of truth, and a component
+     * with two of them starts disagreeing with itself.
+     *
+     * @returns A plain object; the base wraps it in the reactive proxy exactly once.
+     */
+    protected model?(): Record<string, any>;
+    /**
+     * 🎨 THE OTHER HALF OF THE MIRROR — draw what is not a control value.
+     *
+     * Text, classes, tokens and derived markup cannot be expressed as `data-bind`, so the
+     * builder paints them here. Runs inside the same effect as the control refresh, once
+     * per scope, and must be idempotent: it renders current state, it does not diff.
+     *
+     * @param scope - the root or projected/mounted element being repainted.
+     * @param model - the reactive model, the same object `model()` returned.
+     */
+    protected paint?(scope: HTMLElement, model: Record<string, any>): void;
     constructor();
     /**
      * @description
@@ -283,14 +334,14 @@ export declare abstract class Builder<TType extends string = string, TConfig ext
      * node state, renders the component tree, and calls the subclass initializer so interactive
      * bindings are attached only after the DOM has been materialized.
      *
-     * @param content - The source data payload used to construct the component tree.
-     * @param config - Optional runtime overrides merged into the builder configuration.
+     * @param schema - The schema door: `{ content, config }`. `content` is the payload the
+     *   component renders, `config` the runtime overrides merged over the instance config.
      *
      * @returns The root DOM element produced by the builder's prepare/initialize pipeline.
      *
      * @public
      */
-    create(content: any, config?: Partial<TConfig>): HTMLElement;
+    create(schema?: iBuilderSchema<TConfig>): HTMLElement;
     /**
      * @description
      * Creates and registers a DOM element for the requested selector token using the builder's
@@ -436,7 +487,7 @@ export declare abstract class Builder<TType extends string = string, TConfig ext
      *
      * @example
      * const builder = new SectionBuilder(config);
-     * builder.create(payload);
+     * builder.create({ content: payload });
      * const { html, keys } = builder.inspect();
      *
      * @summary Lives in the class body on purpose: `Builder.prototype` is frozen at the

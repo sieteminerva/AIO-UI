@@ -12,6 +12,7 @@
  */
 // ---- runtime -------------------------------------------------------------
 export { ComponentRegistry, mergeBuildConfig } from "./ComponentRegistry.js";
+export { AioApp, AppStorage, blockToNode, isPageDocument, normalizeRoute, pageToNode } from "./app/index.js";
 export { DOMRenderer } from "./DOMRenderer.js";
 export { inspectPage } from "./Inspect.js";
 export { getBuilderAdapter, setBuilderAdapter } from "./BuilderPort.js";

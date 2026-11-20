@@ -1,4 +1,4 @@
-import type { iBuilderConfig, iBuilderRegistry } from "@aio-ui/core/interface";
+import type { iBuilderConfig, iBuilderRegistry, iContentContract } from "@aio-ui/core/interface";
 import { Builder } from "@aio-ui/base";
 import type { iCascadeEventDetail } from "./FormModuleTypes";
 import type { iFormModuleContext } from "./FormModuleTypes";
@@ -132,6 +132,11 @@ export declare class FormBuilder extends Builder<FormElementType, iFormConfig> {
     readonly builderId: keyof iBuilderRegistry;
     readonly name: keyof iBuilderRegistry;
     readonly stylesheet: string;
+    /**
+     * Groups are records; a field's own shape belongs to `@aio-ui/input`, so a group stays
+     * open and only its `group` array is checked as an array.
+     */
+    static readonly contract: iContentContract;
     private submitButtonId;
     /**
      * Memisahkan modul yang diserahkan registry menurut lapisannya.

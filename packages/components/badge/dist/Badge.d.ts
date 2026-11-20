@@ -1,4 +1,4 @@
-import type { iBuilderConfig, iBuilderRegistry } from "@aio-ui/core/interface";
+import type { iBuilderConfig, iBuilderRegistry, iContentContract } from "@aio-ui/core/interface";
 import { Builder } from "@aio-ui/base";
 import type { BadgeElementType } from "./Badge.kit";
 /**
@@ -33,6 +33,7 @@ export declare class BadgeBuilder extends Builder<BadgeElementType, iBadgeConfig
     readonly builderId: keyof iBuilderRegistry;
     readonly name: keyof iBuilderRegistry;
     readonly stylesheet: string;
+    static readonly contract: iContentContract;
     config: Required<iBadgeConfig>;
     /**
      * 🪶 LOADING MOCKUP — three pill labels in a row, drawn with the mandatory

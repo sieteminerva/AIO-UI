@@ -1,4 +1,4 @@
-import type { iBuilderConfig, iBuilderRegistry } from "@aio-ui/core/interface";
+import type { iBuilderConfig, iBuilderRegistry, iContentContract } from "@aio-ui/core/interface";
 import { Builder } from "@aio-ui/base";
 export type ModalElementType = "@container" | "@modal" | "@modal>header" | "@modal>closeBtn";
 export interface iModalConfig extends iBuilderConfig<ModalElementType> {
@@ -29,6 +29,8 @@ export declare class ModalBuilder extends Builder<ModalElementType, iModalConfig
     readonly builderId: keyof iBuilderRegistry;
     readonly name: keyof iBuilderRegistry;
     readonly stylesheet: string;
+    /** An element, an HTML string or a node object — the body is whatever `_compileContent` accepts. */
+    static readonly contract: iContentContract;
     currentModal: HTMLElement | null;
     /** Kept so teardown removes exactly the listener that was added. */
     private closeBtn;

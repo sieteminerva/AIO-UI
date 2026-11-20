@@ -42,7 +42,8 @@ export class InputControlsBuilder extends Builder {
      * 🧱 METODE PREPARE
      */
     prepare(payload) {
-        const content = payload.content;
+        // The payload is the control spec directly; there is no `{ content }` wrapper.
+        const content = payload;
         const actions = content.actions ?? [];
         const position = content.position;
         const input = content.input ?? null;

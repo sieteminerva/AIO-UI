@@ -12,6 +12,20 @@ export class FormBuilder extends Builder {
     builderId = "form";
     name = "form";
     stylesheet = "./Form.css";
+    /**
+     * Groups are records; a field's own shape belongs to `@aio-ui/input`, so a group stays
+     * open and only its `group` array is checked as an array.
+     */
+    static contract = {
+        schema: {
+            t: "list",
+            single: true,
+            of: { t: "record", open: true, of: { group: { t: "list", of: { t: "any" } } } },
+        },
+        example: [
+            { id: "group-1", title: "Shipping", group: [{ type: "text", id: "name", title: "Name" }] },
+        ],
+    };
     submitButtonId = undefined;
     #inputs = [];
     // 🌊 Engine kaskade: seluruh logika mount/unmount/gate hidup di Cascade.ts.
@@ -260,12 +274,7 @@ export class FormBuilder extends Builder {
                 "exported by @aio-ui/form/adapters — or, at minimum, [inputFormAdapter], " +
                 "exported by @aio-ui/form/Input.FormAdapter.");
         }
-        // Unwrap builder wrapper: { builder: "form", content: [...] } → [...fields]
-        // console.log("FORMS", inputs)
-        // console.log("config", _config)
-        if (inputs && typeof inputs === "object" && !Array.isArray(inputs) && inputs.content !== undefined) {
-            inputs = inputs.content;
-        }
+        // The registry hands the field list directly; there is no `{ content }` envelope to unwrap.
         this.#inputs = Array.isArray(inputs) ? inputs : [inputs];
         // 🧩 Satu impor, seluruh stack: definisi lapisan field yang ikut di loader dipindah
         // ke preset field sebelum siklus render dimulai.

@@ -23,9 +23,9 @@ declare class TableFormAdapter {
     /**
      * Builds a table for a group schema and wires its submit button.
      *
-     * @param spec - The `table` descriptor: `{ content, id? }`.
+     * @param spec - The `table` descriptor: `{ data, id? }`.
      * @param target - Fieldset and submit button the table belongs to.
-     * @returns The table container, or `null` when the spec has no content.
+     * @returns The table container, or `null` when the spec has no data.
      */
     renderTable(spec: any, target: iFormTableTarget): HTMLElement[] | null;
     /**

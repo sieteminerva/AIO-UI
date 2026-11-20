@@ -1,4 +1,4 @@
-import type { iBuilderConfig, iBuilderRegistry } from "@aio-ui/core/interface";
+import type { iBuilderConfig, iBuilderRegistry, iContentContract } from "@aio-ui/core/interface";
 import { Builder } from "@aio-ui/base";
 
 export type MessageElementType =
@@ -29,6 +29,20 @@ export class MessageBuilder extends Builder<MessageElementType, iMessageConfig> 
   readonly builderId: keyof iBuilderRegistry = "message";
   readonly name: keyof iBuilderRegistry = "message";
   readonly stylesheet: string = "./Message.css";
+
+  static readonly contract: iContentContract = {
+    schema: {
+      t: "record",
+      open: true,
+      of: {
+        message: { t: "string", req: true },
+        header: { t: "string" },
+        type: { t: "enum", of: ["success", "error", "info", "warning"] },
+        icon: { t: "string" },
+      },
+    },
+    example: { header: "Saved", message: "Your changes are stored.", type: "success" },
+  };
 
   public config: Required<iMessageConfig>;
   private _activeTimers = new Map<string, number>();

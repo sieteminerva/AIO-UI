@@ -51,7 +51,8 @@ export class ProductCardBuilder extends Builder {
         // Ubah struktur data 'fabrics' dan 'artwork' dari Sheets menjadi
         // format variants hibrida Carousel + Tab secara JIT di RAM memori!
         // ====================================================
-        const rawItem = content?.content || content || {};
+        // The payload is the product record directly; there is no `{ content }` wrapper.
+        const rawItem = content ?? {};
         this.currentDisplayIndex = 0;
         this.#item = rawItem;
         // Seluruh pohon DOM kartu produk (display, gambar, opsi varian, caption,

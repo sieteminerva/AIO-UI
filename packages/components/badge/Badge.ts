@@ -1,4 +1,4 @@
-import type { iBuilderConfig, iBuilderRegistry } from "@aio-ui/core/interface";
+import type { iBuilderConfig, iBuilderRegistry, iContentContract } from "@aio-ui/core/interface";
 import { Builder } from "@aio-ui/base";
 import { Skeleton } from "@aio-ui/skeleton";
 import { DEFAULT_SELECTORS } from "./Badge.kit";
@@ -40,6 +40,16 @@ export class BadgeBuilder extends Builder<BadgeElementType, iBadgeConfig> {
   readonly builderId: keyof iBuilderRegistry = "badge";
   readonly name: keyof iBuilderRegistry = "badge";
   readonly stylesheet: string = "./Badge.css";
+
+  static readonly contract: iContentContract = {
+    schema: {
+      t: "list",
+      single: true,
+      of: { t: "record", open: true, of: { label: { t: "string" }, description: { t: "string" } } },
+    },
+    example: [{ label: "New", description: "This week" }],
+    legacy: [{ from: "items", to: "", reason: "pre-0.3 wrapped the list in { items }" }],
+  };
   public config: Required<iBadgeConfig>;
 
   /**

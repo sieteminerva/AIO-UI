@@ -12,7 +12,16 @@ export interface iAttributeProperty {
 }
 export type InputAttributeType = "value" | "label" | "name" | "placeholder" | "required" | "disabled" | "min" | "max" | "minlength" | "maxlength" | "step" | "rows" | "cols" | "accept" | "multiple" | "checked" | "orient" | "pattern" | "form" | "range" | "data-max-upload" | "data-max-file-size" | "data-group-unallowed" | "data-thumbnail" | "data-view" | "view" | "thumbnail";
 export declare class InputAttributeBuilder {
-    static inputs: Record<InputType, Partial<Record<InputAttributeType, string | number | boolean>>>;
+    /**
+     * Type-specific overrides (minimal defaults per type).
+     *
+     * `config` is the one non-attribute slot. A type whose content *is* a declaration rather
+     * than a value — `actions` — carries it here, so a field of that type is born with an
+     * action set instead of an empty control row. Every other type leaves it out.
+     */
+    static inputs: Record<InputType, Partial<Record<InputAttributeType, string | number | boolean>> & {
+        config?: Record<string, unknown>;
+    }>;
     static attributes: Partial<Record<InputAttributeType, iAttributeProperty>>;
     static resolveMinMaxType(inputType: InputType, key: InputAttributeType): "number" | "date" | "time" | "datetime-local" | null;
     static buildSchemaForType(inputType: InputType, header?: iBasicInputNode): Record<string, any>;

@@ -15,6 +15,7 @@ export declare const INPUT_MODULE_IDS: {
     readonly file: "file";
     readonly controls: "controls";
     readonly popover: "popover";
+    readonly picker: "picker";
 };
 /** Union of every input sub-module id. */
 export type InputModuleId = (typeof INPUT_MODULE_IDS)[keyof typeof INPUT_MODULE_IDS];

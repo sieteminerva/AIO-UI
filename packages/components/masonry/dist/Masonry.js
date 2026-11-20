@@ -5,6 +5,21 @@ export class MasonryBuilder extends Builder {
     builderId = "masonry";
     name = "masonry";
     stylesheet = "./Masonry.css";
+    /** `{ items }` or a bare array (the builder wraps it), and an item may be an element. */
+    static contract = {
+        schema: {
+            t: "union",
+            of: [
+                {
+                    t: "record",
+                    open: true,
+                    of: { items: { t: "list", req: true, of: { t: "union", of: [{ t: "element" }, { t: "record", open: true }] } } },
+                },
+                { t: "list", of: { t: "union", of: [{ t: "element" }, { t: "record", open: true }] } },
+            ],
+        },
+        example: { items: [{ image: "a.png", category: "Branding", title: "Project A" }] },
+    };
     #items = [];
     displayedCount = 0;
     selectedCategory = null;
@@ -129,11 +144,11 @@ export class MasonryBuilder extends Builder {
             normalizedData = {
                 id: this.config.container instanceof HTMLElement ? this.config.container.id : "masonry-legacy-root",
                 className: "section masonry gallery",
-                content: data // Alirkan array lama ke saku content standar v2
+                items: data // Bare array is the item list; the payload key is `items`.
             };
         }
         // Pasok data array murni ksatria Anda ke Immutable Setter Tracker
-        this.items = normalizedData.content || [];
+        this.items = normalizedData.items || [];
         this.displayedCount = 0;
         this.currentPage = 1; // Reset nomor halaman awal
         const rootContainer = this.render("@container", normalizedData);

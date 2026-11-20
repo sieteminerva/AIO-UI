@@ -9,17 +9,26 @@ const baseInputConfig = {
     disabled: false,
 };
 export class InputAttributeBuilder {
-    // Type-specific overrides (minimal defaults per type)
+    /**
+     * Type-specific overrides (minimal defaults per type).
+     *
+     * `config` is the one non-attribute slot. A type whose content *is* a declaration rather
+     * than a value — `actions` — carries it here, so a field of that type is born with an
+     * action set instead of an empty control row. Every other type leaves it out.
+     */
     static inputs = {
         text: { placeholder: "Enter text", maxlength: 255 },
         textarea: { placeholder: "Enter your message", rows: 3, cols: 30 },
         number: { placeholder: "Enter a number", value: 50, min: 0, max: 100, step: 1 },
         select: { placeholder: "Select an option", range: "sheet_range", form: "form_id", multiple: false },
         dropdown: { placeholder: "Select an option", range: "sheet_range", form: "form_id", multiple: false },
+        picker: { placeholder: "Select an option", multiple: false },
         checkbox: { value: "default_value", checked: false },
         radio: { value: "default_value", range: "sheet_range" },
         range: { value: 50, min: 0, max: 100, step: 1, orient: "horizontal" },
-        actions: {},
+        // The field *is* its buttons: `editor` (edit + save) is the pair the old action input
+        // always carried, and the lock policy comes with it.
+        actions: { config: { actions: ["editor"] } },
         date: { min: "yyyy-MM-dd", max: "yyyy-MM-dd" },
         time: {},
         "datetime-local": { min: "YYYY-MM-DDTHH:mm", max: "YYYY-MM-DDTHH:mm" },
@@ -151,7 +160,7 @@ export class InputAttributeBuilder {
                 input: attrType,
                 value,
                 ...(schemaDef.config ? { config: schemaDef.config } : {}),
-                template: new InputBuilder().create(attrConfig),
+                template: new InputBuilder().create({ content: attrConfig }),
             };
         }
         // console.log(`[${inputType} > schema]`, schema);

@@ -8,6 +8,12 @@ containing `<script>` prints it instead of running it.
 Fenced code is **not** restyled here: it renders the `code-block` markup
 (`figure > figcaption + pre > code`) and `Markdown.css` imports `CodeBlock.css`.
 
+**The builder is an element factory.** It assembles the markup below, and `Markdown.css` only
+targets those classes and tokens. The CSS therefore behaves like a plain CSS library: the same
+nesting and class names written by hand are styled identically. Customise it by overriding a
+selector, or retheme it without touching markup by redeclaring a `--app-*` token on an ancestor
+(or one `--markdown-*` token for this component only).
+
 ## Payload
 
 ```ts
@@ -134,6 +140,18 @@ A ` ```mermaid ` fence is an ordinary fenced block; highlighting is a renderer's
 
 An `href` outside `https?:`, `mailto:`, `#`, `/` or `.` becomes `#` — a document may not turn a
 link into a script URL.
+
+### Structure
+
+Every block owns a `markdown-<tag>` class; inline nodes use the same prefix. Fenced code renders
+the `@aio-ui/code-block` markup.
+
+```html
+<article class="markdown">
+  <h1 class="markdown-h1">Title</h1>
+  <p class="markdown-p">Some <strong class="markdown-strong">text</strong>.</p>
+</article>
+```
 
 ## Tokens
 

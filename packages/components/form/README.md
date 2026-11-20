@@ -9,6 +9,12 @@ field's look still belongs to `@aio-ui/input`; the form only positions it.
 
 <!-- part: id=payload -->
 
+**The builder is an element factory.** It assembles the markup below, and `Form.css` only targets
+those classes and tokens. The CSS therefore behaves like a plain CSS library: the same nesting and
+class names written by hand are styled identically. Customise it by overriding a selector, or
+retheme it without touching markup by redeclaring a `--app-*` token on an ancestor (or one
+`--form-*` token for this component only). A field's own markup belongs to `@aio-ui/input`.
+
 ## Payload
 
 ```ts
@@ -340,6 +346,24 @@ build("form", {
 | `@form>buttons-set`          | `div`       | `buttons set`              |
 
 <!-- part: id=tokens role=contract -->
+
+### Structure
+
+One `fieldset` per group; a row is a `div.row` and a field is the `@aio-ui/input` markup. The id
+is derived from config, never from the payload.
+
+```html
+<form id="form-…" class="form native">
+  <fieldset id="group-1" class="form-group">
+    <legend class="title">Shipping</legend>
+    <div class="field">
+      <label>Name</label>
+      <input id="name" type="text" />
+    </div>
+  </fieldset>
+  <button id="btn-form-…" class="submit"><i class="icon checkmark"></i></button>
+</form>
+```
 
 ## Tokens
 

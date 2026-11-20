@@ -4,6 +4,11 @@ export class RatingBuilder extends Builder {
     builderId = "rating";
     name = "rating";
     stylesheet = "";
+    /** A bare number or `{ value }`; anything else is scored as `0`. */
+    static contract = {
+        schema: { t: "union", of: [{ t: "number" }, { t: "record", open: true, of: { value: { t: "number" } } }] },
+        example: 4.5,
+    };
     config;
     /**
      * 🪶 LOADING MOCKUP — five stars over the numeric bar, drawn with the mandatory

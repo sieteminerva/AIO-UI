@@ -10,35 +10,33 @@ describe("mergeBuildConfig", () => {
   it("injects the emitter into a config that has none", () => {
     const emit = vi.fn();
 
-    expect(mergeBuildConfig(undefined, emit, undefined, undefined).emit).toBe(emit);
+    expect(mergeBuildConfig(undefined, emit, undefined).emit).toBe(emit);
   });
 
   it("leaves emit out entirely when the host attaches no emitter", () => {
-    const merged = mergeBuildConfig({ id: "page" }, null, undefined, undefined);
+    const merged = mergeBuildConfig({ id: "page" }, null, undefined);
 
     expect("emit" in merged).toBe(false);
   });
 
-  it("lets the node silence an inherited emitter with emit: null", () => {
+  it("lets the schema silence an inherited emitter with emit: null", () => {
     const emit = vi.fn();
-    const merged = mergeBuildConfig(undefined, emit, undefined, { emit: null });
+    const merged = mergeBuildConfig(undefined, emit, { emit: null });
 
     expect(merged.emit).toBeNull();
   });
 
-  it("lets the manifest and the node carry their own publisher", () => {
+  it("lets the schema carry its own publisher", () => {
     const host = vi.fn();
-    const manifestEmit = vi.fn();
-    const nodeEmit = vi.fn();
+    const schemaEmit = vi.fn();
 
-    expect(mergeBuildConfig(undefined, host, { emit: manifestEmit }, undefined).emit).toBe(manifestEmit);
-    expect(mergeBuildConfig(undefined, host, { emit: manifestEmit }, { emit: nodeEmit }).emit).toBe(nodeEmit);
+    expect(mergeBuildConfig(undefined, host, { emit: schemaEmit }).emit).toBe(schemaEmit);
   });
 
-  it("keeps the layer order theme < manifest < node for plain keys", () => {
-    const merged = mergeBuildConfig({ id: "from-theme", className: "theme" }, null, { id: "from-manifest" }, { id: "from-node" });
+  it("keeps the layer order theme < schema for plain keys", () => {
+    const merged = mergeBuildConfig({ id: "from-theme", className: "theme" }, null, { id: "from-schema" });
 
-    expect(merged.id).toBe("from-node");
+    expect(merged.id).toBe("from-schema");
     expect(merged.className).toBe("theme");
   });
 
@@ -46,8 +44,7 @@ describe("mergeBuildConfig", () => {
     const merged = mergeBuildConfig(
       { selectors: { "@menu": { id: "a" }, "@menu>item": { id: "b" } } },
       null,
-      { selectors: { "@menu": { className: "c" } } },
-      { selectors: { "@menu>item": { id: "d" } } }
+      { selectors: { "@menu": { className: "c" }, "@menu>item": { id: "d" } } }
     );
 
     expect(merged.selectors["@menu"]).toEqual({ id: "a", className: "c" });
@@ -55,7 +52,7 @@ describe("mergeBuildConfig", () => {
   });
 
   it("drops an empty selectors key instead of shipping {}", () => {
-    const merged = mergeBuildConfig(undefined, null, { selectors: {} }, undefined);
+    const merged = mergeBuildConfig(undefined, null, { selectors: {} });
 
     expect("selectors" in merged).toBe(false);
   });

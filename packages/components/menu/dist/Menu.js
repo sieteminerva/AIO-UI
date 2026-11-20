@@ -6,6 +6,35 @@ export class MenuBuilder extends Builder {
     builderId = "menu";
     name = "menu";
     stylesheet = "./Menu.css";
+    static contract = {
+        schema: {
+            t: "record",
+            open: true,
+            of: {
+                brand: { t: "any" },
+                actions: { t: "list", of: { t: "any" } },
+                navigations: {
+                    t: "list",
+                    single: true,
+                    of: {
+                        t: "record",
+                        open: true,
+                        of: {
+                            label: { t: "string" },
+                            href: { t: "string" },
+                            className: { t: "string" },
+                        },
+                    },
+                },
+            },
+        },
+        example: {
+            navigations: [
+                { label: "Home", href: "#home" },
+                { label: "Contact", href: "tel:+620000", className: "button" },
+            ],
+        },
+    };
     isMenuOpened = false;
     /**
      * 🪶 LOADING MOCKUP — brand, four navigation labels and the action button, drawn with the
@@ -47,10 +76,8 @@ export class MenuBuilder extends Builder {
         this.config = this.resolveConfig(defaultConfig, config);
     }
     prepare(content, _config) {
-        // Accepts `{ content: { navigations } }` and `{ navigations }`: the registry unwraps
-        // `node.content`, but a manifest `schema` hands the whole record over.
-        const source = content?.content ?? content;
-        const payload = this.resolvePayload(source);
+        // The registry hands the payload directly: `{ navigations }`, never a `{ content }` wrapper.
+        const payload = this.resolvePayload(content);
         const nav = this.render("@menu", payload["@menu"]);
         const brand = this.render("@menu>brand", payload["@menu>brand"]);
         const hamburger = this.render("@menu>hamburger", payload["@menu>hamburger"]);
@@ -70,7 +97,7 @@ export class MenuBuilder extends Builder {
             nav.appendChild(actions);
         // `type` decides the shell, not the content: a sidebar is the same nav in a wrapper.
         if (this.config.position === "left" || this.config.position === "right") {
-            const sidebar = this.render("@container", source);
+            const sidebar = this.render("@container", content);
             sidebar.appendChild(nav);
             return sidebar;
         }

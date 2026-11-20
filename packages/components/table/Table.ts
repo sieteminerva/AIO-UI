@@ -1,4 +1,4 @@
-import type { iElementProperty, iBuilderConfig, iBuilderRegistry } from "@aio-ui/core/interface";
+import type { iElementProperty, iBuilderConfig, iBuilderRegistry, iContentContract } from "@aio-ui/core/interface";
 import { Builder } from "@aio-ui/base";
 import { Skeleton } from "@aio-ui/skeleton";
 import {
@@ -80,6 +80,19 @@ export class TableBuilder extends Builder<TableElementType, iTableConfig> {
   readonly builderId: keyof iBuilderRegistry = "table";
   readonly name: keyof iBuilderRegistry = "table";
   readonly stylesheet: string = "./Table.css";
+
+  static readonly contract: iContentContract = {
+    schema: {
+      t: "record",
+      open: true,
+      of: {
+        header: { t: "list", of: { t: "any" } },
+        body: { t: "list", of: { t: "list", of: { t: "any" } } },
+        footer: { t: "any" },
+      },
+    },
+    example: { header: ["Name", "Qty"], body: [["Coffee", 2]] },
+  };
 
   // Instance State Variables
   private currentPage = 1;

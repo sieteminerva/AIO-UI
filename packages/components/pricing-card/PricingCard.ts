@@ -1,0 +1,208 @@
+import type { iBasicNode, iBuilderConfig, iContentContract } from "@aio-ui/core/interface";
+import { Builder } from "@aio-ui/base";
+import { Skeleton } from "@aio-ui/skeleton";
+
+export type PricingCardElementType =
+  | "@container"
+  | "@card"
+  | "@card>header"
+  | "@card>price"
+  | "@card>divider"
+  | "@card>body"
+  | "@card>body>item"
+  | "@card>actions"
+
+interface iPricingCardConfig extends iBuilderConfig<PricingCardElementType> {
+  // selectors: Record<PricingCardElementType, iElementProperty>;
+}
+
+export class PricingCardBuilder extends Builder<PricingCardElementType, iPricingCardConfig> {
+  readonly builderId = "pricing-card";
+  readonly name = "pricing-card";
+  readonly stylesheet = "./PricingCard.css";
+
+  static readonly contract: iContentContract = {
+    schema: {
+      t: "list",
+      single: true,
+      of: {
+        t: "record",
+        open: true,
+        of: {
+          header: { t: "string" },
+          price: { t: "number" },
+          body: {
+            t: "list",
+            of: { t: "record", open: true, of: { title: { t: "string" }, value: { t: "string" } } },
+          },
+          className: { t: "string" },
+        },
+      },
+    },
+    example: [{ header: "Basic", price: 250000, body: [{ title: "1 project" }] }],
+  };
+
+  protected rawDataNode: any = null;
+
+  /**
+   * 🪶 LOADING MOCKUP — plan name, price, feature list and the action row, drawn with the
+   * mandatory `@aio-ui/skeleton` primitive. One card only: the mockup is a picture of the
+   * box, not a loop over the plans the payload happens to carry.
+   */
+  protected loading(): HTMLElement {
+    return Skeleton.create({
+      shape: "stack",
+      children: [
+        { shape: "line", width: "45%" },
+        { shape: "bone", width: "40%", height: "2.5rem" },
+        { shape: "line", count: 4 },
+        { shape: "bone", height: "2.75rem" },
+      ],
+    });
+  }
+
+  constructor(config: Partial<iPricingCardConfig> = {}) {
+    super();
+    const defaultSelectors = {
+      "@container": { tagName: "div", className: "row" },
+      "@card": { tagName: "div", className: "card pricing", wrapper: ".column" },
+      "@card>header": { tagName: "div", className: "header" },
+      "@card>price": { tagName: "div", className: "item price-tag" },
+      "@card>divider": { tagName: "hr", className: "divider" },
+      "@card>body": { tagName: "div", className: "body" },
+      "@card>body>item": { tagName: "li", className: "item" },
+      "@card>actions": { tagName: "div", className: "actions" },
+    }
+
+    const defaultConfig: Required<iPricingCardConfig> = {
+      themeId: "default",
+      namespace: null,
+      emit: () => { },
+      selectors: defaultSelectors,
+    };
+
+    this.config = this.resolveConfig(defaultConfig, config);
+
+  }
+
+  public prepare(data: iBasicNode, _config?: Partial<iBuilderConfig<PricingCardElementType>> | undefined): HTMLElement {
+    // console.log(this.builderId, { data })
+
+    const container = this.render("@container", data);
+    const items = Array.isArray(data) ? data : [data];
+
+    items.forEach((item: any) => {
+      const card = this.render("@card", item) as { __outer: HTMLElement, __inner: HTMLElement };
+
+      container?.append(card.__outer!)
+    });
+
+    return this.load("@container") as HTMLElement;
+  }
+
+  /**
+   * Nothing to hydrate here: a card group repeats `@card>actions` under one selector key, so
+   * `load()` would only ever answer for the last card. The click handler is bound inside
+   * `template()` on the node that actually renders the button.
+   */
+  public initialize(): void {
+    // intentionally empty
+  }
+
+  protected template(typeKey: PricingCardElementType, el: HTMLElement, payload: any): void {
+    if (typeKey === "@card" && !payload) return;
+
+    switch (typeKey) {
+      case "@card":
+        // console.log(typeKey, { payload, el })
+        const card = el.__inner ? el.__inner : el;
+        if (payload.className) el.classList.add(...String(payload.className).split(" "));
+
+
+        const headerText = payload.header ?? payload.title;
+        if (headerText) {
+          const header = this.render("@card>header", headerText)!
+          const divider = this.render("@card>divider")!
+          card.append(header, divider)
+        }
+
+        const bodyContent = payload.body || [];
+        if (bodyContent.length > 0) {
+          const body = this.render("@card>body", bodyContent)!
+          card.append(body)
+        }
+
+        // `price: 0` is a real price (a free tier), so presence, not truthiness, decides.
+        if (payload.price !== undefined && payload.price !== null) {
+          const price = this.render("@card>price", payload.price)!;
+          const actions = this.render("@card>actions", {
+            featured:
+              payload.featured ?? String(payload.className ?? "").split(" ").includes("is-featured"),
+            label: payload.action?.label ?? payload.label,
+            onClick: payload.onClick,
+          })!;
+          const dividerBottom = this.render("@card>divider")!
+          dividerBottom.style.marginBottom = "0";
+          card.append(price, dividerBottom, actions)
+        }
+
+        break;
+
+      case "@card>header":
+        // console.log(typeKey, { payload, el })
+        const eyebrow = document.createElement("span");
+        eyebrow.textContent = payload
+        el.appendChild(eyebrow);
+        break;
+
+      case "@card>body":
+        const features = document.createElement("ul");
+        features.className = "features"
+        for (const i of payload) {
+          const li = this.render("@card>body>item", i)!
+          features.appendChild(li)
+        }
+
+        el.appendChild(features);
+        break;
+
+      case "@card>price":
+        // console.log(typeKey, { payload, el })
+        const currency = new Intl.NumberFormat("id-ID", {
+          style: "currency",
+          currency: "IDR",
+          currencyDisplay: "symbol"
+        })
+        const content = `Mulai dari <strong>${currency.format(payload)}</strong> / pax`;
+        el.insertAdjacentHTML("afterbegin", content);
+        el.style.marginBottom = "1.5em"
+        break;
+
+      case "@card>body>item":
+        // console.log(typeKey, { payload, el })
+        el.textContent = payload?.title ?? "";
+        if (payload && payload.className) el.classList.add(payload.className);
+        break;
+
+      case "@card>actions": {
+        // console.log(typeKey, { payload, el })
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "button";
+        button.textContent = payload?.label ?? "Pilih";
+        if (payload?.featured) {
+          button.classList.add("primary");
+        }
+        if (typeof payload?.onClick === "function") {
+          button.addEventListener("click", payload.onClick);
+        }
+        el.appendChild(button);
+        break;
+      }
+    }
+  }
+
+  // private bindListeners() {
+
+  // }
+}

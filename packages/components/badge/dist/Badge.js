@@ -6,6 +6,15 @@ export class BadgeBuilder extends Builder {
     builderId = "badge";
     name = "badge";
     stylesheet = "./Badge.css";
+    static contract = {
+        schema: {
+            t: "list",
+            single: true,
+            of: { t: "record", open: true, of: { label: { t: "string" }, description: { t: "string" } } },
+        },
+        example: [{ label: "New", description: "This week" }],
+        legacy: [{ from: "items", to: "", reason: "pre-0.3 wrapped the list in { items }" }],
+    };
     config;
     /**
      * 🪶 LOADING MOCKUP — three pill labels in a row, drawn with the mandatory

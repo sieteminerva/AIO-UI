@@ -1,11 +1,11 @@
-import type { iBuilderConfig } from "@aio-ui/core/interface";
+import type { iBuilderConfig, iContentContract } from "@aio-ui/core/interface";
 import { Builder } from "@aio-ui/base";
 import type { SectionElementType } from "./Section.kit";
 /**
  * Section — one row of 2–3 content columns.
  *
  * ```ts
- * { content: [ { className?, content: [ { eyebrow, title, description, imageUrl, actions } ] }, … ] }
+ * [ { className?, blocks: [ { eyebrow, title, description, imageUrl, actions } ] }, … ]
  * ```
  *
  * A column is either a wrapper of blocks (`content: [...]`) or a block itself, so both the
@@ -30,9 +30,11 @@ export interface iSectionBlock {
 }
 export interface iSectionColumn extends iSectionBlock {
     className?: string;
-    content?: iSectionBlock[] | HTMLElement;
+    blocks?: iSectionBlock[] | HTMLElement;
 }
 export interface iSectionConfig extends iBuilderConfig<SectionElementType> {
+    /** Root element id. Comes from config, never from content. */
+    id?: string;
     /** Wrapper class appended to the root, e.g. `"container"`. */
     className?: string;
 }
@@ -40,6 +42,8 @@ export declare class SectionBuilder extends Builder<SectionElementType, iSection
     readonly builderId = "section";
     readonly name = "section";
     readonly stylesheet: string;
+    /** The payload is the column list; each column owns a `blocks` list. */
+    static readonly contract: iContentContract;
     config: Required<iSectionConfig>;
     /**
      * 🪶 LOADING MOCKUP — eyebrow, header, copy and the action row, drawn with the mandatory

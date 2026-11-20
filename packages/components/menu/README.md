@@ -8,6 +8,12 @@ so a spreadsheet row and a hand-written array produce the same bar.
 `aside.sidebar` and turns the list into a column. The value is stamped on the bar as
 `data-position`, which is what the sheet reads.
 
+**The builder is an element factory.** It assembles the markup below, and `Menu.css` only targets
+those classes and tokens. The CSS therefore behaves like a plain CSS library: the same nesting and
+class names written by hand are styled identically. Customise it by overriding a selector, or
+retheme it without touching markup by redeclaring a `--app-*` token on an ancestor (or one
+`--menu-*` token for this component only).
+
 ## Payload
 
 ```ts
@@ -19,8 +25,9 @@ so a spreadsheet row and a hand-written array produce the same bar.
 }
 ```
 
-`{ content: { navigations } }` is accepted too (the registry unwraps envelopes). A single object is
-wrapped into a one-entry list. `content.actions` is optional and is appended to the actions group.
+The payload is `{ navigations }` directly — the registry hands the builder the node's `content`, so
+there is no `{ content }` envelope to unwrap. A single object is wrapped into a one-entry list.
+`content.actions` is optional and is appended to the actions group.
 
 | Slot        | Rule                                                                             |
 | ----------- | -------------------------------------------------------------------------------- |
@@ -115,6 +122,24 @@ these rules into a `@container` block; the sheet cannot do that for it.
 | `@menu>item>link`        | `a`         | gets the entry's `className` and `href`                        |
 | `@menu>item>icon`        | `i`         | `icon`; the disclosure glyph on a branch                       |
 | `@menu>actions`          | `div`       | `actions` — holds the CTA entries                              |
+
+### Structure
+
+Brand, hamburger, navigations and actions are four sibling groups; a link entry is `li.item > a`,
+the action group holds `a.item` straight. `data-position` on the bar is what the sheet reads.
+
+```html
+<nav class="nav" data-position="top">
+  <div class="brand"><a href="#home">Brand</a></div>
+  <button class="hamburger-btn" aria-controls="primary-navigations">…</button>
+  <ul id="primary-navigations" class="menus navigations">
+    <li class="item"><a href="#home">Home</a></li>
+  </ul>
+  <div class="actions">
+    <a href="tel:+620000" class="button item">Contact</a>
+  </div>
+</nav>
+```
 
 ## Tokens
 

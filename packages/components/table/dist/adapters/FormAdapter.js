@@ -38,16 +38,16 @@ class TableFormAdapter {
     /**
      * Builds a table for a group schema and wires its submit button.
      *
-     * @param spec - The `table` descriptor: `{ content, id? }`.
+     * @param spec - The `table` descriptor: `{ data, id? }`.
      * @param target - Fieldset and submit button the table belongs to.
-     * @returns The table container, or `null` when the spec has no content.
+     * @returns The table container, or `null` when the spec has no data.
      */
     renderTable(spec, target) {
-        if (!spec || spec.content === undefined)
+        if (!spec || spec.data === undefined)
             return null;
         // Step 1: Build the table through its own builder.
         const table = new TableBuilder();
-        const tableEl = table.create(spec.content);
+        const tableEl = table.create({ content: spec.data });
         if (spec.id)
             tableEl.id = spec.id;
         // Step 2: The group button appends the group's current values as a row.
@@ -99,7 +99,7 @@ class TableFormAdapter {
         // to) meant the table depended on the uploader and could only ever read one file.
         const tableData = await parseTableFile(fileInput.files[0]);
         const table = new TableBuilder({ renderAsCard: false, autoFreezeAt: 0 });
-        const tableEl = table.create(tableData);
+        const tableEl = table.create({ content: tableData });
         this.#preview = table;
         this.#previewKey = fileInput.name || fileInput.id || null;
         fileInput.parentElement?.insertAdjacentElement("afterend", tableEl);

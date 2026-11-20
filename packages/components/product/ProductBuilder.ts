@@ -23,7 +23,7 @@
  * `onBack` returns. The host keeps what only it can know: where the data came from and
  * what "add to cart" means.
  */
-import type { iBuilderConfig } from "@aio-ui/core/interface";
+import type { iBuilderConfig, iContentContract } from "@aio-ui/core/interface";
 import { Builder } from "@aio-ui/base";
 import type { iBuilderRegistry } from "@aio-ui/core/interface";
 
@@ -66,6 +66,19 @@ export class ProductBuilder extends Builder<ProductElementType, iProductConfig> 
   /** No sheet of its own: the wrapper is one class, and each view brings its stylesheet. */
   readonly stylesheet: string = "";
 
+  /** Grid (`[…]` / `{ items }`) or detail (`{ record }`) — the shape picks the view. */
+  static readonly contract: iContentContract = {
+    schema: {
+      t: "union",
+      of: [
+        { t: "list", of: { t: "record", open: true } },
+        { t: "record", open: true, of: { record: { t: "record", open: true } } },
+        { t: "record", open: true, of: { items: { t: "list", of: { t: "record", open: true } } } },
+      ],
+    },
+    example: { items: [{ id: "p1", title: "T-shirt", price: 120000, image: "p1.png" }] },
+  };
+
   /** The host that currently holds a view; `#show*` replaces its children. */
   #host: HTMLElement | null = null;
   /** The last list rendered, so coming back restores it instead of a single record. */
@@ -91,7 +104,7 @@ export class ProductBuilder extends Builder<ProductElementType, iProductConfig> 
   }
 
   public prepare(data: any): HTMLElement {
-    const content = data?.content ?? data ?? {};
+    const content = data ?? {};
     const items = this.#items(content);
     const record = content?.record ?? content?.product ?? null;
 
@@ -121,7 +134,7 @@ export class ProductBuilder extends Builder<ProductElementType, iProductConfig> 
   /** Accepts an array, a named collection, or the raw `{ data: [...] }` envelope. */
   #items(content: any): iProductRecord[] {
     if (Array.isArray(content)) return content.filter(Boolean);
-    for (const key of ["items", "products", "data", "content"]) {
+    for (const key of ["items", "products", "data"]) {
       if (Array.isArray(content?.[key])) return content[key].filter(Boolean);
     }
     return [];
@@ -142,7 +155,7 @@ export class ProductBuilder extends Builder<ProductElementType, iProductConfig> 
     } as Partial<iProductGridConfig>);
 
     this.#list = items;
-    const renderedGrid = grid.create({ content: { data: items } });
+    const renderedGrid = grid.create({ content: items });
     if (this.host("grid")) {
       this.project("grid", renderedGrid);
     } else {

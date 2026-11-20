@@ -74,8 +74,8 @@ function payload() {
 
 describe("inspect probes — the properties a snapshot depends on", () => {
   it("V1 — the same payload renders the same markup twice", () => {
-    const first = new ProbeBuilder().create(payload());
-    const second = new ProbeBuilder().create(payload());
+    const first = new ProbeBuilder().create({ content: payload() });
+    const second = new ProbeBuilder().create({ content: payload() });
 
     expect(first.outerHTML).toBe(second.outerHTML);
     expect(first.outerHTML).toContain("One");
@@ -83,14 +83,14 @@ describe("inspect probes — the properties a snapshot depends on", () => {
   });
 
   it("V2 — a builder root carries exactly one record, not a page graph", () => {
-    const root = new ProbeBuilder().create(payload());
+    const root = new ProbeBuilder().create({ content: payload() });
 
     expect(root.getMetadata?.() ?? []).toHaveLength(1);
   });
 
   it("V4 — hierarchy inventories every key and its elements, idempotently", () => {
     const builder = new ProbeBuilder();
-    builder.create(payload());
+    builder.create({ content: payload() });
 
     const read = () => JSON.parse(JSON.stringify((builder as any).hierarchy.get()));
     const first = read();
@@ -107,7 +107,7 @@ describe("inspect probes — the properties a snapshot depends on", () => {
 
   it("V5 — no skeleton is painted when the host declares no stylesheet loader", () => {
     loadingCalls.count = 0;
-    const root = new ProbeBuilder().create(payload());
+    const root = new ProbeBuilder().create({ content: payload() });
 
     expect(root.querySelector("[data-skeleton]")).toBeNull();
     expect(loadingCalls.count).toBe(0);

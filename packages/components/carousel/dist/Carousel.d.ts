@@ -1,4 +1,4 @@
-import type { iBuilderConfig, iBuilderRegistry } from "@aio-ui/core/interface";
+import type { iBuilderConfig, iBuilderRegistry, iContentContract } from "@aio-ui/core/interface";
 import { Builder } from "@aio-ui/base";
 export type CarouselElementType = "@container" | "@carousel" | "@carousel>control" | "@carousel>control>prev" | "@carousel>control>next" | "@carousel>navigations" | "@carousel>navigations>dot" | "@carousel>track" | "@carousel>track>slide" | "@carousel>track>slide>inner" | "@carousel>track>slide>caption" | "@carousel>track>slide>title" | "@carousel>track>slide>desc" | "@carousel>track>slide>image";
 export interface iCarouselConfig extends iBuilderConfig<CarouselElementType> {
@@ -19,6 +19,7 @@ export declare class CarouselBuilder extends Builder<CarouselElementType, iCarou
     readonly builderId: keyof iBuilderRegistry;
     readonly name: keyof iBuilderRegistry;
     readonly stylesheet: string;
+    static readonly contract: iContentContract;
     private currentIndex;
     private autoPlayTimer;
     private rConfig;

@@ -56,6 +56,7 @@ export interface iBuilderRegistry {
     "input-controls": Array<iBasicInputNode>;
     table: any[];
     dropdown: iBasicInputNode;
+    "input-picker": iBasicInputNode;
     "color-theme": iBasicNode;
     /** Host chrome that owns a `color-theme` builder: the generator's slide panels. */
     "theme-console": iBasicNode;

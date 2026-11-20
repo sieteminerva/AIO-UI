@@ -1,4 +1,4 @@
-import type { iBuilderConfig } from "@aio-ui/core/interface";
+import type { iBuilderConfig, iContentContract } from "@aio-ui/core/interface";
 import { Builder } from "@aio-ui/base";
 import { Skeleton } from "@aio-ui/skeleton";
 import { DEFAULT_SELECTORS } from "./Section.kit";
@@ -9,7 +9,7 @@ import { normalizeColumns } from "./Section.engine";
  * Section — one row of 2–3 content columns.
  *
  * ```ts
- * { content: [ { className?, content: [ { eyebrow, title, description, imageUrl, actions } ] }, … ] }
+ * [ { className?, blocks: [ { eyebrow, title, description, imageUrl, actions } ] }, … ]
  * ```
  *
  * A column is either a wrapper of blocks (`content: [...]`) or a block itself, so both the
@@ -37,10 +37,12 @@ export interface iSectionBlock {
 
 export interface iSectionColumn extends iSectionBlock {
   className?: string;
-  content?: iSectionBlock[] | HTMLElement;
+  blocks?: iSectionBlock[] | HTMLElement;
 }
 
 export interface iSectionConfig extends iBuilderConfig<SectionElementType> {
+  /** Root element id. Comes from config, never from content. */
+  id?: string;
   /** Wrapper class appended to the root, e.g. `"container"`. */
   className?: string;
 }
@@ -55,6 +57,47 @@ export class SectionBuilder extends Builder<SectionElementType, iSectionConfig> 
   readonly builderId = "section";
   readonly name = "section";
   readonly stylesheet: string = "./Section.css";
+
+  /** The payload is the column list; each column owns a `blocks` list. */
+  static readonly contract: iContentContract = {
+    schema: {
+      t: "list",
+      single: true,
+      of: {
+        t: "record",
+        open: true,
+        of: {
+          className: { t: "string" },
+          blocks: {
+            t: "list",
+            of: {
+              t: "record",
+              open: true,
+              of: {
+                imageUrl: { t: "string" },
+                image: { t: "string" },
+                alt: { t: "string" },
+                eyebrow: { t: "string" },
+                title: { t: "string" },
+                description: { t: "string" },
+                actions: {
+                  t: "list",
+                  of: {
+                    t: "record",
+                    open: true,
+                    of: { label: { t: "string", req: true }, href: { t: "string" }, value: { t: "string" } },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    example: [
+      { className: "hero", blocks: [{ eyebrow: "New", title: "Built for teams", description: "…" }] },
+    ],
+  };
   public config: Required<iSectionConfig>;
 
   /**
@@ -82,6 +125,7 @@ export class SectionBuilder extends Builder<SectionElementType, iSectionConfig> 
       selectors: DEFAULT_SELECTORS,
       namespace: null,
       emit: () => { },
+      id: "",
       className: "",
     };
 
@@ -141,9 +185,9 @@ export class SectionBuilder extends Builder<SectionElementType, iSectionConfig> 
   protected template(typeKey: SectionElementType, el: HTMLElement, payload?: any): void {
     switch (typeKey) {
       case "@section":
-        if (payload?.id) el.id = payload.id;
-        if (payload?.className) addClasses(el, payload.className);
-        if (this.config.className) addClasses(el, this.config.className);
+        // Root identity is host-level: it comes from config, never from the content payload.
+        if (this.config.id) el.id = this.config.id;
+        addClasses(el, this.config.className);
         break;
 
       case "@section>content":

@@ -1,4 +1,4 @@
-import type { iElementProperty, iBasicNode, iBuilderConfig } from "@aio-ui/core/interface";
+import type { iElementProperty, iBasicNode, iBuilderConfig, iContentContract } from "@aio-ui/core/interface";
 import { Builder } from "@aio-ui/base";
 import type { MenuElementType } from "./Menu.kit";
 type MenuPositionType = "top" | "top sticky" | "left" | "left sticky" | "right" | "right sticky" | "bottom" | "bottom sticky";
@@ -31,6 +31,7 @@ export declare class MenuBuilder extends Builder<MenuElementType, iMenuConfig> {
     readonly builderId = "menu";
     readonly name = "menu";
     readonly stylesheet = "./Menu.css";
+    static readonly contract: iContentContract;
     protected isMenuOpened: boolean;
     /**
      * 🪶 LOADING MOCKUP — brand, four navigation labels and the action button, drawn with the

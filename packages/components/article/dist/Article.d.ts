@@ -1,4 +1,4 @@
-import type { iElementProperty, iBuilderConfig, iBuilderRegistry } from "@aio-ui/core/interface";
+import type { iElementProperty, iBuilderConfig, iBuilderRegistry, iContentContract } from "@aio-ui/core/interface";
 import { Builder } from "@aio-ui/base";
 export type ArticleElementType = "@container" | "@article>list" | "@article>pagination" | "@article>figure" | "@article>header" | "@article>header>title" | "@article>header>meta" | "@article>item" | "@article>item>caption" | "@article>aside" | "@article>aside>title" | "@article>aside>block" | "@article>aside>item" | "@article>controls" | "@article>controls>back" | "@article>controls>next" | "@article>controls>pagination" | "@article>controls>pagination>item" | "@article>controls>filter" | "@article>controls>view" | "@article>detail" | "@article>detail>header" | "@article>detail>body";
 export interface iArticleViewSpec {
@@ -29,6 +29,7 @@ export declare class ArticleBuilder extends Builder<ArticleElementType, iArticle
     readonly builderId: keyof iBuilderRegistry;
     readonly name: keyof iBuilderRegistry;
     stylesheet: string;
+    static readonly contract: iContentContract;
     private currentRawServerResponse;
     private viewSpecs;
     /** Simpan list view saat detail aktif, agar bisa dikembalikan via tombol back. */

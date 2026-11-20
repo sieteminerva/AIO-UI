@@ -23,6 +23,12 @@ protected loading(): HTMLElement {
 }
 ```
 
+**The builder is an element factory.** It assembles the markup below, and `Skeleton.css` only
+targets those classes and tokens. The CSS therefore behaves like a plain CSS library: the same
+nesting and class names written by hand are styled identically. Customise it by overriding a
+selector, or retheme it without touching markup by redeclaring a `--app-*` token on an ancestor
+(or one `--skeleton-*` token for this component only).
+
 ## Payload
 
 The registry face (`SkeletonBuilder`) takes one spec, merged over `config.spec`:
@@ -87,6 +93,25 @@ and tracking its nodes would be waste:
 Every node carries the root class plus one bare shape word, so the sheet writes a
 compound (`&.bone`) and needs no dash-joined class name.
 
+### Structure
+
+The root is the shape itself; a container shape (`stack`, `row`) nests its children. `count`
+repeats a shape without extra wrappers.
+
+```html
+<div class="skeleton line" data-skeleton="line"></div>
+```
+
+A stack with two bones and a collection of lines:
+
+```html
+<div class="skeleton stack" data-skeleton="stack">
+  <div class="skeleton bone" data-skeleton="bone"></div>
+  <div class="skeleton line" data-skeleton="line"></div>
+  <div class="skeleton line" data-skeleton="line"></div>
+</div>
+```
+
 ## Tokens
 
 | Token               | Reads                           | Use                                        |
@@ -105,3 +130,7 @@ writes a rule for `[data-skeleton]`.
 2. Import `@aio-ui/skeleton/Skeleton.css` with the app shell, next to `@aio-ui/styles`.
 3. Add a loader for `@aio-ui/skeleton` to the host's asset map when a manifest declares it.
 4. Implement `loading()` in the components that want a precise mockup.
+
+No component package depends on this one. `@aio-ui/base` lists it under `dependencies` (an
+install-only edge: it imports nothing from it), so a project that installs a component's
+prerequisites gets the mockup primitive once instead of every tarball repeating it.

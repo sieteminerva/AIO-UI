@@ -1,4 +1,4 @@
-import type { iBuilderConfig, iBuilderRegistry } from "@aio-ui/core/interface";
+import type { iBuilderConfig, iBuilderRegistry, iContentContract } from "@aio-ui/core/interface";
 import { Builder } from "@aio-ui/base";
 import { Skeleton } from "@aio-ui/skeleton";
 
@@ -80,6 +80,23 @@ export class FooterBuilder extends Builder<FooterElementType, iFooterConfig> {
   readonly builderId: keyof iBuilderRegistry = "footer";
   readonly name: keyof iBuilderRegistry = "footer";
   readonly stylesheet: string = "./Footer.css";
+
+  static readonly contract: iContentContract = {
+    schema: {
+      t: "record",
+      open: true,
+      of: {
+        columns: { t: "list", of: { t: "any" } },
+        copyright: { t: "string" },
+      },
+    },
+    example: {
+      columns: [
+        { title: "Product", description: "Built for teams", actions: [{ label: "Docs", href: "#docs" }] },
+      ],
+      copyright: "© 2026 AIO",
+    },
+  };
   public config: Required<iFooterConfig>
 
   /**
@@ -126,7 +143,8 @@ export class FooterBuilder extends Builder<FooterElementType, iFooterConfig> {
   }
 
   public prepare(data: any): HTMLElement {
-    const content: iFooterContent = data.content || data;
+    // The payload is the footer content directly; there is no `{ content }` wrapper.
+    const content: iFooterContent = data ?? {};
 
     // A footer without `columns[]` is still a footer: fall back to the flat shape so a
     // single-column payload does not need to be wrapped in an array of one.

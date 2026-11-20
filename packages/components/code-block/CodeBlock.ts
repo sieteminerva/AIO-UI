@@ -1,4 +1,4 @@
-import type { iBuilderConfig, iBuilderRegistry, iBuilderSelectorsConfig } from "@aio-ui/core/interface";
+import type { iBuilderConfig, iBuilderRegistry, iBuilderSelectorsConfig, iContentContract } from "@aio-ui/core/interface";
 import { Builder } from "@aio-ui/base";
 import { Skeleton } from "@aio-ui/skeleton";
 
@@ -160,7 +160,6 @@ export function normalizePayload(data: any): iCodeBlockEntry[] {
   if (Array.isArray(data)) return collect(data);
   if (Array.isArray(data.blocks)) return collect(data.blocks);
   if (typeof data.code === "string") return collect(data);
-  if (data.content !== undefined) return collect(data.content);
 
   return [];
 }
@@ -169,6 +168,24 @@ export class CodeBlockBuilder extends Builder<CodeBlockElementType, iCodeBlockCo
   readonly builderId: keyof iBuilderRegistry = "code-block";
   readonly name: keyof iBuilderRegistry = "code-block";
   readonly stylesheet: string = "./CodeBlock.css";
+
+  /**
+   * The payload is a union: `{ code }`, `{ blocks }`, an array of records, or a bare string.
+   * Records stay `open` so an extra key never becomes noise; `normalizePayload()` still owns
+   * the branch.
+   */
+  static readonly contract: iContentContract = {
+    schema: {
+      t: "union",
+      of: [
+        { t: "record", open: true, of: { code: { t: "string" }, label: { t: "string" }, language: { t: "string" } } },
+        { t: "record", open: true, of: { blocks: { t: "list", of: { t: "record", open: true } } } },
+        { t: "list", of: { t: "record", open: true } },
+        { t: "string" },
+      ],
+    },
+    example: { code: "const app = new AioApp({ container: \"#app\" });", label: "ts · mount", language: "ts" },
+  };
   public config: Required<iCodeBlockConfig>;
 
   /**

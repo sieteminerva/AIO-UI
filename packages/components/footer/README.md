@@ -4,23 +4,30 @@ A two-row page footer: an auto-fitted grid of link columns, then a copyright lin
 hairline. The column count is not configured — `auto-fit` fits as many ~14rem columns as the width
 allows and wraps the rest.
 
+**The builder is an element factory.** It assembles the markup below, and `Footer.css` only
+targets those classes and tokens. The CSS therefore behaves like a plain CSS library: the same
+nesting and class names written by hand are styled identically. Customise it by overriding a
+selector, or retheme it without touching markup by redeclaring a `--app-*` token on an ancestor
+(or one `--footer-*` token for this component only).
+
 ## Payload
 
 ```ts
 {
   columns: [
     {
-      header: "…",
-      description: "…",
-      list: [{ value: "…", href: "#…" }],
+      title: "Product",
+      description: "Built for teams",
+      actions: [{ label: "Docs", href: "#docs" }],
     },
-  ];
-  copyright: "…";
+  ],
+  copyright: "© 2026 AIO",
 }
 ```
 
-An entry may also be a plain string, which becomes a single-column block. `header` falls back to
-`title`, and a list entry uses `href` or `value` as its link target.
+A footer without `columns[]` falls back to the flat shape (`title`, `description`, `actions`), so a
+single-column payload needs no array of one. `copyright` accepts `{year}` and `{company}`
+placeholders; `company` is the flat fallback for the company name.
 
 ## Config
 
@@ -43,6 +50,27 @@ An entry may also be a plain string, which becomes a single-column block. `heade
 | `@footer>row>column>list`      | `ul`        | `unstyled-list` |
 | `@footer>row>column>list>item` | `li`        | `item`          |
 | `@footer>copyright`            | `div`       | `row bottom`    |
+
+### Structure
+
+Optional parts are not appended, so a column may hold only a title, only actions, or both.
+
+```html
+<footer class="footer">
+  <div class="row">
+    <div class="column">
+      <h2 class="header">Product</h2>
+      <p class="desc">Built for teams</p>
+      <ul class="unstyled-list">
+        <li class="item"><a href="#docs">Docs</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="row bottom">
+    <p>© 2026 AIO</p>
+  </div>
+</footer>
+```
 
 ## Tokens
 

@@ -1,0 +1,20 @@
+{
+  "name": "@aio-ui/dom-renderer",
+  "version": "0.2.4",
+  "type": "module",
+  "description": "The DOM renderer alone — one generated file, no workspace imports.",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "prepublishOnly": "npm run build"
+  }
+}

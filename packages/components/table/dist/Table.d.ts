@@ -1,4 +1,4 @@
-import type { iElementProperty, iBuilderConfig, iBuilderRegistry } from "@aio-ui/core/interface";
+import type { iElementProperty, iBuilderConfig, iBuilderRegistry, iContentContract } from "@aio-ui/core/interface";
 import { Builder } from "@aio-ui/base";
 import { type TableCellData, type TableCellOptions, type TableFooterOptions } from "./Table.helper";
 /**
@@ -34,6 +34,7 @@ export declare class TableBuilder extends Builder<TableElementType, iTableConfig
     readonly builderId: keyof iBuilderRegistry;
     readonly name: keyof iBuilderRegistry;
     readonly stylesheet: string;
+    static readonly contract: iContentContract;
     private currentPage;
     private pageRows;
     private _uidCounter;

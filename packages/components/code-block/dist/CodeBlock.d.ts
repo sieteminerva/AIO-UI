@@ -1,4 +1,4 @@
-import type { iBuilderConfig, iBuilderRegistry, iBuilderSelectorsConfig } from "@aio-ui/core/interface";
+import type { iBuilderConfig, iBuilderRegistry, iBuilderSelectorsConfig, iContentContract } from "@aio-ui/core/interface";
 import { Builder } from "@aio-ui/base";
 /**
  * Code Block — one or more dark "paper" panels holding source text.
@@ -102,6 +102,12 @@ export declare class CodeBlockBuilder extends Builder<CodeBlockElementType, iCod
     readonly builderId: keyof iBuilderRegistry;
     readonly name: keyof iBuilderRegistry;
     readonly stylesheet: string;
+    /**
+     * The payload is a union: `{ code }`, `{ blocks }`, an array of records, or a bare string.
+     * Records stay `open` so an extra key never becomes noise; `normalizePayload()` still owns
+     * the branch.
+     */
+    static readonly contract: iContentContract;
     config: Required<iCodeBlockConfig>;
     /**
      * 🪶 LOADING MOCKUP — the frame's own anatomy (label, paper, action row), drawn with the

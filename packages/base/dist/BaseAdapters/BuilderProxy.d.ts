@@ -1,3 +1,14 @@
+/**
+ * Whether `value` is a proxy this module handed out.
+ *
+ * A builder that keeps writing to the raw object it passed to `makeReactive` bypasses
+ * every `set` trap, so nothing is notified. The base asks this question before it wires a
+ * model, which turns that silent half-binding into one console warning.
+ *
+ * @param value - Anything a builder returned from `model()`.
+ * @returns True only for a live proxy.
+ */
+export declare function isReactive(value: unknown): boolean;
 export type BindableElement = HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
 export declare class BuilderProxy {
     /** Identity cache: raw payload object → its reactive proxy. */

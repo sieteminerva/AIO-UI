@@ -1,21 +1,27 @@
-import type { iBasicNode, iBuilderConfig, iBuilderRegistry } from "@aio-ui/core/interface";
+import type { iBasicNode, iBuilderConfig, iBuilderRegistry, iContentContract, iElementAnimation } from "@aio-ui/core/interface";
 import { Builder } from "@aio-ui/base";
 export type TabElementType = "@container" | "@tab" | "@tab>menu" | "@tab>menu>item" | "@tab>menu>item>label" | "@tab>menu>item>title" | "@tab>body" | "@tab>panel" | "@tab>panel>content" | "@tab>panel>content>eyebrow" | "@tab>panel>content>title" | "@tab>panel>content>desc" | "@tab>footer" | "@tab>spinner";
 export interface iTabConfig extends iBuilderConfig<TabElementType> {
     container?: string | HTMLElement | null;
     menuPosition: "top" | "left" | "bottom" | "right";
     /**
-     * Look of the strip. `default` is the gradient pill; `folder` draws file-folder tabs that
-     * sit on a ruled edge, with the active one lifted onto the panel. Only the horizontal
-     * positions draw the folder, because a folder only makes sense along a top or bottom rule.
+     * Look of the strip. `default` is the gradient pill; `folder` lifts the active tab onto
+     * the panel along the rule on whichever edge `menuPosition` names; `underline` keeps the
+     * labels and grows a rule on the panel-facing edge; `segmented` sits the strip on an inset
+     * rail with a lifted active segment.
      */
-    tabStyle: "folder" | "default";
+    appearance: "folder" | "underline" | "segmented" | "default";
     lazyload: boolean;
     name: string;
     minHeight: string;
     /** 💣 Saat `true`, isi panel tab sebelumnya dihancurkan (diganti kosong) begitu pengguna
      *  berpindah ke tab lain — memaksa konten dimuat ulang segar saat kembali ke tab itu. */
     destroyPrevious: boolean;
+    /** Tab yang aktif saat render: indeks, id tombol, atau label/judulnya. */
+    active: string | number;
+    /** `false` mematikan gerak panel, `true` memakai fade bawaan, objek membawa nama
+     *  `@keyframes` (lewat `data-animation` dan dua custom property yang dibaca sheet). */
+    animation: boolean | iElementAnimation;
 }
 export type iTabMenuProperty = {
     label: string;
@@ -32,7 +38,7 @@ export type iTabItemContent = {
 export type iTabItemProperty = {
     id?: string;
     className?: string;
-    content: iTabItemContent;
+    panel: iTabItemContent;
 } | HTMLElement;
 export type iTabFooterProperty = {
     id?: string;
@@ -49,6 +55,7 @@ export declare class TabBuilder extends Builder<TabElementType, iTabConfig> {
     builderId: keyof iBuilderRegistry;
     readonly name: keyof iBuilderRegistry;
     readonly stylesheet: string;
+    static readonly contract: iContentContract;
     private currentTabIndex;
     private _listenersTabChanged;
     private _listenersContentLoaded;
@@ -73,6 +80,16 @@ export declare class TabBuilder extends Builder<TabElementType, iTabConfig> {
     private _renderPanelContent;
     navigateTo(target: number | string): void;
     private _handleChange;
+    /** `animation: false` disables panel motion, `true` keeps the default fade, and an object
+     *  carries `@keyframes` names the sheet reads through two custom properties. */
+    private applyAnimation;
+    private buttons;
+    /** A number is an index; a string is matched against the button id, the panel it controls,
+     *  then its label and title — so `active` accepts whichever the caller already has. */
+    private resolve;
+    /** Hide the panel we just left. With `destroyPrevious` its content is wiped — but only
+     *  after the `out` animation ends, so the wipe never reads as a jump. */
+    private leave;
     private _handleKeyDown;
     onTabChanged(callback: (detail: {
         index: number;

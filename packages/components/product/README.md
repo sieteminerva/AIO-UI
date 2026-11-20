@@ -4,6 +4,11 @@ A catalogue with two views that only make sense together: a grid of cards and a 
 record. `ProductBuilder` is the composition root — it owns the swap and the host keeps what
 only it can know (where the data came from, what "add to cart" means).
 
+**The builder is an element factory.** `ProductBuilder` only owns the swap: each view brings its
+own markup and its own sheet (`ProductCard.css`, `ProductDetail.css`, `ProductGrid.css`). Like a
+plain CSS library, that sheet targets the class names below, and you can override any selector or
+redeclare a `--app-*` token on an ancestor to retheme a view without touching its markup.
+
 ## Payload
 
 The shape of the content decides the first view:
@@ -70,6 +75,29 @@ never be injected.
 | `@grid>container` | `div`     | `row full-width` |
 
 The grid builder's registry name is `product-card-grid`; the cards are `.product`.
+
+### Structure
+
+The wrapper is one class; a card view renders the `@aio-ui/product` card markup inside the grid
+section, and the detail view replaces the section content with the detail record.
+
+```html
+<div class="product">
+  <section class="grid">
+    <div class="row full-width">
+      <div class="product mode-auto">
+        <div class="display"><img class="img-fluid product-shadow-blend" src="p1.png" /></div>
+        <div class="caption">
+          <div class="title">T-shirt</div>
+          <div class="desc">…</div>
+        </div>
+        <div class="price">Rp120.000</div>
+        <button class="button primary btn-checkout">…</button>
+      </div>
+    </div>
+  </section>
+</div>
+```
 
 ## Tokens
 

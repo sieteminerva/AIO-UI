@@ -95,14 +95,29 @@ export function normalizePayload(data) {
         return collect(data.blocks);
     if (typeof data.code === "string")
         return collect(data);
-    if (data.content !== undefined)
-        return collect(data.content);
     return [];
 }
 export class CodeBlockBuilder extends Builder {
     builderId = "code-block";
     name = "code-block";
     stylesheet = "./CodeBlock.css";
+    /**
+     * The payload is a union: `{ code }`, `{ blocks }`, an array of records, or a bare string.
+     * Records stay `open` so an extra key never becomes noise; `normalizePayload()` still owns
+     * the branch.
+     */
+    static contract = {
+        schema: {
+            t: "union",
+            of: [
+                { t: "record", open: true, of: { code: { t: "string" }, label: { t: "string" }, language: { t: "string" } } },
+                { t: "record", open: true, of: { blocks: { t: "list", of: { t: "record", open: true } } } },
+                { t: "list", of: { t: "record", open: true } },
+                { t: "string" },
+            ],
+        },
+        example: { code: "const app = new AioApp({ container: \"#app\" });", label: "ts · mount", language: "ts" },
+    };
     config;
     /**
      * 🪶 LOADING MOCKUP — the frame's own anatomy (label, paper, action row), drawn with the

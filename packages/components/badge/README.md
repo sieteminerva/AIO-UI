@@ -4,16 +4,22 @@ A stacked list of label/description pairs rendered as self-contained cards. It i
 card surface in the library: no interaction, no state, only a container that turns its payload
 into rows.
 
+**The builder is an element factory.** It assembles the markup below, and `Badge.css` only
+targets those classes and tokens. The CSS therefore behaves like a plain CSS library: the same
+nesting and class names written by hand are styled identically. Customise it by overriding a
+selector, or retheme it without touching markup by redeclaring a `--app-*` token on an ancestor
+(or one `--badge-*` token for this component only).
+
 ## Payload
 
+The payload **is** the item list — `content` appears only in the node wrapper, never here.
+
 ```ts
-{
-  content: [{ label: "…", description: "…" }];
-}
+[{ label: "…", description: "…" }];
 ```
 
-Accepted shapes: `[...]`, `{ items: [...] }`, `{ content: [...] }`, a single record, or
-nothing. `normalizePayload()` is the only place that decides this.
+Accepted shapes: `[...]`, `{ items: [...] }`, a single record, or nothing. `normalizePayload()`
+is the only place that decides this.
 
 ## Config
 
@@ -31,6 +37,22 @@ nothing. `normalizePayload()` is the only place that decides this.
 | `@badge>item`       | `div`       | `badge-item`   |
 | `@badge>item>label` | `span`      | `badge-label`  |
 | `@badge>item>desc`  | `p`         | `badge-desc`   |
+
+### Structure
+
+One `@badge>item` per record; `label` and `description` are optional and an absent one is not
+appended at all.
+
+```html
+<div class="badge-widget">
+  <div class="badge">
+    <div class="badge-item">
+      <span class="badge-label">New</span>
+      <p class="badge-desc">This week</p>
+    </div>
+  </div>
+</div>
+```
 
 ## Tokens
 

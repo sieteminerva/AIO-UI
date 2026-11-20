@@ -1,4 +1,4 @@
-import type { iBuilderConfig, iBuilderRegistry, iBuilderSelectorsConfig } from "@aio-ui/core/interface";
+import type { iBuilderConfig, iBuilderRegistry, iBuilderSelectorsConfig, iContentContract } from "@aio-ui/core/interface";
 import { Builder } from "@aio-ui/base";
 import type { iMarkdownMarkerConfig } from "./Markdown.engine";
 /** The marker spelling is a parse concern, but a host types its config with it. */
@@ -59,6 +59,8 @@ export declare class MarkdownBuilder extends Builder<MarkdownElementType, iMarkd
     readonly builderId: keyof iBuilderRegistry;
     readonly name: keyof iBuilderRegistry;
     readonly stylesheet: string;
+    /** `{ source }` or a bare string; anything else is not a document. */
+    static readonly contract: iContentContract;
     config: Required<iMarkdownConfig>;
     /**
      * 🪶 LOADING MOCKUP — heading, paragraph, subheading, paragraph, fence, closing line:

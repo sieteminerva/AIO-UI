@@ -53,6 +53,8 @@ export const INPUT_STRUCTURAL_KEYS = [
     "position",
     "useLabel",
     "display",
+    // Field-level settings owned by a module (the picker reads `kind`, `columns`, …).
+    "picker",
     // A field that stays writable while a control set locks its scope; becomes
     // `data-editable` on the wrapper, never an attribute of the control.
     "editable",
@@ -72,6 +74,7 @@ export const INPUT_TYPE_REGISTRY = {
     number: { control: "@field>input", attributes: [...TEXTUAL, "min", "max", "step", "value"] },
     select: { control: "@field>select", attributes: ["name", "required", "disabled", "multiple", "value"] },
     dropdown: { control: null, attributes: ["name", "required", "disabled", "value"] },
+    picker: { control: null, attributes: ["name", "required", "disabled", "value"] },
     actions: { control: "@field>input", attributes: [...SCALAR] },
     checkbox: { control: "@field>checkbox", attributes: [...SCALAR, "checked"] },
     radio: { control: "@field>radio", attributes: [...SCALAR, "checked"] },

@@ -267,6 +267,7 @@ export class DropdownBuilder extends Builder {
         // 🔊 Popover API + CSS Anchor Positioning: menu dirender di top layer dan
         // menempel otomatis ke input via anchor-name → posisi/lebar dikelola CSS,
         // mengikuti scroll/resize tanpa listener tambahan.
+        // DOM timer id, not a Node handle: both assignments below go through `window`.
         let hideTimer = null;
         // 🔒 `document` listener hanya hidup SELAMA menu terbuka. Listener permanen
         // yang menutup `this` adalah akar kebocoran halaman form: setiap dropdown

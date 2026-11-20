@@ -13,6 +13,7 @@
 
 // ---- runtime -------------------------------------------------------------
 export { ComponentRegistry, mergeBuildConfig } from "./ComponentRegistry";
+export { AioApp, AppStorage, blockToNode, isPageDocument, normalizeRoute, pageToNode } from "./app";
 export { DOMRenderer } from "./DOMRenderer";
 export { inspectPage } from "./Inspect";
 export { getBuilderAdapter, setBuilderAdapter } from "./BuilderPort";
@@ -53,3 +54,37 @@ export type {
   iRegistryOptions,
 } from "./Registry/index";
 export type { iComponentEvents, iEventCallback, iEventEmit, iPageEvents, iPagePhase } from "./types/events";
+export type { iStorageConfig, iStorageDriver } from "./app/modules";
+export type {
+  iApp,
+  iAppConfig,
+  iAppModuleClass,
+  iAppModuleContext,
+  iAppOptions,
+  iAppSlot,
+  iAppSlots,
+  iAppSource,
+  iComponentRoute,
+  iPageBlock,
+  iPageContent,
+  iPageContext,
+  iPageController,
+  iPageControllerClass,
+  iPageDataSpec,
+  iPageDefinition,
+  iPageDocument,
+  iPageEventSpec,
+  iPagePort,
+  iPageReadyContext,
+  iPageRouteSpec,
+  iPageSlotSpec,
+  iAnimationPort,
+  iAppRouteState,
+  iComponentRegistryPort,
+  iEventPort,
+  iHttpPort,
+  iRendererPort,
+  iRouterFactory,
+  iRouterPort,
+  iStoragePort,
+} from "./app";

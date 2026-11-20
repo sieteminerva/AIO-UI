@@ -1,4 +1,4 @@
-import type { iBuilderConfig, iBuilderRegistry } from "@aio-ui/core/interface";
+import type { iBuilderConfig, iBuilderRegistry, iContentContract } from "@aio-ui/core/interface";
 import { Builder } from "@aio-ui/base";
 export type MessageElementType = "@message" | "@message>close" | "@message>content" | "@message>content>header" | "@message>content>desc" | "@message>content>icon";
 export interface iMessageContent {
@@ -19,6 +19,7 @@ export declare class MessageBuilder extends Builder<MessageElementType, iMessage
     readonly builderId: keyof iBuilderRegistry;
     readonly name: keyof iBuilderRegistry;
     readonly stylesheet: string;
+    static readonly contract: iContentContract;
     config: Required<iMessageConfig>;
     private _activeTimers;
     constructor(config?: Partial<iMessageConfig>);

@@ -1,4 +1,4 @@
-import type { iBuilderConfig, iBuilderRegistry, iBuilderSelectorsConfig } from "@aio-ui/core/interface";
+import type { iBuilderConfig, iBuilderRegistry, iBuilderSelectorsConfig, iContentContract } from "@aio-ui/core/interface";
 import { Builder } from "@aio-ui/base";
 import { Skeleton } from "@aio-ui/skeleton";
 import { outline, parseMarkdown, selectOutline } from "./Markdown.engine";
@@ -134,6 +134,15 @@ export class MarkdownBuilder extends Builder<MarkdownElementType, iMarkdownConfi
   readonly builderId: keyof iBuilderRegistry = "markdown";
   readonly name: keyof iBuilderRegistry = "markdown";
   readonly stylesheet: string = "./Markdown.css";
+
+  /** `{ source }` or a bare string; anything else is not a document. */
+  static readonly contract: iContentContract = {
+    schema: {
+      t: "union",
+      of: [{ t: "record", open: true, of: { source: { t: "string", req: true } } }, { t: "string" }],
+    },
+    example: { source: "# Title\n\nSome **text**." },
+  };
   public config: Required<iMarkdownConfig>;
 
   /**

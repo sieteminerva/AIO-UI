@@ -1,6 +1,6 @@
 {
   "name": "@aio-ui/themes",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "type": "module",
   "description": "Aggregated public surface for themes.",
   "files": [
@@ -14,9 +14,9 @@
     }
   },
   "dependencies": {
-    "@aio-ui/theme-default": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.3/aio-ui-theme-default-0.2.3.tgz",
-    "@aio-ui/theme-cyberpunk": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.3/aio-ui-theme-cyberpunk-0.2.3.tgz",
-    "@aio-ui/theme-horizontal": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.3/aio-ui-theme-horizontal-0.2.3.tgz"
+    "@aio-ui/theme-cyberpunk": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.4/aio-ui-theme-cyberpunk-0.2.4.tgz",
+    "@aio-ui/theme-default": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.4/aio-ui-theme-default-0.2.4.tgz",
+    "@aio-ui/theme-horizontal": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.4/aio-ui-theme-horizontal-0.2.4.tgz"
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",

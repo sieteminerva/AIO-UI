@@ -46,7 +46,7 @@ class InputFormAdapter {
      * `namespace` and `emit` instead of starting blank — and so does its adapter set.
      */
     renderField(input, formId) {
-        return new InputBuilder({ ...this.#context.builderConfig, formId, modules: this.#preset }).create(input);
+        return new InputBuilder({ ...this.#context.builderConfig, formId, modules: this.#preset }).create({ content: input });
     }
     /**
      * Covers file inputs that bypass `InputBuilder` (raw HTML fields).

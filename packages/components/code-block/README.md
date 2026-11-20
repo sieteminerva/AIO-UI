@@ -4,6 +4,12 @@ One or more dark "paper" panels holding source text: an optional caption, then `
 The source is written with `textContent`, so a snippet that contains markup is printed and never
 parsed.
 
+**The builder is an element factory.** It assembles the markup below, and `CodeBlock.css` only
+targets those classes and tokens. The CSS therefore behaves like a plain CSS library: the same
+nesting and class names written by hand are styled identically. Customise it by overriding a
+selector, or retheme it without touching markup by redeclaring a `--app-*` token on an ancestor
+(or one `--code-block-*` token for this component only).
+
 ## Payload
 
 ```ts
@@ -18,7 +24,6 @@ Accepted shapes:
 | `{ blocks: [ … ] }`           | several labelled blocks in one call |
 | `[…]`                         | bare array of the records above     |
 | `"…"`                         | source only, no caption             |
-| `{ content: … }`              | the registry's default unwrapping   |
 | `{}` / `null` / `undefined`   | nothing renders                     |
 
 `normalizePayload()` is the only place that decides this, and it is exported so the contract is
@@ -83,6 +88,19 @@ still printed, never parsed.
 | `@container>figure>actions>edit`   | `button`     | `edit`                         |
 | `@container>figure>actions>save`   | `button`     | `save`                         |
 | `@container>figure>actions>custom` | `button`     | `custom`                       |
+
+### Structure
+
+One `figure` per block; `figcaption` is omitted when there is no label.
+
+```html
+<section class="code-block">
+  <figure class="frame">
+    <figcaption class="label">ts · mount</figcaption>
+    <pre class="paper"><code class="body">const app = new AioApp({ container: "#app" });</code></pre>
+  </figure>
+</section>
+```
 
 ## Tokens
 

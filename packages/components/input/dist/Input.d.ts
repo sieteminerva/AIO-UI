@@ -1,9 +1,9 @@
-import type { iElementProperty, iBuilderConfig, iBuilderRegistry } from "@aio-ui/core/interface";
+import type { iElementProperty, iBuilderConfig, iBuilderRegistry, iContentContract } from "@aio-ui/core/interface";
 import { Builder } from "@aio-ui/base";
 import { ModuleLoader } from "@aio-ui/module-loader";
 import { type iInputAdapter, type iInputModuleContext, type InputModulePreset } from "./InputRegistry";
 import type { iCalculationFormula } from "./CalculationTypes";
-export type InputType = "text" | "textarea" | "number" | "select" | "dropdown" | "actions" | "checkbox" | "radio" | "range" | "date" | "time" | "datetime-local" | "file" | "color" | "email" | "password" | "url" | "tel" | "hidden";
+export type InputType = "text" | "textarea" | "number" | "select" | "dropdown" | "picker" | "actions" | "checkbox" | "radio" | "range" | "date" | "time" | "datetime-local" | "file" | "color" | "email" | "password" | "url" | "tel" | "hidden";
 export interface iBasicSelectOption {
     value?: string;
     label?: string;
@@ -143,6 +143,8 @@ export declare class InputBuilder extends Builder<InputElementType, iInputConfig
     readonly builderId: keyof iBuilderRegistry;
     readonly name: keyof iBuilderRegistry;
     readonly stylesheet: string;
+    /** One field node. The full field vocabulary belongs to `iBasicInputNode`, so it stays open. */
+    static readonly contract: iContentContract;
     /**
      * 🪶 LOADING MOCKUP — one label and one control box, drawn with the mandatory
      * `@aio-ui/skeleton` primitive. The control type (select, textarea, switch) changes the

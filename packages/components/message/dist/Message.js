@@ -3,6 +3,19 @@ export class MessageBuilder extends Builder {
     builderId = "message";
     name = "message";
     stylesheet = "./Message.css";
+    static contract = {
+        schema: {
+            t: "record",
+            open: true,
+            of: {
+                message: { t: "string", req: true },
+                header: { t: "string" },
+                type: { t: "enum", of: ["success", "error", "info", "warning"] },
+                icon: { t: "string" },
+            },
+        },
+        example: { header: "Saved", message: "Your changes are stored.", type: "success" },
+    };
     config;
     _activeTimers = new Map();
     constructor(config = {}) {

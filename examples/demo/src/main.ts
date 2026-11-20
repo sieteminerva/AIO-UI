@@ -10,6 +10,7 @@ import {
   type iComponentModuleRef
 } from '@aio-ui/core';
 import { AnimationsService, EventEmitter, HttpService, HashRouter, ThemeRenderer } from '@aio-ui/modules';
+import { productModules } from '@aio-ui/product';
 import { DefaultTheme, CyberpunkTheme, } from '@aio-ui/themes';
 
 import '@aio-ui/theme-cyberpunk/CyberpunkTheme.css';
@@ -44,7 +45,6 @@ import { KitchenPage } from './pages/kitchen';
 import { ModulesPage } from './pages/modules';
 import { ProductPage } from './pages/product';
 import { componentAssets } from './registry.assets';
-import { productModules } from '@aio-ui/product';
 
 /**
  * Dev-only: an edited component stylesheet arrives as text, not as a reload.

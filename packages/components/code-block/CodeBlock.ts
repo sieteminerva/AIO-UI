@@ -1,4 +1,4 @@
-import type { iBuilderConfig, iBuilderRegistry, iBuilderSelectorsConfig } from "@aio-ui/core/interface";
+import type { iBuilderConfig, iBuilderRegistry, iBuilderSelectorsConfig, iContentContract } from "@aio-ui/core/interface";
 import { Builder } from "@aio-ui/base";
 import { Skeleton } from "@aio-ui/skeleton";
 
@@ -168,6 +168,16 @@ export class CodeBlockBuilder extends Builder<CodeBlockElementType, iCodeBlockCo
   readonly builderId: keyof iBuilderRegistry = "code-block";
   readonly name: keyof iBuilderRegistry = "code-block";
   readonly stylesheet: string = "./CodeBlock.css";
+
+  /**
+   * The payload is a union of shapes (`{ code }`, `{ blocks }`, an array, a bare string),
+   * so the contract pins the example and stays open on shape. `normalizePayload()` owns
+   * the branch, exactly like before.
+   */
+  static readonly contract: iContentContract = {
+    schema: { t: "any" },
+    example: { code: "const app = new AioApp({ container: \"#app\" });", label: "ts · mount", language: "ts" },
+  };
   public config: Required<iCodeBlockConfig>;
 
   /**

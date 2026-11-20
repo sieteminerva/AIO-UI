@@ -1,4 +1,4 @@
-import type { iBuilderConfig, iBuilderRegistry } from "@aio-ui/core/interface";
+import type { iBuilderConfig, iBuilderRegistry, iContentContract } from "@aio-ui/core/interface";
 import { Builder } from "@aio-ui/base";
 import { Skeleton } from "@aio-ui/skeleton";
 
@@ -24,6 +24,12 @@ export class RatingBuilder extends Builder<RatingElementType, iRatingConfig> {
   readonly builderId: keyof iBuilderRegistry = "rating";
   readonly name: keyof iBuilderRegistry = "rating";
   readonly stylesheet: string = "";
+
+  /** A bare number or `{ value }`; anything else is scored as `0`. */
+  static readonly contract: iContentContract = {
+    schema: { t: "any" },
+    example: 4.5,
+  };
   public config: Required<iRatingConfig>;
 
   /**

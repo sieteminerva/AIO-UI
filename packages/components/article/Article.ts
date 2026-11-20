@@ -1,4 +1,4 @@
-import type { iElementProperty, iBuilderConfig, iBuilderRegistry } from "@aio-ui/core/interface";
+import type { iElementProperty, iBuilderConfig, iBuilderRegistry, iContentContract } from "@aio-ui/core/interface";
 import { createImageError } from "@aio-ui/utilities/DomUtils";
 
 import { Builder } from "@aio-ui/base";
@@ -76,6 +76,30 @@ export class ArticleBuilder extends Builder<ArticleElementType, iArticleConfig> 
   readonly builderId: keyof iBuilderRegistry = "article";
   readonly name: keyof iBuilderRegistry = "article";
   stylesheet: string = "./Article.css";
+
+  static readonly contract: iContentContract = {
+    schema: {
+      t: "record",
+      open: true,
+      of: {
+        data: {
+          t: "list",
+          of: {
+            t: "record",
+            open: true,
+            of: {
+              slug: { t: "string", req: true },
+              title: { t: "string" },
+              thumbnail: { t: "string" },
+              date: { t: "string" },
+              body: { t: "string" },
+            },
+          },
+        },
+      },
+    },
+    example: { data: [{ slug: "article-1", title: "First article", body: "…" }] },
+  };
 
   // State internal modul
   private currentRawServerResponse: any = null;

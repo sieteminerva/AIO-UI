@@ -1,4 +1,4 @@
-import type { iElementProperty, iBasicNode, iBuilderConfig, iBuilderRegistry } from "@aio-ui/core/interface";
+import type { iElementProperty, iBasicNode, iBuilderConfig, iBuilderRegistry, iContentContract } from "@aio-ui/core/interface";
 import { Builder } from "@aio-ui/base";
 
 export type FabPosition = "top-left" | "top-right" | "bottom-left" | "bottom-right" | "middle";
@@ -23,6 +23,12 @@ export class FabMenuBuilder extends Builder<FabMenuElementType, iFabMenuConfig> 
   readonly builderId: keyof iBuilderRegistry = "fab-menu";
   readonly name: keyof iBuilderRegistry = "fab-menu";
   readonly stylesheet: string = "./FabMenu.css";
+
+  /** A record, a bare element, or `actions` mixing records and elements — shape is open. */
+  static readonly contract: iContentContract = {
+    schema: { t: "any" },
+    example: { title: "Menu", actions: [{ label: "WhatsApp", id: "wa", type: "button" }] },
+  };
 
   public config: Required<iFabMenuConfig>;
   private isMenuOpen = false;

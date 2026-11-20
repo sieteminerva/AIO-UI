@@ -1,4 +1,4 @@
-import type { iBuilderConfig } from "@aio-ui/core/interface";
+import type { iBuilderConfig, iContentContract } from "@aio-ui/core/interface";
 import { Builder } from "@aio-ui/base";
 import { Skeleton } from "@aio-ui/skeleton";
 import { DEFAULT_SELECTORS } from "./Section.kit";
@@ -57,6 +57,47 @@ export class SectionBuilder extends Builder<SectionElementType, iSectionConfig> 
   readonly builderId = "section";
   readonly name = "section";
   readonly stylesheet: string = "./Section.css";
+
+  /** The payload is the column list; each column owns a `blocks` list. */
+  static readonly contract: iContentContract = {
+    schema: {
+      t: "list",
+      single: true,
+      of: {
+        t: "record",
+        open: true,
+        of: {
+          className: { t: "string" },
+          blocks: {
+            t: "list",
+            of: {
+              t: "record",
+              open: true,
+              of: {
+                imageUrl: { t: "string" },
+                image: { t: "string" },
+                alt: { t: "string" },
+                eyebrow: { t: "string" },
+                title: { t: "string" },
+                description: { t: "string" },
+                actions: {
+                  t: "list",
+                  of: {
+                    t: "record",
+                    open: true,
+                    of: { label: { t: "string", req: true }, href: { t: "string" }, value: { t: "string" } },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    example: [
+      { className: "hero", blocks: [{ eyebrow: "New", title: "Built for teams", description: "…" }] },
+    ],
+  };
   public config: Required<iSectionConfig>;
 
   /**

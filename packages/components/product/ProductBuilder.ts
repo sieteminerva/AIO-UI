@@ -23,7 +23,7 @@
  * `onBack` returns. The host keeps what only it can know: where the data came from and
  * what "add to cart" means.
  */
-import type { iBuilderConfig } from "@aio-ui/core/interface";
+import type { iBuilderConfig, iContentContract } from "@aio-ui/core/interface";
 import { Builder } from "@aio-ui/base";
 import type { iBuilderRegistry } from "@aio-ui/core/interface";
 
@@ -65,6 +65,12 @@ export class ProductBuilder extends Builder<ProductElementType, iProductConfig> 
   readonly name: keyof iBuilderRegistry = "product";
   /** No sheet of its own: the wrapper is one class, and each view brings its stylesheet. */
   readonly stylesheet: string = "";
+
+  /** Grid (`[…]` / `{ items }`) or detail (`{ record }`) — the shape picks the view. */
+  static readonly contract: iContentContract = {
+    schema: { t: "any" },
+    example: { items: [{ id: "p1", title: "T-shirt", price: 120000, image: "p1.png" }] },
+  };
 
   /** The host that currently holds a view; `#show*` replaces its children. */
   #host: HTMLElement | null = null;

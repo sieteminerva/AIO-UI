@@ -1,4 +1,4 @@
-import type { iBuilderConfig, iBuilderRegistry } from "@aio-ui/core/interface";
+import type { iBuilderConfig, iBuilderRegistry, iContentContract } from "@aio-ui/core/interface";
 import { Builder } from "@aio-ui/base";
 import { Skeleton } from "@aio-ui/skeleton";
 
@@ -18,6 +18,12 @@ export class ModeSwitcherBuilder extends Builder<ModeSwitcherElementType, iModeS
   readonly builderId: keyof iBuilderRegistry = "mode-switcher";
   readonly name: keyof iBuilderRegistry = "mode-switcher";
   readonly stylesheet: string = "./ModeSwitcher.css";
+
+  /** Self-contained: the payload is ignored, so the contract accepts anything. */
+  static readonly contract: iContentContract = {
+    schema: { t: "any" },
+    example: {},
+  };
 
   private mode: "light" | "dark" = "light";
   public config: Required<iModeSwitcherConfig>;

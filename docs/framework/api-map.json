@@ -47,10 +47,13 @@
       "barrel": "./src/index.ts",
       "values": [
         "Builder",
-        "GLOBAL_INSTANCE_COUNTER"
+        "GLOBAL_INSTANCE_COUNTER",
+        "normalize",
+        "validate"
       ],
       "types": [
-        "iBuilderInspection"
+        "iBuilderInspection",
+        "iNormalizedContent"
       ]
     },
     "@aio-ui/carousel": {

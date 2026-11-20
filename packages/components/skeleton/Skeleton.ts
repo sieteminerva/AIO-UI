@@ -20,7 +20,7 @@
  * caption/button rhythm, `Table` mirrors its header and row height).
  */
 
-import type { iBuilderConfig, iBuilderRegistry } from "@aio-ui/core/interface";
+import type { iBuilderConfig, iBuilderRegistry, iContentContract } from "@aio-ui/core/interface";
 import { Builder } from "@aio-ui/base";
 
 /** The shapes the sheet knows how to skin. */
@@ -147,6 +147,12 @@ export class SkeletonBuilder extends Builder<SkeletonElementType, iSkeletonConfi
   readonly builderId: keyof iBuilderRegistry = "skeleton";
   readonly name: keyof iBuilderRegistry = "skeleton";
   readonly stylesheet: string = "./Skeleton.css";
+
+  /** One `iSkeletonSpec`, merged over `config.spec`. */
+  static readonly contract: iContentContract = {
+    schema: { t: "record", open: true },
+    example: { shape: "line", width: "60%" },
+  };
   public config: Required<iSkeletonConfig>;
 
   constructor(config: Partial<iSkeletonConfig> = {}) {

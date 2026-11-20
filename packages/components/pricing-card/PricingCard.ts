@@ -1,4 +1,4 @@
-import type { iBasicNode, iBuilderConfig } from "@aio-ui/core/interface";
+import type { iBasicNode, iBuilderConfig, iContentContract } from "@aio-ui/core/interface";
 import { Builder } from "@aio-ui/base";
 import { Skeleton } from "@aio-ui/skeleton";
 
@@ -20,6 +20,27 @@ export class PricingCardBuilder extends Builder<PricingCardElementType, iPricing
   readonly builderId = "pricing-card";
   readonly name = "pricing-card";
   readonly stylesheet = "./PricingCard.css";
+
+  static readonly contract: iContentContract = {
+    schema: {
+      t: "list",
+      single: true,
+      of: {
+        t: "record",
+        open: true,
+        of: {
+          header: { t: "string" },
+          price: { t: "number" },
+          body: {
+            t: "list",
+            of: { t: "record", open: true, of: { title: { t: "string" }, value: { t: "string" } } },
+          },
+          className: { t: "string" },
+        },
+      },
+    },
+    example: [{ header: "Basic", price: 250000, body: [{ title: "1 project" }] }],
+  };
 
   protected rawDataNode: any = null;
 

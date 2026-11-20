@@ -1,4 +1,4 @@
-import type { iBasicNode, iBuilderConfig } from "@aio-ui/core/interface";
+import type { iBasicNode, iBuilderConfig, iContentContract } from "@aio-ui/core/interface";
 import { Builder } from "@aio-ui/base";
 import { Skeleton } from "@aio-ui/skeleton";
 
@@ -23,6 +23,15 @@ export class AccordionBuilder extends Builder<AccordionElementType, iAccordionCo
   readonly builderId = "accordion";
   readonly name = "accordion";
   readonly stylesheet = "./Accordion.css";
+
+  static readonly contract: iContentContract = {
+    schema: {
+      t: "list",
+      single: true,
+      of: { t: "record", open: true, of: { title: { t: "string" }, description: { t: "string" } } },
+    },
+    example: [{ title: "Shipping", description: "Delivered in two working days." }],
+  };
 
   /** The shared `name` when `autoClose` is on — one group per builder instance, so two
    *  accordions on one page never close each other's sections. */

@@ -1,4 +1,4 @@
-import type { iBasicNode, iBuilderConfig, iBuilderRegistry, iElementAnimation } from "@aio-ui/core/interface";
+import type { iBasicNode, iBuilderConfig, iBuilderRegistry, iContentContract, iElementAnimation } from "@aio-ui/core/interface";
 import { Builder } from "@aio-ui/base";
 import { Skeleton } from "@aio-ui/skeleton";
 
@@ -60,7 +60,38 @@ export class TabBuilder extends Builder<TabElementType, iTabConfig> {
   builderId: keyof iBuilderRegistry = "tab";
   readonly name: keyof iBuilderRegistry = "tab";
   readonly stylesheet: string = "./Tab.css";
-
+  static readonly contract: iContentContract = {
+    schema: {
+      t: "record",
+      open: true,
+      of: {
+        menu: {
+          t: "list",
+          single: true,
+          of: {
+            t: "record",
+            open: true,
+            of: {
+              label: { t: "string" },
+              title: { t: "string" },
+              id: { t: "string" },
+              className: { t: "string" },
+            },
+          },
+        },
+        body: {
+          t: "list",
+          single: true,
+          of: { t: "record", open: true, of: { panel: { t: "any" }, body: { t: "any" } } },
+        },
+        footer: { t: "any" },
+      },
+    },
+    example: {
+      menu: [{ label: "Overview", title: "Overview" }],
+      body: [{ panel: { title: "Overview", description: "…" } }],
+    },
+  };
   // ENKAPSULASI: Menyimpan data body tab secara aman & terisolasi
   #items: iTabItemProperty[] = [];
 

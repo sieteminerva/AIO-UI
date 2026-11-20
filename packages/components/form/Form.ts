@@ -1,4 +1,4 @@
-import type { iBuilderConfig, iBuilderRegistry } from "@aio-ui/core/interface";
+import type { iBuilderConfig, iBuilderRegistry, iContentContract } from "@aio-ui/core/interface";
 import { Builder } from "@aio-ui/base";
 import { Skeleton } from "@aio-ui/skeleton";
 import type { iMessageContent } from "@aio-ui/message";
@@ -172,6 +172,21 @@ export class FormBuilder extends Builder<FormElementType, iFormConfig> {
   readonly builderId: keyof iBuilderRegistry = "form";
   readonly name: keyof iBuilderRegistry = "form";
   readonly stylesheet: string = "./Form.css";
+
+  /**
+   * Groups are records; a field's own shape belongs to `@aio-ui/input`, so a group stays
+   * open and only its `group` array is checked as an array.
+   */
+  static readonly contract: iContentContract = {
+    schema: {
+      t: "list",
+      single: true,
+      of: { t: "record", open: true, of: { group: { t: "list", of: { t: "any" } } } },
+    },
+    example: [
+      { id: "group-1", title: "Shipping", group: [{ type: "text", id: "name", title: "Name" }] },
+    ],
+  };
 
   private submitButtonId: string | undefined = undefined;
 

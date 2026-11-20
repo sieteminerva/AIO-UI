@@ -124,6 +124,7 @@ describe("Builder.inspect()", () => {
       hierarchy: {},
       namespace: null,
       records: [],
+      issues: [],
     });
   });
 });

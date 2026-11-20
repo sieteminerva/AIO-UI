@@ -1,4 +1,4 @@
-import type { iBuilderConfig, iBuilderRegistry } from "@aio-ui/core/interface";
+import type { iBuilderConfig, iBuilderRegistry, iContentContract } from "@aio-ui/core/interface";
 import { Builder } from "@aio-ui/base";
 import { Skeleton } from "@aio-ui/skeleton";
 
@@ -80,6 +80,23 @@ export class FooterBuilder extends Builder<FooterElementType, iFooterConfig> {
   readonly builderId: keyof iBuilderRegistry = "footer";
   readonly name: keyof iBuilderRegistry = "footer";
   readonly stylesheet: string = "./Footer.css";
+
+  static readonly contract: iContentContract = {
+    schema: {
+      t: "record",
+      open: true,
+      of: {
+        columns: { t: "list", of: { t: "any" } },
+        copyright: { t: "string" },
+      },
+    },
+    example: {
+      columns: [
+        { title: "Product", description: "Built for teams", actions: [{ label: "Docs", href: "#docs" }] },
+      ],
+      copyright: "© 2026 AIO",
+    },
+  };
   public config: Required<iFooterConfig>
 
   /**

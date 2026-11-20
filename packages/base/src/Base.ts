@@ -1,8 +1,9 @@
-import type { iBuilderRegistry, iBuilderConfig, iElementProperty, iNodeRecordItem, iNodeRecordRelations } from "@aio-ui/core/interface";
+import type { iBuilderRegistry, iBuilderConfig, iContentContract, iContentIssue, iElementProperty, iNodeRecordItem, iNodeRecordRelations } from "@aio-ui/core/interface";
 // import { TemplateRegistry } from "@aio-ui/template-registry";
 // import { ElementCreatedEventBus } from "../Services/EventBus";
 import { Binding } from "./BaseAdapters/Binding";
 import { BuilderProxy, isReactive } from "./BaseAdapters/BuilderProxy";
+import { normalize } from "./BaseAdapters/ContentContract";
 import { holdUntilStyled } from "./BaseAdapters/Hydration";
 import { setBuilderAdapter } from "@aio-ui/core";
 import { getTemplates } from "@aio-ui/core";
@@ -32,6 +33,8 @@ export interface iBuilderInspection {
   namespace: string | null;
   /** Records stamped on the root. Usually one; a page tree lives in `inspectPage()`. */
   records: iNodeRecordItem[];
+  /** Problems the last `create()` found in the payload, via the builder's `static contract`. */
+  issues: iContentIssue[];
 }
 
 /**
@@ -120,6 +123,19 @@ export abstract class Builder<TType extends string = string, TConfig extends iBu
 
 
   static #namespaceStack: string[] = [];
+
+  /**
+   * 🧾 DECLARED PAYLOAD SHAPE — optional, and the only place this builder describes what
+   * `schema.content` may contain. `create()` normalises against it and stores the issues;
+   * `inspect()` reports them. A builder without one is left untouched (the door stays open).
+   *
+   * A contract is data, not code: `{ schema, example, legacy? }`. CI validates `example`
+   * for every builder that declares one, so the sample cannot drift from the shape.
+   */
+  static contract?: iContentContract;
+
+  /** Issues from the last `create()` — cleared and refilled on every build. */
+  #issues: iContentIssue[] = [];
 
   public static resetCounters(): void {
     GLOBAL_INSTANCE_COUNTER.clear();
@@ -612,7 +628,10 @@ export abstract class Builder<TType extends string = string, TConfig extends iBu
     // The rendered payload, defaulted once so every builder keeps tolerating an empty
     // schema (`create()` / `create({})` is a valid call: it renders the component's
     // empty state, not `undefined.x`).
-    const content = input.content ?? {};
+    const declared = (this.constructor as typeof Builder).contract;
+    const normalized = normalize(declared, input.content ?? {});
+    this.#issues = normalized.issues;
+    const content = normalized.content;
 
     // 🎨 No component imports its own CSS: the sheet is requested at the end of this
     // method through the stylesheet seam, so a builder created outside the registry (a
@@ -1133,6 +1152,7 @@ export abstract class Builder<TType extends string = string, TConfig extends iBu
       hierarchy: this.hierarchy.get() as Record<string, iNodeRecordRelations>,
       namespace: this.instanceNamespace,
       records: (root?.getMetadata?.() ?? []) as iNodeRecordItem[],
+      issues: [...this.#issues],
     };
   }
 

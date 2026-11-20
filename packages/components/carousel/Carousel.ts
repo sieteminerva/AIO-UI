@@ -1,4 +1,4 @@
-import type { iBuilderConfig, iBuilderRegistry } from "@aio-ui/core/interface";
+import type { iBuilderConfig, iBuilderRegistry, iContentContract } from "@aio-ui/core/interface";
 import { Builder } from "@aio-ui/base";
 import { Skeleton } from "@aio-ui/skeleton";
 import { AttrsConfigMap } from "./Carousel.kit";
@@ -46,6 +46,27 @@ export class CarouselBuilder extends Builder<CarouselElementType, iCarouselConfi
   readonly builderId: keyof iBuilderRegistry = "carousel";
   readonly name: keyof iBuilderRegistry = "carousel";
   readonly stylesheet: string = "./Carousel.css";
+
+  static readonly contract: iContentContract = {
+    schema: {
+      t: "list",
+      min: 1,
+      of: {
+        t: "record",
+        open: true,
+        of: {
+          image: { t: "string" },
+          imageUrl: { t: "string" },
+          title: { t: "string" },
+          desc: { t: "string" },
+        },
+      },
+    },
+    example: [
+      { image: "first.png", title: "First", desc: "…" },
+      { image: "second.png", title: "Second" },
+    ],
+  };
 
   // Instance State Variables
   private currentIndex = 0;

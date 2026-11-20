@@ -1,4 +1,4 @@
-import type { iElementProperty, iBasicNode, iBuilderConfig, iBuilderRegistry } from "@aio-ui/core/interface";
+import type { iElementProperty, iBasicNode, iBuilderConfig, iBuilderRegistry, iContentContract } from "@aio-ui/core/interface";
 import { Builder } from "@aio-ui/base";
 import { Skeleton } from "@aio-ui/skeleton";
 import { createImageError } from "@aio-ui/utilities";
@@ -55,6 +55,12 @@ export class MasonryBuilder extends Builder<MasonryElementType, iMasonryConfig> 
   readonly builderId: keyof iBuilderRegistry = "masonry";
   readonly name: keyof iBuilderRegistry = "masonry";
   public readonly stylesheet: string = "./Masonry.css";
+
+  /** `{ items }` or a bare array (the builder wraps it), and an item may be an element. */
+  static readonly contract: iContentContract = {
+    schema: { t: "any" },
+    example: { items: [{ image: "a.png", category: "Branding", title: "Project A" }] },
+  };
 
   #items: (iBasicNode | HTMLElement)[] = [];
   private displayedCount = 0;

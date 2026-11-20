@@ -1,4 +1,4 @@
-import type { iBuilderConfig, iBuilderRegistry } from "@aio-ui/core/interface";
+import type { iBuilderConfig, iBuilderRegistry, iContentContract } from "@aio-ui/core/interface";
 import { Builder } from "@aio-ui/base";
 
 export type ModalElementType =
@@ -36,6 +36,12 @@ export class ModalBuilder extends Builder<ModalElementType, iModalConfig> {
   readonly builderId: keyof iBuilderRegistry = "modal";
   readonly name: keyof iBuilderRegistry = "modal";
   readonly stylesheet: string = "./Modal.css";
+
+  /** An element, an HTML string or a node object — the body is whatever `_compileContent` accepts. */
+  static readonly contract: iContentContract = {
+    schema: { t: "any" },
+    example: "<p>Hello from the modal body.</p>",
+  };
 
   currentModal: HTMLElement | null = null;
 

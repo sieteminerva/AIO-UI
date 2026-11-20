@@ -1,4 +1,4 @@
-import type { iElementProperty, iBuilderConfig, iBuilderRegistry } from "@aio-ui/core/interface";
+import type { iElementProperty, iBuilderConfig, iBuilderRegistry, iContentContract } from "@aio-ui/core/interface";
 import { Builder } from "@aio-ui/base";
 import { Skeleton } from "@aio-ui/skeleton";
 import { ModuleLoader } from "@aio-ui/module-loader";
@@ -227,6 +227,24 @@ export class InputBuilder extends Builder<InputElementType, iInputConfig> {
   readonly builderId: keyof iBuilderRegistry = "input";
   readonly name: keyof iBuilderRegistry = "input";
   readonly stylesheet: string = "./input.css";
+
+  /** One field node. The full field vocabulary belongs to `iBasicInputNode`, so it stays open. */
+  static readonly contract: iContentContract = {
+    schema: {
+      t: "record",
+      open: true,
+      of: {
+        type: { t: "string" },
+        id: { t: "string" },
+        name: { t: "string" },
+        title: { t: "string" },
+        label: { t: "string" },
+        placeholder: { t: "string" },
+        required: { t: "boolean" },
+      },
+    },
+    example: { type: "text", id: "email", title: "Email address", placeholder: "you@example.com" },
+  };
 
   #input: iBasicInputNode = {};
 

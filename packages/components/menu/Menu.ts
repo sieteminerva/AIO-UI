@@ -1,5 +1,5 @@
 
-import type { iElementProperty, iBasicNode, iBuilderConfig } from "@aio-ui/core/interface";
+import type { iElementProperty, iBasicNode, iBuilderConfig, iContentContract } from "@aio-ui/core/interface";
 import { Builder } from "@aio-ui/base";
 import { Skeleton } from "@aio-ui/skeleton";
 import { DEFAULT_MENU_SELECTORS } from "./Menu.kit";
@@ -53,6 +53,36 @@ export class MenuBuilder extends Builder<MenuElementType, iMenuConfig> {
   readonly builderId = "menu";
   readonly name = "menu";
   readonly stylesheet = "./Menu.css";
+
+  static readonly contract: iContentContract = {
+    schema: {
+      t: "record",
+      open: true,
+      of: {
+        brand: { t: "any" },
+        actions: { t: "list", of: { t: "any" } },
+        navigations: {
+          t: "list",
+          single: true,
+          of: {
+            t: "record",
+            open: true,
+            of: {
+              label: { t: "string" },
+              href: { t: "string" },
+              className: { t: "string" },
+            },
+          },
+        },
+      },
+    },
+    example: {
+      navigations: [
+        { label: "Home", href: "#home" },
+        { label: "Contact", href: "tel:+620000", className: "button" },
+      ],
+    },
+  };
 
   protected isMenuOpened: boolean = false;
 

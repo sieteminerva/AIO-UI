@@ -1,0 +1,127 @@
+# TASK — input normalisation (schema door, content-once)
+
+**Status:** approved 2026-11-21 by the owner. **No code written yet.** Batches A–E below; A is the
+first edit. Supersedes `packages/components/DISCUSSION_ANALYSIS.md` (scratch, untracked).
+
+## Decision (approved 2026-11-21)
+
+1. The builder door is `create(schema)`; `schema = { content, config }`.
+2. `iComponentManifest.config` is deleted. `manifest.schema` stays, as the rare payload override.
+3. The registry is the wrapper: it turns a node into a schema and never guesses payload shape.
+   A node is recognised by `builder` — the same discriminator `DOMRenderer` already uses.
+4. `content` appears exactly once: inside `schema`. **No payload field may be named `content`.**
+   Inner keys use domain words.
+5. A builder never sees the node (`builder`, `isRoot`, `attrs`, `onCreated`, host element). It
+   assembles elements; the renderer mounts them — as root (`isRoot`) or as a child of the
+   element it declared.
+6. `prepare(schema.content, this.config)`; the config argument stays optional and defaults to
+   `this.config`, so a future `create()` that mutates config still reaches `prepare()`.
+
+Out of scope by the owner's decision: `id-address`'s internal `this.schema`, event
+`emit(event, payload)`.
+
+## Vocabulary — one word per layer
+
+| Layer                    | Word        | Anchor                                                                      |
+| ------------------------ | ----------- | --------------------------------------------------------------------------- |
+| page entry               | **node**    | `iBasicBuilderNode` (`core/types/node.ts:124-131`) = schema + directives    |
+| builder door             | **schema**  | `create(schema)`, `manifest.schema` override                                |
+| component payload        | **content** | `schema.content`, typed by `iBuilderRegistry[K]` (`core/types/registry.ts`) |
+| content after processing | **payload** | proxy, `template(typeKey, el, payload)`, `iNodeRecordItem.payload`          |
+
+`schema` may also mean "specification" (a field spec in `input/Attribute.ts`, `contract.schema`);
+it never means a value at the page-tree layer.
+
+## Ownership
+
+| Owner             | Knows                                            | Must not know                                  |
+| ----------------- | ------------------------------------------------ | ---------------------------------------------- |
+| DOMRenderer       | node, host element, `isRoot`, attrs, lifecycle   | content                                        |
+| ComponentRegistry | node → schema, `theme < emitter < schema.config` | the shape of a payload                         |
+| Builder           | `schema.content`, `schema.config`                | node, host element, root identity from content |
+
+Quick test for "who owns this key": changes what is rendered → content; changes the host/root →
+node or config; comes from theme/emitter/app → config; describes a shape → `contract.schema`.
+
+## Batches
+
+### A — door and registry
+
+- `Builder.create(schema)`; `prepare(schema.content, this.config)` (`base/src/Base.ts:590`).
+- Registry (`core/src/ComponentRegistry.ts:563-620`):
+  `isNode = isPlainRecord(data) && typeof data.builder === "string"`;
+  `schema = manifest.schema ?? { content: isNode ? data.content : data, config: isNode ? data.config : undefined }`;
+  `config = mergeBuildConfig(theme, emitter, schema.config)`; `instance.create(schema)`.
+- Delete `manifest.config`; `mergeBuildConfig` loses its `manifest` argument (4 layers → 3).
+- Update ~35 `.create(` call sites across 15 files (base tests first). `create({})` becomes an
+  empty schema — every builder must tolerate `content === undefined`; the tests will say which
+  do not.
+- Rewrite `core/src/__tests__/ComponentRegistry.test.ts:143,156,161-180` — they encode the two
+  old guesses (`{content}` unwrap, config from a non-node object) and the manifest-config layer.
+- Proof: `inspect().html` per demo route (kitchen, form, product) and gallery page identical
+  before/after, then `npm run verify`.
+
+### B — upstream carries no data
+
+- `examples/demo/src/manifest.ts:525` → `{ path, stylesheet }` only; move `entry.config` to the
+  build call (`pages/docs-panels.ts`, `previewPanel`).
+- `examples/demo/src/theme-switcher.ts:63` → `{ content: { … } }`.
+- `examples/demo/src/form/panels.ts:64` → `{ content: schema, config }`.
+- `examples/gallery/src/content/wizard.ts:464` → `{ content: formContent, config: formConfig }`.
+- `examples/gallery/src/main.ts:99-140` → `schema: { content: data?.content ?? data, config }`;
+  replace the manual `emit` merge with `registry.useEmitter(emitter)` — the registry already
+  merges it (`ComponentRegistry.ts:263`).
+- Proof: `npm run verify` + the demo form route actually renders fields (today `wizard`'s
+  `{ config, schema }` reaches `prepare()` intact, so it likely renders none — prove it).
+
+### C — delete the compensation code
+
+- 7 sites `data?.content ?? data`: `accordion/Accordion.ts:70-71`, `menu/Menu.ts:107`,
+  `pricing-card/PricingCard.ts:108`, `product/ProductBuilder.ts:94`,
+  `product/ProductDetail.engine.ts:12`, `product/ProductGrid.engine.ts:12-13`,
+  `section/Section.engine.ts:26`.
+- `Form.prepare` unwrap `form/Form.ts:449-454`.
+- Root identity from payload: `section/Section.ts:143-145` (`@section` id/className) → comes from
+  `config.id` / `config.className` or the node, never from content.
+- Proof: `npm run verify`; snapshots identical.
+
+### D — `content` appears once (one commit per component)
+
+Payloads carrying a `content` field today: `accordion`, `article`, `badge`, `carousel`,
+`code-block`, `footer`, `form`, `input-controls`, `masonry`, `menu`, `pricing-card`, `product`,
+`section`, `tab`, `table`.
+
+Rule: a `content` that **is** the whole payload → the value becomes the payload itself; a
+`content` that is **one field among others** → rename to a domain word.
+
+`section` (proven shape): `{ columns: [{ className?, blocks: [...] }] }` —
+`iNormalizedColumn` already uses those words (`Section.engine.ts:5-13`); the flat block list stays
+as `legacy`. Then update `iBuilderRegistry` (`core/types/registry.ts:47-84`; `section` is currently
+`iBuilderContent[]`), the README payload sections, and `npm run catalogue:apply`.
+
+### E — contract
+
+- `static contract: iContentContract = { schema, example, legacy }` per builder;
+  `normalize(contract, content)` → `{ content, issues }` inside `create()`; total function,
+  idempotent, never throws; issues surface through `inspect()`.
+- CI: `validate(example)` must produce zero issues for every builder that declares a contract.
+
+## Traps (verified, do not rediscover)
+
+- `core/src/DOMRenderer/index.ts:569-572` already discriminates with `value.builder`; the registry
+  is the only component that does not. Aligning them adds no per-component knowledge.
+- `Section.ts:92` passes the whole payload to `render("@section")` — that is how root id/className
+  arrives today.
+- `FormAdapters.ts:15,29` JSDoc shows `new FormBuilder({ modules, schema })`; nothing reads it.
+- `manifest.ts` comment above `manifestFor` (the "two authoring modes" paragraph) becomes obsolete
+  in B.
+- `theme-switcher.ts:60` `new ThemeConsoleBuilder({}).create({})` stays valid only if the builder
+  tolerates `content === undefined`; check it in A.
+- `examples/gallery/src/content/wizard.ts:468` calls `builderFn("form", wizard)` directly from
+  `onCreated` — it bypasses any host adapter, which is why B must fix the node, not the adapter.
+
+## Next
+
+Start batch A at `packages/base/src/Base.ts:590` (`create`) then
+`packages/core/src/ComponentRegistry.ts:563-620`. Capture `inspect().html` for the demo routes
+before the first edit; end A with `npm run verify`.

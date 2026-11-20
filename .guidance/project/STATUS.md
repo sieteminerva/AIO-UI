@@ -13,7 +13,8 @@
 prompts wait for a human that is not there; proven — non-TTY runs exit in 1 s, winpty blocks until
 Enter is pressed six times. **Open:** make prompts opt-in plus a 2 s escape, print steps 1–9 before
 asking, then co-design `scripts/release-doc.mjs` so every release note generates its CDN table and
-probes it (four owner questions are in the doc).
+probes it; §2.1 adds the bundled pair (live but no tarball, no table row — the note's block is
+hand-written until the generator exists).
 → `docs/framework/TASK-release-automation.md`
 
 ### 2. Official release — `v0.2.4` live, waiting on three references

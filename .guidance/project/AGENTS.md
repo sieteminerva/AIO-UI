@@ -6,9 +6,9 @@
 
 ## Live claims
 
-| Agent | Band | Task | Write scope | Started | Checkpoint | State |
-| ----- | ---- | ---- | ----------- | ------- | ---------- | ----- |
-| —     | —    | —    | —           | —       | —          | —     |
+| Agent       | Band    | Task                                   | Write scope                                                                                     | Started    | Checkpoint                                            | State  |
+| ----------- | ------- | -------------------------------------- | ----------------------------------------------------------------------------------------------- | ---------- | ----------------------------------------------------- | ------ |
+| copilot b45 | Tooling | Bundle artefacts in release automation | `docs/framework/TASK-release-automation.md`, `docs/releases/v0.2.4.md`, `docs/live-cdn-repo.md` | 2026-11-21 | task doc carries state (no session memory this batch) | active |
 
 ## Row shape
 

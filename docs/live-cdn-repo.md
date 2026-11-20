@@ -481,8 +481,9 @@ Last release: **`v0.2.4`** — 2026-11-21, branch `releases` at `5eeee94`, **39*
 [ ] publish-releases.mjs --apply → v<version>/ committed and pushed
 [ ] publish-cdn.mjs --apply → branch root + bundled pair + tag pushed
 [ ] docs/releases/v<version>.md carries the FULL live CDN path table, generated from
-    registry.json (layout[pkg].dir + the exports file per specifier), including wildcards
-[ ] probes: @v<version>/registry.json, aio-ui.min.js, aio-ui.min.css, raw tarball → 200
+    registry.json (layout[pkg].dir + the exports file per specifier), including wildcards,
+    plus the four branch-root bundle URLs (not packages — no tarball, no exports)
+[ ] probes: @v<version>/registry.json, aio-ui{,.min}.{js,css}, raw tarball → 200
 [ ] checksums: one local sha256 equals the published checksums.txt line
 [ ] main pushed to origin
 ```

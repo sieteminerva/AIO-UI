@@ -95,6 +95,37 @@ Two secondary defects found while reproducing:
 | Marker convention               | every generated doc section gets `<!-- name:begin -->` / `<!-- name:end -->`; `docs/releases/v0.2.4.md` gets them in the same commit that lands the generator.                                                                                                  |
 | Chain                           | `version.mjs --apply` → `verify:pkgs` → `build:bundle` → `release.mjs --apply` → `publish-releases` → `publish-cdn` → `release-doc.mjs --apply --probe` → `main` push. One `npm run release <x.y.z>` wrapper only if the owner wants it.                        |
 
+### 2.1 Sub-task — the bundled pair is neither a tarball nor a table row
+
+Measured 2026-11-21 (v0.2.4 artefacts):
+
+| Question                         | Answer                                                                                                                                                                                                          |
+| -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Is there a tarball for the pair? | **No.** `releases/v0.2.4/` holds 39 `.tgz`, none named `*bundle*`.                                                                                                                                              |
+| Is it a registry package?        | **No.** `registry.json.bundle` is metadata (`files`, `base`, `usage`); there is no `packages["@aio-ui/bundle"]` and no `exports` entry, so `release.mjs`'s pack loop never sees it.                             |
+| Is it on the CDN?                | **Yes.** All four files return `200` at the branch root under `@v0.2.4/`.                                                                                                                                       |
+| Is it in the note's CDN table?   | **No** — until batch 45 the generated table had 131 package rows and zero bundle rows; the note mentioned the pair only in prose. A prose-only URL is exactly the kind of "complete list" that is not complete. |
+
+So the pair is published but **unlisted and unpackaged**: a consumer can use it only if they read
+the prose. Three decisions, all for the owner:
+
+1. **Table rows (do this regardless).** `release-doc.mjs` emits a separate _Bundled pair_ block
+   above the package table: `aio-ui.js`, `aio-ui.min.js`, `aio-ui.css`, `aio-ui.min.css`, marked as
+   "not a package — branch root". Batch 45 already added that block by hand to
+   `docs/releases/v0.2.4.md`; the generator must reproduce it, not the reverse.
+2. **Tarball or not.** The pair is an IIFE plus a stylesheet, not an ES module, so
+   `npm i <url>.tgz` would only put files in `node_modules` with no `import` that works — the value
+   is low and the confusion is high. **Proposal: no tarball**, and say so in the branch README
+   ("the pair is for `<script>`, not for `import`"). If the owner wants one anyway: pack
+   `temp/bundle/dist` with a synthetic `package.json` (`name: "aio-ui"`, the four files, no
+   `exports`), name it `aio-ui-bundle-<version>.tgz`, add `bundle.tarball` + a checksum entry, and
+   teach `publish-releases.mjs` that this one tarball is not a package in `registry.packages`.
+3. **Probe coverage.** `--probe` must fetch all four bundle URLs plus `registry.json` and one
+   package tarball; today the checklist names only the two minified files.
+
+Done when the note's _Bundled pair_ block is generator output, `--probe` covers the four URLs, and
+the README states the pair is `<script>`-only (or the tarball exists, with its entry and checksum).
+
 ### Questions for the owner (answer before building)
 
 1. Does `release-doc.mjs` **own** `docs/releases/v<x>.md`, or only the generated sections inside a
@@ -106,6 +137,8 @@ Two secondary defects found while reproducing:
 4. The release note currently lives in `docs/releases/`; the branch README lives on `releases`.
    Should the note's CDN table also be published on the branch (it duplicates the README's package
    table)?
+5. The bundled pair: no tarball (proposal, §2.1) or one `aio-ui-bundle-<version>.tgz` that is not a
+   package in `registry.packages`?
 
 ## Done =
 

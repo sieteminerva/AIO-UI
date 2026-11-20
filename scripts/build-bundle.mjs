@@ -230,6 +230,9 @@ async function bundleCss(minify, dir) {
       outDir: dir,
       emptyOutDir: true,
       minify,
+      // A modern CSS target keeps native nesting instead of downlevelling it into
+      // expanded rules: the "min" file was 35 % larger than the source without this.
+      cssTarget: "chrome130",
       cssMinify: minify,
       target: "es2020",
       rollupOptions: { input: join(WORK, "entry.css"), output: { assetFileNames: "aio-ui.css" } },

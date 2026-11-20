@@ -29,6 +29,7 @@ the source; `dist/` is gitignored there, which is why this orphan `releases` bra
 | `layout.json` | flat name → directory map used by the generator and the resolver |
 | `checksums.txt` | `sha256` of every artefact, verifiable with `sha256sum -c checksums.txt` |
 | `v__VERSION__/*.tgz` | the installable tarball per package — one file, one URL |
+| `aio-ui{,.min}.{js,css}` | the bundled pair — two links, no import map, no build step |
 
 Nothing in this branch is hand-written. If a file looks wrong, it is wrong on `main`.
 
@@ -60,6 +61,18 @@ Three ways to name the same tree:
 `https://raw.githubusercontent.com/__REPOSITORY__/releases/…` serves the same bytes and is the
 fallback when jsDelivr is unavailable; it has no cache layer of its own, so expect plain HTTP
 caching only.
+
+### Two links, no import map
+
+The branch root also carries the bundled pair. A page with no build step needs only these:
+
+```html
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/__REPOSITORY__@__TAG__/aio-ui.min.css">
+<script src="https://cdn.jsdelivr.net/gh/__REPOSITORY__@__TAG__/aio-ui.min.js"></script>
+<script>
+  const { DOMRenderer, AccordionBuilder, version } = globalThis.AioUI;
+</script>
+```
 
 ## 3. Install offline from the release assets
 

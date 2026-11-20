@@ -4,18 +4,18 @@ Recorded 2026-11-17. Partially landed 2026-11-18 (the branch, the worktree, the 
 Owner band: **Tooling** (`scripts/release.mjs`, `scripts/releases-worktree.mjs`,
 `scripts/publish-releases.mjs`, `scripts/publish-cdn.mjs`).
 
-**Status:** pipeline landed 2026-11-18 for the plain (non-bundled) tarballs; the bundled rewrite (§2)
-and the `publish-cdn.mjs` `node_modules` assertion (§5.5) are open.
+**Status:** pipeline complete. `v0.2.4` published 2026-11-21 in **mode B** (39 tarballs, 1.29 MB);
+the bundled rewrite (§2) finished the same day and was refused by the new size gate
+(mode A 34.07 MB, heaviest tarball 3.80 MB), so the gate is what chose mode B. §5.5 assertion
+landed. Only the manual `publish-release-assets.mjs` step remains, and the official release still
+waits for the `store` / `profile` / `blog` references.
 
-## Next (cold start — 0.2.4)
+## Next (cold start — after 0.2.4)
 
-1. `scripts/release.mjs` `--bundle` per §2 (`scripts/closure.mjs` already emits the graph).
-2. Wire the four bundle artefacts: `npm run build:bundle` writes `aio-ui{,.min}.{js,css}`;
-   `release.mjs` copies them into `releases/vX/` and names them in `registry.json`;
-   `publish-cdn.mjs` places them at the branch root.
-3. Add the §5.5 assertion: a staged tree containing `node_modules/` fails the cdn publish.
-4. Gate: `npm run verify:pkgs` (~2 m 23 s), then `version.mjs --apply --version 0.2.4` and the
-   three publishers. Cut only when the owner says so.
+1. Nothing in the pipeline is open. Next publish: bump, `npm run verify:pkgs`, `build:bundle`,
+   `release.mjs --version x --apply`, `publish-releases.mjs --apply`, `publish-cdn.mjs --apply`.
+2. Optional, not blank: `exports.mjs` + `check:exports` (§4) is still unwritten — `release.mjs`
+   keeps its own `subpathsOf()` until then.
 
 ## Goal
 

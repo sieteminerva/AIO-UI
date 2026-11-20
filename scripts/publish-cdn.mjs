@@ -82,7 +82,9 @@ for (const [name, entry] of Object.entries(registry.packages)) {
     process.exit(1);
   }
 }
-for (const file of ["registry.json", "layout.json", "checksums.txt"]) {
+// The bundled pair sits next to the tarballs; jsDelivr serves it from the branch root.
+const bundleFiles = registry.bundle?.files ?? [];
+for (const file of [...bundleFiles, "registry.json", "layout.json", "checksums.txt"]) {
   copyFileSync(join(releaseDir, file), join(treeDir, file));
 }
 
@@ -122,7 +124,7 @@ const worktree = ensureWorktree({ root: ROOT, branch, remote });
 
 // Same checkout the tarballs live in, so only the unpacked tree at the root is
 // replaced. A wipe would delete `v<version>/`, and a published URL is a contract.
-for (const entry of ["packages", "registry.json", "layout.json", "checksums.txt", "README.md"]) {
+for (const entry of ["packages", ...bundleFiles, "registry.json", "layout.json", "checksums.txt", "README.md"]) {
   rmSync(join(worktree, entry), { recursive: true, force: true });
 }
 

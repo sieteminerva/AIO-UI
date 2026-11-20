@@ -33,8 +33,9 @@
  */
 import { execSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { copyFileSync, cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join, relative, sep } from "node:path";
+import { gzipSync } from "node:zlib";
 import { ensureWorktree } from "./releases-worktree.mjs";
 
 const ROOT = process.cwd();
@@ -58,6 +59,7 @@ const valueOf = (name) => {
 const version = valueOf("--version");
 const apply = flag("--apply");
 const bundle = flag("--bundle");
+const allowGrowth = flag("--allow-growth");
 const repository = process.env.GITHUB_REPOSITORY || "sieteminerva/AIO-UI";
 const outDir = version ? join(ROOT, "releases", `v${version}`) : null;
 
@@ -65,6 +67,20 @@ if (!version || !/^\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?$/.test(version)) {
   console.error("[release] --version <x.y.z> is required (semver, pre-release allowed)");
   process.exit(1);
 }
+
+/**
+ * Size gates, decided from the 2026-11-17 measurement (see docs/framework/TASK-releases-branch.md).
+ * A gate that cannot trip is not a gate, so these are tight on purpose:
+ *   per tarball  ≤ 2.0 MB  (heaviest measured 1.17 MB in mode A)
+ *   per version  ≤ 8.0 MB  (measured 6.1 MB raw in mode A)
+ *   repo growth  ≤ 3.0 MB gzipped (measured 2.2 MB; warn only, `--allow-growth` accepts)
+ */
+const BUDGET = {
+  tarball: 2.0 * 1024 * 1024,
+  total: 8.0 * 1024 * 1024,
+  growth: 3.0 * 1024 * 1024,
+};
+const mb = (bytes) => `${(bytes / 1024 / 1024).toFixed(2)} MB`;
 
 /** Every publishable package directory. */
 function packageDirs() {
@@ -176,6 +192,7 @@ const registry = {
 
 const checksums = [];
 const layout = {};
+const sizes = [];
 let totalBytes = 0;
 const byName = new Map(packages.map((entry) => [entry.manifest.name, entry]));
 
@@ -225,8 +242,7 @@ function stagePackage(name, target, ancestry) {
   const entry = byName.get(name);
   cpSync(entry.dir, target, {
     recursive: true,
-    filter: (source) =>
-      !source.split(sep).includes("node_modules") && !source.split(sep).includes(".turbo"),
+    filter: (source) => !source.split(sep).includes("node_modules") && !source.split(sep).includes(".turbo"),
   });
 
   const manifest = JSON.parse(readFileSync(join(target, "package.json"), "utf8"));
@@ -281,6 +297,9 @@ for (const entry of packages) {
   const output = execSync(`npm pack "./${packDir}" --pack-destination "${outDir}" --json`, {
     cwd: ROOT,
     encoding: "utf8",
+    // A bundled tarball's `--json` file list is megabytes long; the 1 MB default
+    // kills the run with ENOBUFS on the first self-contained package.
+    maxBuffer: 256 * 1024 * 1024,
   });
   const [packed] = JSON.parse(output);
 
@@ -289,6 +308,7 @@ for (const entry of packages) {
   const sha256 = createHash("sha256").update(readFileSync(tarballPath)).digest("hex");
   checksums.push(`${sha256}  ${packed.filename}`);
   totalBytes += bytes;
+  sizes.push({ name, bytes, file: tarballPath });
 
   const subpaths = subpathsOf(entry.manifest, entry.dir);
   registry.packages[name] = {
@@ -318,11 +338,59 @@ for (const entry of packages) {
   };
 }
 
+// ---- The bundled pair: four files a no-build page points at --------------
+// Built by `npm run build:bundle` into temp/bundle/dist. They are copied beside the tarballs
+// and named in the registry so `publish-cdn.mjs` can place them at the branch root.
+const BUNDLE_FILES = ["aio-ui.js", "aio-ui.min.js", "aio-ui.css", "aio-ui.min.css"];
+const bundleSource = join(ROOT, "temp", "bundle", "dist");
+const missingBundle = BUNDLE_FILES.filter((file) => !existsSync(join(bundleSource, file)));
+if (missingBundle.length) {
+  console.warn(`[release] no bundled pair (${missingBundle.join(", ")}) — run: npm run build:bundle`);
+} else {
+  for (const file of BUNDLE_FILES) {
+    const bytes = readFileSync(join(bundleSource, file));
+    copyFileSync(join(bundleSource, file), join(outDir, file));
+    checksums.push(`${createHash("sha256").update(bytes).digest("hex")}  ${file}`);
+  }
+  registry.bundle = {
+    files: BUNDLE_FILES,
+    base: `https://cdn.jsdelivr.net/gh/${repository}@v${version}/`,
+    usage: "aio-ui.min.css + aio-ui.min.js for a page with no build step (globalThis.AioUI)",
+  };
+}
+
+// ---- Size gates, before anything is published -----------------------------
+const heaviest = [...sizes].sort((a, b) => b.bytes - a.bytes);
+const overTarball = heaviest.filter((entry) => entry.bytes > BUDGET.tarball);
+if (overTarball.length) {
+  console.error(`[release] ${overTarball.length} tarball(s) exceed the ${mb(BUDGET.tarball)} per-package budget:`);
+  for (const entry of overTarball.slice(0, 5)) console.error(`  - ${entry.name} ${mb(entry.bytes)}`);
+  console.error(`[release] mode ${bundle ? "A" : "B"} · re-run without --bundle for the deduped set`);
+  process.exit(1);
+}
+if (totalBytes > BUDGET.total) {
+  console.error(`[release] ${mb(totalBytes)} exceeds the ${mb(BUDGET.total)} per-version budget:`);
+  for (const entry of heaviest.slice(0, 5)) console.error(`  - ${entry.name} ${mb(entry.bytes)}`);
+  console.error(`[release] mode ${bundle ? "A" : "B"} · re-run without --bundle for the deduped set`);
+  process.exit(1);
+}
+const gzipped = sizes.reduce((sum, entry) => sum + gzipSync(readFileSync(entry.file)).length, 0);
+if (gzipped > BUDGET.growth && !allowGrowth) {
+  console.error(
+    `[release] ${mb(gzipped)} gzipped exceeds the ${mb(BUDGET.growth)} repo-growth budget — ` +
+      `every v<version>/ stays in git forever. Pass --allow-growth to accept it.`,
+  );
+  process.exit(1);
+}
+console.log(
+  `[release] size gate ok · heaviest ${heaviest[0].name} ${mb(heaviest[0].bytes)} · total ${mb(totalBytes)} (${mb(gzipped)} gzipped)`,
+);
+
 writeFileSync(join(outDir, "registry.json"), `${JSON.stringify(registry, null, 2)}\n`, "utf8");
 writeFileSync(join(outDir, "layout.json"), `${JSON.stringify(layout, null, 2)}\n`, "utf8");
 writeFileSync(join(outDir, "checksums.txt"), `${checksums.join("\n")}\n`, "utf8");
 
-console.log(`[release] wrote ${checksums.length} tarball(s) + registry.json + layout.json + checksums.txt`);
+console.log(`[release] wrote ${checksums.length} file(s) + registry.json + layout.json + checksums.txt`);
 console.log(
   `[release] mode ${bundle ? "A — self-contained (bundled closure)" : "B — separate modules (internal dependencies are tarball URLs)"} · ${(totalBytes / 1024 / 1024).toFixed(2)} MB total`,
 );

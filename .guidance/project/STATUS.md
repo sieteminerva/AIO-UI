@@ -4,18 +4,24 @@
 > **only** after the user picks it — never "to orient" (`AGENT_RULES.md` §13). Rewritten each
 > session, newest on top. One card = one line + one pointer.
 >
-> Batch 42 (2026-11-21): `union` + `element` landed in `iContentSpec`; all seven builders narrowed,
-> card dropped. Batch 41: binding seam and the ViewFactory port.
+> Batch 43 (2026-11-21): `v0.2.4` published on `releases` + tag, mode B, bundle pair at the branch
+> root. Batch 42: `union` + `element` landed in `iContentSpec`.
 
-### 1. Release 0.2.4 — next
+### 1. Official release — live, waiting on three references
 
-Restructure at 0.2.4 landed (`07126a0`+): 39 packages, `@aio-ui/dom-renderer` ships alone, folders
-match their builder word. `0.2.3` is live on `releases` (jsDelivr 200). **Open:** the bundled rewrite
-(doc §2) and the four bundle artefacts — `release.mjs` / `publish-cdn.mjs` must place
-`aio-ui{,.min}.{js,css}` at the branch root and name them in `registry.json`; then §5 +
-`version.mjs --apply --version 0.2.4` → `verify:pkgs` → `release.mjs` → `publish-releases.mjs` →
-`publish-cdn.mjs`. Implement up to `verify:pkgs`, then **stop and ask** — the owner cuts it.
-→ `docs/framework/TASK-releases-branch.md` · `docs/releases/v0.2.4.md`
+`v0.2.4` is live (39 packages, mode B, jsDelivr 200 on registry + both minified files, raw tarball
+200, checksums match). **Open:** the official release waits for the `store`, `profile`, `blog`
+reference apps (`gallery` exists); the only manual pipeline step left is
+`publish-release-assets.mjs` when the owner wants GitHub release assets. Facts, numbers and the
+updated pre-flight checklist are in the release doc.
+→ `docs/releases/v0.2.4.md` · `docs/live-cdn-repo.md` §9
+
+### 2. Optional hardening — `check:exports`
+
+`release.mjs` still derives subpaths with its own `subpathsOf()`. The planned `exports.json` +
+`check:exports` gate (a subpath pointing at a file `files[]` excludes is a silent 404 today) is
+unwritten; it is an improvement, not a blocker.
+→ `docs/framework/TASK-releases-branch.md` §4
 
 ## Map
 

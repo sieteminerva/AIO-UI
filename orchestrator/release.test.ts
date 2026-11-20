@@ -57,10 +57,12 @@ interface Registry {
   version: string;
   base: string;
   packages: Record<string, RegistryEntry>;
+  /** The four `aio-ui{,.min}.{js,css}` files published at the branch root, when present. */
+  bundle?: { files: string[] };
 }
 
 /** Aggregators whose `export *` makes the import map a closure, not a list. */
-const BARRELS = ["@aio-ui/frameworks", "@aio-ui/modules", "@aio-ui/themes"];
+const BARRELS = ["@aio-ui/modules", "@aio-ui/themes"];
 
 /** The directories `scripts/release.mjs` treats as publishable sections. */
 const SECTIONS = [
@@ -135,7 +137,9 @@ describe.skipIf(!available)("release artefacts", () => {
 
   it("matches every tarball against checksums.txt", () => {
     const lines = readFileSync(join(RELEASE, "checksums.txt"), "utf8").trim().split("\n");
-    expect(lines).toHaveLength(Object.keys(registry.packages).length);
+    const tarballs = Object.values(registry.packages).map((entry) => entry.tarball.split("/").pop());
+    const expected = [...tarballs, ...(registry.bundle?.files ?? [])];
+    expect(lines).toHaveLength(expected.length);
 
     const bad: string[] = [];
     for (const line of lines) {
@@ -165,16 +169,18 @@ describe.skipIf(!available)("release artefacts", () => {
         expect(missing).toEqual([]);
       });
 
-      it("keeps the barrel import closed", () => {
-        const barrel = site.importMap.imports["@aio-ui/frameworks"];
-        expect(barrel, "@aio-ui/frameworks must be mapped").toBeTruthy();
+      it("keeps every mapped barrel import closed", () => {
+        const barrels = BARRELS.filter((name) => site.importMap.imports[name]);
+        for (const name of barrels) {
+          const source = stripComments(readFileSync(repoPath(site.importMap.imports[name]), "utf8"));
+          const imports = [...source.matchAll(/from\s+["'](@aio-ui\/[^"']+)["']/g)].map((match) => match[1]);
+          expect(imports.length, `${name} must re-export something`).toBeGreaterThan(0);
 
-        const source = stripComments(readFileSync(repoPath(barrel), "utf8"));
-        const imports = [...source.matchAll(/from\s+["'](@aio-ui\/[^"']+)["']/g)].map((match) => match[1]);
-        expect(imports.length).toBeGreaterThan(0);
-
-        const missing = imports.filter((specifier) => !(specifier in site.importMap.imports));
-        expect(missing).toEqual([]);
+          const missing = imports.filter((specifier) => !(specifier in site.importMap.imports));
+          expect(missing, `${name} leaves a bare import unmapped`).toEqual([]);
+        }
+        // A site that maps no barrel at all is fine (0.2.4 removed `@aio-ui/frameworks`),
+        // but the transitive closure below still proves the map is complete.
       });
 
       it("closes every bare import reachable from the mapped files", () => {

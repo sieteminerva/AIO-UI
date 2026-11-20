@@ -6,9 +6,9 @@
 
 ## Live claims
 
-| Agent | Band | Task | Write scope | Started | Checkpoint | State |
-| ----- | ---- | ---- | ----------- | ------- | ---------- | ----- |
-| —     | —    | —    | —           | —       | —          | —     |
+| Agent       | Band    | Task          | Write scope                                                                                                                                                                         | Started    | Checkpoint                           | State  |
+| ----------- | ------- | ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- | ------------------------------------ | ------ |
+| copilot b46 | Tooling | Release 0.2.4 | `scripts/release.mjs`, `scripts/publish-cdn.mjs`, `templates/cdn/README.md.tpl`, `docs/releases/v0.2.4.md`, `docs/framework/TASK-releases-branch.md`, `.guidance/project/STATUS.md` | 2026-11-21 | `/memories/session/release-0.2.4.md` | active |
 
 ## Row shape
 

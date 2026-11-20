@@ -259,10 +259,27 @@ value instead of dropping it. `normalizePayload()` still owns _transformations_ 
 entries, deriving labels); the contract owns _shape_. `packages/components/contracts.test.ts`
 validates `example` for every builder that declares one, so the sample cannot drift.
 
-**Known limit:** a payload that is a union of shapes, or that may carry a DOM element, uses
-`{ t: "any" }`, so only its `example` is validated (today: `code-block`, `fab-menu`, `markdown`,
-`masonry`, `modal`, `product`, `rating`). Closing that needs a `union` member in `iContentSpec`; it
-is deferred, not forgotten.
+A payload that accepts more than one shape says so with a `union` branch; one that may carry a
+live DOM element uses `element`. `check()` takes the **first** branch that fits and normalises with
+it, so `single` still wraps and a legacy key still resolves. When no branch fits it emits a single
+`INPUT_SHAPE` issue that lists the alternatives:
+
+```ts
+schema: {
+  t: "union",
+  of: [
+    { t: "element" },                              // an element is an object — test it first
+    { t: "record", open: true, of: { title: { t: "string" } } },
+    { t: "string" },
+  ],
+}
+```
+
+Two rules keep a union honest. **`element` before `record`**: an `HTMLElement` passes an object
+test, so the record branch would shadow it. **Keep record branches `open`** when they differ only
+by optional keys: two closed records fit the same object, and the first would warn about the
+second's keys. A value that fits no branch is the only thing a union rejects, so pin the branches
+you can and let `normalizePayload()` own the rest.
 
 ### The four layers, one word each
 

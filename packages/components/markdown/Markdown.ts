@@ -135,9 +135,12 @@ export class MarkdownBuilder extends Builder<MarkdownElementType, iMarkdownConfi
   readonly name: keyof iBuilderRegistry = "markdown";
   readonly stylesheet: string = "./Markdown.css";
 
-  /** `{ source }` or a bare string; anything else renders nothing on purpose. */
+  /** `{ source }` or a bare string; anything else is not a document. */
   static readonly contract: iContentContract = {
-    schema: { t: "any" },
+    schema: {
+      t: "union",
+      of: [{ t: "record", open: true, of: { source: { t: "string", req: true } } }, { t: "string" }],
+    },
     example: { source: "# Title\n\nSome **text**." },
   };
   public config: Required<iMarkdownConfig>;

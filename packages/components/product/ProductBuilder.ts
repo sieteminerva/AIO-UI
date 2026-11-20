@@ -68,7 +68,14 @@ export class ProductBuilder extends Builder<ProductElementType, iProductConfig> 
 
   /** Grid (`[…]` / `{ items }`) or detail (`{ record }`) — the shape picks the view. */
   static readonly contract: iContentContract = {
-    schema: { t: "any" },
+    schema: {
+      t: "union",
+      of: [
+        { t: "list", of: { t: "record", open: true } },
+        { t: "record", open: true, of: { record: { t: "record", open: true } } },
+        { t: "record", open: true, of: { items: { t: "list", of: { t: "record", open: true } } } },
+      ],
+    },
     example: { items: [{ id: "p1", title: "T-shirt", price: 120000, image: "p1.png" }] },
   };
 

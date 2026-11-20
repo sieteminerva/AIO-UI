@@ -106,6 +106,37 @@ function applyLegacy(contract: iContentContract, content: unknown, issues: iCont
   return result ?? content;
 }
 
+/**
+ * Structural fit — does `value` *look like* this spec? Never throws, collects nothing.
+ *
+ * A union uses it to pick a branch before normalising, so this is deliberately a cheap
+ * type test, not a full validation: a `record` that is missing a required field still
+ * fits, and `check()` reports the missing field on the chosen branch.
+ */
+function fits(spec: iContentSpec, value: unknown): boolean {
+  switch (spec.t) {
+    case "any":
+      return true;
+    case "string":
+      return typeof value === "string";
+    case "number":
+      return typeof value === "number" && Number.isFinite(value);
+    case "boolean":
+      return typeof value === "boolean";
+    case "enum":
+      return spec.of.includes(value as string | number);
+    case "record":
+      return isRecord(value);
+    case "list":
+      return Array.isArray(value) || (spec.single === true && isRecord(value));
+    case "element":
+      // An element is an object, so a union must test `element` before `record`.
+      return typeof HTMLElement !== "undefined" && value instanceof HTMLElement;
+    case "union":
+      return spec.of.some((branch) => fits(branch, value));
+  }
+}
+
 /** Walks one spec against one value, collecting issues and returning the normalised value. */
 function check(spec: iContentSpec, value: unknown, path: string, issues: iContentIssue[]): unknown {
   if (value === undefined) {
@@ -120,6 +151,30 @@ function check(spec: iContentSpec, value: unknown, path: string, issues: iConten
   switch (spec.t) {
     case "any":
       return value;
+
+    case "element":
+      if (typeof HTMLElement === "undefined" || !(value instanceof HTMLElement)) {
+        issues.push(issue("INPUT_WRONG_TYPE", path, "element", value, `expected a DOM element`));
+      }
+      return value;
+
+    case "union": {
+      const branch = spec.of.find((candidate) => fits(candidate, value));
+      if (!branch) {
+        issues.push(
+          issue(
+            "INPUT_SHAPE",
+            path,
+            describe(spec),
+            value,
+            `fits none of: ${describe(spec)}`,
+          ),
+        );
+        return value;
+      }
+      // First fitting branch normalises the value (so `list.single` still wraps).
+      return check(branch, value, path, issues);
+    }
 
     case "string":
       if (typeof value !== "string") {
@@ -218,6 +273,10 @@ function describe(spec: iContentSpec): string {
       return "array";
     case "enum":
       return `one of ${spec.of.join(" | ")}`;
+    case "union":
+      return spec.of.map(describe).join(" | ");
+    case "element":
+      return "element";
     case "any":
       return "any value";
     default:

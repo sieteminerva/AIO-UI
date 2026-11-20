@@ -58,7 +58,17 @@ export class MasonryBuilder extends Builder<MasonryElementType, iMasonryConfig> 
 
   /** `{ items }` or a bare array (the builder wraps it), and an item may be an element. */
   static readonly contract: iContentContract = {
-    schema: { t: "any" },
+    schema: {
+      t: "union",
+      of: [
+        {
+          t: "record",
+          open: true,
+          of: { items: { t: "list", req: true, of: { t: "union", of: [{ t: "element" }, { t: "record", open: true }] } } },
+        },
+        { t: "list", of: { t: "union", of: [{ t: "element" }, { t: "record", open: true }] } },
+      ],
+    },
     example: { items: [{ image: "a.png", category: "Branding", title: "Project A" }] },
   };
 

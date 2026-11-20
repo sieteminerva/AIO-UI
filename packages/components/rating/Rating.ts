@@ -27,7 +27,7 @@ export class RatingBuilder extends Builder<RatingElementType, iRatingConfig> {
 
   /** A bare number or `{ value }`; anything else is scored as `0`. */
   static readonly contract: iContentContract = {
-    schema: { t: "any" },
+    schema: { t: "union", of: [{ t: "number" }, { t: "record", open: true, of: { value: { t: "number" } } }] },
     example: 4.5,
   };
   public config: Required<iRatingConfig>;

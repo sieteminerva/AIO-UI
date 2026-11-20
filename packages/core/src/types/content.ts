@@ -180,6 +180,14 @@ export type iContentSpec =
    * list-shaped payloads stay usable with a single item.
    */
   | { t: "list"; of?: iContentSpec; min?: number; max?: number; req?: boolean; single?: boolean }
+  /**
+   * Several shapes, one payload. `check()` takes the **first** branch that fits and
+   * normalises with it, so `list.single` still wraps. Nothing fits → one `INPUT_SHAPE`
+   * issue listing the branches. Put `element` before `record`: an element *is* an object.
+   */
+  | { t: "union"; of: readonly iContentSpec[]; req?: boolean }
+  /** A live DOM element (`HTMLElement`), passed through untouched. */
+  | { t: "element"; req?: boolean }
   /** No shape check at all — for payloads the builder passes through (nodes, DOM, specs). */
   | { t: "any"; req?: boolean };
 

@@ -1,7 +1,8 @@
 # TASK — `union` + `element` in `iContentSpec`
 
-**Status:** next. This closes batch E's known limit (seven builders use the `{ t: "any" }` escape).
-Band: `packages/**` (Framework). Rules: `docs/framework/COMPONENT-CONVENTIONS.md` §4 / §12.
+**Status:** implemented — all seven contracts narrowed, tests green (`npx vitest run` on both
+contract files → 67 pass). Gate `npm run verify` pending. Band: `packages/**` (Framework). Rules:
+`docs/framework/COMPONENT-CONVENTIONS.md` §4 / §12.
 
 ## Why
 

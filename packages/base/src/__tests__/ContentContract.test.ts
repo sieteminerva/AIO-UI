@@ -82,6 +82,68 @@ describe("normalize(contract, content)", () => {
   });
 });
 
+describe("union and element specs", () => {
+  const unionContract: iContentContract = {
+    schema: {
+      t: "union",
+      of: [
+        { t: "record", open: true, of: { label: { t: "string" } } },
+        { t: "string" },
+      ],
+    },
+    example: { label: "alpha" },
+  };
+
+  it("picks the record branch for a record and the string branch for a string", () => {
+    expect(normalize(unionContract, { label: "a" }).content).toEqual({ label: "a" });
+    expect(normalize(unionContract, "hello").content).toBe("hello");
+  });
+
+  it("still wraps a lone record when the chosen branch is a single list", () => {
+    const single: iContentContract = {
+      schema: {
+        t: "union",
+        of: [
+          { t: "list", single: true, of: { t: "record", open: true } },
+          { t: "string" },
+        ],
+      },
+      example: [],
+    };
+    expect(normalize(single, { label: "solo" }).content).toEqual([{ label: "solo" }]);
+  });
+
+  it("yields exactly one INPUT_SHAPE that lists the branches when nothing fits", () => {
+    const issues = validate(unionContract, 42);
+    expect(issues).toHaveLength(1);
+    expect(issues[0]).toMatchObject({
+      code: "INPUT_SHAPE",
+      path: "content",
+      expected: "object | string",
+      received: "number",
+    });
+  });
+
+  it("accepts an element and rejects a record", () => {
+    const elementOnly: iContentContract = { schema: { t: "element" }, example: null };
+    const el = document.createElement("div");
+    expect(validate(elementOnly, el)).toEqual([]);
+    expect(validate(elementOnly, { label: "not an element" })[0]).toMatchObject({
+      code: "INPUT_WRONG_TYPE",
+      expected: "element",
+    });
+  });
+
+  it("tests element before record in a union, so an element is not read as a record", () => {
+    const mixed: iContentContract = {
+      schema: { t: "union", of: [{ t: "element" }, { t: "record", of: { label: { t: "string", req: true } } }] },
+      example: {},
+    };
+    // A record here would fail the required `label`; an element must short-circuit first.
+    expect(validate(mixed, document.createElement("section"))).toEqual([]);
+  });
+});
+
 /** A minimal builder that declares the contract above, to prove `inspect()` reports issues. */
 class ContractProbe extends Builder<"@probe", any> {
   static override contract = contract;

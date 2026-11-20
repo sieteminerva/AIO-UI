@@ -24,9 +24,22 @@ export class FabMenuBuilder extends Builder<FabMenuElementType, iFabMenuConfig> 
   readonly name: keyof iBuilderRegistry = "fab-menu";
   readonly stylesheet: string = "./FabMenu.css";
 
-  /** A record, a bare element, or `actions` mixing records and elements — shape is open. */
+  /** A bare element, or a record whose `actions` mix records and elements. */
   static readonly contract: iContentContract = {
-    schema: { t: "any" },
+    schema: {
+      t: "union",
+      of: [
+        { t: "element" },
+        {
+          t: "record",
+          open: true,
+          of: {
+            title: { t: "string" },
+            actions: { t: "list", of: { t: "union", of: [{ t: "element" }, { t: "record", open: true }] } },
+          },
+        },
+      ],
+    },
     example: { title: "Menu", actions: [{ label: "WhatsApp", id: "wa", type: "button" }] },
   };
 

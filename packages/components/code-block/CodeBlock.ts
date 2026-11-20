@@ -170,12 +170,20 @@ export class CodeBlockBuilder extends Builder<CodeBlockElementType, iCodeBlockCo
   readonly stylesheet: string = "./CodeBlock.css";
 
   /**
-   * The payload is a union of shapes (`{ code }`, `{ blocks }`, an array, a bare string),
-   * so the contract pins the example and stays open on shape. `normalizePayload()` owns
-   * the branch, exactly like before.
+   * The payload is a union: `{ code }`, `{ blocks }`, an array of records, or a bare string.
+   * Records stay `open` so an extra key never becomes noise; `normalizePayload()` still owns
+   * the branch.
    */
   static readonly contract: iContentContract = {
-    schema: { t: "any" },
+    schema: {
+      t: "union",
+      of: [
+        { t: "record", open: true, of: { code: { t: "string" }, label: { t: "string" }, language: { t: "string" } } },
+        { t: "record", open: true, of: { blocks: { t: "list", of: { t: "record", open: true } } } },
+        { t: "list", of: { t: "record", open: true } },
+        { t: "string" },
+      ],
+    },
     example: { code: "const app = new AioApp({ container: \"#app\" });", label: "ts · mount", language: "ts" },
   };
   public config: Required<iCodeBlockConfig>;

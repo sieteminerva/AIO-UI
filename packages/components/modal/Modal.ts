@@ -39,7 +39,7 @@ export class ModalBuilder extends Builder<ModalElementType, iModalConfig> {
 
   /** An element, an HTML string or a node object — the body is whatever `_compileContent` accepts. */
   static readonly contract: iContentContract = {
-    schema: { t: "any" },
+    schema: { t: "union", of: [{ t: "element" }, { t: "string" }, { t: "record", open: true }] },
     example: "<p>Hello from the modal body.</p>",
   };
 

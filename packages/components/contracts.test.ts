@@ -82,3 +82,27 @@ describe("declared content contracts", () => {
     });
   }
 });
+
+/**
+ * The union must not be a renamed `any`: one value per narrowed builder that fits no branch.
+ * If a contract silently accepts everything again, this table fails.
+ */
+const rejections: Array<[string, unknown]> = [
+  ["code-block", 42],
+  ["fab-menu", 42],
+  ["markdown", 42],
+  ["masonry", 42],
+  ["modal", 42],
+  ["product", 42],
+  ["rating", "high"],
+];
+
+describe("narrowed contracts reject a payload that fits no branch", () => {
+  for (const [name, value] of rejections) {
+    it(`${name} — reports at least one issue`, () => {
+      const builder = builders.find(([key]) => key === name)?.[1];
+      expect(builder?.contract, `${name} must declare a contract`).toBeDefined();
+      expect(validate(builder!.contract, value).length).toBeGreaterThan(0);
+    });
+  }
+});

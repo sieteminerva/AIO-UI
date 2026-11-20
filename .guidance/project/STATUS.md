@@ -4,17 +4,10 @@
 > **only** after the user picks it — never "to orient" (`AGENT_RULES.md` §13). Rewritten each
 > session, newest on top. One card = one line + one pointer.
 >
-> Batch 41 (2026-11-21): binding seam and the ViewFactory port are done and dropped from here.
+> Batch 42 (2026-11-21): `union` + `element` landed in `iContentSpec`; all seven builders narrowed,
+> card dropped. Batch 41: binding seam and the ViewFactory port.
 
-### 1. `union` in `iContentSpec` — live (do this first)
-
-Seven builders still use the `{ t: "any" }` escape, so only their `example` is validated. **Open:**
-add `union` + `element` to `iContentSpec`, make `check()` pick the first fitting branch, narrow
-`code-block`, `fab-menu`, `markdown`, `masonry`, `modal`, `product`, `rating`, and extend both
-contract tests. Gate `npm run verify`; the detail doc ends with the release hand-off.
-→ `docs/framework/TASK-content-union.md`
-
-### 2. Release 0.2.4 — after the union card
+### 1. Release 0.2.4 — next
 
 Restructure at 0.2.4 landed (`07126a0`+): 39 packages, `@aio-ui/dom-renderer` ships alone, folders
 match their builder word. `0.2.3` is live on `releases` (jsDelivr 200). **Open:** the bundled rewrite

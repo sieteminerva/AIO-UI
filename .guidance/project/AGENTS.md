@@ -8,7 +8,7 @@
 
 | Agent | Band | Task | Write scope | Started | Checkpoint | State |
 | ----- | ---- | ---- | ----------- | ------- | ---------- | ----- |
-| copilot b45 | Framework | `union` in `iContentSpec` | `packages/core/src/types/content.ts`, `packages/base/src/BaseAdapters/ContentContract.ts`, `packages/base/src/__tests__/ContentContract.test.ts`, `packages/components/{code-block,fab-menu,markdown,masonry,modal,product,rating}/*.ts`, `packages/components/contracts.test.ts`, `docs/framework/COMPONENT-CONVENTIONS.md`, `docs/framework/TASK-content-union.md` | 2026-11-21 | `/memories/session/content-union.md` | active |
+| —     | —    | —    | —           | —       | —          | —     |
 
 ## Row shape
 

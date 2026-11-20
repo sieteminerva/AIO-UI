@@ -66,9 +66,8 @@ export class AccordionBuilder extends Builder<AccordionElementType, iAccordionCo
   }
 
   public prepare(data: iBasicNode, _config?: Partial<iAccordionConfig>): HTMLElement {
-
-    const content = data?.content;
-    const items = (Array.isArray(content) ? content : [content]).filter(Boolean);
+    // The registry hands the item list directly; there is no `{ content }` envelope to unwrap.
+    const items = (Array.isArray(data) ? data : [data]).filter(Boolean);
 
     return this.render("@accordion", items) as HTMLElement;
   }

@@ -102,10 +102,8 @@ export class MenuBuilder extends Builder<MenuElementType, iMenuConfig> {
   }
 
   public prepare(content: iBasicNode, _config?: Partial<iMenuConfig>): HTMLElement {
-    // Accepts `{ content: { navigations } }` and `{ navigations }`: the registry unwraps
-    // `node.content`, but a manifest `schema` hands the whole record over.
-    const source: any = (content as any)?.content ?? content;
-    const payload = this.resolvePayload(source);
+    // The registry hands the payload directly: `{ navigations }`, never a `{ content }` wrapper.
+    const payload = this.resolvePayload(content);
 
     const nav = this.render("@menu", payload["@menu"])!;
     const brand = this.render("@menu>brand", payload["@menu>brand"]);
@@ -125,7 +123,7 @@ export class MenuBuilder extends Builder<MenuElementType, iMenuConfig> {
 
     // `type` decides the shell, not the content: a sidebar is the same nav in a wrapper.
     if (this.config.position === "left" || this.config.position === "right") {
-      const sidebar = this.render("@container", source)!;
+      const sidebar = this.render("@container", content)!;
       sidebar.appendChild(nav);
       return sidebar;
     }

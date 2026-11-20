@@ -10,7 +10,7 @@ Why / stages: `.guidance/plan-framework.md`. Engineering rules:
 | --- | ------------------------ | ----------- | -------------------------------------------------------------------------------------------------------------------------- |
 | 1   | Theme console view (fab) | in progress | `examples/demo/src/ThemeConsole/TASKS.md` — view composed, gate green; open: page-only sections in the popover             |
 | 2   | Inspect surface (b43)    | in progress | `inspect()` + `inspectPage()` landed and green; open: dead relay removal, `#cleanupMap` reset, Topik A (`iComponentInput`) |
-| 3   | Input normalisation      | in progress | A + B landed; C next — `docs/framework/TASK-input-normalisation.md` `## Next — batch C (start cold)`                       |
+| 3   | Input normalisation      | in progress | A + B + C landed (`npm run verify` → 874 pass / 15 skip); D next — `docs/framework/TASK-input-normalisation.md` `## Next — batch D` |
 
 ## Next
 

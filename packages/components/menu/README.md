@@ -19,8 +19,9 @@ so a spreadsheet row and a hand-written array produce the same bar.
 }
 ```
 
-`{ content: { navigations } }` is accepted too (the registry unwraps envelopes). A single object is
-wrapped into a one-entry list. `content.actions` is optional and is appended to the actions group.
+The payload is `{ navigations }` directly — the registry hands the builder the node's `content`, so
+there is no `{ content }` envelope to unwrap. A single object is wrapped into a one-entry list.
+`content.actions` is optional and is appended to the actions group.
 
 | Slot        | Rule                                                                             |
 | ----------- | -------------------------------------------------------------------------------- |

@@ -41,6 +41,8 @@ export interface iSectionColumn extends iSectionBlock {
 }
 
 export interface iSectionConfig extends iBuilderConfig<SectionElementType> {
+  /** Root element id. Comes from config, never from content. */
+  id?: string;
   /** Wrapper class appended to the root, e.g. `"container"`. */
   className?: string;
 }
@@ -82,6 +84,7 @@ export class SectionBuilder extends Builder<SectionElementType, iSectionConfig> 
       selectors: DEFAULT_SELECTORS,
       namespace: null,
       emit: () => { },
+      id: "",
       className: "",
     };
 
@@ -141,9 +144,9 @@ export class SectionBuilder extends Builder<SectionElementType, iSectionConfig> 
   protected template(typeKey: SectionElementType, el: HTMLElement, payload?: any): void {
     switch (typeKey) {
       case "@section":
-        if (payload?.id) el.id = payload.id;
-        if (payload?.className) addClasses(el, payload.className);
-        if (this.config.className) addClasses(el, this.config.className);
+        // Root identity is host-level: it comes from config, never from the content payload.
+        if (this.config.id) el.id = this.config.id;
+        addClasses(el, this.config.className);
         break;
 
       case "@section>content":

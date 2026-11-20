@@ -447,12 +447,7 @@ export class FormBuilder extends Builder<FormElementType, iFormConfig> {
       );
     }
 
-    // Unwrap builder wrapper: { builder: "form", content: [...] } → [...fields]
-    // console.log("FORMS", inputs)
-    // console.log("config", _config)
-    if (inputs && typeof inputs === "object" && !Array.isArray(inputs) && inputs.content !== undefined) {
-      inputs = inputs.content;
-    }
+    // The registry hands the field list directly; there is no `{ content }` envelope to unwrap.
     this.#inputs = Array.isArray(inputs) ? inputs : [inputs];
 
     // 🧩 Satu impor, seluruh stack: definisi lapisan field yang ikut di loader dipindah

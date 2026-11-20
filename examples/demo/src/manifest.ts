@@ -133,13 +133,12 @@ export const DEMO: iDemoEntry[] = [
     category: "content",
     tier: "basic",
     kind: "element",
-    // Shape from `.archives/travel-trip/content.ts:308` — items are `title` + `description`.
-    payload: {
-      content: [
-        { title: "Apakah ada batas minimal peserta?", description: "Tidak. Kami siap membantu rombongan kecil maupun besar." },
-        { title: "Apakah bisa reschedule?", description: "Ya, jika operasional dibatalkan karena cuaca." },
-      ],
-    },
+    // Shape from `.archives/travel-trip/content.ts:308` — items are `title` + `description`,
+    // and the payload is the item list directly (no `{ content }` envelope).
+    payload: [
+      { title: "Apakah ada batas minimal peserta?", description: "Tidak. Kami siap membantu rombongan kecil maupun besar." },
+      { title: "Apakah bisa reschedule?", description: "Ya, jika operasional dibatalkan karena cuaca." },
+    ],
     config: { appearance: "compact", autoClose: true, expanded: true },
     note: "config: { appearance: compact, autoClose: true, expanded: true } → one open row at a time",
   },
@@ -208,30 +207,28 @@ export const DEMO: iDemoEntry[] = [
     category: "layout",
     tier: "basic",
     kind: "element",
-    // Shape from `.archives/travel-trip/content.ts:296` — one row, content is an array of
-    // columns, and each column has its own `content` array of blocks.
-    payload: {
-      id: "demo-section",
-      className: "demo",
-      content: [
-        {
-          className: "column half",
-          content: [
-            {
-              eyebrow: "Private trip",
-              title: "Dua kolom, satu baris.",
-              description:
-                "Kolom teks di kiri, media di kanan. Di bawah 768px grid runtuh jadi satu kolom dan gambar mengambil lebar penuh.",
-              actions: [{ label: "Lihat galeri", href: "#gallery" }, { label: "Tanya dulu" }],
-            },
-          ],
-        },
-        {
-          className: "column half",
-          content: [{ imageUrl: image("Section media"), alt: "Ilustrasi kolom media" }],
-        },
-      ],
-    },
+    // Shape from `.archives/travel-trip/content.ts:296` — one row. The payload is the column
+    // list directly (the registry hands `node.content`); each column has its own block list.
+    // Root id/className are host-level, so they live in config, never in the payload.
+    payload: [
+      {
+        className: "column half",
+        content: [
+          {
+            eyebrow: "Private trip",
+            title: "Dua kolom, satu baris.",
+            description:
+              "Kolom teks di kiri, media di kanan. Di bawah 768px grid runtuh jadi satu kolom dan gambar mengambil lebar penuh.",
+            actions: [{ label: "Lihat galeri", href: "#gallery" }, { label: "Tanya dulu" }],
+          },
+        ],
+      },
+      {
+        className: "column half",
+        content: [{ imageUrl: image("Section media"), alt: "Ilustrasi kolom media" }],
+      },
+    ],
+    config: { id: "demo-section", className: "demo" },
     note: "2 columns; image spans the full row under 768px",
   },
   {

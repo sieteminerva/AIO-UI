@@ -8,10 +8,10 @@
 
 ### 1. Input normalisation — `create(schema)` + content-once
 
-**A + B landed** (2026-11-21, `53c939d` / `81b1a98`): the door is `create(schema)`, the registry
-wraps node→schema by `builder`, manifests and upstream carry no data, gallery wizard renders
-(21 fields). **Open:** C — delete the 7 unwraps + `section` root identity; start at the doc's
-`## Next — batch C (start cold)`.
+**A + B + C landed** (2026-11-21): the door is `create(schema)`, the registry wraps node→schema
+by `builder`, the compensation unwraps are gone, and `section` root id/className come from config.
+**Open:** D — `content` appears once (one commit per component); start at the doc's
+`## Next — batch D`.
 → `docs/framework/TASK-input-normalisation.md`
 
 ### 2. Release 0.2.4 — HELD until normalisation lands

@@ -91,7 +91,7 @@ export class ProductBuilder extends Builder<ProductElementType, iProductConfig> 
   }
 
   public prepare(data: any): HTMLElement {
-    const content = data?.content ?? data ?? {};
+    const content = data ?? {};
     const items = this.#items(content);
     const record = content?.record ?? content?.product ?? null;
 
@@ -121,7 +121,7 @@ export class ProductBuilder extends Builder<ProductElementType, iProductConfig> 
   /** Accepts an array, a named collection, or the raw `{ data: [...] }` envelope. */
   #items(content: any): iProductRecord[] {
     if (Array.isArray(content)) return content.filter(Boolean);
-    for (const key of ["items", "products", "data", "content"]) {
+    for (const key of ["items", "products", "data"]) {
       if (Array.isArray(content?.[key])) return content[key].filter(Boolean);
     }
     return [];
@@ -142,7 +142,7 @@ export class ProductBuilder extends Builder<ProductElementType, iProductConfig> 
     } as Partial<iProductGridConfig>);
 
     this.#list = items;
-    const renderedGrid = grid.create({ content: { data: items } });
+    const renderedGrid = grid.create({ content: items });
     if (this.host("grid")) {
       this.project("grid", renderedGrid);
     } else {

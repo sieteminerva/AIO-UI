@@ -5,9 +5,10 @@ import { formatPrice, imageOf, normalizeProduct } from "../ProductDetail.engine"
 import { normalizeProducts } from "../ProductGrid.engine";
 
 describe("product detail payload", () => {
-  it("reads a record as-is and unwraps { content }", () => {
+  it("reads a record as-is and never unwraps { content }", () => {
     expect(normalizeProduct({ title: "A" }).title).toBe("A");
-    expect(normalizeProduct({ content: { title: "B" } }).title).toBe("B");
+    // A `content` key is a field of the record now, not an envelope to strip.
+    expect(normalizeProduct({ content: { title: "B" } })).toEqual({ content: { title: "B" } });
   });
 
   it("returns an empty record for nothing", () => {
@@ -35,11 +36,13 @@ describe("product detail contract", () => {
 });
 
 describe("product grid payload", () => {
-  it("accepts every documented list shape", () => {
-    expect(normalizeProducts({ content: { data: [{ uid: "1" }] } })).toHaveLength(1);
-    expect(normalizeProducts({ content: [{ uid: "1" }] })).toHaveLength(1);
+  it("accepts a bare array and a { data } envelope", () => {
     expect(normalizeProducts([{ uid: "1" }, { uid: "2" }])).toHaveLength(2);
     expect(normalizeProducts({ data: [{ uid: "1" }] })).toHaveLength(1);
     expect(normalizeProducts({})).toEqual([]);
+  });
+
+  it("does not unwrap a { content } envelope", () => {
+    expect(normalizeProducts({ content: [{ uid: "1" }] })).toEqual([]);
   });
 });

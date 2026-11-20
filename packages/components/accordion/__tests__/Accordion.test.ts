@@ -20,11 +20,8 @@ const sheet = readFileSync(
   "utf8",
 );
 
-/**
- * Two wrappers on purpose: `create()` takes the schema, and Accordion still reads its own
- * `{ content }` envelope. Batch D renames that inner key to a domain word.
- */
-const schema = (content: any[] | any) => ({ content: { content } });
+/** `create()` takes one schema; its `content` is the item list directly. */
+const schema = (content: any[] | any) => ({ content });
 
 function build(content: any[] | any): HTMLElement {
   return new AccordionBuilder().create(schema(content)) as HTMLElement;

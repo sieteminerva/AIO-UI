@@ -7,11 +7,9 @@
  */
 
 
-/** `{ content: { data: [...] } }`, `{ content: [...] }`, `[...]`, `{ data: [...] }`. */
+/** `[...]` or `{ data: [...] }` — the registry hands the payload directly, no `{ content }` envelope. */
 export function normalizeProducts(data: any): any[] {
-  const content = data?.content ?? data;
-  if (Array.isArray(content)) return content.filter(Boolean);
-  if (Array.isArray(content?.data)) return content.data.filter(Boolean);
+  if (Array.isArray(data)) return data.filter(Boolean);
   if (Array.isArray(data?.data)) return data.data.filter(Boolean);
   return [];
 }

@@ -23,7 +23,8 @@ export interface iNormalizedColumn {
  * shape work without a nested array of one.
  */
 export function normalizeColumns(data: any): iNormalizedColumn[] {
-  const content = data?.content ?? data;
+  // The registry hands the payload directly: the column list, never a `{ content }` wrapper.
+  const content = data;
   if (!content) return [];
 
   // `{}` is "nothing", not "one empty column".

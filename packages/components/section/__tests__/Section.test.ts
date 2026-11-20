@@ -1,5 +1,7 @@
+// @vitest-environment happy-dom
 import { describe, expect, it } from "vitest";
 
+import { SectionBuilder } from "../Section";
 import { DEFAULT_SELECTORS, ELEMENT_KEYS } from "../Section.kit";
 import { normalizeColumns } from "../Section.engine";
 
@@ -10,12 +12,10 @@ import { normalizeColumns } from "../Section.engine";
 
 describe("Section columns", () => {
   it("reads the documented column-of-blocks shape", () => {
-    const columns = normalizeColumns({
-      content: [
-        { className: "column half", content: [{ eyebrow: "E", title: "T" }] },
-        { content: [{ imageUrl: "x.png" }] },
-      ],
-    });
+    const columns = normalizeColumns([
+      { className: "column half", content: [{ eyebrow: "E", title: "T" }] },
+      { content: [{ imageUrl: "x.png" }] },
+    ]);
 
     expect(columns).toHaveLength(2);
     expect(columns[0].className).toBe("column half");
@@ -24,7 +24,7 @@ describe("Section columns", () => {
   });
 
   it("treats a column that is itself a block as one block", () => {
-    const columns = normalizeColumns({ content: [{ title: "Only title", description: "D" }] });
+    const columns = normalizeColumns([{ title: "Only title", description: "D" }]);
 
     expect(columns).toHaveLength(1);
     expect(columns[0].blocks).toHaveLength(1);
@@ -39,13 +39,40 @@ describe("Section columns", () => {
   it("returns no columns for nothing", () => {
     expect(normalizeColumns(null)).toEqual([]);
     expect(normalizeColumns({})).toEqual([]);
-    expect(normalizeColumns({ content: [] })).toEqual([]);
+    expect(normalizeColumns([])).toEqual([]);
   });
 
   it("keeps a column with no blocks so empty wrappers do not crash", () => {
-    const columns = normalizeColumns({ content: [{ className: "spacer" }] });
+    const columns = normalizeColumns([{ className: "spacer" }]);
     expect(columns).toHaveLength(1);
     expect(columns[0].blocks).toEqual([]);
+  });
+
+  it("no longer unwraps a { content } envelope", () => {
+    // A `content` key is now a column's block list, not an envelope to strip.
+    const columns = normalizeColumns({ content: [] });
+    expect(columns).toHaveLength(1);
+    expect(columns[0].blocks).toEqual([]);
+  });
+});
+
+describe("Section build", () => {
+  it("takes root id and className from config, columns from content", () => {
+    const root = new SectionBuilder({ id: "demo-section", className: "demo" }).create({
+      content: [
+        { className: "column half", content: [{ title: "A" }] },
+        { className: "column half", content: [{ imageUrl: "x.png" }] },
+      ],
+    }) as HTMLElement;
+
+    expect(root.id).toBe("demo-section");
+    expect(root.classList.contains("demo")).toBe(true);
+    expect(root.querySelectorAll(".section-column")).toHaveLength(2);
+  });
+
+  it("renders no column wrapper for an empty payload", () => {
+    const root = new SectionBuilder().create({ content: [] }) as HTMLElement;
+    expect(root.querySelectorAll(".section-column")).toHaveLength(0);
   });
 });
 

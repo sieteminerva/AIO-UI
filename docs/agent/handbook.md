@@ -257,13 +257,19 @@ import { SectionBuilder } from "@aio-ui/section";
 
 const builder = new SectionBuilder(config);
 builder.create(payload);
-const { keys, hierarchy, html } = builder.inspect();
+const { keys, hierarchy, html, issues } = builder.inspect();
 
 // presence · shape · value · the negative
 console.assert(keys.length > 0);
 console.assert(Array.isArray(hierarchy[keys[0]].elements));
 console.assert(html.length > 0);
+console.assert(issues.length === 0);
 ```
+
+`issues` is the payload verdict from the builder's own `static contract`: each entry carries
+`code`, `path` (rooted at `content`), `expected`, `received`, `message` and `severity`. A `warning`
+keeps the value (an unknown field, a legacy spelling); an `error` means the shape is wrong. Read
+them before reading the markup — a wrong payload explains the missing nodes.
 
 ### What a pass is allowed to claim
 
@@ -310,10 +316,10 @@ equal ids mean "same seed", not "same content".
 
 Stated so you do not assume automation that does not exist yet:
 
-| Gap                                  | Today                                                                 | Planned                                      |
-| ------------------------------------ | --------------------------------------------------------------------- | -------------------------------------------- |
-| Per-component payload **schema**     | `catalogue.json` (what the README says) + `inspect()` (what it built) | `static input` contracts validated in `base` |
-| Palette / payload validator as a CLI | the generator's `plan()` + `parsePreset()`, inside the repo           | `check-preset` CLI printing coded issues     |
-| Runtime error codes                  | prose messages (`module was not preloaded`)                           | `AIOP_nnn` codes with one table              |
+| Gap                                  | Today                                                                 | Planned                                  |
+| ------------------------------------ | --------------------------------------------------------------------- | ---------------------------------------- |
+| Per-component payload **schema**     | `static contract` per builder, reported by `inspect().issues` (0.2.4) | `describe()` into `catalogue.json`       |
+| Palette / payload validator as a CLI | the generator's `plan()` + `parsePreset()`, inside the repo           | `check-preset` CLI printing coded issues |
+| Runtime error codes                  | prose messages (`module was not preloaded`)                           | `AIOP_nnn` codes with one table          |
 
 Until those land, a payload mistake costs a render cycle rather than a validator run. Budget for it.

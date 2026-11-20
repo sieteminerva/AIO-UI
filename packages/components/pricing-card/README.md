@@ -4,6 +4,12 @@ PricingCard renders one card per record: a header with a divider, a feature list
 action button. Because it is a card **group**, its root is a `div.row` and each card is wrapped in a
 `div.column` — the grid comes from the host layout.
 
+**The builder is an element factory.** It assembles the markup below, and `PricingCard.css` only
+targets those classes and tokens. The CSS therefore behaves like a plain CSS library: the same
+nesting and class names written by hand are styled identically. Customise it by overriding a
+selector, or retheme it without touching markup by redeclaring a `--app-*` token on an ancestor
+(or one `--pricing-card-*` token for this component only).
+
 ## Payload
 
 ```ts
@@ -52,6 +58,29 @@ explicit `featured: true`) makes the action button `primary`. `action.label` (or
 button copy — the default is `Pilih`. A record may also carry `onClick`, which is bound to that
 card's own button. A card without a `price` renders no price line, divider-bottom or action;
 `price: 0` counts as a price (a free tier).
+
+### Structure
+
+The grid belongs to the host: the root is `div.row` and each card sits in its own `div.column`.
+
+```html
+<div class="row">
+  <div class="column">
+    <div class="card pricing">
+      <div class="header"><span>Basic</span></div>
+      <hr class="divider" />
+      <div class="body">
+        <ul class="features">
+          <li class="item">1 project</li>
+        </ul>
+      </div>
+      <div class="item price-tag"><strong>Rp250.000</strong></div>
+      <hr class="divider" />
+      <div class="actions"><button class="button">…</button></div>
+    </div>
+  </div>
+</div>
+```
 
 ## Tokens
 

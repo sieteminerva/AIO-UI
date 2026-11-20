@@ -3,6 +3,12 @@
 A stack of native `<details>` disclosures, one per payload entry. Because the disclosure is the
 browser's own element, open/close, keyboard support and find-in-page keep working without script.
 
+**The builder is an element factory.** It assembles the markup below, and `Accordion.css` only
+targets those classes and tokens. The CSS therefore behaves like a plain CSS library: the same
+nesting and class names written by hand are styled identically. Customise it by overriding a
+selector, or retheme it without touching markup by redeclaring a `--app-*` token on an ancestor
+(or one `--accordion-*` token for this component only).
+
 ## Payload
 
 ```ts
@@ -50,27 +56,42 @@ one bordered list where only one row is open at a time.
 | `@accordion>section>title`   | `summary`   | the clickable row     |
 | `@accordion>section>content` | `div`       | `content`             |
 
+### Structure
+
+The `<details>` element is the whole disclosure: no script, no extra wrapper.
+
+```html
+<div class="accordion">
+  <details>
+    <summary>Shipping</summary>
+    <div class="content">
+      <p class="desc">Delivered in two working days.</p>
+    </div>
+  </details>
+</div>
+```
+
 ## Tokens
 
 Declared once on `:root, [data-theme]` in `Accordion.css`. Each derives from an app token with a
 literal fallback, so a theme retunes the app token and this sheet follows; redeclare a
 `--accordion-*` token on an ancestor to retheme this component alone.
 
-| Token                       | Derives from                     | Used for                   |
-| --------------------------- | -------------------------------- | -------------------------- |
-| `--accordion-background`    | `--app-surface-background-color` | Panel surface              |
-| `--accordion-border-color`  | `--app-border-color`             | Resting hairline           |
-| `--accordion-border-focus`  | `--app-border-focus`             | Hairline of an open panel  |
-| `--accordion-radius`        | `--app-component-border-radius`  | Panel corner radius        |
-| `--accordion-shadow`        | `--app-shadow-soft`              | Resting shadow             |
-| `--accordion-shadow-open`   | `--app-shadow-elevated`          | Shadow of an open panel    |
-| `--accordion-accent-color`  | `--app-primary-color`            | Hover hairline, `+` marker |
-| `--accordion-label-color`   | `--app-text-heading-color`       | Summary text               |
-| `--accordion-text-color`    | `--app-text-accent-color`        | Panel body text            |
-| `--accordion-font-size`     | `--app-font-size-base`           | Summary and body size      |
-| `--accordion-anim-duration` | literal (component-private)      | Open/close transition time |
-| `--accordion-anim-easing`   | literal (component-private)      | Open/close easing curve    |
-| `--accordion-fade-duration` | literal (component-private)      | Opacity transition time    |
+| Token                       | Derives from                      | Used for                   |
+| --------------------------- | --------------------------------- | -------------------------- |
+| `--accordion-background`    | `--app-surface-background-color`  | Panel surface              |
+| `--accordion-border-color`  | `--app-border-color`              | Resting hairline           |
+| `--accordion-border-focus`  | `--app-border-focus`              | Hairline of an open panel  |
+| `--accordion-radius`        | `--app-component-border-radius`   | Panel corner radius        |
+| `--accordion-shadow`        | `--app-shadow-soft`               | Resting shadow             |
+| `--accordion-shadow-open`   | `--app-shadow-elevated`           | Shadow of an open panel    |
+| `--accordion-accent-color`  | `--app-primary-color`             | Hover hairline, `+` marker |
+| `--accordion-label-color`   | `--app-text-heading-color`        | Summary text               |
+| `--accordion-text-color`    | `--app-text-accent-color`         | Panel body text            |
+| `--accordion-font-size`     | `--app-font-size-base`            | Summary and body size      |
+| `--accordion-anim-duration` | literal (component-private)       | Open/close transition time |
+| `--accordion-anim-easing`   | literal (component-private)       | Open/close easing curve    |
+| `--accordion-fade-duration` | literal (component-private)       | Opacity transition time    |
 | `--accordion-icon-arrow`    | global `arrow.left` SVG (literal) | Compact marker mask        |
 
 ## Wiring checklist

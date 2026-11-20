@@ -7,6 +7,10 @@ config.
 The component ships **no stylesheet** (`stylesheet: ""`), so the shapes need host CSS. It also does
 not declare a token layer, because it has no sheet to declare one in.
 
+**The builder is an element factory.** It ships **no stylesheet**, so `Rating.css` does not exist:
+the class names below are the styling contract and the host CSS targets them like any other CSS
+library markup. Override a selector, or retheme by redeclaring a `--app-*` token on an ancestor.
+
 ## Payload
 
 ```ts
@@ -45,6 +49,24 @@ glyph comes from CSS `content`, not from the component.
 
 `track` + `fill` are emitted for `line-bar` and `round-bar`; `stars-group` + `stars-item` for
 `star`; the label is always present.
+
+### Structure
+
+Shown with `type: "star"`. Every shape shares `div.rating-widget-wrapper > div.rating-core-display`;
+the star branch adds `div.stars-row` with exactly `config.max` spans.
+
+```html
+<div class="rating-widget-wrapper type-star">
+  <div class="rating-core-display">
+    <div class="stars-row">
+      <span class="star-icon star-full"></span>
+      <span class="star-icon star-half"></span>
+      <span class="star-icon"></span>
+    </div>
+    <span class="rating-numerical-label">4.5 / 5</span>
+  </div>
+</div>
+```
 
 ## Tokens
 

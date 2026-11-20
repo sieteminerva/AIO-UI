@@ -8,6 +8,12 @@ Closing is either a full teardown (`destroyOnClose: true`, the default) or a hid
 button and a backdrop click are wired through stored references, so `destroy()` removes exactly the
 listeners it added.
 
+**The builder is an element factory.** It assembles the markup below, and `Modal.css` only targets
+those classes and tokens. The CSS therefore behaves like a plain CSS library: the same nesting and
+class names written by hand are styled identically. Customise it by overriding a selector, or
+retheme it without touching markup by redeclaring a `--app-*` token on an ancestor (or one
+`--modal-*` token for this component only).
+
 ## Payload
 
 An `HTMLElement`, an HTML string, or a node-shaped object — whatever `_compileContent` accepts. A
@@ -47,6 +53,22 @@ refuse to pretend the modal still works.
 
 The body is appended by the builder, not by a declared key: the compiled payload element gets the
 `body` class.
+
+### Structure
+
+The overlay starts hidden; `config.title` fills `h2.title`, independently of the body payload.
+
+```html
+<div id="modal-default" class="dialog hidden">
+  <div class="modal">
+    <div class="header">
+      <h2 class="title">Notification</h2>
+      <div class="close">…</div>
+    </div>
+    <p class="body">Hello from the modal body.</p>
+  </div>
+</div>
+```
 
 ## Tokens
 

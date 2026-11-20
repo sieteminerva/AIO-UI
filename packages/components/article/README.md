@@ -7,6 +7,12 @@ Choosing a record is an **intent**, never a URL write — `navigate(slug)` is ca
 decides what a slug means. That is what lets a deep link, a modal preview and an iframe share one
 component.
 
+**The builder is an element factory.** It assembles the markup below, and `Article.css` only
+targets those classes and tokens. The CSS therefore behaves like a plain CSS library: the same
+nesting and class names written by hand are styled identically. Customise it by overriding a
+selector, or retheme it without touching markup by redeclaring a `--app-*` token on an ancestor
+(or one `--article-*` token for this component only).
+
 ## Payload
 
 ```ts
@@ -60,6 +66,38 @@ URL).
 | `@article>detail`                   | `article`   | `detail`     |
 | `@article>detail>header`            | `header`    | `header`     |
 | `@article>detail>body`              | `div`       | `body`       |
+
+### Structure
+
+Every part is optional (`config.views` picks which render). Cards carry `data-article-id`, never
+the record itself.
+
+```html
+<section class="article">
+  <div class="controls">
+    <button class="back"><i class="icon arrow left"></i></button>
+    <div class="pagination"></div>
+  </div>
+  <div class="row">
+    <article class="item">
+      <header class="item">
+        <h3 class="title">First article</h3>
+        <div class="meta"><span class="date">2026-11-21</span></div>
+      </header>
+      <p class="caption">…</p>
+    </article>
+  </div>
+  <aside class="aside">
+    <button class="title">…</button>
+    <div class="block recommendations">
+      <a class="item">
+        <figure class="media"><img /></figure>
+        <header class="item"><h3 class="title">…</h3></header>
+      </a>
+    </div>
+  </aside>
+</section>
+```
 
 ## Tokens
 

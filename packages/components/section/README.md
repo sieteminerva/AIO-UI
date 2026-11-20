@@ -5,6 +5,12 @@ description → actions. The column count is decided by CSS, not by the payload:
 `auto-fit`s as many 18rem tracks as fit, and collapses to one column under `768px` with
 the image spanning the full row.
 
+**The builder is an element factory.** It assembles the markup below, and `Section.css` only
+targets those classes and tokens. The CSS therefore behaves like a plain CSS library: the same
+nesting and class names written by hand are styled identically. Customise it by overriding a
+selector, or retheme it without touching markup by redeclaring a `--app-*` token on an ancestor
+(or one `--section-*` token for this component only).
+
 ## Payload
 
 The payload **is** the column list — `content` appears only in the node wrapper. A column owns its
@@ -57,6 +63,21 @@ The second CTA is styled as secondary (outline) automatically.
 | `@section>content>desc`         | `p`       | `section-desc`    |
 | `@section>content>actions`      | `div`     | `section-actions` |
 | `@section>content>actions>item` | `a`       | `section-cta`     |
+
+### Structure
+
+One `div.section-column` per column, and one block per item in its `blocks` list. A column class
+is copied verbatim (`hero` below). Optional parts are not appended.
+
+```html
+<section class="section">
+  <div class="section-column hero">
+    <div class="section-eyebrow">New</div>
+    <h2 class="section-title">Built for teams</h2>
+    <p class="section-desc">…</p>
+  </div>
+</section>
+```
 
 ## Tokens
 

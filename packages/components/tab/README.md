@@ -4,20 +4,26 @@ A tab strip plus panels, with the strip placeable on any side of the body and pa
 Each payload entry becomes one button and one panel; the panel body reads `eyebrow`, `title` and
 `description` from that same entry.
 
+**The builder is an element factory.** It assembles the markup below, and `Tab.css` only targets
+those classes and tokens. The CSS therefore behaves like a plain CSS library: the same nesting and
+class names written by hand are styled identically. Customise it by overriding a selector, or
+retheme it without touching markup by redeclaring a `--app-*` token on an ancestor (or one
+`--tab-*` token for this component only).
+
 ## Payload
 
 ```ts
-[
-  {
-    label: "…", // button caption (also the button title)
-    eyebrow: "…", // optional kicker inside the panel
-    title: "…",
-    description: "…",
-    id: "…", // optional panel id
-    className: "…", // optional extra panel class
-  },
-];
+{
+  menu: [{ label: "Overview", title: "Overview" }],
+  body: [{ panel: { eyebrow: "…", title: "…", description: "…" } }],
+  footer: { text: "…" },
+}
 ```
+
+`menu` and `body` are parallel lists: entry _n_ of the body pairs with button _n_ of the menu.
+`body` is the only required key (a missing one falls back to `[]`). A `menu` entry may be an
+`iBasicNode`, a body item may be an `HTMLElement`, and `footer` may be an element or
+`{ id?, className?, text }`.
 
 ## Config
 
@@ -67,6 +73,31 @@ sets `--tab-anim-in` / `--tab-anim-out` to the keyframe names it carries.
 | `@tab>panel>content>desc`    | `p`         | `desc`               |
 | `@tab>footer`                | `div`       | `footer`             |
 | `@tab>spinner`               | `div`       | `spinner hidden`     |
+
+### Structure
+
+A button per menu entry, a panel per body entry. `spinner` is present while the sheet lands;
+panels are `hidden` until activated, and a lazily built panel only exists after its first open.
+
+```html
+<div class="tab">
+  <div class="spinner"></div>
+  <div class="menu" role="tablist">
+    <button class="button active" role="tab">
+      <span class="btn-label">Overview</span>
+      <span class="btn-title"></span>
+    </button>
+  </div>
+  <div class="body">
+    <div class="panel" role="tabpanel">
+      <div class="content">
+        <h3 class="title">Overview</h3>
+        <p class="desc">…</p>
+      </div>
+    </div>
+  </div>
+</div>
+```
 
 ## Tokens
 

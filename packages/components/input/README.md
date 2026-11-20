@@ -12,6 +12,12 @@ and disposes on teardown.
 
 <!-- part: id=payload -->
 
+**The builder is an element factory.** It assembles the markup below, and `input.css` only targets
+those classes and tokens. The CSS therefore behaves like a plain CSS library: the same nesting and
+class names written by hand are styled identically. Customise it by overriding a selector, or
+retheme it without touching markup by redeclaring a `--app-*` token on an ancestor (or one
+`--input-*` token for this component only). Nothing here is scoped under `.form`.
+
 ## Payload
 
 ```ts
@@ -154,6 +160,18 @@ pins the sentences.
 | `@field>info`     | `small`     | `info`                                        |
 
 <!-- part: id=tokens role=contract -->
+
+### Structure
+
+The control element follows `type`; `label`, the control and the `small.info` line are appended
+only when the payload supplies them, and action buttons add `div.controls`.
+
+```html
+<div class="field">
+  <label>Email address</label>
+  <input id="email" type="text" placeholder="you@example.com" />
+</div>
+```
 
 ## Tokens
 

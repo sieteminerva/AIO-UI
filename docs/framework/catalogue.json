@@ -6,7 +6,7 @@
     "accordion": {
       "package": "@aio-ui/accordion",
       "title": "Accordion",
-      "lead": "A stack of native `<details>` disclosures, one per payload entry. Because the disclosure is the\nbrowser's own element, open/close, keyboard support and find-in-page keep working without script.",
+      "lead": "A stack of native `<details>` disclosures, one per payload entry. Because the disclosure is the\nbrowser's own element, open/close, keyboard support and find-in-page keep working without script.\n\n**The builder is an element factory.** It assembles the markup below, and `Accordion.css` only\ntargets those classes and tokens. The CSS therefore behaves like a plain CSS library: the same\nnesting and class names written by hand are styled identically. Customise it by overriding a\nselector, or retheme it without touching markup by redeclaring a `--app-*` token on an ancestor\n(or one `--accordion-*` token for this component only).",
       "sections": {
         "Payload": {
           "text": "A single object is accepted too (it is wrapped into a one-entry list). Each entry becomes one\n`@accordion>section`; `title` fills the `summary`, `description` fills the `.content`. A record\nmissing either field is labelled `Untitled Header` / `Untitled Content`; nullish entries are dropped\nso they never render an empty row.",
@@ -85,8 +85,13 @@
           ]
         },
         "Nodes": {
-          "text": "",
-          "examples": [],
+          "text": "### Structure\n\nThe `<details>` element is the whole disclosure: no script, no extra wrapper.",
+          "examples": [
+            {
+              "lang": "html",
+              "code": "<div class=\"accordion\">\n  <details>\n    <summary>Shipping</summary>\n    <div class=\"content\">\n      <p class=\"desc\">Delivered in two working days.</p>\n    </div>\n  </details>\n</div>"
+            }
+          ],
           "tables": [
             {
               "columns": [
@@ -214,7 +219,7 @@
     "article": {
       "package": "@aio-ui/article",
       "title": "Article",
-      "lead": "Article is a composition, not a widget: list, detail, aside, controls and pagination are all\nrendered from one record array, and the order they appear in is the order they render.\n\nChoosing a record is an **intent**, never a URL write — `navigate(slug)` is called and the host\ndecides what a slug means. That is what lets a deep link, a modal preview and an iframe share one\ncomponent.",
+      "lead": "Article is a composition, not a widget: list, detail, aside, controls and pagination are all\nrendered from one record array, and the order they appear in is the order they render.\n\nChoosing a record is an **intent**, never a URL write — `navigate(slug)` is called and the host\ndecides what a slug means. That is what lets a deep link, a modal preview and an iframe share one\ncomponent.\n\n**The builder is an element factory.** It assembles the markup below, and `Article.css` only\ntargets those classes and tokens. The CSS therefore behaves like a plain CSS library: the same\nnesting and class names written by hand are styled identically. Customise it by overriding a\nselector, or retheme it without touching markup by redeclaring a `--app-*` token on an ancestor\n(or one `--article-*` token for this component only).",
       "sections": {
         "Payload": {
           "text": "The server envelope (`{ data: [...] }`) is the accepted shape. Records stay in memory; the DOM only\ncarries `data-article-id` (a cloned node would otherwise lose a `_payload` field), so a click is\nresolved against the stored array.",
@@ -287,8 +292,13 @@
           ]
         },
         "Nodes": {
-          "text": "",
-          "examples": [],
+          "text": "### Structure\n\nEvery part is optional (`config.views` picks which render). Cards carry `data-article-id`, never\nthe record itself.",
+          "examples": [
+            {
+              "lang": "html",
+              "code": "<section class=\"article\">\n  <div class=\"controls\">\n    <button class=\"back\"><i class=\"icon arrow left\"></i></button>\n    <div class=\"pagination\"></div>\n  </div>\n  <div class=\"row\">\n    <article class=\"item\">\n      <header class=\"item\">\n        <h3 class=\"title\">First article</h3>\n        <div class=\"meta\"><span class=\"date\">2026-11-21</span></div>\n      </header>\n      <p class=\"caption\">…</p>\n    </article>\n  </div>\n  <aside class=\"aside\">\n    <button class=\"title\">…</button>\n    <div class=\"block recommendations\">\n      <a class=\"item\">\n        <figure class=\"media\"><img /></figure>\n        <header class=\"item\"><h3 class=\"title\">…</h3></header>\n      </a>\n    </div>\n  </aside>\n</section>"
+            }
+          ],
           "tables": [
             {
               "columns": [
@@ -411,7 +421,7 @@
     "badge": {
       "package": "@aio-ui/badge",
       "title": "Badge",
-      "lead": "A stacked list of label/description pairs rendered as self-contained cards. It is the smallest\ncard surface in the library: no interaction, no state, only a container that turns its payload\ninto rows.",
+      "lead": "A stacked list of label/description pairs rendered as self-contained cards. It is the smallest\ncard surface in the library: no interaction, no state, only a container that turns its payload\ninto rows.\n\n**The builder is an element factory.** It assembles the markup below, and `Badge.css` only\ntargets those classes and tokens. The CSS therefore behaves like a plain CSS library: the same\nnesting and class names written by hand are styled identically. Customise it by overriding a\nselector, or retheme it without touching markup by redeclaring a `--app-*` token on an ancestor\n(or one `--badge-*` token for this component only).",
       "sections": {
         "Payload": {
           "text": "The payload **is** the item list — `content` appears only in the node wrapper, never here.\n\nAccepted shapes: `[...]`, `{ items: [...] }`, a single record, or nothing. `normalizePayload()`\nis the only place that decides this.",
@@ -449,8 +459,13 @@
           ]
         },
         "Nodes": {
-          "text": "",
-          "examples": [],
+          "text": "### Structure\n\nOne `@badge>item` per record; `label` and `description` are optional and an absent one is not\nappended at all.",
+          "examples": [
+            {
+              "lang": "html",
+              "code": "<div class=\"badge-widget\">\n  <div class=\"badge\">\n    <div class=\"badge-item\">\n      <span class=\"badge-label\">New</span>\n      <p class=\"badge-desc\">This week</p>\n    </div>\n  </div>\n</div>"
+            }
+          ],
           "tables": [
             {
               "columns": [
@@ -558,7 +573,7 @@
     "carousel": {
       "package": "@aio-ui/carousel",
       "title": "Carousel",
-      "lead": "Carousel turns an array of slides into a track plus controls and navigation dots, with four\ntransitions (`fade`, `slide-left`, `slide-right`, `slide-up`, `slide-down`) and optional autoplay.\n\nIt owns a timer, so `unmount()` matters: it clears the interval and the button/dot handlers, and\n`prepare()` calls it first so re-rendering the same instance never doubles a timer.",
+      "lead": "Carousel turns an array of slides into a track plus controls and navigation dots, with four\ntransitions (`fade`, `slide-left`, `slide-right`, `slide-up`, `slide-down`) and optional autoplay.\n\nIt owns a timer, so `unmount()` matters: it clears the interval and the button/dot handlers, and\n`prepare()` calls it first so re-rendering the same instance never doubles a timer.\n\n**The builder is an element factory.** It assembles the markup below, and `Carousel.css` only\ntargets those classes and tokens. The CSS therefore behaves like a plain CSS library: the same\nnesting and class names written by hand are styled identically. Customise it by overriding a\nselector, or retheme it without touching markup by redeclaring a `--app-*` token on an ancestor\n(or one `--carousel-*` token for this component only).",
       "sections": {
         "Payload": {
           "text": "An array of slides. The same object may carry `attrs` / `config` to override instance options from\ndata (see `AttrsConfigMap`), which is how spreadsheet-driven content can set a carousel up without a\ncode change.",
@@ -646,8 +661,13 @@
           ]
         },
         "Nodes": {
-          "text": "",
-          "examples": [],
+          "text": "### Structure\n\nThe root carries the resolved state (`anim-*`, `auto-controls`, `orient-*`); `active` moves with\nthe index.",
+          "examples": [
+            {
+              "lang": "html",
+              "code": "<div class=\"carousel anim-fade auto-controls orient-horizontal\" role=\"region\">\n  <div class=\"track\">\n    <div class=\"slide active\" role=\"group\">\n      <div class=\"slide-inner\">\n        <img class=\"img-fluid\" src=\"first.png\" alt=\"\" />\n        <div class=\"caption\"><h3 class=\"title\">First</h3></div>\n      </div>\n    </div>\n    <div class=\"slide\" role=\"group\">…</div>\n  </div>\n  <div class=\"control-group\">\n    <button class=\"control prev\">‹</button>\n    <button class=\"control next\">›</button>\n  </div>\n  <div class=\"navigations horizontal-dots\" role=\"group\">\n    <button class=\"dot active\"></button>\n    <button class=\"dot\"></button>\n  </div>\n</div>"
+            }
+          ],
           "tables": [
             {
               "columns": [
@@ -760,7 +780,7 @@
     "code-block": {
       "package": "@aio-ui/code-block",
       "title": "Code Block",
-      "lead": "One or more dark \"paper\" panels holding source text: an optional caption, then `pre > code`.\nThe source is written with `textContent`, so a snippet that contains markup is printed and never\nparsed.",
+      "lead": "One or more dark \"paper\" panels holding source text: an optional caption, then `pre > code`.\nThe source is written with `textContent`, so a snippet that contains markup is printed and never\nparsed.\n\n**The builder is an element factory.** It assembles the markup below, and `CodeBlock.css` only\ntargets those classes and tokens. The CSS therefore behaves like a plain CSS library: the same\nnesting and class names written by hand are styled identically. Customise it by overriding a\nselector, or retheme it without touching markup by redeclaring a `--app-*` token on an ancestor\n(or one `--code-block-*` token for this component only).",
       "sections": {
         "Payload": {
           "text": "Accepted shapes:\n\n`normalizePayload()` is the only place that decides this, and it is exported so the contract is\ntestable without a DOM. `language` is written to `data-language` on the `pre`; this sheet does\nnot highlight anything, it only reserves the hook a highlighter would use.",
@@ -871,8 +891,13 @@
           ]
         },
         "Nodes": {
-          "text": "",
-          "examples": [],
+          "text": "### Structure\n\nOne `figure` per block; `figcaption` is omitted when there is no label.",
+          "examples": [
+            {
+              "lang": "html",
+              "code": "<section class=\"code-block\">\n  <figure class=\"frame\">\n    <figcaption class=\"label\">ts · mount</figcaption>\n    <pre class=\"paper\"><code class=\"body\">const app = new AioApp({ container: \"#app\" });</code></pre>\n  </figure>\n</section>"
+            }
+          ],
           "tables": [
             {
               "columns": [
@@ -1060,7 +1085,7 @@
     "fab-menu": {
       "package": "@aio-ui/fab-menu",
       "title": "FabMenu",
-      "lead": "FabMenu is the floating action button: a trigger in a viewport corner that opens a panel of\nlabelled options. It closes on selection (configurable), on a second trigger press, and after an\nidle `duration` with no interaction.\n\nThe sheet positions it `fixed` with a very large `z-index`, so a host that needs it contained (a\npreview frame, a split pane) must override both — the demo does exactly that for its Display panel.",
+      "lead": "FabMenu is the floating action button: a trigger in a viewport corner that opens a panel of\nlabelled options. It closes on selection (configurable), on a second trigger press, and after an\nidle `duration` with no interaction.\n\nThe sheet positions it `fixed` with a very large `z-index`, so a host that needs it contained (a\npreview frame, a split pane) must override both — the demo does exactly that for its Display panel.\n\n**The builder is an element factory.** It assembles the markup below, and `FabMenu.css` only\ntargets those classes and tokens. The CSS therefore behaves like a plain CSS library: the same\nnesting and class names written by hand are styled identically. Customise it by overriding a\nselector, or retheme it without touching markup by redeclaring a `--app-*` token on an ancestor\n(or one `--fab-menu-*` token for this component only).",
       "sections": {
         "Payload": {
           "text": "`title` is uppercased by the component; `actions` become `button` elements whose `label`, `id` and\n`type` come straight from the record. An option without a label prints `Option`.\n\n### Element payload\n\nAn entry in `actions` may be an **`HTMLElement`**: it is mounted as-is, untouched, instead of an\noption button. The payload itself may be an element too — the panel then holds just that element and\ngets no title.\n\nThis is the same contract as `tab` (`body`), `form` (`inputs`) and `modal` (content): the fab stops\nbeing only a list of destinations and can host a real control surface — the demo docks its colour\ngenerator there, so theme style, mode and colour live in one place.",
@@ -1127,8 +1152,13 @@
           ]
         },
         "Nodes": {
-          "text": "",
-          "examples": [],
+          "text": "### Structure\n\n`div.fab` is `position: fixed`; a host that needs it contained overrides that and `z-index`.",
+          "examples": [
+            {
+              "lang": "html",
+              "code": "<div class=\"fab bottom-left\">\n  <div class=\"panel\">\n    <span class=\"title\">MENU</span>\n    <button id=\"wa\" class=\"item option\">WhatsApp</button>\n  </div>\n  <button class=\"trigger\">…</button>\n</div>"
+            }
+          ],
           "tables": [
             {
               "columns": [
@@ -1181,14 +1211,14 @@
     "footer": {
       "package": "@aio-ui/footer",
       "title": "Footer",
-      "lead": "A two-row page footer: an auto-fitted grid of link columns, then a copyright line separated by a\nhairline. The column count is not configured — `auto-fit` fits as many ~14rem columns as the width\nallows and wraps the rest.",
+      "lead": "A two-row page footer: an auto-fitted grid of link columns, then a copyright line separated by a\nhairline. The column count is not configured — `auto-fit` fits as many ~14rem columns as the width\nallows and wraps the rest.\n\n**The builder is an element factory.** It assembles the markup below, and `Footer.css` only\ntargets those classes and tokens. The CSS therefore behaves like a plain CSS library: the same\nnesting and class names written by hand are styled identically. Customise it by overriding a\nselector, or retheme it without touching markup by redeclaring a `--app-*` token on an ancestor\n(or one `--footer-*` token for this component only).",
       "sections": {
         "Payload": {
-          "text": "An entry may also be a plain string, which becomes a single-column block. `header` falls back to\n`title`, and a list entry uses `href` or `value` as its link target.",
+          "text": "A footer without `columns[]` falls back to the flat shape (`title`, `description`, `actions`), so a\nsingle-column payload needs no array of one. `copyright` accepts `{year}` and `{company}`\nplaceholders; `company` is the flat fallback for the company name.",
           "examples": [
             {
               "lang": "ts",
-              "code": "{\n  columns: [\n    {\n      header: \"…\",\n      description: \"…\",\n      list: [{ value: \"…\", href: \"#…\" }],\n    },\n  ];\n  copyright: \"…\";\n}"
+              "code": "{\n  columns: [\n    {\n      title: \"Product\",\n      description: \"Built for teams\",\n      actions: [{ label: \"Docs\", href: \"#docs\" }],\n    },\n  ],\n  copyright: \"© 2026 AIO\",\n}"
             }
           ],
           "tables": []
@@ -1229,8 +1259,13 @@
           ]
         },
         "Nodes": {
-          "text": "",
-          "examples": [],
+          "text": "### Structure\n\nOptional parts are not appended, so a column may hold only a title, only actions, or both.",
+          "examples": [
+            {
+              "lang": "html",
+              "code": "<footer class=\"footer\">\n  <div class=\"row\">\n    <div class=\"column\">\n      <h2 class=\"header\">Product</h2>\n      <p class=\"desc\">Built for teams</p>\n      <ul class=\"unstyled-list\">\n        <li class=\"item\"><a href=\"#docs\">Docs</a></li>\n      </ul>\n    </div>\n  </div>\n  <div class=\"row bottom\">\n    <p>© 2026 AIO</p>\n  </div>\n</footer>"
+            }
+          ],
           "tables": [
             {
               "columns": [
@@ -1353,7 +1388,7 @@
     "form": {
       "package": "@aio-ui/form",
       "title": "Form",
-      "lead": "Form renders a schema of groups and fields into a real `form`, and owns the parts a plain form does\nnot: multi-step gating, cascading (conditional) fields, live calculation, validation messages, and\nthe submit payload.\n\nFields themselves are components. The form builds the layout and calls the field adapters, so a\nfield's look still belongs to `@aio-ui/input`; the form only positions it.\n\n<!-- part: id=payload -->",
+      "lead": "Form renders a schema of groups and fields into a real `form`, and owns the parts a plain form does\nnot: multi-step gating, cascading (conditional) fields, live calculation, validation messages, and\nthe submit payload.\n\nFields themselves are components. The form builds the layout and calls the field adapters, so a\nfield's look still belongs to `@aio-ui/input`; the form only positions it.\n\n<!-- part: id=payload -->\n\n**The builder is an element factory.** It assembles the markup below, and `Form.css` only targets\nthose classes and tokens. The CSS therefore behaves like a plain CSS library: the same nesting and\nclass names written by hand are styled identically. Customise it by overriding a selector, or\nretheme it without touching markup by redeclaring a `--app-*` token on an ancestor (or one\n`--form-*` token for this component only). A field's own markup belongs to `@aio-ui/input`.",
       "sections": {
         "Payload": {
           "text": "An array of groups, each with an optional `group` array of field nodes (or nested rows). The shape of\na field node is the input package's contract, not this one.\n\n<!-- part: id=group-row-keys -->\n\n### Group and row keys\n\nA field's own keys (`type`, `id`, `title`, `placeholder`, `editable`, `condition`,\n`config.wide`, `config.csv`, …) belong to `@aio-ui/input`; `config.wide` (`50` = half,\n`\"auto\"` = full row) is only read by the form when it lays a row out.\n\n<!-- part: id=config role=contract -->",
@@ -1591,8 +1626,13 @@
           "tables": []
         },
         "Nodes": {
-          "text": "<!-- part: id=tokens role=contract -->",
-          "examples": [],
+          "text": "<!-- part: id=tokens role=contract -->\n\n### Structure\n\nOne `fieldset` per group; a row is a `div.row` and a field is the `@aio-ui/input` markup. The id\nis derived from config, never from the payload.",
+          "examples": [
+            {
+              "lang": "html",
+              "code": "<form id=\"form-…\" class=\"form native\">\n  <fieldset id=\"group-1\" class=\"form-group\">\n    <legend class=\"title\">Shipping</legend>\n    <div class=\"field\">\n      <label>Name</label>\n      <input id=\"name\" type=\"text\" />\n    </div>\n  </fieldset>\n  <button id=\"btn-form-…\" class=\"submit\"><i class=\"icon checkmark\"></i></button>\n</form>"
+            }
+          ],
           "tables": [
             {
               "columns": [
@@ -1690,7 +1730,7 @@
     "id-address": {
       "package": "@aio-ui/id-address",
       "title": "IdAddressBuilder (`@aio-ui/id-address`) — plugin",
-      "lead": "A **plugin**, not a builder. It renders no fields: it decorates the `[data-level]` controls a page or\n`@aio-ui/form` already rendered, and owns the cascade (propinsi → kota → kecamatan → kelurahan →\nkodepos), the reverse postal-code lookup and the optional geocode lookup. Adapters decide which\nparts of the markup are authoritative; in `headless` mode there is no markup at all and the host\ndrives `schema.select()` itself.\n\n<!-- part: id=payload -->",
+      "lead": "A **plugin**, not a builder. It renders no fields: it decorates the `[data-level]` controls a page or\n`@aio-ui/form` already rendered, and owns the cascade (propinsi → kota → kecamatan → kelurahan →\nkodepos), the reverse postal-code lookup and the optional geocode lookup. Adapters decide which\nparts of the markup are authoritative; in `headless` mode there is no markup at all and the host\ndrives `schema.select()` itself.\n\n<!-- part: id=payload -->\n\n**This package creates no markup.** It is a plugin that decorates the level controls a form or page\nalready rendered, so its styling contract is the small set of state classes it toggles. That makes\nit a plain CSS library by construction: any markup carrying the same wrappers and state classes is\nstyled identically, and the base field look stays with the component that rendered the field.",
       "sections": {
         "Payload": {
           "text": "The engine takes no `content` payload. Its input is the query it sends to a data source:\n\nA source resolves to rows shaped `{ <level>_id, <level>_name }`, for example\n`{ propinsi_id: 12, propinsi_name: \"Jawa Barat\" }`. Levels, in order: `propinsi` → `kota` →\n`kecamatan` → `kelurahan` → `kodepos`.\n\n### Schema node\n\nEach level is represented once, as `IdAddressSchemaRef`:\n\n<!-- part: id=config role=contract -->",
@@ -1868,8 +1908,13 @@
           ]
         },
         "Nodes": {
-          "text": "The plugin never creates a field; it decorates the markup it is given. The contract is one control\nper level inside `config.container`:\n\n`[data-level]` is **not** unique to the value carrier: a custom dropdown may mark the wrapper too,\nso the builder filters the elements it decorates instead of taking every match.\n\n`@aio-ui/core/Stylesheets` fetches `id-address.css` on `init()`, so a host only declares where the\nsheet can be found (its `styles` asset map) — nothing is injected twice.\n\n<!-- part: id=tokens role=contract -->",
-          "examples": [],
+          "text": "The plugin never creates a field; it decorates the markup it is given. The contract is one control\nper level inside `config.container`:\n\n`[data-level]` is **not** unique to the value carrier: a custom dropdown may mark the wrapper too,\nso the builder filters the elements it decorates instead of taking every match.\n\n`@aio-ui/core/Stylesheets` fetches `id-address.css` on `init()`, so a host only declares where the\nsheet can be found (its `styles` asset map) — nothing is injected twice.\n\n<!-- part: id=tokens role=contract -->\n\n### Structure\n\nNo elements are produced; the plugin expects one carrier per level inside `config.container`. The\nsame nesting written by hand works exactly the same way:\n\n`init()` adds `loading` and `error` to the `.field` wrapper of the level it is waiting on; nothing\nelse is stamped.",
+          "examples": [
+            {
+              "lang": "html",
+              "code": "<div class=\"field\" data-level=\"propinsi\">\n  <select data-level=\"propinsi\">\n    …\n  </select>\n</div>\n<div class=\"field\" data-level=\"kota\">\n  <select data-level=\"kota\">\n    …\n  </select>\n</div>"
+            }
+          ],
           "tables": [
             {
               "columns": [
@@ -2091,7 +2136,7 @@
     "input": {
       "package": "@aio-ui/input",
       "title": "Input",
-      "lead": "Input renders **one form field** — label, control, info line — and the shell around it\n(switch, file chip, action buttons, popover). A field is a field with or without a form\naround it, so nothing in this package is scoped under `.form`; rows, fieldsets and\nmultistep layout belong to `@aio-ui/form`.\n\nSub-modules extend the field without changing the builder: `dropdown` (select/search),\n`picker` (a grid of icons, swatches or images), `file-uploader`, `controls` (action buttons)\nand `popover`. Each one is an `iInputAdapter` that the builder resolves once per `prepare()`\nand disposes on teardown.\n\n<!-- part: id=payload -->",
+      "lead": "Input renders **one form field** — label, control, info line — and the shell around it\n(switch, file chip, action buttons, popover). A field is a field with or without a form\naround it, so nothing in this package is scoped under `.form`; rows, fieldsets and\nmultistep layout belong to `@aio-ui/form`.\n\nSub-modules extend the field without changing the builder: `dropdown` (select/search),\n`picker` (a grid of icons, swatches or images), `file-uploader`, `controls` (action buttons)\nand `popover`. Each one is an `iInputAdapter` that the builder resolves once per `prepare()`\nand disposes on teardown.\n\n<!-- part: id=payload -->\n\n**The builder is an element factory.** It assembles the markup below, and `input.css` only targets\nthose classes and tokens. The CSS therefore behaves like a plain CSS library: the same nesting and\nclass names written by hand are styled identically. Customise it by overriding a selector, or\nretheme it without touching markup by redeclaring a `--app-*` token on an ancestor (or one\n`--input-*` token for this component only). Nothing here is scoped under `.form`.",
       "sections": {
         "Payload": {
           "text": "The payload is a **single record** (`iBasicInputNode`), not a list. Useful fields:\n`value`, `rows`/`cols` (textarea), `step` (numeric increment, defaults to `\"any\"`),\n`multiple`, `disabled`, `readonly`, `editable` (skips the automatic read-only lock when\naction buttons are present), `info`, `position` (`top | left | right | bottom`),\n`dropdown` (forwarded to the dropdown module), `popover`, `onFileSelected`,\n`onValueChange` and `calculator` (calculation strategy for a readonly total).\n\n`useLabel`, `view`, `thumbnail`, `maxUpload`, `maxFileSize`, `groupUnallowed` and\n`createEventListener` are consumed by the file module.\n\n<!-- part: id=config role=contract -->",
@@ -2191,8 +2236,13 @@
           ]
         },
         "Nodes": {
-          "text": "<!-- part: id=tokens role=contract -->",
-          "examples": [],
+          "text": "<!-- part: id=tokens role=contract -->\n\n### Structure\n\nThe control element follows `type`; `label`, the control and the `small.info` line are appended\nonly when the payload supplies them, and action buttons add `div.controls`.",
+          "examples": [
+            {
+              "lang": "html",
+              "code": "<div class=\"field\">\n  <label>Email address</label>\n  <input id=\"email\" type=\"text\" placeholder=\"you@example.com\" />\n</div>"
+            }
+          ],
           "tables": [
             {
               "columns": [
@@ -2415,7 +2465,7 @@
     "markdown": {
       "package": "@aio-ui/markdown",
       "title": "Markdown",
-      "lead": "A Markdown document rendered as DOM. The parser is `./Markdown.engine.ts` — this package's own\nsubset with no dependency, and not a published subpath; the builder walks its AST and renders\ncomponent keys. Source text is written with `textContent` and text nodes, so a document\ncontaining `<script>` prints it instead of running it.\n\nFenced code is **not** restyled here: it renders the `code-block` markup\n(`figure > figcaption + pre > code`) and `Markdown.css` imports `CodeBlock.css`.",
+      "lead": "A Markdown document rendered as DOM. The parser is `./Markdown.engine.ts` — this package's own\nsubset with no dependency, and not a published subpath; the builder walks its AST and renders\ncomponent keys. Source text is written with `textContent` and text nodes, so a document\ncontaining `<script>` prints it instead of running it.\n\nFenced code is **not** restyled here: it renders the `code-block` markup\n(`figure > figcaption + pre > code`) and `Markdown.css` imports `CodeBlock.css`.\n\n**The builder is an element factory.** It assembles the markup below, and `Markdown.css` only\ntargets those classes and tokens. The CSS therefore behaves like a plain CSS library: the same\nnesting and class names written by hand are styled identically. Customise it by overriding a\nselector, or retheme it without touching markup by redeclaring a `--app-*` token on an ancestor\n(or one `--markdown-*` token for this component only).",
       "sections": {
         "Payload": {
           "text": "Anything else renders nothing — guessing at a document shape would print the wrong thing with\nconfidence.",
@@ -2628,8 +2678,13 @@
           ]
         },
         "Nodes": {
-          "text": "An `href` outside `https?:`, `mailto:`, `#`, `/` or `.` becomes `#` — a document may not turn a\nlink into a script URL.",
-          "examples": [],
+          "text": "An `href` outside `https?:`, `mailto:`, `#`, `/` or `.` becomes `#` — a document may not turn a\nlink into a script URL.\n\n### Structure\n\nEvery block owns a `markdown-<tag>` class; inline nodes use the same prefix. Fenced code renders\nthe `@aio-ui/code-block` markup.",
+          "examples": [
+            {
+              "lang": "html",
+              "code": "<article class=\"markdown\">\n  <h1 class=\"markdown-h1\">Title</h1>\n  <p class=\"markdown-p\">Some <strong class=\"markdown-strong\">text</strong>.</p>\n</article>"
+            }
+          ],
           "tables": [
             {
               "columns": [
@@ -2832,7 +2887,7 @@
     "masonry": {
       "package": "@aio-ui/masonry",
       "title": "Masonry",
-      "lead": "A cascading gallery: one grid whose column count comes from CSS, a category filter with a sliding\nhighlight, lazy images, batched paging and a keyboard-driven lightbox. `Masonry.css` ships with the\npackage and the registry injects it, so the markup below is the whole contract.",
+      "lead": "A cascading gallery: one grid whose column count comes from CSS, a category filter with a sliding\nhighlight, lazy images, batched paging and a keyboard-driven lightbox. `Masonry.css` ships with the\npackage and the registry injects it, so the markup below is the whole contract.\n\n**The builder is an element factory.** It assembles the markup below, and `Masonry.css` only\ntargets those classes and tokens. The CSS therefore behaves like a plain CSS library: the same\nnesting and class names written by hand are styled identically. Customise it by overriding a\nselector, or retheme it without touching markup by redeclaring a `--app-*` token on an ancestor\n(or one `--masonry-*` token for this component only).",
       "sections": {
         "Payload": {
           "text": "A bare array is wrapped into `{ items: […] }` automatically. The array itself is read from\n`items`; `content` appears only in the node wrapper. Each entry becomes one card; `category` feeds\nthe filter bar, and the filter list is derived from the data, never declared. Items may also be\npre-built `HTMLElement`s.",
@@ -2930,8 +2985,13 @@
           ]
         },
         "Nodes": {
-          "text": "",
-          "examples": [],
+          "text": "### Structure\n\nThe filter bar is derived from the items, never declared; `span.slider` is the highlight that\nmoves. One `figure.item` per visible card; a batch is appended as more pages load.",
+          "examples": [
+            {
+              "lang": "html",
+              "code": "<section class=\"masonry gallery\">\n  <nav class=\"filter menu\">\n    <button class=\"item active\">All</button>\n    <button class=\"item\">Branding</button>\n    <span class=\"slider\"></span>\n  </nav>\n  <div class=\"grid\">\n    <figure class=\"item is-fade-in\">\n      <img src=\"a.png\" loading=\"lazy\" />\n      <header class=\"caption\"><h3 class=\"title\">Project A</h3></header>\n    </figure>\n  </div>\n</section>"
+            }
+          ],
           "tables": [
             {
               "columns": [
@@ -3139,7 +3199,7 @@
     "menu": {
       "package": "@aio-ui/menu",
       "title": "Menu",
-      "lead": "One navigation bar, built from a flat link list. The list is split by convention — first entry is\nthe brand, an entry marked `button` (or a `tel:` link) is the call to action, the rest are links —\nso a spreadsheet row and a hand-written array produce the same bar.\n\n`position: \"top\"` renders a `<nav class=\"nav\">`; a `left` / `right` position wraps it in an\n`aside.sidebar` and turns the list into a column. The value is stamped on the bar as\n`data-position`, which is what the sheet reads.",
+      "lead": "One navigation bar, built from a flat link list. The list is split by convention — first entry is\nthe brand, an entry marked `button` (or a `tel:` link) is the call to action, the rest are links —\nso a spreadsheet row and a hand-written array produce the same bar.\n\n`position: \"top\"` renders a `<nav class=\"nav\">`; a `left` / `right` position wraps it in an\n`aside.sidebar` and turns the list into a column. The value is stamped on the bar as\n`data-position`, which is what the sheet reads.\n\n**The builder is an element factory.** It assembles the markup below, and `Menu.css` only targets\nthose classes and tokens. The CSS therefore behaves like a plain CSS library: the same nesting and\nclass names written by hand are styled identically. Customise it by overriding a selector, or\nretheme it without touching markup by redeclaring a `--app-*` token on an ancestor (or one\n`--menu-*` token for this component only).",
       "sections": {
         "Payload": {
           "text": "The payload is `{ navigations }` directly — the registry hands the builder the node's `content`, so\nthere is no `{ content }` envelope to unwrap. A single object is wrapped into a one-entry list.\n`content.actions` is optional and is appended to the actions group.\n\nThe split is `splitMenuContent()` in `Menu.engine.ts` — pure, exported from the package entry so the\nrule can be tested without a DOM. Only a **guessed** brand is removed from the list: when\n`content.brand` is given, every navigation stays a navigation.",
@@ -3278,8 +3338,13 @@
           ]
         },
         "Nodes": {
-          "text": "",
-          "examples": [],
+          "text": "### Structure\n\nBrand, hamburger, navigations and actions are four sibling groups; a link entry is `li.item > a`,\nthe action group holds `a.item` straight. `data-position` on the bar is what the sheet reads.",
+          "examples": [
+            {
+              "lang": "html",
+              "code": "<nav class=\"nav\" data-position=\"top\">\n  <div class=\"brand\"><a href=\"#home\">Brand</a></div>\n  <button class=\"hamburger-btn\" aria-controls=\"primary-navigations\">…</button>\n  <ul id=\"primary-navigations\" class=\"menus navigations\">\n    <li class=\"item\"><a href=\"#home\">Home</a></li>\n  </ul>\n  <div class=\"actions\">\n    <a href=\"tel:+620000\" class=\"button item\">Contact</a>\n  </div>\n</nav>"
+            }
+          ],
           "tables": [
             {
               "columns": [
@@ -3412,7 +3477,7 @@
     "message": {
       "package": "@aio-ui/message",
       "title": "Message",
-      "lead": "Message is the toast: one notification box prepended to a container, removed by a timer or by its\nclose button.\n\nIt follows a destroy-and-recreate rule — preparing a message with an id that already exists removes\nthe old element first — so one id can never stack two toasts. The close button only appears when the\ntoast persists (`duration: 0` or `persist: true`).",
+      "lead": "Message is the toast: one notification box prepended to a container, removed by a timer or by its\nclose button.\n\nIt follows a destroy-and-recreate rule — preparing a message with an id that already exists removes\nthe old element first — so one id can never stack two toasts. The close button only appears when the\ntoast persists (`duration: 0` or `persist: true`).\n\n**The builder is an element factory.** It assembles the markup below, and `Message.css` only\ntargets those classes and tokens. The CSS therefore behaves like a plain CSS library: the same\nnesting and class names written by hand are styled identically. Customise it by overriding a\nselector, or retheme it without touching markup by redeclaring a `--app-*` token on an ancestor\n(or one `--message-*` token for this component only).",
       "sections": {
         "Payload": {
           "text": "Everything is optional except `message`; `header` defaults to `Congrats!`, `type` to `info`, and\n`icon` to `bell icon`. `type` selects the colour set in `Message.css`.",
@@ -3475,8 +3540,13 @@
           ]
         },
         "Nodes": {
-          "text": "",
-          "examples": [],
+          "text": "### Structure\n\nThe toast is prepended to its container; `type` is a class so the sheet owns the colour set.",
+          "examples": [
+            {
+              "lang": "html",
+              "code": "<div id=\"global-status-message\" class=\"toast visible success icon\">\n  <i class=\"bell icon\"></i>\n  <div class=\"content\">\n    <h2 class=\"header\">Saved</h2>\n    <p class=\"message\">Your changes are stored.</p>\n  </div>\n</div>"
+            }
+          ],
           "tables": [
             {
               "columns": [
@@ -3534,7 +3604,7 @@
     "modal": {
       "package": "@aio-ui/modal",
       "title": "Modal",
-      "lead": "Modal renders a hidden overlay (`.dialog.hidden`) holding a header and a body, and hands the caller\nthe handles to open it. `build()` returns the element, so the controls arrive through\n`config.onReady` — that is the intended way to open a modal.\n\nClosing is either a full teardown (`destroyOnClose: true`, the default) or a hide, and both a close\nbutton and a backdrop click are wired through stored references, so `destroy()` removes exactly the\nlisteners it added.",
+      "lead": "Modal renders a hidden overlay (`.dialog.hidden`) holding a header and a body, and hands the caller\nthe handles to open it. `build()` returns the element, so the controls arrive through\n`config.onReady` — that is the intended way to open a modal.\n\nClosing is either a full teardown (`destroyOnClose: true`, the default) or a hide, and both a close\nbutton and a backdrop click are wired through stored references, so `destroy()` removes exactly the\nlisteners it added.\n\n**The builder is an element factory.** It assembles the markup below, and `Modal.css` only targets\nthose classes and tokens. The CSS therefore behaves like a plain CSS library: the same nesting and\nclass names written by hand are styled identically. Customise it by overriding a selector, or\nretheme it without touching markup by redeclaring a `--app-*` token on an ancestor (or one\n`--modal-*` token for this component only).",
       "sections": {
         "Payload": {
           "text": "An `HTMLElement`, an HTML string, or a node-shaped object — whatever `_compileContent` accepts. A\nstring payload is parsed into an element; the component never sets `el.innerHTML` on user text.\n\n`config.title` is independent of the payload: it becomes the `h2.title` inside the header.",
@@ -3607,8 +3677,13 @@
           ]
         },
         "Nodes": {
-          "text": "The body is appended by the builder, not by a declared key: the compiled payload element gets the\n`body` class.",
-          "examples": [],
+          "text": "The body is appended by the builder, not by a declared key: the compiled payload element gets the\n`body` class.\n\n### Structure\n\nThe overlay starts hidden; `config.title` fills `h2.title`, independently of the body payload.",
+          "examples": [
+            {
+              "lang": "html",
+              "code": "<div id=\"modal-default\" class=\"dialog hidden\">\n  <div class=\"modal\">\n    <div class=\"header\">\n      <h2 class=\"title\">Notification</h2>\n      <div class=\"close\">…</div>\n    </div>\n    <p class=\"body\">Hello from the modal body.</p>\n  </div>\n</div>"
+            }
+          ],
           "tables": [
             {
               "columns": [
@@ -3711,7 +3786,7 @@
     "mode-switcher": {
       "package": "@aio-ui/mode-switcher",
       "title": "ModeSwitcher",
-      "lead": "A pill toggle that flips the document between light and dark mode. It reads the browser mode on\nconstruction, writes it onto the document, and keeps the thumb position in sync — it does not own a\ntheme, it only switches the mode the theme layer reacts to.",
+      "lead": "A pill toggle that flips the document between light and dark mode. It reads the browser mode on\nconstruction, writes it onto the document, and keeps the thumb position in sync — it does not own a\ntheme, it only switches the mode the theme layer reacts to.\n\n**The builder is an element factory.** It assembles the markup below, and `ModeSwitcher.css` only\ntargets those classes and tokens. The CSS therefore behaves like a plain CSS library: the same\nnesting and class names written by hand are styled identically. Customise it by overriding a\nselector, or retheme it without touching markup by redeclaring a `--app-*` token on an ancestor\n(or one `--mode-switcher-*` token for this component only).",
       "sections": {
         "Payload": {
           "text": "None. The component is self-contained; anything passed is ignored.",
@@ -3749,8 +3824,13 @@
           ]
         },
         "Nodes": {
-          "text": "",
-          "examples": [],
+          "text": "### Structure\n\nThe toggle is a custom element (`toggle.toggle`), so the sheet can style it without a wrapper\nclass:",
+          "examples": [
+            {
+              "lang": "html",
+              "code": "<div class=\"mode-switcher\">\n  <toggle class=\"toggle\" data-theme-toggle>\n    <span class=\"track\"><span class=\"thumb\"></span></span>\n    <span class=\"label\">Dark</span>\n  </toggle>\n</div>"
+            }
+          ],
           "tables": [
             {
               "columns": [
@@ -3838,7 +3918,7 @@
     "pricing-card": {
       "package": "@aio-ui/pricing-card",
       "title": "PricingCard",
-      "lead": "PricingCard renders one card per record: a header with a divider, a feature list, a price line and an\naction button. Because it is a card **group**, its root is a `div.row` and each card is wrapped in a\n`div.column` — the grid comes from the host layout.",
+      "lead": "PricingCard renders one card per record: a header with a divider, a feature list, a price line and an\naction button. Because it is a card **group**, its root is a `div.row` and each card is wrapped in a\n`div.column` — the grid comes from the host layout.\n\n**The builder is an element factory.** It assembles the markup below, and `PricingCard.css` only\ntargets those classes and tokens. The CSS therefore behaves like a plain CSS library: the same\nnesting and class names written by hand are styled identically. Customise it by overriding a\nselector, or retheme it without touching markup by redeclaring a `--app-*` token on an ancestor\n(or one `--pricing-card-*` token for this component only).",
       "sections": {
         "Payload": {
           "text": "A single record or an array of records. Accepted alias: `title` for `header`; the feature list is\n`body`. `config` takes no options — the card is entirely payload-driven.\n\n`price` is formatted with `Intl.NumberFormat(\"id-ID\", { currency: \"IDR\" })` and printed inside a\n`strong`; the surrounding sentence is fixed copy (`Mulai dari … / pax`).",
@@ -3881,8 +3961,13 @@
           ]
         },
         "Nodes": {
-          "text": "`className` on a record is added to the card element, and an `is-featured` class token (or an\nexplicit `featured: true`) makes the action button `primary`. `action.label` (or `label`) sets the\nbutton copy — the default is `Pilih`. A record may also carry `onClick`, which is bound to that\ncard's own button. A card without a `price` renders no price line, divider-bottom or action;\n`price: 0` counts as a price (a free tier).",
-          "examples": [],
+          "text": "`className` on a record is added to the card element, and an `is-featured` class token (or an\nexplicit `featured: true`) makes the action button `primary`. `action.label` (or `label`) sets the\nbutton copy — the default is `Pilih`. A record may also carry `onClick`, which is bound to that\ncard's own button. A card without a `price` renders no price line, divider-bottom or action;\n`price: 0` counts as a price (a free tier).\n\n### Structure\n\nThe grid belongs to the host: the root is `div.row` and each card sits in its own `div.column`.",
+          "examples": [
+            {
+              "lang": "html",
+              "code": "<div class=\"row\">\n  <div class=\"column\">\n    <div class=\"card pricing\">\n      <div class=\"header\"><span>Basic</span></div>\n      <hr class=\"divider\" />\n      <div class=\"body\">\n        <ul class=\"features\">\n          <li class=\"item\">1 project</li>\n        </ul>\n      </div>\n      <div class=\"item price-tag\"><strong>Rp250.000</strong></div>\n      <hr class=\"divider\" />\n      <div class=\"actions\"><button class=\"button\">…</button></div>\n    </div>\n  </div>\n</div>"
+            }
+          ],
           "tables": [
             {
               "columns": [
@@ -3980,7 +4065,7 @@
     "product": {
       "package": "@aio-ui/product",
       "title": "Product",
-      "lead": "A catalogue with two views that only make sense together: a grid of cards and a detail\nrecord. `ProductBuilder` is the composition root — it owns the swap and the host keeps what\nonly it can know (where the data came from, what \"add to cart\" means).",
+      "lead": "A catalogue with two views that only make sense together: a grid of cards and a detail\nrecord. `ProductBuilder` is the composition root — it owns the swap and the host keeps what\nonly it can know (where the data came from, what \"add to cart\" means).\n\n**The builder is an element factory.** `ProductBuilder` only owns the swap: each view brings its\nown markup and its own sheet (`ProductCard.css`, `ProductDetail.css`, `ProductGrid.css`). Like a\nplain CSS library, that sheet targets the class names below, and you can override any selector or\nredeclare a `--app-*` token on an ancestor to retheme a view without touching its markup.",
       "sections": {
         "Payload": {
           "text": "The shape of the content decides the first view:",
@@ -4087,8 +4172,13 @@
           ]
         },
         "Nodes": {
-          "text": "### detail\n\n### grid\n\nThe grid builder's registry name is `product-card-grid`; the cards are `.product`.",
-          "examples": [],
+          "text": "### detail\n\n### grid\n\nThe grid builder's registry name is `product-card-grid`; the cards are `.product`.\n\n### Structure\n\nThe wrapper is one class; a card view renders the `@aio-ui/product` card markup inside the grid\nsection, and the detail view replaces the section content with the detail record.",
+          "examples": [
+            {
+              "lang": "html",
+              "code": "<div class=\"product\">\n  <section class=\"grid\">\n    <div class=\"row full-width\">\n      <div class=\"product mode-auto\">\n        <div class=\"display\"><img class=\"img-fluid product-shadow-blend\" src=\"p1.png\" /></div>\n        <div class=\"caption\">\n          <div class=\"title\">T-shirt</div>\n          <div class=\"desc\">…</div>\n        </div>\n        <div class=\"price\">Rp120.000</div>\n        <button class=\"button primary btn-checkout\">…</button>\n      </div>\n    </div>\n  </section>\n</div>"
+            }
+          ],
           "tables": [
             {
               "columns": [
@@ -4299,7 +4389,7 @@
     "rating": {
       "package": "@aio-ui/rating",
       "title": "Rating",
-      "lead": "Rating renders one score in one of four visual shapes, chosen by `config.type` at build time:\n`star`, `round-bar`, `line-bar` or `count-up`. The payload is only the value; everything else is\nconfig.\n\nThe component ships **no stylesheet** (`stylesheet: \"\"`), so the shapes need host CSS. It also does\nnot declare a token layer, because it has no sheet to declare one in.",
+      "lead": "Rating renders one score in one of four visual shapes, chosen by `config.type` at build time:\n`star`, `round-bar`, `line-bar` or `count-up`. The payload is only the value; everything else is\nconfig.\n\nThe component ships **no stylesheet** (`stylesheet: \"\"`), so the shapes need host CSS. It also does\nnot declare a token layer, because it has no sheet to declare one in.\n\n**The builder is an element factory.** It ships **no stylesheet**, so `Rating.css` does not exist:\nthe class names below are the styling contract and the host CSS targets them like any other CSS\nlibrary markup. Override a selector, or retheme by redeclaring a `--app-*` token on an ancestor.",
       "sections": {
         "Payload": {
           "text": "Anything else is treated as `0`. A `star` rating prints `score / max`; `count-up`, `round-bar` and\n`line-bar` print the percentage.",
@@ -4347,8 +4437,13 @@
           ]
         },
         "Nodes": {
-          "text": "`track` + `fill` are emitted for `line-bar` and `round-bar`; `stars-group` + `stars-item` for\n`star`; the label is always present.",
-          "examples": [],
+          "text": "`track` + `fill` are emitted for `line-bar` and `round-bar`; `stars-group` + `stars-item` for\n`star`; the label is always present.\n\n### Structure\n\nShown with `type: \"star\"`. Every shape shares `div.rating-widget-wrapper > div.rating-core-display`;\nthe star branch adds `div.stars-row` with exactly `config.max` spans.",
+          "examples": [
+            {
+              "lang": "html",
+              "code": "<div class=\"rating-widget-wrapper type-star\">\n  <div class=\"rating-core-display\">\n    <div class=\"stars-row\">\n      <span class=\"star-icon star-full\"></span>\n      <span class=\"star-icon star-half\"></span>\n      <span class=\"star-icon\"></span>\n    </div>\n    <span class=\"rating-numerical-label\">4.5 / 5</span>\n  </div>\n</div>"
+            }
+          ],
           "tables": [
             {
               "columns": [
@@ -4411,7 +4506,7 @@
     "section": {
       "package": "@aio-ui/section",
       "title": "Section",
-      "lead": "One row of 2–3 content columns. Each column stacks image → eyebrow → title →\ndescription → actions. The column count is decided by CSS, not by the payload: the grid\n`auto-fit`s as many 18rem tracks as fit, and collapses to one column under `768px` with\nthe image spanning the full row.",
+      "lead": "One row of 2–3 content columns. Each column stacks image → eyebrow → title →\ndescription → actions. The column count is decided by CSS, not by the payload: the grid\n`auto-fit`s as many 18rem tracks as fit, and collapses to one column under `768px` with\nthe image spanning the full row.\n\n**The builder is an element factory.** It assembles the markup below, and `Section.css` only\ntargets those classes and tokens. The CSS therefore behaves like a plain CSS library: the same\nnesting and class names written by hand are styled identically. Customise it by overriding a\nselector, or retheme it without touching markup by redeclaring a `--app-*` token on an ancestor\n(or one `--section-*` token for this component only).",
       "sections": {
         "Payload": {
           "text": "The payload **is** the column list — `content` appears only in the node wrapper. A column owns its\nblock list under `blocks`.\n\nA column whose own fields look like a block is treated as one block, so\n`[{ eyebrow, title, description, imageUrl, actions }]` also works. `normalizeColumns()` is the only\nplace that decides this.",
@@ -4484,8 +4579,13 @@
           ]
         },
         "Nodes": {
-          "text": "",
-          "examples": [],
+          "text": "### Structure\n\nOne `div.section-column` per column, and one block per item in its `blocks` list. A column class\nis copied verbatim (`hero` below). Optional parts are not appended.",
+          "examples": [
+            {
+              "lang": "html",
+              "code": "<section class=\"section\">\n  <div class=\"section-column hero\">\n    <div class=\"section-eyebrow\">New</div>\n    <h2 class=\"section-title\">Built for teams</h2>\n    <p class=\"section-desc\">…</p>\n  </div>\n</section>"
+            }
+          ],
           "tables": [
             {
               "columns": [
@@ -4643,7 +4743,7 @@
     "skeleton": {
       "package": "@aio-ui/skeleton",
       "title": "Skeleton",
-      "lead": "The placeholder primitive. Every builder may implement the optional `loading()` hook, which\nreturns the silhouette of its own component while that component's stylesheet is still on its way;\nthis package is what that hook draws with.\n\n**Load it with the app shell, never lazily.** It is the only sheet that can style a component at the\nexact moment that component's own sheet is missing — that is the whole reason it is a component of\nits own instead of a rule in `@aio-ui/styles`.\n\n```ts\nimport { Skeleton } from \"@aio-ui/skeleton\";\n\nprotected loading(): HTMLElement {\n  return Skeleton.create({\n    shape: \"stack\",\n    children: [\n      { shape: \"bone\", aspect: \"1 / 1\" },\n      { shape: \"line\", width: \"62%\" },\n      { shape: \"line\", width: \"88%\", count: 2 },\n    ],\n  });\n}\n```",
+      "lead": "The placeholder primitive. Every builder may implement the optional `loading()` hook, which\nreturns the silhouette of its own component while that component's stylesheet is still on its way;\nthis package is what that hook draws with.\n\n**Load it with the app shell, never lazily.** It is the only sheet that can style a component at the\nexact moment that component's own sheet is missing — that is the whole reason it is a component of\nits own instead of a rule in `@aio-ui/styles`.\n\n```ts\nimport { Skeleton } from \"@aio-ui/skeleton\";\n\nprotected loading(): HTMLElement {\n  return Skeleton.create({\n    shape: \"stack\",\n    children: [\n      { shape: \"bone\", aspect: \"1 / 1\" },\n      { shape: \"line\", width: \"62%\" },\n      { shape: \"line\", width: \"88%\", count: 2 },\n    ],\n  });\n}\n```\n\n**The builder is an element factory.** It assembles the markup below, and `Skeleton.css` only\ntargets those classes and tokens. The CSS therefore behaves like a plain CSS library: the same\nnesting and class names written by hand are styled identically. Customise it by overriding a\nselector, or retheme it without touching markup by redeclaring a `--app-*` token on an ancestor\n(or one `--skeleton-*` token for this component only).",
       "sections": {
         "Payload": {
           "text": "The registry face (`SkeletonBuilder`) takes one spec, merged over `config.spec`:",
@@ -4766,8 +4866,17 @@
           ]
         },
         "Nodes": {
-          "text": "`Skeleton.create()` builds plain `div`s — it never calls `render()`, because a mockup is a picture\nand tracking its nodes would be waste:\n\nEvery node carries the root class plus one bare shape word, so the sheet writes a\ncompound (`&.bone`) and needs no dash-joined class name.",
-          "examples": [],
+          "text": "`Skeleton.create()` builds plain `div`s — it never calls `render()`, because a mockup is a picture\nand tracking its nodes would be waste:\n\nEvery node carries the root class plus one bare shape word, so the sheet writes a\ncompound (`&.bone`) and needs no dash-joined class name.\n\n### Structure\n\nThe root is the shape itself; a container shape (`stack`, `row`) nests its children. `count`\nrepeats a shape without extra wrappers.\n\nA stack with two bones and a collection of lines:",
+          "examples": [
+            {
+              "lang": "html",
+              "code": "<div class=\"skeleton line\" data-skeleton=\"line\"></div>"
+            },
+            {
+              "lang": "html",
+              "code": "<div class=\"skeleton stack\" data-skeleton=\"stack\">\n  <div class=\"skeleton bone\" data-skeleton=\"bone\"></div>\n  <div class=\"skeleton line\" data-skeleton=\"line\"></div>\n  <div class=\"skeleton line\" data-skeleton=\"line\"></div>\n</div>"
+            }
+          ],
           "tables": [
             {
               "columns": [
@@ -4850,14 +4959,14 @@
     "tab": {
       "package": "@aio-ui/tab",
       "title": "Tab",
-      "lead": "A tab strip plus panels, with the strip placeable on any side of the body and panels built lazily.\nEach payload entry becomes one button and one panel; the panel body reads `eyebrow`, `title` and\n`description` from that same entry.",
+      "lead": "A tab strip plus panels, with the strip placeable on any side of the body and panels built lazily.\nEach payload entry becomes one button and one panel; the panel body reads `eyebrow`, `title` and\n`description` from that same entry.\n\n**The builder is an element factory.** It assembles the markup below, and `Tab.css` only targets\nthose classes and tokens. The CSS therefore behaves like a plain CSS library: the same nesting and\nclass names written by hand are styled identically. Customise it by overriding a selector, or\nretheme it without touching markup by redeclaring a `--app-*` token on an ancestor (or one\n`--tab-*` token for this component only).",
       "sections": {
         "Payload": {
-          "text": "",
+          "text": "`menu` and `body` are parallel lists: entry _n_ of the body pairs with button _n_ of the menu.\n`body` is the only required key (a missing one falls back to `[]`). A `menu` entry may be an\n`iBasicNode`, a body item may be an `HTMLElement`, and `footer` may be an element or\n`{ id?, className?, text }`.",
           "examples": [
             {
               "lang": "ts",
-              "code": "[\n  {\n    label: \"…\", // button caption (also the button title)\n    eyebrow: \"…\", // optional kicker inside the panel\n    title: \"…\",\n    description: \"…\",\n    id: \"…\", // optional panel id\n    className: \"…\", // optional extra panel class\n  },\n];"
+              "code": "{\n  menu: [{ label: \"Overview\", title: \"Overview\" }],\n  body: [{ panel: { eyebrow: \"…\", title: \"…\", description: \"…\" } }],\n  footer: { text: \"…\" },\n}"
             }
           ],
           "tables": []
@@ -4952,8 +5061,13 @@
           ]
         },
         "Nodes": {
-          "text": "",
-          "examples": [],
+          "text": "### Structure\n\nA button per menu entry, a panel per body entry. `spinner` is present while the sheet lands;\npanels are `hidden` until activated, and a lazily built panel only exists after its first open.",
+          "examples": [
+            {
+              "lang": "html",
+              "code": "<div class=\"tab\">\n  <div class=\"spinner\"></div>\n  <div class=\"menu\" role=\"tablist\">\n    <button class=\"button active\" role=\"tab\">\n      <span class=\"btn-label\">Overview</span>\n      <span class=\"btn-title\"></span>\n    </button>\n  </div>\n  <div class=\"body\">\n    <div class=\"panel\" role=\"tabpanel\">\n      <div class=\"content\">\n        <h3 class=\"title\">Overview</h3>\n        <p class=\"desc\">…</p>\n      </div>\n    </div>\n  </div>\n</div>"
+            }
+          ],
           "tables": [
             {
               "columns": [
@@ -5131,7 +5245,7 @@
     "table": {
       "package": "@aio-ui/table",
       "title": "Table",
-      "lead": "Table renders a header, a body and a footer from one data object, and owns the behaviour a static\ntable does not: pagination, sorting, selection, inline editing, per-cell options and row formulas.\n\nCells may be plain values or objects shaped `{ text, options }` — `options` is a `TableCellOptions`\n(`class`, `color`, `wide`, `textAlign`, `verticalAlign`, `rowSpan`, `colSpan`, `format`, `formula`). The\nhelper exports (`__normalizeCell`, `__applyCellOptions`, `__applyFormula`, `numberToText`) are the same\nfunctions the builder uses, so a host can reuse them.",
+      "lead": "Table renders a header, a body and a footer from one data object, and owns the behaviour a static\ntable does not: pagination, sorting, selection, inline editing, per-cell options and row formulas.\n\nCells may be plain values or objects shaped `{ text, options }` — `options` is a `TableCellOptions`\n(`class`, `color`, `wide`, `textAlign`, `verticalAlign`, `rowSpan`, `colSpan`, `format`, `formula`). The\nhelper exports (`__normalizeCell`, `__applyCellOptions`, `__applyFormula`, `numberToText`) are the same\nfunctions the builder uses, so a host can reuse them.\n\n**The builder is an element factory.** It assembles the markup below, and `Table.css` only targets\nthose classes and tokens. The CSS therefore behaves like a plain CSS library: the same nesting and\nclass names written by hand are styled identically. Customise it by overriding a selector, or\nretheme it without touching markup by redeclaring a `--app-*` token on an ancestor (or one\n`--table-*` token on the table's parent).",
       "sections": {
         "Payload": {
           "text": "`header` is an array of column titles, `body` an array of row arrays (same order as `header`), and\n`footer` either `null` or a footer definition. A missing key is treated as an empty array.\n\nA cell object is only recognised when it carries `text`: `__normalizeCell` keeps `text` and `options`\nand drops everything else, so a `{ value, className }` cell is printed as `[object Object]`. A header\nobject is the same `{ text, options, group }`.",
@@ -5224,8 +5338,13 @@
           ]
         },
         "Nodes": {
-          "text": "",
-          "examples": [],
+          "text": "### Structure\n\nEvery cell is wrapped in `div.cell`. The auto-number and actions columns are config-driven; the\npagination row lives in `tfoot` and spans the first header cell.",
+          "examples": [
+            {
+              "lang": "html",
+              "code": "<div class=\"table-container\">\n  <table class=\"table\">\n    <thead>\n      <tr>\n        <th class=\"center aligned\">#</th>\n        <th>Name</th>\n        <th>Qty</th>\n        <th class=\"center aligned\">…</th>\n      </tr>\n    </thead>\n    <tbody>\n      <tr>\n        <td class=\"autoNumber center aligned\"><div class=\"cell\">1</div></td>\n        <td><div class=\"cell\">Coffee</div></td>\n        <td><div class=\"cell\">2</div></td>\n        <td class=\"actions cell center aligned\">\n          <div class=\"actions-set\">\n            <button class=\"add-btn\">…</button>\n            <button class=\"edit-btn\">…</button>\n            <button class=\"remove-btn\">…</button>\n          </div>\n        </td>\n      </tr>\n    </tbody>\n    <tfoot>\n      <tr>\n        <th>\n          <div class=\"pagination menu\">\n            <a class=\"item prev\">…</a>\n            <a class=\"item active\">1</a>\n            <a class=\"item next\">…</a>\n          </div>\n        </th>\n      </tr>\n    </tfoot>\n  </table>\n</div>"
+            }
+          ],
           "tables": [
             {
               "columns": [

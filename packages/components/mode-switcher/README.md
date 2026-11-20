@@ -4,6 +4,12 @@ A pill toggle that flips the document between light and dark mode. It reads the 
 construction, writes it onto the document, and keeps the thumb position in sync — it does not own a
 theme, it only switches the mode the theme layer reacts to.
 
+**The builder is an element factory.** It assembles the markup below, and `ModeSwitcher.css` only
+targets those classes and tokens. The CSS therefore behaves like a plain CSS library: the same
+nesting and class names written by hand are styled identically. Customise it by overriding a
+selector, or retheme it without touching markup by redeclaring a `--app-*` token on an ancestor
+(or one `--mode-switcher-*` token for this component only).
+
 ## Payload
 
 None. The component is self-contained; anything passed is ignored.
@@ -25,6 +31,20 @@ None. The component is self-contained; anything passed is ignored.
 | `@mode-switcher>track`  | `span`      | `track`                                   |
 | `@mode-switcher>thumb`  | `span`      | `thumb`                                   |
 | `@mode-switcher>label`  | `span`      | `label`                                   |
+
+### Structure
+
+The toggle is a custom element (`toggle.toggle`), so the sheet can style it without a wrapper
+class:
+
+```html
+<div class="mode-switcher">
+  <toggle class="toggle" data-theme-toggle>
+    <span class="track"><span class="thumb"></span></span>
+    <span class="label">Dark</span>
+  </toggle>
+</div>
+```
 
 ## Tokens
 

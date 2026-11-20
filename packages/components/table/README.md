@@ -8,6 +8,12 @@ Cells may be plain values or objects shaped `{ text, options }` — `options` is
 helper exports (`__normalizeCell`, `__applyCellOptions`, `__applyFormula`, `numberToText`) are the same
 functions the builder uses, so a host can reuse them.
 
+**The builder is an element factory.** It assembles the markup below, and `Table.css` only targets
+those classes and tokens. The CSS therefore behaves like a plain CSS library: the same nesting and
+class names written by hand are styled identically. Customise it by overriding a selector, or
+retheme it without touching markup by redeclaring a `--app-*` token on an ancestor (or one
+`--table-*` token on the table's parent).
+
 ## Payload
 
 ```ts
@@ -65,6 +71,51 @@ object is the same `{ text, options, group }`.
 | `@table>tfoot>pagination>prev` / `>next` | `a`                         | `item prev` / `item next`              |
 | `@table>tfoot>add-row`                   | `button`                    | `add-row-btn`                          |
 | `@table>icon`                            | `i`                         | `icon`                                 |
+
+### Structure
+
+Every cell is wrapped in `div.cell`. The auto-number and actions columns are config-driven; the
+pagination row lives in `tfoot` and spans the first header cell.
+
+```html
+<div class="table-container">
+  <table class="table">
+    <thead>
+      <tr>
+        <th class="center aligned">#</th>
+        <th>Name</th>
+        <th>Qty</th>
+        <th class="center aligned">…</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="autoNumber center aligned"><div class="cell">1</div></td>
+        <td><div class="cell">Coffee</div></td>
+        <td><div class="cell">2</div></td>
+        <td class="actions cell center aligned">
+          <div class="actions-set">
+            <button class="add-btn">…</button>
+            <button class="edit-btn">…</button>
+            <button class="remove-btn">…</button>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+    <tfoot>
+      <tr>
+        <th>
+          <div class="pagination menu">
+            <a class="item prev">…</a>
+            <a class="item active">1</a>
+            <a class="item next">…</a>
+          </div>
+        </th>
+      </tr>
+    </tfoot>
+  </table>
+</div>
+```
 
 ## Tokens
 

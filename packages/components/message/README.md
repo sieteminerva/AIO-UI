@@ -7,6 +7,12 @@ It follows a destroy-and-recreate rule — preparing a message with an id that a
 the old element first — so one id can never stack two toasts. The close button only appears when the
 toast persists (`duration: 0` or `persist: true`).
 
+**The builder is an element factory.** It assembles the markup below, and `Message.css` only
+targets those classes and tokens. The CSS therefore behaves like a plain CSS library: the same
+nesting and class names written by hand are styled identically. Customise it by overriding a
+selector, or retheme it without touching markup by redeclaring a `--app-*` token on an ancestor
+(or one `--message-*` token for this component only).
+
 ## Payload
 
 ```ts
@@ -43,6 +49,20 @@ Everything is optional except `message`; `header` defaults to `Congrats!`, `type
 | `@message>content>header` | `h2`        | `header`                                       |
 | `@message>content>desc`   | `p`         | `message`                                      |
 | `@message>content>icon`   | `i`         | icon class only, no wrapper                    |
+
+### Structure
+
+The toast is prepended to its container; `type` is a class so the sheet owns the colour set.
+
+```html
+<div id="global-status-message" class="toast visible success icon">
+  <i class="bell icon"></i>
+  <div class="content">
+    <h2 class="header">Saved</h2>
+    <p class="message">Your changes are stored.</p>
+  </div>
+</div>
+```
 
 ## Tokens
 

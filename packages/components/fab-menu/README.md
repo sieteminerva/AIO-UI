@@ -7,6 +7,12 @@ idle `duration` with no interaction.
 The sheet positions it `fixed` with a very large `z-index`, so a host that needs it contained (a
 preview frame, a split pane) must override both — the demo does exactly that for its Display panel.
 
+**The builder is an element factory.** It assembles the markup below, and `FabMenu.css` only
+targets those classes and tokens. The CSS therefore behaves like a plain CSS library: the same
+nesting and class names written by hand are styled identically. Customise it by overriding a
+selector, or retheme it without touching markup by redeclaring a `--app-*` token on an ancestor
+(or one `--fab-menu-*` token for this component only).
+
 ## Payload
 
 ```ts
@@ -62,6 +68,20 @@ from the nearest viewport edge.
 | `@fab>panel>title`   | `span`      | `title`       |
 | `@fab>panel>item`    | `button`    | `item option` |
 | `@fab>panel>trigger` | `button`    | `trigger`     |
+
+### Structure
+
+`div.fab` is `position: fixed`; a host that needs it contained overrides that and `z-index`.
+
+```html
+<div class="fab bottom-left">
+  <div class="panel">
+    <span class="title">MENU</span>
+    <button id="wa" class="item option">WhatsApp</button>
+  </div>
+  <button class="trigger">…</button>
+</div>
+```
 
 ## Tokens
 

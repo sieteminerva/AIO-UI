@@ -4,6 +4,12 @@ A cascading gallery: one grid whose column count comes from CSS, a category filt
 highlight, lazy images, batched paging and a keyboard-driven lightbox. `Masonry.css` ships with the
 package and the registry injects it, so the markup below is the whole contract.
 
+**The builder is an element factory.** It assembles the markup below, and `Masonry.css` only
+targets those classes and tokens. The CSS therefore behaves like a plain CSS library: the same
+nesting and class names written by hand are styled identically. Customise it by overriding a
+selector, or retheme it without touching markup by redeclaring a `--app-*` token on an ancestor
+(or one `--masonry-*` token for this component only).
+
 ## Payload
 
 ```ts
@@ -76,6 +82,27 @@ builder.items = freshlyFetchedPayloadFromAPI;
 | `@masonry>modal>close`    | `i`         | `.close` wrapper, `icon close`         |
 | `@masonry>modal>next`     | `i`         | `.next` wrapper, `icon right arrow`    |
 | `@masonry>modal>previous` | `i`         | `.previous` wrapper, `icon left arrow` |
+
+### Structure
+
+The filter bar is derived from the items, never declared; `span.slider` is the highlight that
+moves. One `figure.item` per visible card; a batch is appended as more pages load.
+
+```html
+<section class="masonry gallery">
+  <nav class="filter menu">
+    <button class="item active">All</button>
+    <button class="item">Branding</button>
+    <span class="slider"></span>
+  </nav>
+  <div class="grid">
+    <figure class="item is-fade-in">
+      <img src="a.png" loading="lazy" />
+      <header class="caption"><h3 class="title">Project A</h3></header>
+    </figure>
+  </div>
+</section>
+```
 
 ## Tokens
 

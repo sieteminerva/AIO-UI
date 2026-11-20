@@ -80,14 +80,14 @@ works while the headings are predictable, so the H2 set is closed and its order 
 
 ### Component skeleton (required, in this order)
 
-| H2                               | Must contain                                                                                      |
-| -------------------------------- | ------------------------------------------------------------------------------------------------- |
-| `# Title (\`@aio-ui/<folder>\`)` | H1 carries the title **and** the package id — no front matter, no metadata block.                 |
-| `## Payload`                     | Accepted shapes (bullet list or table), one fenced `ts` example, then the field rules.            |
-| `## Config`                      | `Option / Default / Meaning`, one row per key of `i<Pascal>Config`. "No options" is a valid body. |
-| `## Nodes`                       | `Key / Default tag / Class / note`, one row per `ELEMENT_KEYS` entry.                             |
-| `## Tokens`                      | One sentence about the `:root, [data-theme]` layer, then `Token / Derives from / Used for`.       |
-| `## Wiring checklist`            | The same four numbered steps (registry key → module loader → stylesheet loader → route plan).     |
+| H2                               | Must contain                                                                                                                 |
+| -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `# Title (\`@aio-ui/<folder>\`)` | H1 carries the title **and** the package id — no front matter, no metadata block.                                            |
+| `## Payload`                     | Accepted shapes (bullet list or table), one fenced `ts` example, then the field rules.                                       |
+| `## Config`                      | `Option / Default / Meaning`, one row per key of `i<Pascal>Config`. "No options" is a valid body.                            |
+| `## Nodes`                       | `Key / Default tag / Class / note`, one row per `ELEMENT_KEYS` entry, then the assembled markup under an H3 `### Structure`. |
+| `## Tokens`                      | One sentence about the `:root, [data-theme]` layer, then `Token / Derives from / Used for`.                                  |
+| `## Wiring checklist`            | The same four numbered steps (registry key → module loader → stylesheet loader → route plan).                                |
 
 ### Optional H2s (allowlist, fixed slot)
 
@@ -235,6 +235,29 @@ export function normalizePayload(data: any): iMyWidgetItem[] {
 The registry already unwraps `node.content` before calling a builder, so a builder rarely
 needs to look at `content` at all. Accept the bare array first; treat wrappers as a
 courtesy. Export the normalizer so tests can lock the contract without a DOM.
+
+### Declare the shape once
+
+Alongside `normalizePayload()`, every builder declares what it accepts as a static contract:
+
+```ts
+static readonly contract: iContentContract = {
+  schema: {
+    t: "list",
+    single: true,
+    of: { t: "record", open: true, of: { title: { t: "string" } } },
+  },
+  example: [{ title: "Hello" }],
+  legacy: [{ from: "items", to: "", reason: "pre-0.3 wrapped the list" }],
+};
+```
+
+`Builder.create()` normalises `schema.content` against it and stores the verdict;
+`inspect().issues` reports the same list (`path`, `expected`, `received`, `severity`). The function
+is **total** and **idempotent**: it never throws, and an unknown field is a warning that keeps the
+value instead of dropping it. `normalizePayload()` still owns _transformations_ (dropping nullish
+entries, deriving labels); the contract owns _shape_. `packages/components/contracts.test.ts`
+validates `example` for every builder that declares one, so the sample cannot drift.
 
 ---
 
@@ -535,6 +558,7 @@ Anything that needs a real DOM belongs in the demo page, not the suite.
 - [ ] `packages/components/<kebab>/` created from the template (or by hand, same shape)
 - [ ] `ELEMENT_KEYS`, `DEFAULT_SELECTORS`, `<Pascal>ElementType` present and aligned
 - [ ] `i<Pascal>Config`, `i<Pascal>Item`, `normalizePayload` exported
+- [ ] `static contract` declares `schema`, `example` and (only if needed) `legacy`
 - [ ] `prepare()` uses `render()` only, returns `load("@container")`
 - [ ] `template()` uses `textContent`, handles a missing payload
 - [ ] `initialize()` is idempotent; timers/listeners cleared in `destroy()`
@@ -544,7 +568,7 @@ Anything that needs a real DOM belongs in the demo page, not the suite.
 - [ ] Host asset map has `modules` + `styles` entries (static specifiers)
 - [ ] The route plan lists `"<kebab>"`, or a demo table row exists
 - [ ] Test covers `normalizePayload` and key/selector coverage
-- [ ] `README.md` follows §1c — five H2s in order (plus `## Methods` for a module)
+- [ ] `README.md` follows §1c — five H2s in order (plus `## Methods` for a module), with `### Structure` showing the assembled markup
 - [ ] `npm run verify` is green
 
 ---

@@ -6,6 +6,12 @@ transitions (`fade`, `slide-left`, `slide-right`, `slide-up`, `slide-down`) and 
 It owns a timer, so `unmount()` matters: it clears the interval and the button/dot handlers, and
 `prepare()` calls it first so re-rendering the same instance never doubles a timer.
 
+**The builder is an element factory.** It assembles the markup below, and `Carousel.css` only
+targets those classes and tokens. The CSS therefore behaves like a plain CSS library: the same
+nesting and class names written by hand are styled identically. Customise it by overriding a
+selector, or retheme it without touching markup by redeclaring a `--app-*` token on an ancestor
+(or one `--carousel-*` token for this component only).
+
 ## Payload
 
 ```ts
@@ -57,6 +63,33 @@ firing at a dead end.
 | `@carousel>track>slide>title`   | `h3`        | `title`                   |
 | `@carousel>track>slide>desc`    | `p`         | `desc`                    |
 | `@carousel>track>slide>image`   | `img`       | `img-fluid`               |
+
+### Structure
+
+The root carries the resolved state (`anim-*`, `auto-controls`, `orient-*`); `active` moves with
+the index.
+
+```html
+<div class="carousel anim-fade auto-controls orient-horizontal" role="region">
+  <div class="track">
+    <div class="slide active" role="group">
+      <div class="slide-inner">
+        <img class="img-fluid" src="first.png" alt="" />
+        <div class="caption"><h3 class="title">First</h3></div>
+      </div>
+    </div>
+    <div class="slide" role="group">…</div>
+  </div>
+  <div class="control-group">
+    <button class="control prev">‹</button>
+    <button class="control next">›</button>
+  </div>
+  <div class="navigations horizontal-dots" role="group">
+    <button class="dot active"></button>
+    <button class="dot"></button>
+  </div>
+</div>
+```
 
 ## Tokens
 

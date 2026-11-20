@@ -1,7 +1,8 @@
 # TASK — input normalisation (schema door, content-once)
 
-**Status:** batch A landed 2026-11-21 (see Landed). Batches B–E open. Supersedes
-`packages/components/DISCUSSION_ANALYSIS.md` (scratch, untracked).
+**Status:** batches A and B landed 2026-11-21 (commits `53c939d`, `81b1a98`). Batch C is the live
+step; D and E are open. Supersedes `packages/components/DISCUSSION_ANALYSIS.md` (scratch,
+untracked).
 
 ## Landed — batch A (2026-11-21)
 
@@ -152,8 +153,36 @@ as `legacy`. Then update `iBuilderRegistry` (`core/types/registry.ts:47-84`; `se
 - `examples/gallery/src/content/wizard.ts:468` calls `builderFn("form", wizard)` directly from
   `onCreated` — it bypasses any host adapter, which is why B must fix the node, not the adapter.
 
-## Next
+## Next — batch C (start cold)
 
-Batch C — delete the compensation code, starting at `accordion/Accordion.ts:70-71`, then the
-`Form.prepare` unwrap and `Section`'s root identity from the payload. End with `npm run verify`
-and a browser count per demo route (the round-trip the unwraps currently hide).
+Goal: the builder receives the payload **directly**; no site may read `payload.content` as a
+wrapper any more. One component per commit, cheapest first.
+
+1. `pricing-card/PricingCard.ts:108` — `const payload = data?.content ?? data` → `const payload = data`.
+   Flatten authored payloads in the demo entry (`examples/demo/src/manifest.ts`, pricing-card row).
+2. `menu/Menu.ts:107` — same, and delete the comment that explains the two shapes.
+   Demo/gallery menu nodes already pass `{ brand, navigations }` (no `content`), so only the test
+   helper and README snippet move.
+3. `product/ProductBuilder.ts:94`, `ProductDetail.engine.ts:12`, `ProductGrid.engine.ts:12-13` —
+   delete the three unwraps; `grid.create({ content: { data: items } })` at
+   `ProductBuilder.ts:145` then passes `{ content: items }` (the engine's `{ data }` branch already
+   covers it).
+4. `section/Section.engine.ts:26` — delete `data?.content ?? data`, then flatten the demo row
+   (`manifest.ts`, section payload) to the block array and re-type `iBuilderRegistry["section"]`
+   (`core/types/registry.ts`).
+5. `accordion/Accordion.ts:70-71` — delete the unwrap; the demo row sends the item array, and the
+   test helper `schema()` in `accordion/__tests__/Accordion.test.ts` collapses from
+   `{ content: { content } }` to `{ content }`.
+6. `form/Form.ts:449-454` — delete the `inputs.content` unwrap; then
+   `InputControls.InputModule.ts` + `InputControls.test.ts` collapse `{ content: { content: … } }`
+   to `{ content: … }`. **Careful:** `input-controls` payload really has a `content` field, so its
+   rename belongs to D, not C.
+
+Open decision (do not silently drop ids): `section/Section.ts:143-145` builds `@section` id/className
+from the payload. A builder never sees the node, so after C they must come from `config.id` /
+`config.className`. Check the demo/gallery rows first; if they lose an id, either pass it in the
+node's `config` or keep this one line and record why.
+
+Gate per commit: `npm run verify`. Proof per commit: element counts in the browser for that
+component's demo route (`#kitchen/<name>`, `#product`, gallery `#form`) — before/after, a number,
+never "looks right". Add a count assertion where a component has none.

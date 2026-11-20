@@ -8,12 +8,10 @@
 
 ### 1. Input normalisation — `create(schema)` + content-once
 
-**Batch A landed** (2026-11-21): `create(schema = { content, config })`, `manifest.config` deleted,
-registry wraps node→schema by `builder`, `mergeBuildConfig` three layers, ~40 call sites moved.
-**Batch B landed**: the gallery wizard passes a node, registrations carry loading facts only, and
-the gallery form finally has its adapter stack (export + `FORM_ADAPTER_MANIFEST`).
-Proof: `verify` green + browser counts (demo form 42 fields; gallery `#form` 21 fields, 5 groups).
-**Open:** C (delete the 7 unwraps + root identity), D (domain names), E (contract + severity).
+**A + B landed** (2026-11-21, `53c939d` / `81b1a98`): the door is `create(schema)`, the registry
+wraps node→schema by `builder`, manifests and upstream carry no data, gallery wizard renders
+(21 fields). **Open:** C — delete the 7 unwraps + `section` root identity; start at the doc's
+`## Next — batch C (start cold)`.
 → `docs/framework/TASK-input-normalisation.md`
 
 ### 2. Release 0.2.4 — HELD until normalisation lands

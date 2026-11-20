@@ -9,7 +9,7 @@ import { RatingBuilder } from "../Rating";
  */
 
 function build(type: string, value: any, max = 5): HTMLElement {
-  return new RatingBuilder({ type: type as any, max, animate: false }).create(value) as HTMLElement;
+  return new RatingBuilder({ type: type as any, max, animate: false }).create({ content: value }) as HTMLElement;
 }
 
 describe("rating", () => {

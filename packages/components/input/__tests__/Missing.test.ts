@@ -28,8 +28,8 @@ describe("input layer reports what is missing", () => {
     const builder = new InputBuilder({ modules: [] });
     const field = { type: "dropdown", id: "pick", title: "Pick", config: { options: ["a"] } };
 
-    builder.create(field as any);
-    builder.create(field as any);
+    builder.create({ content: field as any });
+    builder.create({ content: field as any });
 
     // Two fields, one fact: a forty-field schema must not print forty lines.
     expect(warn).toHaveBeenCalledTimes(1);
@@ -43,17 +43,19 @@ describe("input layer reports what is missing", () => {
 
   it("stays quiet for a dropdown when the module is there", () => {
     new InputBuilder({ modules: INPUT_MODULE_DEFINITIONS }).create({
-      type: "dropdown",
-      id: "pick",
-      title: "Pick",
-      config: { options: ["a"] },
+      content: {
+        type: "dropdown",
+        id: "pick",
+        title: "Pick",
+        config: { options: ["a"] },
+      },
     } as any);
 
     expect(warn).not.toHaveBeenCalled();
   });
 
   it("warns for a file field with no uploader, and names the module", () => {
-    new InputBuilder({ modules: [] }).create({ type: "file", id: "docs", title: "Docs" } as any);
+    new InputBuilder({ modules: [] }).create({ content: { type: "file", id: "docs", title: "Docs" } } as any);
 
     expect(warn).toHaveBeenCalledTimes(1);
     const message = String(warn.mock.calls[0][0]);
@@ -65,10 +67,12 @@ describe("input layer reports what is missing", () => {
   it("warns for a declared popover instead of dropping it in silence", () => {
     // The popover only decorates, so the builder reads the ids the preset declared.
     new InputBuilder({ modules: [] }).create({
-      type: "text",
-      id: "when",
-      title: "When",
-      config: { popover: "<div>picker</div>" },
+      content: {
+        type: "text",
+        id: "when",
+        title: "When",
+        config: { popover: "<div>picker</div>" },
+      },
     } as any);
 
     expect(warn).toHaveBeenCalledTimes(1);
@@ -77,8 +81,8 @@ describe("input layer reports what is missing", () => {
 
   it("does not warn twice for two different capabilities on one builder", () => {
     const builder = new InputBuilder({ modules: [] });
-    builder.create({ type: "dropdown", id: "a", title: "A", config: { options: ["x"] } } as any);
-    builder.create({ type: "file", id: "b", title: "B" } as any);
+    builder.create({ content: { type: "dropdown", id: "a", title: "A", config: { options: ["x"] } } } as any);
+    builder.create({ content: { type: "file", id: "b", title: "B" } } as any);
 
     const messages = warn.mock.calls.map((call: unknown[]) => String(call[0]));
     expect(messages).toHaveLength(2);
@@ -93,7 +97,7 @@ describe("input layer reports what is missing", () => {
       emit: (event: string, detail: any) => events.push([event, detail]),
     } as any);
 
-    builder.create({ type: "dropdown", id: "pick", title: "Pick", config: { options: ["a"] } } as any);
+    builder.create({ content: { type: "dropdown", id: "pick", title: "Pick", config: { options: ["a"] } } } as any);
 
     // The host emitter also carries the builder's own lifecycle events; this is the one
     // that must never be lost.
@@ -112,31 +116,25 @@ describe("input layer reports what is missing", () => {
   it("throws for a declared action set when no module can render buttons", () => {
     // A warning is not enough here: the field would render perfectly and the buttons would
     // simply never exist — a hole, not a plainer control.
-    expect(() =>
-      new InputBuilder({ modules: [] }).create({
-        type: "text",
-        id: "amount",
-        title: "Amount",
-        config: { actions: ["editor"] },
-      } as any)
-    ).toThrow(/"controls" module is not in this builder's set/);
+    const amount = () => ({ content: { type: "text", id: "amount", title: "Amount", config: { actions: ["editor"] } } });
 
-    expect(() =>
-      new InputBuilder({ modules: [] }).create({
-        type: "text",
-        id: "amount",
-        title: "Amount",
-        config: { actions: ["editor"] },
-      } as any)
-    ).toThrow(/@aio-ui\/input\/controls\/module/);
+    expect(() => new InputBuilder({ modules: [] }).create(amount() as any)).toThrow(
+      /"controls" module is not in this builder's set/,
+    );
+
+    expect(() => new InputBuilder({ modules: [] }).create(amount() as any)).toThrow(
+      /@aio-ui\/input\/controls\/module/,
+    );
   });
 
   it("renders the action set when the controls module is present", () => {
     const field = new InputBuilder({ modules: INPUT_MODULE_DEFINITIONS }).create({
-      type: "text",
-      id: "amount",
-      title: "Amount",
-      config: { actions: ["editor"] },
+      content: {
+        type: "text",
+        id: "amount",
+        title: "Amount",
+        config: { actions: ["editor"] },
+      },
     } as any) as HTMLElement;
 
     expect(field.querySelectorAll("button").length).toBeGreaterThan(0);

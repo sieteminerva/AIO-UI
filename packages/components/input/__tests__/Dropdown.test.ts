@@ -18,7 +18,7 @@ const content = {
  */
 
 function mount(): { root: HTMLElement } {
-  const root = new DropdownBuilder({} as any).create(content as any) as HTMLElement;
+  const root = new DropdownBuilder({} as any).create({ content }) as HTMLElement;
   document.body.appendChild(root);
   return { root };
 }

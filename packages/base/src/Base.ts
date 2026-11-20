@@ -63,12 +63,12 @@ export interface iBuilderInspection {
  * }
  *
  * const builder = new HeroBuilder();
- * const element = builder.create({ title: "Hello" });
+ * const element = builder.create({ content: { title: "Hello" } });
  *
  * ========== Public Lifecycle API ==========
  *
  * @example
- * builder.create(data, config);
+ * builder.create({ content: data, config });
  * builder.destroy();
  * builder.attach("typeKey", "slotKey", payload);
  * builder.detach("slotKey");
@@ -79,6 +79,21 @@ export interface iBuilderInspection {
  * @author YMGH
  * @version 1.0.0
  */
+/**
+ * The one input a builder accepts: a schema.
+ *
+ * `content` is what the component renders; `config` is merged over the instance's own
+ * configuration. A builder never sees the page node (`builder`, `isRoot`, `attrs`, host
+ * element) — the registry reduces a node to this shape before calling `create()`.
+ *
+ * `content` appears exactly once in the whole chain: here. Nothing below this layer may
+ * name a payload field `content` again.
+ */
+export interface iBuilderSchema<TConfig = any> {
+  content?: any;
+  config?: Partial<TConfig>;
+}
+
 export abstract class Builder<TType extends string = string, TConfig extends iBuilderConfig<TType> = iBuilderConfig<TType>> {
   /**  THE BUILDER CURRENTLY MATERIALIZING — `create()` pins itself here for
    *  the whole duration of prepare()/initialize(), which is exactly the window
@@ -579,23 +594,31 @@ export abstract class Builder<TType extends string = string, TConfig extends iBu
    * node state, renders the component tree, and calls the subclass initializer so interactive
    * bindings are attached only after the DOM has been materialized.
    *
-   * @param content - The source data payload used to construct the component tree.
-   * @param config - Optional runtime overrides merged into the builder configuration.
+   * @param schema - The schema door: `{ content, config }`. `content` is the payload the
+   *   component renders, `config` the runtime overrides merged over the instance config.
    *
    * @returns The root DOM element produced by the builder's prepare/initialize pipeline.
    *
    * @public
    */
 
-  public create(content: any, config?: Partial<TConfig>): HTMLElement {
-    // console.log({ content, config });
+  public create(schema?: iBuilderSchema<TConfig>): HTMLElement {
+    // 🚪 ONE DOOR — a builder receives a schema, never a page node. The registry has
+    // already turned `{ builder, content, config, … }` into this shape; a builder built
+    // directly (a table inside a form field) passes the same shape by hand.
+    const input = schema ?? {};
+    if (input.config) this.config = this.resolveConfig(this.config, input.config);
+
+    // The rendered payload, defaulted once so every builder keeps tolerating an empty
+    // schema (`create()` / `create({})` is a valid call: it renders the component's
+    // empty state, not `undefined.x`).
+    const content = input.content ?? {};
+
     // 🎨 No component imports its own CSS: the sheet is requested at the end of this
     // method through the stylesheet seam, so a builder created outside the registry (a
     // table inside a form field, a dropdown inside an input) is styled by the same lazy
     // loader the registry uses — a static import would ride in the JS chunk and be
     // injected a second time.
-    const effectiveConfig = config || (content && typeof content === "object" ? (content as any).config : undefined);
-    if (effectiveConfig) this.config = this.resolveConfig(this.config, effectiveConfig);
 
     // Unified identity orchestration: seed, namespace, stack management
     const identity = this.ensureIdentity(content, this.config, { pushNamespace: true, popNamespace: true });
@@ -604,7 +627,7 @@ export abstract class Builder<TType extends string = string, TConfig extends iBu
     this.activeLiveThemeId = this.config?.themeId || document.body.dataset.theme?.replace(/^theme-/, "") || "default";
 
     // 🟢 PROXY-FIRST: Ubah seluruh payload 'content' menjadi Reactive Proxy sejak awal
-    content = this.setProxy(identity.namespace, content);
+    const body = this.setProxy(identity.namespace, content);
 
     // 🧩 CALLER WINDOW — anything instantiated from here on resolves THIS
     // builder as its caller (and therefore as its slot host).
@@ -613,13 +636,13 @@ export abstract class Builder<TType extends string = string, TConfig extends iBu
 
     try {
       // Gunakan 'this.data' (Proxy Matang) untuk proses prepare()
-      const DOMTree = this.prepare(content, this.config) as HTMLElement | null | undefined;
+      const DOMTree = this.prepare(body, this.config) as HTMLElement | null | undefined;
       if (!DOMTree || !(DOMTree instanceof HTMLElement)) {
         throw new Error(`[Builder:${String(this.builderId)}] prepare() returned no valid DOM element. Check selectors, template(), and the builder's render path.`);
       }
 
       // Detonasi event bindings interaktif klik browser
-      this.initialize(DOMTree, content);
+      this.initialize(DOMTree, body);
       this.#wire(DOMTree);
 
       this.hierarchy.update();
@@ -632,7 +655,7 @@ export abstract class Builder<TType extends string = string, TConfig extends iBu
       // heals itself. A component that implements `loading()` shows its own mockup
       // meanwhile; the rest fall back to the generic shimmer skin.
       const mockup = typeof this.loading === "function"
-        ? () => this.loading!(content, this.config)
+        ? () => this.loading!(body, this.config)
         : null;
       holdUntilStyled(DOMTree, this.#stylesheetSpecifier(), mockup);
 
@@ -1094,7 +1117,7 @@ export abstract class Builder<TType extends string = string, TConfig extends iBu
    *
    * @example
    * const builder = new SectionBuilder(config);
-   * builder.create(payload);
+   * builder.create({ content: payload });
    * const { html, keys } = builder.inspect();
    *
    * @summary Lives in the class body on purpose: `Builder.prototype` is frozen at the

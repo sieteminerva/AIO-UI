@@ -98,11 +98,11 @@ async function start(container: HTMLElement) {
   const emitter = new EventEmitter();
 
   const components = new ComponentRegistry(componentAssets)
+    .useEmitter((event, payload) => emitter.emit(event, payload as any))
     .register("form", (data: any) => {
       return {
         path: "@aio-ui/form",
         stylesheet: "@aio-ui/form/Form.css",
-        config: Object.assign({}, data?.config || {}, { emit: (event: any, payload: any) => emitter.emit(event, payload as any) }),
         schema: data?.schema !== undefined ? data.schema : (data?.content !== undefined ? data.content : data),
         // Form owns a table preview; the registry loads it with the form instead of
         // requiring the route to list it.
@@ -114,7 +114,6 @@ async function start(container: HTMLElement) {
       return {
         path: "@aio-ui/table",
         stylesheet: "@aio-ui/table/Table.css",
-        config: data?.config,
         schema: data?.schema !== undefined ? data.schema : (data?.content !== undefined ? data.content : data),
       };
     })
@@ -123,7 +122,6 @@ async function start(container: HTMLElement) {
       return {
         path: "@aio-ui/masonry",
         stylesheet: "@aio-ui/masonry/Masonry.css",
-        config: data?.config,
         schema: data?.schema !== undefined ? data.schema : (data?.content !== undefined ? data.content : data),
       };
     })
@@ -132,14 +130,13 @@ async function start(container: HTMLElement) {
       return {
         path: "@aio-ui/article",
         stylesheet: "@aio-ui/article/Article.css",
-        config: data?.config,
         schema: data?.schema !== undefined ? data.schema : (data?.content !== undefined ? data.content : data),
       };
     });
 
   // Semua modul diregister dulu, baru dipakai. Kelasnya sendiri yang jadi token:
-  // masing-masing mendeklarasikan `static readonly slot`, dan config menempel di
-  // tempat registrasinya — jadi `iAppConfig` tetap general.
+  // masing-masing mendeklarasikan `static readonly slot`, dan config menempel di node
+  // yang membangunnya — bukan di tempat registrasinya, jadi `iAppConfig` tetap general.
   const app = new AioApp({
     container,
     defaultRoute: 'home',

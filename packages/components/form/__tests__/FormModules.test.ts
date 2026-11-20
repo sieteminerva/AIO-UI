@@ -96,7 +96,7 @@ describe("form adapter manifest", () => {
     const loader = new ModuleLoader("form", FORM_ADAPTER_DEFINITIONS);
     const form = new FormBuilder({ modules: loader });
 
-    const el = form.create([{ type: "text", id: "routed-field", title: "Field" }] as any) as HTMLElement;
+    const el = form.create({ content: [{ type: "text", id: "routed-field", title: "Field" }] }) as HTMLElement;
     document.body.appendChild(el);
 
     const loaded = loader.loadedIds();
@@ -114,7 +114,7 @@ describe("Form.provideModules", () => {
     const form = stack();
     form.provideModules({ [INPUT_MODULE_IDS.dropdown]: adapter });
 
-    const el = form.create([{ type: "text", id: "inherited-field", title: "Field" }] as any) as HTMLElement;
+    const el = form.create({ content: [{ type: "text", id: "inherited-field", title: "Field" }] }) as HTMLElement;
     document.body.appendChild(el);
 
     const input = el.querySelector<HTMLInputElement>("#inherited-field");
@@ -125,7 +125,7 @@ describe("Form.provideModules", () => {
   it("renders a plain field when no input module was provided", () => {
     const form = stack();
 
-    const el = form.create([{ type: "text", id: "default-field", title: "Field" }] as any) as HTMLElement;
+    const el = form.create({ content: [{ type: "text", id: "default-field", title: "Field" }] }) as HTMLElement;
     document.body.appendChild(el);
 
     const input = el.querySelector<HTMLInputElement>("#default-field");
@@ -138,7 +138,7 @@ describe("Form.provideModules", () => {
     // built, not once per field halfway through the schema.
     const form = new FormBuilder();
 
-    expect(() => form.create([{ type: "text", id: "orphan", title: "Field" }] as any)).toThrow(
+    expect(() => form.create({ content: [{ type: "text", id: "orphan", title: "Field" }] })).toThrow(
       /@aio-ui\/form\/adapters/
     );
   });
@@ -163,7 +163,7 @@ describe("Form.provideModules", () => {
       },
     } as any);
 
-    const el = form.create([{ type: "text", id: "probe-field", title: "Field" }] as any) as HTMLElement;
+    const el = form.create({ content: [{ type: "text", id: "probe-field", title: "Field" }] }) as HTMLElement;
     document.body.appendChild(el);
 
     expect(phases).toEqual(["initialize"]);
@@ -186,7 +186,7 @@ describe("hand-wired modules (no registry, no shell)", () => {
     const loader = new ModuleLoader("form", [inputFormAdapter]);
     const form = new FormBuilder({ modules: loader });
 
-    const el = form.create([{ type: "text", id: "picked-field", title: "Field" }] as any) as HTMLElement;
+    const el = form.create({ content: [{ type: "text", id: "picked-field", title: "Field" }] }) as HTMLElement;
     document.body.appendChild(el);
 
     const input = el.querySelector<HTMLInputElement>("#picked-field");
@@ -203,9 +203,11 @@ describe("hand-wired modules (no registry, no shell)", () => {
     // `<select>` — the exact degradation the layer warns about.
     const form = new FormBuilder({ modules: new ModuleLoader("form", FORM_ADAPTER_DEFINITIONS) });
 
-    const el = form.create([
-      { type: "dropdown", id: "pick", title: "Pick", config: { options: [{ value: "a", label: "A" }] } },
-    ] as any) as HTMLElement;
+    const el = form.create({
+      content: [
+        { type: "dropdown", id: "pick", title: "Pick", config: { options: [{ value: "a", label: "A" }] } },
+      ],
+    }) as HTMLElement;
     document.body.appendChild(el);
 
     expect(el.querySelector("#pick")).not.toBeNull();
@@ -224,9 +226,11 @@ describe("hand-wired modules (no registry, no shell)", () => {
     const form = stack();
 
     expect(() =>
-      form.create([
-        { id: "group", title: "Group", actions: ["editor"], group: [{ type: "text", id: "in-group", title: "Field" }] },
-      ] as any)
+      form.create({
+        content: [
+          { id: "group", title: "Group", actions: ["editor"], group: [{ type: "text", id: "in-group", title: "Field" }] },
+        ],
+      })
     ).toThrow(/"controls" module is not in this builder's set/);
   });
 
@@ -257,7 +261,7 @@ describe("hand-wired modules (no registry, no shell)", () => {
     const form = new FormBuilder({
       modules: new ModuleLoader<iFormModuleContext, any>("form", definitions),
     });
-    const el = form.create([{ type: "text", id: "resolved-field", title: "Field" }] as any) as HTMLElement;
+    const el = form.create({ content: [{ type: "text", id: "resolved-field", title: "Field" }] }) as HTMLElement;
     document.body.appendChild(el);
 
     expect(el.querySelector<HTMLInputElement>("#resolved-field")).not.toBeNull();
@@ -270,7 +274,7 @@ describe("hand-wired modules (no registry, no shell)", () => {
     const form = stack();
     form.provideModules(Object.fromEntries(definitions.map((definition) => [String(definition.id), definition])));
 
-    const el = form.create([{ type: "text", id: "routed-field", title: "Field" }] as any) as HTMLElement;
+    const el = form.create({ content: [{ type: "text", id: "routed-field", title: "Field" }] }) as HTMLElement;
     document.body.appendChild(el);
 
     expect(el.querySelector<HTMLInputElement>("#routed-field")).not.toBeNull();

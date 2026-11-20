@@ -15,7 +15,7 @@ describe("ProductBuilder declarative contract and view swap (P8)", () => {
       onAddToCart: cartSpy,
     });
 
-    const root = builder.create({ items: sampleProducts });
+    const root = builder.create({ content: { items: sampleProducts } });
     expect(root).toBeTruthy();
     expect(root.querySelector(".grid") || root.querySelector(".row")).not.toBeNull();
 
@@ -43,7 +43,7 @@ describe("ProductBuilder declarative contract and view swap (P8)", () => {
       view: "detail",
     });
 
-    const root = builder.create({ items: sampleProducts, record: sampleProducts[0] });
+    const root = builder.create({ content: { items: sampleProducts, record: sampleProducts[0] } });
     expect(root.querySelector(".product-detail")).not.toBeNull();
   });
 });

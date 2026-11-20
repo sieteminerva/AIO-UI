@@ -17,7 +17,7 @@ const data = {
 };
 
 function build(payload: any = data, config: Record<string, any> = {}): HTMLElement {
-  return new TableBuilder().create(payload, { autoNumbering: false, editable: false, ...config }) as HTMLElement;
+  return new TableBuilder().create({ content: payload, config: { autoNumbering: false, editable: false, ...config } }) as HTMLElement;
 }
 
 describe("table", () => {

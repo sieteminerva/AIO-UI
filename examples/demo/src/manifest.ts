@@ -510,18 +510,16 @@ export const DEMO: iDemoEntry[] = [
 ];
 
 /**
- * Every entry shares one manifest shape.
+ * Every entry shares one manifest shape: how to load the component, nothing else.
  *
- * The payload is handed over as `schema` on purpose: the demo table already describes
- * what the builder takes, so no `data.content` unwrapping happens in between. That is
- * the difference between this app and the gallery, where content trees are authored as
- * nodes and the registry picks `content`.
+ * The payload is the build call's business — it arrives as a node
+ * (`{ builder, content, config }`), and the registry reduces that node to the builder's
+ * schema. A manifest that also carried `config` or `schema` would be a second authoring
+ * mode, and the two would disagree.
  */
 export function manifestFor(entry: iDemoEntry) {
-  return (data: unknown): iComponentManifest => ({
+  return (): iComponentManifest => ({
     path: entry.path,
     stylesheet: entry.stylesheet,
-    config: entry.config,
-    schema: data,
   });
 }

@@ -20,8 +20,14 @@ const sheet = readFileSync(
   "utf8",
 );
 
+/**
+ * Two wrappers on purpose: `create()` takes the schema, and Accordion still reads its own
+ * `{ content }` envelope. Batch D renames that inner key to a domain word.
+ */
+const schema = (content: any[] | any) => ({ content: { content } });
+
 function build(content: any[] | any): HTMLElement {
-  return new AccordionBuilder().create({ content }) as HTMLElement;
+  return new AccordionBuilder().create(schema(content)) as HTMLElement;
 }
 
 describe("accordion", () => {
@@ -62,18 +68,18 @@ describe("accordion", () => {
   });
 
   it("stamps the appearance on the root, never on the sections", () => {
-    const root = new AccordionBuilder({ appearance: "compact" }).create({
-      content: [{ title: "First", description: "One" }],
-    }) as HTMLElement;
+    const root = new AccordionBuilder({ appearance: "compact" }).create(
+      schema([{ title: "First", description: "One" }]),
+    ) as HTMLElement;
 
     expect(root.dataset.appearance).toBe("compact");
     expect(root.querySelector("details")?.hasAttribute("data-appearance")).toBe(false);
   });
 
   it("gives every section one shared native `name` when autoClose is on", () => {
-    const root = new AccordionBuilder({ autoClose: true }).create({
-      content: [{ title: "A" }, { title: "B" }],
-    }) as HTMLElement;
+    const root = new AccordionBuilder({ autoClose: true }).create(
+      schema([{ title: "A" }, { title: "B" }]),
+    ) as HTMLElement;
     const sections = Array.from(root.querySelectorAll("details"));
     const names = sections.map((section) => section.getAttribute("name"));
 
@@ -88,17 +94,15 @@ describe("accordion", () => {
   });
 
   it("opens every section for `expanded: true`", () => {
-    const root = new AccordionBuilder({ expanded: true }).create({
-      content: [{ title: "A" }, { title: "B" }],
-    }) as HTMLElement;
+    const root = new AccordionBuilder({ expanded: true }).create(schema([{ title: "A" }, { title: "B" }])) as HTMLElement;
 
     expect(root.querySelectorAll("details[open]")).toHaveLength(2);
   });
 
   it("opens only the first section when `expanded` meets `autoClose`", () => {
-    const root = new AccordionBuilder({ expanded: true, autoClose: true }).create({
-      content: [{ title: "A" }, { title: "B" }],
-    }) as HTMLElement;
+    const root = new AccordionBuilder({ expanded: true, autoClose: true }).create(
+      schema([{ title: "A" }, { title: "B" }]),
+    ) as HTMLElement;
     const sections = root.querySelectorAll("details");
 
     expect(sections[0].hasAttribute("open")).toBe(true);
@@ -106,12 +110,12 @@ describe("accordion", () => {
   });
 
   it("opens only the sections whose key `expanded` lists", () => {
-    const root = new AccordionBuilder({ expanded: ["second"] }).create({
-      content: [
+    const root = new AccordionBuilder({ expanded: ["second"] }).create(
+      schema([
         { id: "first", title: "A" },
         { id: "second", title: "B" },
-      ],
-    }) as HTMLElement;
+      ]),
+    ) as HTMLElement;
     const sections = root.querySelectorAll("details");
 
     expect(sections[0].hasAttribute("open")).toBe(false);
@@ -119,17 +123,17 @@ describe("accordion", () => {
   });
 
   it("turns motion off through `data-animation=\"none\"`", () => {
-    const root = new AccordionBuilder({ animation: false }).create({
-      content: [{ title: "A" }],
-    }) as HTMLElement;
+    const root = new AccordionBuilder({ animation: false }).create(
+      schema([{ title: "A" }]),
+    ) as HTMLElement;
 
     expect(root.dataset.animation).toBe("none");
   });
 
   it("passes a keyframe name through to the sheet", () => {
-    const root = new AccordionBuilder({ animation: { in: "popIn" } }).create({
-      content: [{ title: "A" }],
-    }) as HTMLElement;
+    const root = new AccordionBuilder({ animation: { in: "popIn" } }).create(
+      schema([{ title: "A" }]),
+    ) as HTMLElement;
 
     expect(root.dataset.animation).toBe("custom");
     expect(root.style.getPropertyValue("--accordion-anim-in-name")).toBe("popIn");

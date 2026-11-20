@@ -59,14 +59,14 @@ function payload() {
 describe("Builder.inspect()", () => {
   it("reports every key the instance registered", () => {
     const builder = new PanelBuilder();
-    builder.create(payload());
+    builder.create({ content: payload() });
 
     expect(builder.inspect().keys).toEqual(["@panel", "@panel>row", "@panel>foot"]);
   });
 
   it("inventories the elements each key owns, without duplicating across keys", () => {
     const builder = new PanelBuilder();
-    builder.create(payload());
+    builder.create({ content: payload() });
     const { hierarchy } = builder.inspect();
 
     // Two rows were built; the inventory is deduped by selector string.
@@ -77,7 +77,7 @@ describe("Builder.inspect()", () => {
 
   it("serialises the markup the instance actually produced", () => {
     const builder = new PanelBuilder();
-    builder.create(payload());
+    builder.create({ content: payload() });
     const { html } = builder.inspect();
 
     expect(html).toContain('class="panel"');
@@ -87,9 +87,9 @@ describe("Builder.inspect()", () => {
 
   it("is deterministic: the same payload inspects to the same data", () => {
     const first = new PanelBuilder();
-    first.create(payload());
+    first.create({ content: payload() });
     const second = new PanelBuilder();
-    second.create(payload());
+    second.create({ content: payload() });
 
     const a = first.inspect();
     const b = second.inspect();
@@ -101,14 +101,14 @@ describe("Builder.inspect()", () => {
 
   it("is idempotent: reading twice returns the same data", () => {
     const builder = new PanelBuilder();
-    builder.create(payload());
+    builder.create({ content: payload() });
 
     expect(builder.inspect()).toEqual(builder.inspect());
   });
 
   it("carries the root record, and says so honestly instead of faking a page graph", () => {
     const builder = new PanelBuilder();
-    builder.create(payload());
+    builder.create({ content: payload() });
     const { records } = builder.inspect();
 
     expect(records).toHaveLength(1);

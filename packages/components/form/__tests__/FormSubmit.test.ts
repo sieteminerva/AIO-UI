@@ -30,7 +30,7 @@ const schema = [
 ];
 
 async function submit(configure: (form: HTMLFormElement) => void): Promise<Record<string, any>> {
-  const form = builder().create(schema as any) as HTMLFormElement;
+  const form = builder().create({ content: schema }) as HTMLFormElement;
   document.body.appendChild(form);
 
   let payload: Record<string, any> | null = null;
@@ -88,7 +88,7 @@ describe("formSubmit payload", () => {
 describe("submit hooks", () => {
   it("calls config.onSubmit with the completed payload", async () => {
     const seen: any[] = [];
-    const form = builder().create(schema as any, { onSubmit: (data: any) => seen.push(data) } as any) as HTMLFormElement;
+    const form = builder().create({ content: schema, config: { onSubmit: (data: any) => seen.push(data) } }) as HTMLFormElement;
     document.body.appendChild(form);
 
     (form.querySelector("#name") as HTMLInputElement).value = "Budi";
@@ -102,9 +102,11 @@ describe("submit hooks", () => {
   });
 
   it("keeps dispatching formSubmit when onSubmit throws", async () => {
-    const form = builder().create(schema as any, {
-      onSubmit: () => { throw new Error("boom"); },
-    } as any) as HTMLFormElement;
+    const form = builder().create({
+      content: schema, config: {
+        onSubmit: () => { throw new Error("boom"); },
+      }
+    }) as HTMLFormElement;
     document.body.appendChild(form);
 
     let received = false;
@@ -121,7 +123,7 @@ describe("submit hooks", () => {
   });
 
   it("clears the controls before answering when resetOnSubmit is on", async () => {
-    const form = builder().create(schema as any, { resetOnSubmit: true } as any) as HTMLFormElement;
+    const form = builder().create({ content: schema, config: { resetOnSubmit: true } }) as HTMLFormElement;
     document.body.appendChild(form);
 
     let nameAtDispatch: string | null = null;

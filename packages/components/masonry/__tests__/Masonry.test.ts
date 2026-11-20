@@ -14,7 +14,7 @@ const items = [
 ];
 
 function build(data: any, config: Record<string, any> = {}): HTMLElement {
-  return new MasonryBuilder({ lazyload: false, useLoadButton: false, ...config }).create(data) as HTMLElement;
+  return new MasonryBuilder({ lazyload: false, useLoadButton: false, ...config }).create({ content: data }) as HTMLElement;
 }
 
 describe("masonry", () => {

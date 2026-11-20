@@ -12,7 +12,7 @@ import { inputFormAdapter } from "../Input.FormAdapter";
  * word stays reserved for `group`.
  */
 function renderForm(schema: any[]): HTMLFormElement {
-  return new FormBuilder({ modules: new ModuleLoader("form", [inputFormAdapter]) }).create(schema as any) as HTMLFormElement;
+  return new FormBuilder({ modules: new ModuleLoader("form", [inputFormAdapter]) }).create({ content: schema }) as HTMLFormElement;
 }
 
 describe("form rows", () => {

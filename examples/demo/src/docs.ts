@@ -87,7 +87,7 @@ export function usageOf(entry: iDemoEntry): iUsageView {
     fields: [
       { label: "Path", value: entry.path },
       { label: "Stylesheet", value: entry.stylesheet ?? "—" },
-      { label: "Builder", value: `build("${entry.name}", payload)` },
+      { label: "Builder", value: `build("${entry.name}", { content: payload })` },
       { label: "Hasil", value: RESULT_OF_KIND[entry.kind] },
       { label: "Config", value: configKeys.length ? configKeys.join(", ") : "—" },
     ],
@@ -95,11 +95,13 @@ export function usageOf(entry: iDemoEntry): iUsageView {
       `registry.register("${entry.name}", () => ({`,
       `  path: "${entry.path}",`,
       ...(entry.stylesheet ? [`  stylesheet: "${entry.stylesheet}",`] : []),
-      ...(configKeys.length ? [`  config: { ${configKeys.join(", ")} }, // lihat tab API`] : []),
-      "  schema: payload, // entry.payload dari manifest",
       "}));",
       "",
-      `const element = build("${entry.name}", ${preview(entry.payload)});`,
+      `const element = build("${entry.name}", {`,
+      `  builder: "${entry.name}",`,
+      `  content: ${preview(entry.payload)},`,
+      ...(configKeys.length ? [`  config: { ${configKeys.join(", ")} }, // lihat tab API`] : []),
+      `});`,
     ].join("\n"),
     limits: [
       ...(entry.kind === "modal"

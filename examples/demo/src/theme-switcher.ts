@@ -60,7 +60,8 @@ export const themeSwitcher = {
       const dock = new ThemeConsoleBuilder({}).create({});
 
       const menu = build("fab-menu", {
-        schema: {
+        builder: "fab-menu",
+        content: {
           title: "Theme",
           actions: [
             ...THEMES.map((id) => ({

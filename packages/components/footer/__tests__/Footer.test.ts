@@ -9,7 +9,7 @@ import { FooterBuilder } from "../Footer";
  */
 
 function build(payload: any, config: Record<string, any> = {}): HTMLElement {
-  return new FooterBuilder(config).create(payload) as HTMLElement;
+  return new FooterBuilder(config).create({ content: payload }) as HTMLElement;
 }
 
 describe("footer", () => {

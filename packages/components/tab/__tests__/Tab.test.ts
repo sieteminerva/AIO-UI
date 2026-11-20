@@ -16,7 +16,7 @@ import { TabBuilder } from "../Tab";
 const sheet = readFileSync(resolve(process.cwd(), "packages/components/tab/Tab.css"), "utf8");
 
 function build(content: any, config: Record<string, any> = {}): HTMLElement {
-  return new TabBuilder({ lazyload: false, ...config }).create(content) as HTMLElement;
+  return new TabBuilder({ lazyload: false, ...config }).create({ content }) as HTMLElement;
 }
 
 const content = {
@@ -127,11 +127,13 @@ describe("tab", () => {
       animation: { out: "slideDown" },
     });
     const root = builder.create({
-      menu: [
-        { label: "Satu", title: "Satu" },
-        { label: "Dua", title: "Dua" },
-      ],
-      body: [{ content: { title: "A" } }, { content: { title: "B" } }],
+      content: {
+        menu: [
+          { label: "Satu", title: "Satu" },
+          { label: "Dua", title: "Dua" },
+        ],
+        body: [{ content: { title: "A" } }, { content: { title: "B" } }],
+      },
     }) as HTMLElement;
     const panels = root.querySelectorAll<HTMLElement>(".body .panel");
 

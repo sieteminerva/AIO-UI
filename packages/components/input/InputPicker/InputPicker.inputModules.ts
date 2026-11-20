@@ -70,7 +70,7 @@ class PickerInputModule implements iInputAdapter {
       emit: this.#context.builderConfig.emit,
     });
 
-    return builder.create(payload);
+    return builder.create({ content: payload });
   }
 }
 

@@ -70,6 +70,7 @@ function mountTopMenu(host: HTMLElement, build: BuildFn): void {
   }));
 
   const child = build("menu", {
+    builder: "menu",
     content: { brand: TOP_BRAND, navigations },
     // `menu` swallows clicks by default; here its own navigation is exactly right — it
     // sets the hash and the router follows.

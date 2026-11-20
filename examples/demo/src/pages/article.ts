@@ -44,9 +44,10 @@ async function hydrateArticle(
     host.replaceChildren();
     host.mount(
       build("article", {
-        // The builder reads `content?.content || content`, so the API
-        // envelope goes in as the schema and `meta.links` drives pagination.
-        schema: envelope,
+        builder: "article",
+        // The API envelope is the content: `meta.links` drives pagination, and the
+        // registry no longer needs to unwrap a `{ schema }` wrapper.
+        content: envelope,
         config: {
           view: "card",
           recommendation: true,

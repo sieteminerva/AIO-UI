@@ -16,7 +16,7 @@ function build(config: Record<string, any> = {}): { root: HTMLElement; controls:
     destroyOnClose: false,
     onReady: (value) => (controls = value),
     ...config,
-  }).create(Object.assign(document.createElement("p"), { textContent: "Isi" })) as HTMLElement;
+  }).create({ content: Object.assign(document.createElement("p"), { textContent: "Isi" }) }) as HTMLElement;
 
   return { root, controls: controls as unknown as iModalControls };
 }

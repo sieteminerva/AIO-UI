@@ -14,7 +14,7 @@ import { inputFormAdapter } from "../Input.FormAdapter";
 const schema = [{ id: "g", title: "Grup", group: [{ type: "text", id: "name", title: "Nama" }] }];
 
 function build(config: Record<string, any>): HTMLFormElement {
-  return new FormBuilder({ modules: new ModuleLoader("form", [inputFormAdapter]) }).create(schema as any, config as any) as HTMLFormElement;
+  return new FormBuilder({ modules: new ModuleLoader("form", [inputFormAdapter]) }).create({ content: schema, config }) as HTMLFormElement;
 }
 
 describe("form header", () => {

@@ -9,7 +9,7 @@ import { FabMenuBuilder } from "../FabMenu";
  */
 
 function build(payload: any, config: Record<string, any> = {}): HTMLElement {
-  return new FabMenuBuilder({ duration: null, ...config }).create(payload) as HTMLElement;
+  return new FabMenuBuilder({ duration: null, ...config }).create({ content: payload }) as HTMLElement;
 }
 
 describe("fab menu", () => {

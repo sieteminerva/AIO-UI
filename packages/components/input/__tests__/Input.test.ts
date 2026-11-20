@@ -15,7 +15,7 @@ import { ModuleLoader } from "@aio-ui/module-loader";
 function build(schema: Record<string, any>, config: Record<string, any> = {}): { container: HTMLElement; control: HTMLElement } {
   // The layer ships no preset of its own since `0.2.2`, so this file states the one it
   // exercises. Degradation with no modules at all is pinned in `Modules.test.ts`.
-  const container = new InputBuilder({ modules: INPUT_MODULE_DEFINITIONS, ...config } as any).create(schema as any) as HTMLElement;
+  const container = new InputBuilder({ modules: INPUT_MODULE_DEFINITIONS, ...config } as any).create({ content: schema }) as HTMLElement;
   const control = container.querySelector("input, textarea, select") as HTMLElement;
   return { container, control };
 }

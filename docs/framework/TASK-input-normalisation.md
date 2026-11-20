@@ -1,7 +1,25 @@
 # TASK — input normalisation (schema door, content-once)
 
-**Status:** approved 2026-11-21 by the owner. **No code written yet.** Batches A–E below; A is the
-first edit. Supersedes `packages/components/DISCUSSION_ANALYSIS.md` (scratch, untracked).
+**Status:** batch A landed 2026-11-21 (see Landed). Batches B–E open. Supersedes
+`packages/components/DISCUSSION_ANALYSIS.md` (scratch, untracked).
+
+## Landed — batch A (2026-11-21)
+
+- `Builder.create(schema?)` with `iBuilderSchema = { content?, config? }`. `content ?? {}` is the
+  single default, so `create()` / `create({})` still render an empty state, not `undefined.x`.
+- `prepare()` / `initialize()` / `loading()` receive `schema.content`; the proxy wraps that value.
+- `mergeBuildConfig(theme, emitter, schemaConfig)` — three layers. `iComponentManifest.config` is
+  deleted; the registry recognises a node by `builder` and hands the builder one schema. A bare
+  payload is the content.
+- Demo and gallery manifests now carry loading facts only; demo call sites pass real nodes
+  (`{ builder, content, config }`) and the gallery attaches one emitter through
+  `registry.useEmitter()` instead of merging `emit` per registration. Batch B's first and last
+  bullets were pulled forward: A cannot compile against a manifest that still carries data.
+- ~40 call sites updated (base tests first). Two wrappers remain where a builder still reads its
+  own `{ content }` envelope — `accordion`, `input-controls` — and batch C/D remove them.
+- Proof: `npm run verify` green; browser measurements on the demo dev server — `#kitchen` badge
+  rendered, `#kitchen/accordion` 2 sections, `#form` 1 form / 42 fields, `#product` 6 cards with
+  variants, no `.error` panel on any route.
 
 ## Decision (approved 2026-11-21)
 
@@ -45,7 +63,7 @@ node or config; comes from theme/emitter/app → config; describes a shape → `
 
 ## Batches
 
-### A — door and registry
+### A — door and registry ✅ landed 2026-11-21
 
 - `Builder.create(schema)`; `prepare(schema.content, this.config)` (`base/src/Base.ts:590`).
 - Registry (`core/src/ComponentRegistry.ts:563-620`):
@@ -61,7 +79,7 @@ node or config; comes from theme/emitter/app → config; describes a shape → `
 - Proof: `inspect().html` per demo route (kitchen, form, product) and gallery page identical
   before/after, then `npm run verify`.
 
-### B — upstream carries no data
+### B — upstream carries no data (demo/gallery manifests done in A; nodes left)
 
 - `examples/demo/src/manifest.ts:525` → `{ path, stylesheet }` only; move `entry.config` to the
   build call (`pages/docs-panels.ts`, `previewPanel`).
@@ -122,6 +140,6 @@ as `legacy`. Then update `iBuilderRegistry` (`core/types/registry.ts:47-84`; `se
 
 ## Next
 
-Start batch A at `packages/base/src/Base.ts:590` (`create`) then
-`packages/core/src/ComponentRegistry.ts:563-620`. Capture `inspect().html` for the demo routes
-before the first edit; end A with `npm run verify`.
+Batch B remainder: verify and, if needed, convert `examples/gallery/src/content/wizard.ts:464`
+(`{ config, schema }` → a node). Then batch C — delete the compensation code, starting at
+`accordion/Accordion.ts:70-71`.

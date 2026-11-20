@@ -9,7 +9,7 @@ import { MessageBuilder } from "../Message";
  */
 
 function build(payload: any, config: Record<string, any> = {}): HTMLElement {
-  return new MessageBuilder({ duration: 0, ...config }).create(payload) as HTMLElement;
+  return new MessageBuilder({ duration: 0, ...config }).create({ content: payload }) as HTMLElement;
 }
 
 afterEach(() => {

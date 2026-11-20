@@ -37,6 +37,7 @@ function mountSidebar(host: HTMLElement, build: BuildFn, activeName: string): vo
   }));
 
   const menu = build("menu", {
+    builder: "menu",
     content: { brand: { label: "Modules", href: "#modules" }, navigations },
     config: {
       position: "left sticky",

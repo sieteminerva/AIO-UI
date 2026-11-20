@@ -56,7 +56,7 @@ class TableFormAdapter {
 
     // Step 1: Build the table through its own builder.
     const table = new TableBuilder();
-    const tableEl = table.create(spec.content);
+    const tableEl = table.create({ content: spec.content });
     if (spec.id) tableEl.id = spec.id;
 
     // Step 2: The group button appends the group's current values as a row.
@@ -112,7 +112,7 @@ class TableFormAdapter {
     // to) meant the table depended on the uploader and could only ever read one file.
     const tableData = await parseTableFile(fileInput.files[0]);
     const table = new TableBuilder({ renderAsCard: false, autoFreezeAt: 0 });
-    const tableEl = table.create(tableData);
+    const tableEl = table.create({ content: tableData });
 
     this.#preview = table;
     this.#previewKey = fileInput.name || fileInput.id || null;

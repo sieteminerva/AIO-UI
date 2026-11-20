@@ -32,6 +32,7 @@ function mountMain(host: HTMLElement, topic: iFormTopic, build: BuildFn): void {
   mountInto(
     host,
     build("tab", {
+      builder: "tab",
       content: {
         menu: [{ label: "Display" }, { label: "Usage" }, { label: "API" }],
         body: [

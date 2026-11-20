@@ -9,7 +9,7 @@ import { PricingCardBuilder } from "../PricingCard";
  */
 
 function build(data: any): HTMLElement {
-  return new PricingCardBuilder().create(data) as HTMLElement;
+  return new PricingCardBuilder().create({ content: data }) as HTMLElement;
 }
 
 describe("pricing card", () => {

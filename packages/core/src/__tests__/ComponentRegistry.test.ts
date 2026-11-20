@@ -13,6 +13,8 @@ import { BUILDER_INSTANCE } from "../Registry/BuilderInstances";
 interface FakeInstance {
   config: Record<string, unknown>;
   modules: Record<string, unknown>;
+  /** The schema `create()` received — the whole door, exactly as passed. */
+  schema: { content?: unknown; config?: Record<string, unknown> } | undefined;
   content: unknown;
   isLoaded: boolean;
 }
@@ -23,6 +25,7 @@ function makeBuilderClass(sink: FakeInstance[]) {
 
     config: Record<string, unknown>;
     modules: Record<string, unknown> = {};
+    schema: { content?: unknown; config?: Record<string, unknown> } | undefined;
     content: unknown;
     isLoaded = true;
 
@@ -34,8 +37,9 @@ function makeBuilderClass(sink: FakeInstance[]) {
       this.modules = modules;
     }
 
-    create(content: unknown): unknown {
-      this.content = content;
+    create(schema?: { content?: unknown; config?: Record<string, unknown> }): unknown {
+      this.schema = schema;
+      this.content = schema?.content;
       sink.push(this as unknown as FakeInstance);
       return { tagName: "DIV" } as unknown as HTMLElement;
     }
@@ -140,22 +144,26 @@ describe("ComponentRegistry manifest contract", () => {
     registry.register("form", () => ({ path: "@fake/form" }));
 
     await registry.load(["form"]);
-    const element = registry.build("form", { config: { b: 2 } });
+    const element = registry.build("form", { builder: "form", content: {}, config: { b: 2 } });
 
     expect(element).toBeTruthy();
     expect(instances).toHaveLength(1);
   });
 
-  it("merges manifest config under the node config", async () => {
+  it("merges theme and emitter config, then the node's own config last", async () => {
+    const emit = vi.fn();
     const registry = new ComponentRegistry(
       makeAssets({ "@fake/form": async () => ({ default: makeBuilderClass(instances) }) }),
     );
-    registry.register("form", () => ({ path: "@fake/form", config: { a: 1, shared: "manifest" } }));
+    registry.useEmitter(emit);
+    registry.register("form", () => ({ path: "@fake/form" }));
 
     await registry.load(["form"]);
-    registry.build("form", { config: { b: 2, shared: "node" } });
+    registry.setConfig("form", { fromTheme: true });
+    registry.build("form", { builder: "form", content: {}, config: { b: 2, emit: null } });
 
-    expect(instances[0].config).toMatchObject({ a: 1, b: 2, shared: "node" });
+    // The node is the last layer: it can silence the emitter the host attached.
+    expect(instances[0].config).toMatchObject({ fromTheme: true, b: 2, emit: null });
   });
 
   it("hands the manifest schema to the builder instead of the node content", async () => {
@@ -165,7 +173,7 @@ describe("ComponentRegistry manifest contract", () => {
     registry.register("form", () => ({ path: "@fake/form", schema: { from: "schema" } }));
 
     await registry.load(["form"]);
-    registry.build("form", { content: { from: "node" } });
+    registry.build("form", { builder: "form", content: { from: "node" } });
 
     expect(instances[0].content).toEqual({ from: "schema" });
   });
@@ -177,9 +185,22 @@ describe("ComponentRegistry manifest contract", () => {
     registry.register("form", () => ({ path: "@fake/form" }));
 
     await registry.load(["form"]);
-    registry.build("form", { content: { from: "node" } });
+    registry.build("form", { builder: "form", content: { from: "node" } });
 
     expect(instances[0].content).toEqual({ from: "node" });
+  });
+
+  it("treats a bare payload as the content of the schema", async () => {
+    const registry = new ComponentRegistry(
+      makeAssets({ "@fake/form": async () => ({ default: makeBuilderClass(instances) }) }),
+    );
+    registry.register("form", () => ({ path: "@fake/form" }));
+
+    await registry.load(["form"]);
+    registry.build("form", { from: "payload" });
+
+    // One door: `{ content }`, whether the content came from a node or a bare payload.
+    expect(instances[0].schema).toEqual({ content: { from: "payload" }, config: {} });
   });
 
   it("resolves declared sub-modules and provides them to the builder", async () => {

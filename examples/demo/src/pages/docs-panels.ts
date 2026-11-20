@@ -57,7 +57,11 @@ export function previewPanel(entry: iDemoEntry, build: BuildFn): HTMLElement {
     let opener: HTMLElement | null = null;
 
     try {
-      const built = build(entry.name, variant.payload);
+      const built = build(entry.name, {
+        builder: entry.name,
+        content: variant.payload,
+        config: entry.config,
+      });
       mountInto(frame, built);
       block.dataset.status = "ok";
 
@@ -205,6 +209,7 @@ export function mountSidebar(host: HTMLElement, build: BuildFn, activeName: stri
   mountInto(
     host,
     build("menu", {
+      builder: "menu",
       content: { brand, navigations },
       config: {
         position: "left sticky",

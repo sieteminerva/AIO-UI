@@ -39,7 +39,7 @@ const schema = [
 ];
 
 function build(mode: "template" | "hidden"): HTMLFormElement {
-  return builder().create(schema as any, { cascading: true, cascadeMode: mode } as any) as HTMLFormElement;
+  return builder().create({ content: schema, config: { cascading: true, cascadeMode: mode } }) as HTMLFormElement;
 }
 
 async function type(form: HTMLFormElement, id: string, value: string): Promise<void> {
@@ -114,7 +114,7 @@ describe("multistep gate", () => {
   ];
 
   function buildSteps(): HTMLFormElement {
-    return builder().create(steps as any, { multistep: true } as any) as HTMLFormElement;
+    return builder().create({ content: steps, config: { multistep: true } }) as HTMLFormElement;
   }
 
   const active = (form: HTMLFormElement) =>
@@ -159,7 +159,7 @@ describe("cascade and a repeated scope", () => {
   ];
 
   const render = (mode: "template" | "hidden") =>
-    builder().create(repeatable as any, { cascading: true, cascadeMode: mode } as any) as HTMLFormElement;
+    builder().create({ content: repeatable, config: { cascading: true, cascadeMode: mode } }) as HTMLFormElement;
 
   const tick = () => new Promise((resolve) => setTimeout(resolve, 0));
 

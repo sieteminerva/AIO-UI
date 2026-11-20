@@ -61,7 +61,7 @@ export function formDisplayPanel(topic: iFormTopic, build: BuildFn): HTMLElement
 
   let built: any;
   try {
-    built = build("form", { schema: topic.demo.schema, config: topic.demo.config });
+    built = build("form", { builder: "form", content: topic.demo.schema, config: topic.demo.config });
     mountInto(frame, built);
     block.dataset.status = "ok";
   } catch (error) {
@@ -157,6 +157,7 @@ export function mountFormSidebar(host: HTMLElement, build: BuildFn, activeId: st
   mountInto(
     host,
     build("menu", {
+      builder: "menu",
       content: { brand: { label: "Form docs", href: "#form" }, navigations },
       config: {
         position: "left sticky",

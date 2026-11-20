@@ -217,7 +217,7 @@ export class InputAttributeBuilder {
         input: attrType,
         value,
         ...(schemaDef.config ? { config: schemaDef.config } : {}),
-        template: new InputBuilder().create(attrConfig),
+        template: new InputBuilder().create({ content: attrConfig }),
       };
     }
 

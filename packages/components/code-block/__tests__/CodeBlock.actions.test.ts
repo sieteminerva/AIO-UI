@@ -18,7 +18,7 @@ beforeEach(() => {
 });
 
 const build = (config: ConstructorParameters<typeof CodeBlockBuilder>[0], payload: any) =>
-  new CodeBlockBuilder(config).create(payload);
+  new CodeBlockBuilder(config).create({ content: payload });
 
 describe("Code Block actions", () => {
   it("renders no action row when nothing is configured", () => {

@@ -26,6 +26,7 @@ function mountMain(host: HTMLElement, entry: iDemoEntry, build: BuildFn): void {
   mountInto(
     host,
     build("tab", {
+      builder: "tab",
       content: {
         // No `title` here: the tab prints label and title, so a title repeats the label.
         menu: [{ label: "Display" }, { label: "Usage" }, { label: "API" }],
@@ -35,7 +36,7 @@ function mountMain(host: HTMLElement, entry: iDemoEntry, build: BuildFn): void {
             content: {
               eyebrow: `${entry.category} · ${entry.tier}`,
               title: entry.name,
-              description: `build("${entry.name}", payload)`,
+              description: `build("${entry.name}", { content: payload })`,
             },
           },
           { id: "panel-usage", content: usagePanel(entry, build) },

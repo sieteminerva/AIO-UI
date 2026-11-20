@@ -6,12 +6,12 @@ import { releaseBuilders as releasePinnedBuilders, attachBuilder } from "./Regis
 import { injectLazyCss, isStyleInjected, useStylesheetAssets } from "./Stylesheets";
 
 /**
- * Layered config for one build: `theme < emitter < manifest < node`.
+ * Layered config for one build: `theme < emitter < schema`.
  *
  * The emitter sits above the theme so every builder gets a publisher even when a theme
- * configured it, and below the manifest/node so a component can still set its own — or
- * silence it with `emit: null`. Selectors are merged across the three layers so a node
- * that overrides one key keeps the rest.
+ * configured it, and below the schema so a component can still set its own — or silence it
+ * with `emit: null`. Selectors are merged across the layers so a schema that overrides one
+ * key keeps the rest.
  *
  * Pure and exported: the merge is the one part of `build()` that can be pinned down
  * without a DOM.
@@ -19,20 +19,18 @@ import { injectLazyCss, isStyleInjected, useStylesheetAssets } from "./Styleshee
 export function mergeBuildConfig(
   theme: Record<string, any> | undefined,
   emitter: iEventEmit | null,
-  manifest: Record<string, any> | undefined,
-  node: Record<string, any> | undefined
+  schema: Record<string, any> | undefined
 ): Record<string, any> {
   const merged: Record<string, any> = { ...theme };
   if (emitter) merged.emit = emitter;
-  if (manifest) Object.assign(merged, manifest);
 
-  const user = node ?? {};
+  const user = schema ?? {};
   Object.assign(merged, user);
 
-  // Selectors merge *per key and per property*: a node that overrides `{ "@menu": { id } }`
+  // Selectors merge *per key and per property*: a schema that overrides `{ "@menu": { id } }`
   // keeps the theme's other `@menu` properties instead of dropping the whole object.
   const selectors: Record<string, any> = {};
-  for (const source of [theme, manifest, user]) {
+  for (const source of [theme, user]) {
     if (!source?.selectors || typeof source.selectors !== "object") continue;
     for (const [key, value] of Object.entries(source.selectors)) {
       const previous = selectors[key];
@@ -66,8 +64,6 @@ export interface iComponentManifest {
    * this registration means.
    */
   export?: string;
-  /** Default configuration, merged beneath the node's own config. */
-  config?: any;
   /** Payload handed to the builder. When omitted, the node content is used. */
   schema?: any;
   /** Sub-modules this component owns, loaded alongside it. */
@@ -573,24 +569,24 @@ export class ComponentRegistry {
 
     // 1. Every registration returns a manifest: there are no variants to detect.
     const manifest = fn(data);
-    const manifestConfig = manifest.config;
 
-    // 2. Content payload: the manifest wins; otherwise the node content is used.
+    // 2. Node or bare payload? The discriminator is the one `DOMRenderer` already uses:
+    //    a node carries `builder`. A bare payload (a test building a component directly)
+    //    IS the content.
     const activeThemeConfig = this._dynamicConfigs.get(name) || {};
-    const nodeRecord = isPlainRecord(data) ? data : null;
-    const contentPayload = manifest.schema !== undefined
+    const isNode = isPlainRecord(data) && typeof (data as any).builder === "string";
+    const nodeData = isNode ? (data as Record<string, any>) : null;
+    const content = manifest.schema !== undefined
       ? manifest.schema
-      : (nodeRecord && nodeRecord.content !== undefined ? nodeRecord.content : data);
+      : nodeData ? nodeData.content : data;
+    const userConfig = nodeData ? (nodeData.config || {}) : {};
 
-    // 4. Merge config — PRIORITAS = tema < emitter < manifest (default registrasi) < userConfig (instance/node).
-    //    Instance (node.config) menang atas default registrasi; tema jadi lapisan terbawah.
-    //    `selectors` digabung sehingga override parsial (mis. sidebar hanya mengirim
-    //    `{ "@menu": { id } }`) tidak menimpa seluruh selectors default milik builder.
-    const userConfig = nodeRecord ? (nodeRecord.config || {}) : {};
-    const finalMergedConfig = mergeBuildConfig(activeThemeConfig, this.#emitter, manifestConfig, userConfig);
+    // 3. One schema for the builder: `{ content, config }`. The registry never guesses the
+    //    payload shape beyond that.
+    const schemaConfig = mergeBuildConfig(activeThemeConfig, this.#emitter, userConfig);
 
-    if (nodeRecord && nodeRecord.config) {
-      nodeRecord.config = finalMergedConfig;
+    if (nodeData && nodeData.config) {
+      nodeData.config = schemaConfig;
     }
 
     // 5. The stylesheet is not the registry's business any more: `Builder.create()`
@@ -603,7 +599,7 @@ export class ComponentRegistry {
     const cachedClass = this._resolvedCache.get(name as string);
     if (cachedClass && typeof cachedClass === "function") {
       try {
-        const instance = new cachedClass(finalMergedConfig);
+        const instance = new cachedClass(schemaConfig);
         if (instance && typeof instance.create === "function") {
           // Hand over the sub-modules resolved during load(); a builder without
           // a provideModules() implementation simply ignores them.
@@ -614,7 +610,7 @@ export class ComponentRegistry {
           // 🧊 The hold and its release live in `create()` (see the stylesheet seam):
           // the builder knows whether its own sheet is missing, and it releases the
           // root it holds even when the sheet never arrives.
-          const builtElement = instance.create(contentPayload, finalMergedConfig);
+          const builtElement = instance.create({ content, config: schemaConfig });
           if (!builtElement) {
             throw new Error(`[ComponentRegistry] Builder "${String(name)}" created a null element. Check prepare()/create() or selector definitions.`);
           }

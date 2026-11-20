@@ -47,15 +47,18 @@ class DropdownInputModule implements iInputAdapter {
       emit: this.#context.builderConfig.emit,
     });
 
-    const element = builder.create(payload, {
-      apiUrl: cfg.apiUrl || null,
-      debounceDelay: cfg.debounceDelay,
-      style: cfg.style || "select",
-      min: cfg.min,
-      max: cfg.max,
-      isMultiple: cfg.isMultiple,
-      onSelect: cfg.onSelect,
-      onMultiChange: cfg.onMultiChange,
+    const element = builder.create({
+      content: payload,
+      config: {
+        apiUrl: cfg.apiUrl || null,
+        debounceDelay: cfg.debounceDelay,
+        style: cfg.style || "select",
+        min: cfg.min,
+        max: cfg.max,
+        isMultiple: cfg.isMultiple,
+        onSelect: cfg.onSelect,
+        onMultiChange: cfg.onMultiChange,
+      },
     });
 
     // The dropdown root already is a `.field`-shaped block: give its hidden input the

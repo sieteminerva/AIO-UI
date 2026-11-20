@@ -5,7 +5,9 @@ import {
   AppStorage,
   isStyleInjected,
   replaceLazyCss,
-  type iComponentModuleRef,
+  type iComponentManifest,
+  type iComponentRoute,
+  type iComponentModuleRef
 } from '@aio-ui/core';
 import { AnimationsService, EventEmitter, HttpService, HashRouter, ThemeRenderer } from '@aio-ui/modules';
 import { DefaultTheme, CyberpunkTheme, } from '@aio-ui/themes';
@@ -43,7 +45,6 @@ import { ModulesPage } from './pages/modules';
 import { ProductPage } from './pages/product';
 import { componentAssets } from './registry.assets';
 import { productModules } from '@aio-ui/product';
-import type { iComponentRoute } from '@aio-ui/core';
 
 /**
  * Dev-only: an edited component stylesheet arrives as text, not as a reload.
@@ -106,17 +107,15 @@ const componentRoutes: iComponentRoute[] = [
 
 const themeStorage = globalThis.localStorage;
 
-/** Page components split `{ config, schema }` instead of treating the whole node as payload. */
+/** Page components declare how they load; the node carries `content` and `config`. */
 function pageComponent(path: string, stylesheet?: string, modules?: iComponentModuleRef[], exportName?: string) {
-  return (data: any) => ({
+  return (): iComponentManifest => ({
     path,
     stylesheet,
     modules,
     // A package that ships several builders has to say which one this word means;
     // without it the loader would take the first exported function for every word.
     export: exportName,
-    config: data?.config,
-    schema: data?.schema !== undefined ? data.schema : data?.content !== undefined ? data.content : data,
   });
 }
 

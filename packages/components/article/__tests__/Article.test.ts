@@ -24,7 +24,7 @@ describe("ArticleBuilder views and navigation contract (P7)", () => {
       navigate: navigateSpy,
     });
 
-    const root = builder.create(data);
+    const root = builder.create({ content: data });
     expect(root).toBeTruthy();
     expect(root.querySelector('[data-view="list"]')).not.toBeNull();
 
@@ -61,7 +61,7 @@ describe("ArticleBuilder views and navigation contract (P7)", () => {
       navigate: navigateSpy,
     });
 
-    const root = builder.create(data);
+    const root = builder.create({ content: data });
 
     const detail = root.querySelector("article.detail");
     expect(detail).not.toBeNull();
@@ -73,7 +73,7 @@ describe("ArticleBuilder views and navigation contract (P7)", () => {
   it("falls back to the list when the deep-linked slug is not in the payload", () => {
     const builder = new ArticleBuilder({ initialSlug: "missing", initialView: "detail" });
 
-    const root = builder.create(data);
+    const root = builder.create({ content: data });
 
     expect(root.querySelector('[data-view="list"]')).not.toBeNull();
     expect(root.querySelector("article.detail")).toBeNull();
@@ -82,7 +82,7 @@ describe("ArticleBuilder views and navigation contract (P7)", () => {
   it("does not render a view the config leaves out", () => {
     const builder = new ArticleBuilder({ views: [{ view: "list" }] });
 
-    const root = builder.create(data);
+    const root = builder.create({ content: data });
 
     expect(root.querySelector('[data-view="list"]')).not.toBeNull();
     expect(root.querySelector('[data-view="controls"]')).toBeNull();

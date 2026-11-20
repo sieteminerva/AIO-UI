@@ -79,11 +79,13 @@ describe("degradation without modules", () => {
 
   function render(type: string): HTMLElement {
     return new InputBuilder({ modules: [] }).create({
-      type,
-      id: `f-${type}`,
-      title: type,
-      config: { options: [{ value: "a", label: "A" }] },
-    } as any) as HTMLElement;
+      content: {
+        type,
+        id: `f-${type}`,
+        title: type,
+        config: { options: [{ value: "a", label: "A" }] },
+      },
+    }) as HTMLElement;
   }
 
   it("covers the whole declared matrix", () => {

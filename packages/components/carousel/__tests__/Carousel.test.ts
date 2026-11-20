@@ -15,7 +15,7 @@ const slides = [
 ];
 
 function build(data: any): HTMLElement {
-  return new CarouselBuilder({ autoPlay: false, showControl: true, showNavigation: true }).create(data) as HTMLElement;
+  return new CarouselBuilder({ autoPlay: false, showControl: true, showNavigation: true }).create({ content: data }) as HTMLElement;
 }
 
 describe("carousel", () => {
@@ -30,6 +30,7 @@ describe("carousel", () => {
   });
 
   it("accepts the wrapped { content } shape as well", () => {
+    // The door consumes one wrapper; the builder's own unwrap survives until batch C.
     const root = build({ content: slides });
 
     expect(root.querySelectorAll(".slide")).toHaveLength(2);
@@ -43,7 +44,7 @@ describe("carousel", () => {
   });
 
   it("marks the carousel as auto-controlled when the default options are kept", () => {
-    const root = new CarouselBuilder({ autoPlay: false }).create(slides) as HTMLElement;
+    const root = new CarouselBuilder({ autoPlay: false }).create({ content: slides }) as HTMLElement;
 
     expect(root.className).toContain("auto-controls");
     expect(root.className).toContain("anim-fade");
@@ -67,7 +68,7 @@ describe("carousel", () => {
       const stop = vi.spyOn(window, "clearInterval");
 
       const builder = new CarouselBuilder({ autoPlay: 1000 });
-      const root = builder.create(slides) as HTMLElement;
+      const root = builder.create({ content: slides }) as HTMLElement;
       const track = root.querySelector(".track") as HTMLElement;
 
       expect(start).toHaveBeenCalledTimes(1);

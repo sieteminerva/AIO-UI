@@ -52,6 +52,7 @@ function mountCatalog(host: HTMLElement, products: iProductRecord[], build: Buil
     // One node, one registration: the list ⇄ detail composition happens inside it, driven
     // by the sub-modules `productModules()` declares on the registration.
     const catalog = build("product", {
+      builder: "product",
       content: { items: listOf() },
       config: {
         onAddToCart: ({ product, color }: { product: iProductRecord; color?: { name?: string } }) => {

@@ -23,10 +23,12 @@ const ICONS = ["gear", "user", "checkmark", "close", "plus", "search"];
 
 function build(overrides: Record<string, unknown> = {}): HTMLElement {
   return new PickerBuilder({ kind: "icon", columns: 3, ...overrides }).create({
-    id: "featureIcon",
-    title: "Pilih Ikon",
-    name: "featureIcon",
-    options: ICONS,
+    content: {
+      id: "featureIcon",
+      title: "Pilih Ikon",
+      name: "featureIcon",
+      options: ICONS,
+    },
   }) as HTMLElement;
 }
 
@@ -67,7 +69,7 @@ describe("picker", () => {
   it("splits an icon name on dots and spaces, so a multi-word class never reaches classList", () => {
     // `classList.add("hand swipe")` throws: the name is two classes, not one token.
     const root = new PickerBuilder().create({
-      options: ["user.settings", "hand swipe"],
+      content: { options: ["user.settings", "hand swipe"] },
     }) as HTMLElement;
 
     const dotted = cell(root, "user.settings").querySelector("i.icon")!;
@@ -146,10 +148,9 @@ describe("picker", () => {
 
   it("accepts a preset selection, as an array or a comma string", () => {
     const many = new PickerBuilder({ isMultiple: true }).create({
-      options: ICONS,
-      value: ["gear", "close"],
+      content: { options: ICONS, value: ["gear", "close"] },
     }) as HTMLElement;
-    const one = new PickerBuilder().create({ options: ICONS, value: "user" }) as HTMLElement;
+    const one = new PickerBuilder().create({ content: { options: ICONS, value: "user" } }) as HTMLElement;
 
     expect(many.querySelector<HTMLInputElement>(".value")!.value).toBe("gear,close");
     expect(cell(many, "close").getAttribute("aria-selected")).toBe("true");
@@ -177,11 +178,13 @@ describe("picker input module", () => {
 
   it("builds the picker through InputBuilder, reading the flat settings", () => {
     const root = new InputBuilder({ modules: [pickerInputModule] }).create({
-      type: "picker",
-      id: "featureIcon",
-      title: "Pilih Ikon",
-      value: "gear",
-      config: { style: "icon", column: 4, options: ICONS },
+      content: {
+        type: "picker",
+        id: "featureIcon",
+        title: "Pilih Ikon",
+        value: "gear",
+        config: { style: "icon", column: 4, options: ICONS },
+      },
     } as any);
 
     const picker = inner(root);
@@ -194,10 +197,12 @@ describe("picker input module", () => {
 
   it("falls back to a native select and says which module is missing", () => {
     const root = new InputBuilder({ modules: [] }).create({
-      type: "picker",
-      id: "featureIcon",
-      title: "Pilih Ikon",
-      config: { options: ["gear", "user"] },
+      content: {
+        type: "picker",
+        id: "featureIcon",
+        title: "Pilih Ikon",
+        config: { options: ["gear", "user"] },
+      },
     } as any);
 
     expect(root.querySelector(".picker")).toBeNull();

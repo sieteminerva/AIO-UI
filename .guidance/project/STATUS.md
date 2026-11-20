@@ -8,11 +8,11 @@
 
 ### 1. Input normalisation — `create(schema)` + content-once
 
-Decided (batch 41): the builder door is `create(schema = { content, config })`; `manifest.config`
-is deleted; the registry wraps node→schema and recognises a node by `builder`; `content` appears
-**once** — inner payload keys rename to domain words (section → `columns`/`blocks`); a builder
-never touches the node. Batches A–E, **A first**. **Open:** per-component domain names (D),
-issue severity (E). Nothing written yet.
+**Batch A landed** (2026-11-21): `create(schema = { content, config })`, `manifest.config` deleted,
+registry wraps node→schema by `builder`, `mergeBuildConfig` three layers, ~40 call sites moved.
+Proof: `verify` green + demo browser counts (form 42 fields, product 6 cards, accordion 2).
+**Open:** B remainder (gallery `wizard`), then C (delete the 7 unwraps + root identity), D (domain
+names), E (contract + severity).
 → `docs/framework/TASK-input-normalisation.md`
 
 ### 2. Release 0.2.4 — HELD until normalisation lands

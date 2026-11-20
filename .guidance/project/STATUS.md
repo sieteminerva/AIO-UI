@@ -1,4 +1,4 @@
-# Logbook — one card
+# Logbook — the cards
 
 > Orientation only: read the cards, report them, ask which card. Open a card's detail doc
 > **only** after the user picks it — never "to orient" (`AGENT_RULES.md` §13). Rewritten each
@@ -37,5 +37,7 @@ unwritten; it is an improvement, not a blocker.
 ## Cross-project
 
 - Official release waits for the `store`, `profile`, `blog` references (`gallery` exists).
-- Tree, packages and last tag are at **`0.2.3`** (pre-release).
+- Tree, packages and last tag are at **`0.2.4`** (pre-release, tag `v0.2.4` = branch `5eeee94`).
+- `main` is **28 commits ahead of `origin/main`** — the release branch and tag are pushed, the
+  source branch is not. One command when the owner wants it: `git push origin main`.
 - Scratch is `temp/` (deletable whole); `releases/` is the branch worktree, not scratch.

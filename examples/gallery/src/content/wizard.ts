@@ -459,9 +459,11 @@ const formContent = [
   ConfirmationSet,
 ]
 
+/** One node: `builder` is the discriminator the registry reads, `content` the fields. */
 const wizard = {
+  builder: "form" as const,
+  content: formContent,
   config: formConfig,
-  schema: formContent
 }
 
 function mountWizard(container: HTMLElement, builderFn: any): void {

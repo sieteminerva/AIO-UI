@@ -17,6 +17,7 @@ import '@aio-ui/skeleton/Skeleton.css';
 import './style.css';
 
 import { EventEmitter } from '@aio-ui/event-emitter';
+import { FORM_ADAPTER_MANIFEST } from '@aio-ui/form/FormRegistry';
 import { HttpService } from '@aio-ui/http-service';
 import { DefaultTheme } from '@aio-ui/theme-default';
 import { HorizontalTheme } from '@aio-ui/theme-horizontal';
@@ -99,38 +100,39 @@ async function start(container: HTMLElement) {
 
   const components = new ComponentRegistry(componentAssets)
     .useEmitter((event, payload) => emitter.emit(event, payload as any))
-    .register("form", (data: any) => {
+    .register("form", () => {
       return {
         path: "@aio-ui/form",
         stylesheet: "@aio-ui/form/Form.css",
-        schema: data?.schema !== undefined ? data.schema : (data?.content !== undefined ? data.content : data),
-        // Form owns a table preview; the registry loads it with the form instead of
-        // requiring the route to list it.
-        modules: [{ id: "table" }],
+        // The package ships four exports; the loader must not guess which is the builder.
+        export: "FormBuilder",
+        // Fields are rendered by adapters, and the form owns none of them: without this
+        // stack every field type throws "No module rendered the field".
+        modules: [
+          ...FORM_ADAPTER_MANIFEST,
+          { id: "table", path: "@aio-ui/table/adapters/FormAdapter", export: "tableFormAdapter" },
+        ],
       };
     })
 
-    .register("table", (data: any) => {
+    .register("table", () => {
       return {
         path: "@aio-ui/table",
         stylesheet: "@aio-ui/table/Table.css",
-        schema: data?.schema !== undefined ? data.schema : (data?.content !== undefined ? data.content : data),
       };
     })
 
-    .register("masonry", (data: any) => {
+    .register("masonry", () => {
       return {
         path: "@aio-ui/masonry",
         stylesheet: "@aio-ui/masonry/Masonry.css",
-        schema: data?.schema !== undefined ? data.schema : (data?.content !== undefined ? data.content : data),
       };
     })
 
-    .register("article", (data: any) => {
+    .register("article", () => {
       return {
         path: "@aio-ui/article",
         stylesheet: "@aio-ui/article/Article.css",
-        schema: data?.schema !== undefined ? data.schema : (data?.content !== undefined ? data.content : data),
       };
     });
 

@@ -10,9 +10,10 @@
 
 **Batch A landed** (2026-11-21): `create(schema = { content, config })`, `manifest.config` deleted,
 registry wraps node→schema by `builder`, `mergeBuildConfig` three layers, ~40 call sites moved.
-Proof: `verify` green + demo browser counts (form 42 fields, product 6 cards, accordion 2).
-**Open:** B remainder (gallery `wizard`), then C (delete the 7 unwraps + root identity), D (domain
-names), E (contract + severity).
+**Batch B landed**: the gallery wizard passes a node, registrations carry loading facts only, and
+the gallery form finally has its adapter stack (export + `FORM_ADAPTER_MANIFEST`).
+Proof: `verify` green + browser counts (demo form 42 fields; gallery `#form` 21 fields, 5 groups).
+**Open:** C (delete the 7 unwraps + root identity), D (domain names), E (contract + severity).
 → `docs/framework/TASK-input-normalisation.md`
 
 ### 2. Release 0.2.4 — HELD until normalisation lands

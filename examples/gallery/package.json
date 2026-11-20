@@ -16,6 +16,7 @@
     "@aio-ui/event-emitter": "*",
     "@aio-ui/form": "*",
     "@aio-ui/http-service": "*",
+    "@aio-ui/input": "*",
     "@aio-ui/masonry": "*",
     "@aio-ui/message": "*",
     "@aio-ui/rating": "*",

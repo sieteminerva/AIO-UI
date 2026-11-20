@@ -21,6 +21,20 @@
   rendered, `#kitchen/accordion` 2 sections, `#form` 1 form / 42 fields, `#product` 6 cards with
   variants, no `.error` panel on any route.
 
+## Landed — batch B (2026-11-21)
+
+- `examples/gallery/src/content/wizard.ts` passes a node: `{ builder: "form", content, config }`.
+  The old `{ config, schema }` was not a node, so the registry handed the whole object to
+  `prepare()` and no field could render.
+- Gallery registrations carry loading facts only (`path`, `stylesheet`, `export`, `modules`); the
+  host no longer re-derives `schema` from the node.
+- Found while proving it: the gallery form had no adapter stack and no `export`, so it threw
+  "No modules configured" before reaching the payload. Fixed in the host: `export: "FormBuilder"`,
+  `FORM_ADAPTER_MANIFEST` + the table adapter in `modules`, their specifiers in
+  `registry.assets.ts`, and `@aio-ui/input` declared in `examples/gallery/package.json`.
+- Proof: `npm run verify` green; gallery `#form` measured in the browser — 1 form, 5 groups,
+  21 fields, 0 error panels. Demo `#form` was measured in A (42 fields).
+
 ## Decision (approved 2026-11-21)
 
 1. The builder door is `create(schema)`; `schema = { content, config }`.
@@ -79,7 +93,7 @@ node or config; comes from theme/emitter/app → config; describes a shape → `
 - Proof: `inspect().html` per demo route (kitchen, form, product) and gallery page identical
   before/after, then `npm run verify`.
 
-### B — upstream carries no data (demo/gallery manifests done in A; nodes left)
+### B — upstream carries no data ✅ landed 2026-11-21
 
 - `examples/demo/src/manifest.ts:525` → `{ path, stylesheet }` only; move `entry.config` to the
   build call (`pages/docs-panels.ts`, `previewPanel`).
@@ -140,6 +154,6 @@ as `legacy`. Then update `iBuilderRegistry` (`core/types/registry.ts:47-84`; `se
 
 ## Next
 
-Batch B remainder: verify and, if needed, convert `examples/gallery/src/content/wizard.ts:464`
-(`{ config, schema }` → a node). Then batch C — delete the compensation code, starting at
-`accordion/Accordion.ts:70-71`.
+Batch C — delete the compensation code, starting at `accordion/Accordion.ts:70-71`, then the
+`Form.prepare` unwrap and `Section`'s root identity from the payload. End with `npm run verify`
+and a browser count per demo route (the round-trip the unwraps currently hide).

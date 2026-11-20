@@ -6,9 +6,9 @@
 
 ## Live claims
 
-| Agent       | Band      | Task                                            | Write scope                                                                                                                                                                                                                                                               | Started    | Checkpoint                 | State   |
-| ----------- | --------- | ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- | -------------------------- | ------- |
-| copilot b42 | Framework | Input normalisation — batch A (door + registry) | `packages/base/src/Base.ts`, `packages/core/src/ComponentRegistry.ts`, `packages/core/src/__tests__/**`, `packages/components/**`, `packages/base/src/__tests__/**`, `examples/demo/src/{manifest,main}.ts`, `examples/demo/src/pages/**`, `examples/gallery/src/main.ts` | 2026-11-21 | `/memories/session/b41.md` | handoff |
+| Agent | Band | Task | Write scope | Started | Checkpoint | State |
+| ----- | ---- | ---- | ----------- | ------- | ---------- | ----- |
+| —     | —    | —    | —           | —       | —          | —     |
 
 ## Row shape
 

@@ -15,7 +15,9 @@ temp/
 # jsDelivr tree), created with `git worktree add`. It is ignored on `main` because a
 # worktree must never be tracked twice — the folder itself is ordinary, visible and
 # owned by that branch, not a scratch directory.
-releases/
+# Root only: a bare `releases/` also matched `docs/releases/`, so every release note
+# was silently untracked (found 2026-11-21).
+/releases/
 dist
 dist-ssr
 *.local

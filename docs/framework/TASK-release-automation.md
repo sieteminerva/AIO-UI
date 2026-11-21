@@ -147,20 +147,20 @@ specifier, and jsDelivr reads `@` as the version separator.
 #### Duplication — the owner's reading is right
 
 npm keys a dependency by its resolved specifier, so `@aio-ui/bundle` and a direct
-`npm i aio-ui-core-0.2.4.tgz` of the same version share one installed copy; only *different
-versions* nest a second copy. The duplication that actually costs bytes is mode A (closure embedded
+`npm i aio-ui-core-0.2.4.tgz` of the same version share one installed copy; only _different
+versions_ nest a second copy. The duplication that actually costs bytes is mode A (closure embedded
 in every tarball), a different axis that is already gated.
 
 #### Work this creates (for the implementing session)
 
-| File | Change |
-| --- | --- |
-| `scripts/release.mjs` | stage two synthetic packages from a template (`@aio-ui/bundle` = `dependencies` of 39 URLs; `@aio-ui/iife` = `files` of the four artefacts), `npm pack`, rename, hash into `checksums.txt`, record `registry.aggregates` (`bundle`, `iife`) |
-| `scripts/publish-releases.mjs` | the orphan-tarball gate must read `registry.aggregates` too, or two extra `.tgz` fail the run |
-| `scripts/publish-cdn.mjs` | copy both tarballs to the branch root under the unversioned names (the `iife` files are already there as loose files) |
-| `templates/cdn/README.md.tpl` | rows for `@aio-ui/bundle` and `@aio-ui/iife`, with the `<script>`-not-`import` warning |
-| `docs/live-cdn-repo.md` §9 | checklist gains the two install URLs and their probes |
-| `release-doc.mjs` | *Bundled pair* block gains the two tarball URLs |
+| File                           | Change                                                                                                                                                                                                                                      |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `scripts/release.mjs`          | stage two synthetic packages from a template (`@aio-ui/bundle` = `dependencies` of 39 URLs; `@aio-ui/iife` = `files` of the four artefacts), `npm pack`, rename, hash into `checksums.txt`, record `registry.aggregates` (`bundle`, `iife`) |
+| `scripts/publish-releases.mjs` | the orphan-tarball gate must read `registry.aggregates` too, or two extra `.tgz` fail the run                                                                                                                                               |
+| `scripts/publish-cdn.mjs`      | copy both tarballs to the branch root under the unversioned names (the `iife` files are already there as loose files)                                                                                                                       |
+| `templates/cdn/README.md.tpl`  | rows for `@aio-ui/bundle` and `@aio-ui/iife`, with the `<script>`-not-`import` warning                                                                                                                                                      |
+| `docs/live-cdn-repo.md` §9     | checklist gains the two install URLs and their probes                                                                                                                                                                                       |
+| `release-doc.mjs`              | _Bundled pair_ block gains the two tarball URLs                                                                                                                                                                                             |
 
 Done when the note's _Bundled pair_ block is generator output, `--probe` covers the four loose
 files plus both tarballs, and `npm i <url>/aio-ui-bundle-0.2.4.tgz` in a scratch consumer creates

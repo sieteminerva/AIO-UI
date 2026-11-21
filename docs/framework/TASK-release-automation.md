@@ -113,18 +113,58 @@ the prose. Three decisions, all for the owner:
    above the package table: `aio-ui.js`, `aio-ui.min.js`, `aio-ui.css`, `aio-ui.min.css`, marked as
    "not a package — branch root". Batch 45 already added that block by hand to
    `docs/releases/v0.2.4.md`; the generator must reproduce it, not the reverse.
-2. **Tarball or not.** The pair is an IIFE plus a stylesheet, not an ES module, so
-   `npm i <url>.tgz` would only put files in `node_modules` with no `import` that works — the value
-   is low and the confusion is high. **Proposal: no tarball**, and say so in the branch README
-   ("the pair is for `<script>`, not for `import`"). If the owner wants one anyway: pack
-   `temp/bundle/dist` with a synthetic `package.json` (`name: "aio-ui"`, the four files, no
-   `exports`), name it `aio-ui-bundle-<version>.tgz`, add `bundle.tarball` + a checksum entry, and
-   teach `publish-releases.mjs` that this one tarball is not a package in `registry.packages`.
+2. **Tarball — decided 2026-11-21 (owner): yes, two of them.** The packages will never be on the
+   npm registry, so a tarball URL is the only way `npm install` puts files on disk; "the pair is not
+   an ES module" is a documentation problem, not a reason to refuse. Both tarballs must live under
+   the `@aio-ui` scope so one `node_modules/@aio-ui/` holds everything:
+   - `@aio-ui/bundle` — the umbrella: `dependencies` are the 39 package tarball URLs (mode B), so
+     one URL installs the whole framework.
+   - `@aio-ui/iife` — the four `aio-ui{,.min}.{js,css}` files, documented as `<script>`/`<link>`,
+     never `import`.
 3. **Probe coverage.** `--probe` must fetch all four bundle URLs plus `registry.json` and one
    package tarball; today the checklist names only the two minified files.
 
-Done when the note's _Bundled pair_ block is generator output, `--probe` covers the four URLs, and
-the README states the pair is `<script>`-only (or the tarball exists, with its entry and checksum).
+#### Naming — `"name": "@aio-ui"` is rejected by npm (measured 2026-11-21)
+
+```text
+$ npm install ../name-probe/aio-ui-0.2.4.tgz
+npm error code EINVALIDPACKAGENAME
+npm error Invalid package name "@aio-ui" of package "@aio-ui@file:...": name can only contain
+URL-friendly characters.
+```
+
+A package name is either `name` or `@scope/name`; a bare scope is invalid, so "one package called
+`@aio-ui`" is not available. The closest honest form is `@aio-ui/bundle` and `@aio-ui/iife`: they
+install to `node_modules/@aio-ui/bundle` and `node_modules/@aio-ui/iife`, beside the 39 hoisted
+packages, so everything still sits under `node_modules/@aio-ui/`.
+
+Filenames are ours (`npm pack --pack-destination` + rename): use
+`aio-ui-bundle-<version>.tgz` / `aio-ui-iife-<version>.tgz`, plus unversioned aliases
+`aio-ui-bundle.tgz` / `aio-ui-iife.tgz` at the branch root. **Do not** use
+`@aio-ui.bundle.tgz` / `@aio-ui.iife.tgz`: a leading `@` makes npm read a local path as a scope
+specifier, and jsDelivr reads `@` as the version separator.
+
+#### Duplication — the owner's reading is right
+
+npm keys a dependency by its resolved specifier, so `@aio-ui/bundle` and a direct
+`npm i aio-ui-core-0.2.4.tgz` of the same version share one installed copy; only *different
+versions* nest a second copy. The duplication that actually costs bytes is mode A (closure embedded
+in every tarball), a different axis that is already gated.
+
+#### Work this creates (for the implementing session)
+
+| File | Change |
+| --- | --- |
+| `scripts/release.mjs` | stage two synthetic packages from a template (`@aio-ui/bundle` = `dependencies` of 39 URLs; `@aio-ui/iife` = `files` of the four artefacts), `npm pack`, rename, hash into `checksums.txt`, record `registry.aggregates` (`bundle`, `iife`) |
+| `scripts/publish-releases.mjs` | the orphan-tarball gate must read `registry.aggregates` too, or two extra `.tgz` fail the run |
+| `scripts/publish-cdn.mjs` | copy both tarballs to the branch root under the unversioned names (the `iife` files are already there as loose files) |
+| `templates/cdn/README.md.tpl` | rows for `@aio-ui/bundle` and `@aio-ui/iife`, with the `<script>`-not-`import` warning |
+| `docs/live-cdn-repo.md` §9 | checklist gains the two install URLs and their probes |
+| `release-doc.mjs` | *Bundled pair* block gains the two tarball URLs |
+
+Done when the note's _Bundled pair_ block is generator output, `--probe` covers the four loose
+files plus both tarballs, and `npm i <url>/aio-ui-bundle-0.2.4.tgz` in a scratch consumer creates
+`node_modules/@aio-ui/{bundle,iife}` together with the 39 packages.
 
 ### Questions for the owner (answer before building)
 
@@ -137,13 +177,19 @@ the README states the pair is `<script>`-only (or the tarball exists, with its e
 4. The release note currently lives in `docs/releases/`; the branch README lives on `releases`.
    Should the note's CDN table also be published on the branch (it duplicates the README's package
    table)?
-5. The bundled pair: no tarball (proposal, §2.1) or one `aio-ui-bundle-<version>.tgz` that is not a
-   package in `registry.packages`?
+5. `@aio-ui/bundle` (decided, §2.1): does it also ship an `index.js` that `export *` from the
+   packages — so `import { AioApp } from "@aio-ui/bundle"` works — or is it `dependencies` only?
+   (an `export *` needs the duplicate-name handling `build-bundle.mjs` already has)
+6. Are the unversioned aliases (`aio-ui-bundle.tgz`, `aio-ui-iife.tgz` at the branch root) part of
+   the first implementation, or versioned filenames only until the naming settles?
 
 ## Done =
 
 - `session.mjs end` runs to completion with no human input, proven by the four acceptance probes.
 - `release-doc.mjs` regenerates `docs/releases/v0.2.4.md`'s CDN section byte-identically (same 131
-  rows), and `--probe` reports 200 for the registry, both minified files and one tarball.
+  package rows + 4 loose bundle rows), and `--probe` reports 200 for the registry, the four loose
+  files, both aggregate tarballs and one package tarball.
+- A scratch consumer run of `npm i <url>/aio-ui-bundle-0.2.4.tgz` produces
+  `node_modules/@aio-ui/bundle`, `node_modules/@aio-ui/iife` and the 39 hoisted packages.
 - `docs/live-cdn-repo.md` §9's release-note line points at the generator instead of a `node -e`.
 - This file is deleted and the logbook card drops.

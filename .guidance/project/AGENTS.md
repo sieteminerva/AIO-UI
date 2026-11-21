@@ -6,9 +6,9 @@
 
 ## Live claims
 
-| Agent | Band | Task | Write scope | Started | Checkpoint | State |
-| ----- | ---- | ---- | ----------- | ------- | ---------- | ----- |
-| —     | —    | —    | —           | —       | —          | —     |
+| Agent       | Band    | Task                            | Write scope                                                                                  | Started    | Checkpoint                                            | State  |
+| ----------- | ------- | ------------------------------- | -------------------------------------------------------------------------------------------- | ---------- | ----------------------------------------------------- | ------ |
+| copilot b45 | Tooling | Record the aggregate-tarball decision | `docs/framework/TASK-release-automation.md`, `.guidance/project/STATUS.md`                    | 2026-11-21 | task doc carries state (no session memory this batch) | active |
 
 ## Row shape
 

@@ -215,9 +215,10 @@ import { INPUT_MODULE_DEFINITIONS } from "@aio-ui/input";
 new FormBuilder({ modules: loader, inputModules: INPUT_MODULE_DEFINITIONS });
 ```
 
-Why the subpath: since `0.2.2` the builder ships **no** stack of its own, so importing
-`@aio-ui/form` compiles no engine — `scripts/bundle-probe.mjs` fails the `check` gate if that ever
-stops being true. A builder with no modules throws on the first `create()` and names the import.
+Why the subpath: the builder carries only the floor it cannot render without — `inputFormAdapter`
+plus the `dropdown` field module — so the optional engines (`validation`, `cascade`, `multistep`,
+`calculation`) arrive only through the stack you pass. A form told to run on an **explicitly empty**
+loader throws on the first `create()` and names the import.
 
 Two traps, in order of how often they bite:
 

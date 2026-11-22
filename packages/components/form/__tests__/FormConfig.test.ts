@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { ModuleLoader } from "@aio-ui/module-loader";
 
@@ -63,5 +63,39 @@ describe("form identity", () => {
 
     expect(form.method).toBe("get");
     expect(form.getAttribute("action")).toBe("/submit");
+  });
+});
+
+describe("empty or malformed schema", () => {
+  // The final branch of `prepare()` used to render whatever it was given, so an empty
+  // object became one blank control — a schema mistake that looked deliberate.
+  const make = (content: any): HTMLFormElement => new FormBuilder().create({ content }) as HTMLFormElement;
+
+  it("renders no field for an empty list", () => {
+    expect(make([]).querySelectorAll(".field")).toHaveLength(0);
+  });
+
+  it("renders no field for an empty object", () => {
+    expect(make({}).querySelectorAll(".field")).toHaveLength(0);
+  });
+
+  it("drops entries that name no shape, and says how many", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => { });
+
+    const form = make([{ title: "bukan field" }, null]);
+
+    expect(form.querySelectorAll(".field")).toHaveLength(0);
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining("named no field type"));
+    warn.mockRestore();
+  });
+
+  it("still renders the valid entries next to a bad one", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => { });
+
+    const form = make([{}, { type: "text", id: "still-there", title: "Ada" }]);
+
+    expect(form.querySelector("#still-there")).not.toBeNull();
+    expect(form.querySelectorAll(".field")).toHaveLength(1);
+    warn.mockRestore();
   });
 });

@@ -184,9 +184,12 @@ Two rules, both enforced now:
 tarball brings its field layer with it, so the second URL is not something a consumer has to
 know about.
 
-A builder with **no** modules throws on the first `create()`, with the import that fixes it: a
-form with no adapter cannot render one field, and failing per field halfway through a schema
-would only hide that.
+A builder with **no** `modules` still renders — that is the floor: `inputFormAdapter` (every
+field) plus `dropdownInputModule` (the field module a first schema always reaches for). Passing
+`modules` or `inputModules` replaces the set, and a declared module with the same id wins. Only an
+**explicitly empty** loader throws on the first `create()`, naming the import that fixes it: a
+form told to run on nothing cannot render one field, and failing per field halfway through a
+schema would only hide that.
 
 `resolveModuleDefinitions()` is async and must be awaited **before** `create()`: a builder's render
 is synchronous and never owns module I/O.

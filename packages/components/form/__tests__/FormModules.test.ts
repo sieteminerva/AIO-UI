@@ -133,13 +133,39 @@ describe("Form.provideModules", () => {
     expect(input?.dataset.marker).toBeUndefined();
   });
 
-  it("fails at the door when the builder has no modules at all", () => {
-    // The fix is one import, so the message names it — and it fires before any field is
-    // built, not once per field halfway through the schema.
+  it("renders fields with no wiring at all, and brings the dropdown module along", () => {
+    // The default floor: no `modules`, no `inputModules`. A text field must render and a
+    // dropdown must be the real one (its `.dropdown` box), not a bare `<select>`.
     const form = new FormBuilder();
 
+    const el = form.create({
+      content: [
+        { type: "text", id: "floor-text", title: "Field" },
+        {
+          type: "dropdown",
+          id: "floor-dropdown",
+          title: "Pilih",
+          options: [
+            { value: "a", label: "A" },
+            { value: "b", label: "B" },
+          ],
+        },
+      ],
+    }) as HTMLElement;
+    document.body.appendChild(el);
+
+    expect(el.querySelector<HTMLInputElement>("#floor-text")).not.toBeNull();
+    expect(el.querySelector("#floor-dropdown")).not.toBeNull();
+    expect(el.querySelector(".dropdown")).not.toBeNull();
+  });
+
+  it("fails at the door when the host passes an explicitly empty loader", () => {
+    // An empty loader is a declaration of "no adapter", not an omission: the default is
+    // replaced, so the form says why instead of failing one field at a time.
+    const form = new FormBuilder({ modules: new ModuleLoader("form", []) });
+
     expect(() => form.create({ content: [{ type: "text", id: "orphan", title: "Field" }] })).toThrow(
-      /@aio-ui\/form\b/
+      /inputFormAdapter/
     );
   });
 

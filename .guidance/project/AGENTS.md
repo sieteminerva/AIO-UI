@@ -6,8 +6,9 @@
 
 ## Live claims
 
-| Agent | Band | Task | Write scope | Started | Checkpoint | State |
-| ----- | ---- | ---- | ----------- | ------- | ---------- | ----- |
+| Agent       | Band      | Task                                     | Write scope                                                                              | Started    | Checkpoint                         | State   |
+| ----------- | --------- | ---------------------------------------- | ---------------------------------------------------------------------------------------- | ---------- | ---------------------------------- | ------- |
+| copilot b58 | Framework | Form default floor + phantom-field guard | `packages/components/form/**`, `docs/agent/handbook.md`, `docs/framework/catalogue.json` | 2026-11-23 | `/memories/session/rajutan-app.md` | handoff |
 
 ## Row shape
 

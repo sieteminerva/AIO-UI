@@ -8,7 +8,7 @@
 
 | Agent       | Band      | Task                                                                                                   | Write scope                                                          | Started    | Checkpoint                         | State  |
 | ----------- | --------- | ------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------- | ---------- | ---------------------------------- | ------ |
-| copilot b45 | Framework | CDN surface refactor — collapse 131 rows to 76, adapters/modules into roots, drop rating + modules kit | `packages/**`, `examples/**`, `orchestrator/**`, `docs/framework/**` | 2026-11-22 | `/memories/session/cdn-exports.md` | active |
+| copilot b45 | Framework | CDN surface refactor — collapse 131 rows to 76, adapters/modules into roots, drop rating + modules kit | `packages/**`, `examples/**`, `orchestrator/**`, `docs/framework/**` | 2026-11-22 | `/memories/session/cdn-exports-done.md` | handoff |
 
 ## Row shape
 

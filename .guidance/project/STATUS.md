@@ -4,8 +4,11 @@
 > **only** after the user picks it — never "to orient" (`AGENT_RULES.md` §13). Rewritten each
 > session, newest on top. One card = one line + one pointer.
 >
-> Batch 44 (2026-11-21): `v0.2.4` note carries the full live CDN table (131 rows) and the step is
-> now mandatory; `session.mjs end` hang diagnosed. Batch 43: `v0.2.4` published, mode B.
+> Batch 45 (2026-11-22): **CDN surface refactor landed** (stages `49b3b45` + `b55b5aa`) — 131 →
+> 76 rows, 39 → 37 packages; `@aio-ui/rating` + `@aio-ui/modules` kit deleted; `v0.2.4` release
+> artefact regenerated locally (76 rows) but **not published**; docs CDN list rewritten.
+> Batch 44 (2026-11-21): `v0.2.4` note carries the full live CDN table and the step is mandatory;
+> `session.mjs end` hang diagnosed. Batch 43: `v0.2.4` published, mode B.
 
 ### 1. Fix `session.mjs end` + design release automation — next
 
@@ -17,12 +20,15 @@ probes it; §2.1 is now **decided** — two aggregate tarballs `@aio-ui/bundle` 
 `@aio-ui/iife` (the four files), because `"name": "@aio-ui"` is rejected by npm as measured.
 → `docs/framework/TASK-release-automation.md`
 
-### 2. Official release — `v0.2.4` live, waiting on three references
+### 2. Release — surface refactor landed, publish pending
 
-`v0.2.4` is live (39 packages, mode B, jsDelivr 200 on registry + both minified files, raw tarball
-200, checksums match). **Open:** the official release waits for the `store`, `profile`, `blog`
-reference apps (`gallery` exists); GitHub release assets are cut by the owner with a token.
-→ `docs/releases/v0.2.4.md` · `docs/live-cdn-repo.md` §9
+`v0.2.4` is live (39 packages, mode B, jsDelivr 200). **Since then** the CDN surface was refactored to
+**76 rows / 37 packages** (`49b3b45` + `b55b5aa`): input modules merged into their builders, `rating`
+and the `modules` kit removed, `core` **does not** absorb the module packages (decided — modules stay
+modular; `dom-renderer` stays standalone). `releases/v0.2.4` (branch worktree) was regenerated locally,
+**not committed/published**. **Open:** publish the `releases` branch when ready; the official release
+still waits for the `store`, `profile`, `blog` reference apps.
+→ `docs/releases/v0.2.4.md` · `docs/live-cdn-repo.md` §9 · `packages/TASKS.md`
 
 ### 3. Optional hardening — `check:exports`
 

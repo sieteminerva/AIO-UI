@@ -332,11 +332,11 @@ Base `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.5/` — planned tag.
 
 ## Open before implementation
 
-1. **`@aio-ui/modules` and `core`.** Deleting the kit is settled. Whether `core` re-exports the six
-   module packages is not: that would give `@aio-ui/core` six new dependencies, so every
-   `import { AioApp } from "@aio-ui/core"` parses and ships router, theme, http-service,
-   event-emitter, animations and module-loader. The cheap answer is "import each module root".
-   Needs a decision before core is touched.
+1. **`@aio-ui/modules` and `core` — DECIDED (2026-11-22): do not absorb.** The kit is deleted and
+   `core` does **not** re-export the module packages. Modules (`event-emitter`, `animations`,
+   `http-service`, `router`, `theme`, `module-loader`) are deliberately modular — a consumer imports
+   each root it uses. Only the inti (core itself) is carried by `@aio-ui/core`; `dom-renderer` can
+   still be used standalone. No new core dependencies.
 2. **`form` adapters.** Rules 2–3 were stated for `table`/`message`/`id-address`. The form's own four
    engines stay optional subpaths (importing one adapter must not drag the other three). Confirm.
 3. **`id-address`.** "Adapter lainnya bawaan default" means the three flavours are chosen by runtime

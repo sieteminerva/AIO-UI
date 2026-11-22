@@ -255,6 +255,7 @@ and paints exactly as authored.
 A page tree may declare **siblings** (`main` + `footer`). Each top-level entry is rendered
 on its own and mounted as a separate root, so the shell receives exactly the elements the
 author wrote — the renderer never wraps them in a `div`.
+
 ## Page content: two shapes, one entry
 
 `iPageContent = iNodeContent | iPageDocument`:

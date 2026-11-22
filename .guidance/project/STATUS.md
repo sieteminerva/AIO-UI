@@ -4,6 +4,9 @@
 > **only** after the user picks it — never "to orient" (`AGENT_RULES.md` §13). Rewritten each
 > session, newest on top. One card = one line + one pointer.
 >
+> Batch 52 (2026-11-23): **shell = mount point** — `AioApp` paints `menu + page roots +
+> footer` as direct children of the container and marks it `aio-shell`; a page tree's
+> top-level entries mount as separate roots, so no bare `div` wrapper is created.
 > Batch 51 (2026-11-23): **Rajutan shell wiring** — one menu bar via `source.menu` + `attachMenu`,
 > declarative `registerPage({ route, requires })`, pages rooted at `.page` (no nested `#app`).
 > Batch 50 (2026-11-23): **Rajutan app migrated** — `rajutan/` → `examples/rajutan/` (its own repo,

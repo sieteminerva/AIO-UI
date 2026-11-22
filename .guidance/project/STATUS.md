@@ -4,6 +4,8 @@
 > **only** after the user picks it — never "to orient" (`AGENT_RULES.md` §13). Rewritten each
 > session, newest on top. One card = one line + one pointer.
 >
+> Batch 51 (2026-11-23): **Rajutan shell wiring** — one menu bar via `source.menu` + `attachMenu`,
+> declarative `registerPage({ route, requires })`, pages rooted at `.page` (no nested `#app`).
 > Batch 50 (2026-11-23): **Rajutan app migrated** — `rajutan/` → `examples/rajutan/` (its own repo,
 > app commits `451454e` + `b0d892a`), `src/lib` (vendored pre-monorepo framework) deleted, entry
 > rewired to `AioApp`, `menu`/`accordion` are real builders, icons folded into `src/style.css`.
@@ -25,8 +27,11 @@
 
 `examples/rajutan/` now runs on the packages: `AioApp` wiring, registry manifests, `menu` +
 `accordion` builders, app-local `editor/color-theme/form-editor`, icons in `src/style.css`.
+b51 finished the shell wiring: one menu bar (`source.menu` + `attachMenu`), declarative
+`registerPage({ route, requires })`, every page rooted at `.page`.
 Next: replace the wizard's mock submit with the real job — `answersToBase` → `retry` →
-`assemblePreset` → envelope, then render `data.preset`. Open: `#canvas` preview bridge unproven.
+`assemblePreset` → envelope, then render `data.preset`. Open: `#canvas` preview bridge unproven;
+`build`/`result` sit outside the bar, so no entry is marked active there.
 → `.guidance/project/generator.md` §Next · memory `/memories/session/rajutan-app.md`
 
 ### 2. Generator — tarball install probe

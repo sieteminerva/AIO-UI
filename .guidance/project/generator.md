@@ -19,9 +19,12 @@ Index: `STATUS.md`.
 
 ## Next
 
-- **App wiring** (next): `examples/rajutan/` runs on `AioApp` + package builders; its wizard still
-  calls `mockBuildResult()`. Replace it with `answersToBase → retry → assemblePreset → envelope`
-  and render `data.preset`. Also unproven: the `#canvas` preview bridge (RENDER_BUILDER).
+- **App wiring** (next): the shell wiring landed in b51 — one menu bar (`source.menu` +
+  `attachMenu`), routes registered as `registerPage({ route, requires })`, pages rooted at
+  `.page`. What remains is the job itself: the wizard still calls `mockBuildResult()`. Replace it
+  with `answersToBase → retry → assemblePreset → envelope` and render `data.preset`. Also
+  unproven: the `#canvas` preview bridge (RENDER_BUILDER). Open: `build`/`result` sit outside the
+  bar, so no entry is marked `is-active` on them.
 - **Tarball install probe**: verify `npm i <tarball>` from a clean folder (a bundler project) plus a
   Node ESM import, so the published tree is proven consumable.
 - Regenerate `layout.json` inside the release workflow so the map cannot describe a moved package.
@@ -29,6 +32,14 @@ Index: `STATUS.md`.
   (STATUS card #3). Do not raise it until the orchestrator work is done or the owner asks.
 
 ## Landed
+
+- **batch 51 (2026-11-23)** — Rajutan shell wiring (`examples/rajutan`, app commit `b51`):
+  `src/content/nav.ts` keeps one `BAR` + `menuFor(route)` (home-only `#how/#features/#faq`,
+  live entry `is-active`); `main.ts` folds `pages` + `componentRoutes` + the controller loop into
+  one `iRoute[]` and registers `registerPage({ route, requires })`; `RajutanPage.attachMenu()`
+  returns `menuFor(route)`; all seven page trees root at `.page`. Proof: app `tsc` clean,
+  `vite build` ok, browser probe `.aio-shell` 1 / `nav.nav[data-position=top]` 1 / `#app` 1 /
+  active entry = route; `#how` click scrolls 0 → 1270 with the hash still `#home`.
 
 - **batch 50 (2026-11-23)** — Rajutan app migrated (`examples/rajutan`, own repo): `src/lib`
   deleted, `AioApp` wiring + registry manifests, `menu`/`accordion` builders, icons in

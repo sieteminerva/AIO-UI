@@ -246,11 +246,15 @@ The container element is a **stable mount point**: `#app` survives a route chang
 `AioApp` only replaces its children. A page tree therefore never renders `#app` itself —
 LITE pages are rooted at `.page`, exactly like a component that owns only its own markup.
 
-When the source declares `menu` and/or `footer` slots, the entry renders one wrapper
-(`.aio-shell`) around `menu + page + footer`. A hand-written page tree normally already
-contains its own nav and footer, so the slots stay empty and the authored DOM is
-untouched — no extra wrapper, no duplicated navigation.
-
+When the source declares `menu` and/or `footer` slots, the app paints them as **direct
+children of the mount point**: `#app` receives the class `.aio-shell` and holds
+`menu + page + footer` in that order. No wrapper element is created — the mount point _is_
+the shell, and the renderer is never asked to build a box the author did not declare. A
+hand-written page tree that already carries its own nav and footer leaves the slots empty
+and paints exactly as authored.
+A page tree may declare **siblings** (`main` + `footer`). Each top-level entry is rendered
+on its own and mounted as a separate root, so the shell receives exactly the elements the
+author wrote — the renderer never wraps them in a `div`.
 ## Page content: two shapes, one entry
 
 `iPageContent = iNodeContent | iPageDocument`:

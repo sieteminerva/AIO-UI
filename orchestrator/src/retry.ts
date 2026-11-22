@@ -80,3 +80,39 @@ export function retry(ask: AskAi, max: number = MAX_RETRIES): RetryResult {
 
   return { attempts: limit + 1, issues };
 }
+
+/**
+ * One model call that resolves later — the browser's `fetch`, not a local value.
+ *
+ * @param issues - Empty on the first call; the last rejection's issues afterwards.
+ * @returns The parsed JSON the model produced (never a string).
+ */
+export type AskAsync = (issues: PresetIssue[]) => Promise<unknown>;
+
+/**
+ * Async twin of `retry()` for a caller whose ask is a network hop.
+ *
+ * Same contract, same budget, same verbatim feedback — only the awaiting differs.
+ *
+ * @param ask - The caller's model call; `issues` is empty on the first attempt.
+ * @param max - Re-asks allowed after the first answer (default `MAX_RETRIES`).
+ * @returns The accepted content, the call count, and the last issues on failure.
+ *
+ * @example
+ * const result = await retryAsync((issues) => ask(composePrompt(input, issues)));
+ * if (!result.content) return errorEnvelope(result.issues);
+ */
+export async function retryAsync(ask: AskAsync, max: number = MAX_RETRIES): Promise<RetryResult> {
+  const limit = Math.max(0, Math.floor(max));
+  let issues: PresetIssue[] = [];
+
+  for (let attempt = 0; attempt <= limit; attempt++) {
+    const result = parseAiContent(await ask(issues));
+    if (result.issues.length === 0) {
+      return { content: result, attempts: attempt + 1, issues: [] };
+    }
+    issues = result.issues;
+  }
+
+  return { attempts: limit + 1, issues };
+}

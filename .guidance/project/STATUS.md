@@ -29,14 +29,11 @@
 
 ### 1. Rajutan app — orchestrator wiring — next
 
-`examples/rajutan/` runs on the packages: `AioApp` shell (the mount point _is_ `#app.aio-shell`,
-no wrapper element), one menu bar (`source.menu` + `attachMenu`), declarative
-`registerPage({ route, requires })`, every page rooted at `main.page`.
-Next: **client half** — `examples/rajutan/src/lib/{ask,job}.ts`, wizard submit runs
-`answersToBase → retry → assemblePreset → envelope`, `#/result` renders `data.preset`; needs
-`VITE_ORCHESTRATOR_URL` from a deployed Web App (server side landed in b53).
-Open: `#canvas` preview bridge unproven; `build`/`result` sit outside the bar, so no entry is
-marked active there.
+Batch 55 landed the **client half**: `src/lib/{ask,prompt,job}.ts` (wizard submit runs
+`answersToBase → retryAsync → assemblePreset → envelope`), `#/result` renders `data.preset`,
+and the wizard's `[data-level]` selects now have an address source (`config.address`).
+Next: Sheet copy (`action:"sheet"`), repo/deploy, and the `#canvas` preview bridge.
+Open: gemini default 503'd twice; `src/.env` is tracked in the app repo.
 → `.guidance/project/generator.md` §Next · memory `/memories/session/rajutan-app.md`
 
 ### 2. Generator — tarball install probe

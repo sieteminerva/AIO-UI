@@ -18,12 +18,10 @@ Index: `STATUS.md`.
 
 ## Next
 
-- **App wiring** (next): b53 landed the server half — `orchestrator/apps-script/`
-  (`doPost` → `ask` for Gemini/DeepSeek, `sheet` for template copy). What remains is the client:
-  `examples/rajutan/src/lib/{ask,job}.ts`, wizard submit calls the job instead of
-  `mockBuildResult()`, and `#/result` renders `data.preset`. Needs `VITE_ORCHESTRATOR_URL` from a
-  deployed Web App. Also unproven: the `#canvas` preview bridge (RENDER_BUILDER). Open:
-  `build`/`result` sit outside the bar, so no entry is marked `is-active` on them.
+- **Stage C** (next): the client half landed in b55, so what remains is everything the job
+  still fakes — Sheet copy (`action:"sheet"`), repo create, deploy, and `data[].endpoint`.
+  Also unproven: the `#canvas` preview bridge (RENDER_BUILDER). Open: `build`/`result` sit outside
+  the bar, so no entry is marked `is-active` on them; `src/.env` is tracked in the app repo.
 - **Tarball install probe**: verify `npm i <tarball>` from a clean folder (a bundler project) plus a
   Node ESM import, so the published tree is proven consumable.
 - Regenerate `layout.json` inside the release workflow so the map cannot describe a moved package.
@@ -31,6 +29,15 @@ Index: `STATUS.md`.
   (STATUS card #3). Do not raise it until the orchestrator work is done or the owner asks.
 
 ## Landed
+
+- **batch 55 (2026-11-23)** — Rajutan **client half** (`examples/rajutan`): `src/lib/{ask,prompt,job}.ts`
+  run `answersToBase → retryAsync → assemblePreset` and build the `{status, meta, data}` envelope;
+  the wizard submits the job (no more `mockBuildResult()`), `#/result` renders `data.preset` +
+  `data.issues`. `retryAsync` added to the engine (same budget, verbatim issues; 139 tests). The app
+  reaches the engine through an `@engine` alias, not a copy. Wizard `config.address` now points at
+  the region endpoint with `useAdapter: "aio"`, so `[data-level]` loads and cascades. Proof: real
+  `/exec` runs produced `tenun-lestari` (store, 5 routes) and `ruang-karya-sri` (profile, 4 routes);
+  `#preset` 5 rows; provinces 34 → cities 7 after a pick; app `tsc` + `vite build` clean.
 
 - **batch 53 (2026-11-23)** — Apps Script orchestrator entry (`orchestrator/apps-script/`):
   `doPost` routes `ask` (one model call; `AI_PROVIDER` = gemini|deepseek, keys in Script

@@ -6,9 +6,9 @@
 
 ## Live claims
 
-| Agent       | Band      | Task                                 | Write scope                                   | Started    | Checkpoint                         | State  |
-| ----------- | --------- | ------------------------------------ | --------------------------------------------- | ---------- | ---------------------------------- | ------ |
-| copilot b54 | Generator | Local env for the orchestrator probe | `examples/rajutan/.env*`, `temp/probe-ai.mjs` | 2026-11-23 | `/memories/session/rajutan-app.md` | active |
+| Agent       | Band      | Task                             | Write scope                                                                                                                                                                                                                                                                  | Started    | Checkpoint                         | State   |
+| ----------- | --------- | -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- | ---------------------------------- | ------- |
+| copilot b55 | Generator | App → orchestrator client wiring | `examples/rajutan/{.gitignore,.env.example,vite.config.ts,tsconfig.json}`, `examples/rajutan/src/lib/**`, `examples/rajutan/src/content/{wizard,result,BuildStore}.ts`, `examples/rajutan/src/style.css`, `orchestrator/src/retry.ts`, `orchestrator/__test__/retry.test.ts` | 2026-11-23 | `/memories/session/rajutan-app.md` | handoff |
 
 ## Row shape
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { iAiSiteContent } from "../src/ai.ts";
-import { issueLines, MAX_RETRIES, retry } from "../src/retry.ts";
+import { issueLines, MAX_RETRIES, retry, retryAsync } from "../src/retry.ts";
 import type { PresetIssue } from "../src/types.ts";
 
 const good: iAiSiteContent = {
@@ -65,6 +65,46 @@ describe("retry — §8 step 6", () => {
   it("never trusts a string answer — it is rejected as INVALID_SHAPE", () => {
     const result = retry(() => '{"contentSchema":1}', 0);
     expect(result.issues[0].code).toBe("INVALID_SHAPE");
+  });
+});
+
+describe("retryAsync — the same rule over a network hop", () => {
+  it("accepts the first answer with one awaited call and no feedback", async () => {
+    const seen: PresetIssue[][] = [];
+    const result = await retryAsync(async (issues) => {
+      seen.push(issues);
+      return good;
+    });
+
+    expect(result.attempts).toBe(1);
+    expect(result.content?.issues).toEqual([]);
+    expect(seen).toEqual([[]]);
+  });
+
+  it("re-asks with the issues verbatim, then accepts", async () => {
+    const seen: PresetIssue[][] = [];
+    const result = await retryAsync(async (issues) => {
+      seen.push(issues);
+      return issues.length ? good : badSchema;
+    });
+
+    expect(result.attempts).toBe(2);
+    expect(result.content?.pages).toHaveLength(1);
+    expect(seen[1]).toEqual([
+      expect.objectContaining({ code: "INVALID_SHAPE", where: "contentSchema" }),
+    ]);
+  });
+
+  it("stops after MAX_RETRIES and returns the last issues", async () => {
+    const result = await retryAsync(async () => badRoutes);
+
+    expect(result.attempts).toBe(MAX_RETRIES + 1);
+    expect(result.content).toBeUndefined();
+    expect(result.issues.map((issue) => issue.code)).toEqual(["DUPLICATE_ROUTE"]);
+  });
+
+  it("propagates a transport rejection — no silent retry of a dead endpoint", async () => {
+    await expect(retryAsync(async () => { throw new Error("offline"); }, 0)).rejects.toThrow("offline");
   });
 });
 

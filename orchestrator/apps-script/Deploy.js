@@ -5,11 +5,13 @@
  * commits them, enables Pages, and answers with the two URLs the result page shows.
  *
  * Script Properties:
- *   GITHUB_TOKEN  fine-grained PAT: Contents (write) + Pages (write); add
- *                 Administration (write) only when this file must create the repo
- *   GITHUB_OWNER  account that owns the site repos (default: the token's user)
- *   GITHUB_REPO   optional. A fixed repo for testing: every site lands in it and the
- *                 token can stay scoped to that one repo. Unset = one repo per site.
+ *   GITHUB_TOKEN      fine-grained PAT: Contents (write) + Pages (write); add
+ *                     Administration (write) only when this file must create the repo
+ *   GITHUB_SITE_REPO  optional fixed repo for testing — a name or a full URL
+ *                     (`https://github.com/owner/repo.git`). Unset = one repo per site.
+ *   GITHUB_REPO       older name for the same setting; GITHUB_SITE_REPO wins
+ *   GITHUB_OWNER      account that owns the site repos (default: the token's user, or
+ *                     the owner named in GITHUB_SITE_REPO)
  *
  * Two modes, one code path: a fixed repo is "the repo name is a constant", otherwise
  * the preset id names the repo and a missing repo is created (needs Administration).
@@ -50,6 +52,23 @@ function repoName(value) {
 }
 
 /**
+ * Reads the fixed-repo setting, accepting a bare name or a full URL.
+ *
+ * @returns {{ owner?: string, repo?: string }} Empty object when no fixed repo is set.
+ */
+function fixedRepo() {
+  const raw = (PROPS.getProperty("GITHUB_SITE_REPO") || PROPS.getProperty("GITHUB_REPO") || "").trim();
+  if (!raw) return {};
+
+  const match = /github\.com[/:]([^/]+)\/([^/#?]+?)(?:\.git)?\/?$/.exec(raw);
+  if (match) return { owner: match[1], repo: repoName(match[2]) };
+
+  const parts = raw.split("/").filter(Boolean);
+  if (parts.length >= 2) return { owner: parts[parts.length - 2], repo: repoName(parts[parts.length - 1]) };
+  return { repo: repoName(raw) };
+}
+
+/**
  * Publishes `files` (usually `index.html` + `app.js`) as a Pages site.
  *
  * @param {{ name?: string, files?: Record<string, string> }} payload
@@ -63,15 +82,16 @@ function deploySite(payload) {
   const token = PROPS.getProperty("GITHUB_TOKEN");
   if (!token) throw new Error("Missing Script Property GITHUB_TOKEN.");
 
-  const owner = PROPS.getProperty("GITHUB_OWNER") || github("get", "/user").login;
-  const fixed = PROPS.getProperty("GITHUB_REPO");
-  const repo = fixed ? repoName(fixed) : repoName(payload.name);
+  const ownerProp = (PROPS.getProperty("GITHUB_OWNER") || "").trim();
+  const fixed = fixedRepo();
+  const owner = fixed.owner || ownerProp || github("get", "/user").login;
+  const repo = fixed.repo || repoName(payload.name);
 
   // Create only when the repo is not fixed: a fixed repo is created by the owner, and
   // the token that may not create repos is exactly the token this mode is built for.
   const existing = github("get", `/repos/${owner}/${repo}`, null, true);
-  if (!existing && fixed) {
-    throw new Error(`Repo ${owner}/${repo} tidak ada. Buat dulu, atau lepas GITHUB_REPO.`);
+  if (!existing && fixed.repo) {
+    throw new Error(`Repo ${owner}/${repo} tidak ada. Buat dulu, atau isi GITHUB_SITE_REPO dengan repo yang ada.`);
   }
   if (!existing) {
     github("post", "/user/repos", {

@@ -4,6 +4,9 @@
 > **only** after the user picks it — never "to orient" (`AGENT_RULES.md` §13). Rewritten each
 > session, newest on top. One card = one line + one pointer.
 >
+> Batch 53 (2026-11-23): **Apps Script entry** — `orchestrator/apps-script/` serves `ask`
+> (Gemini/DeepSeek) and `sheet` (template copy); the wizard still calls the mock until the client
+> half lands.
 > Batch 52 (2026-11-23): **shell = mount point** — `AioApp` paints `menu + page roots + footer` as direct children of the container, marks it `aio-shell`, and mounts each page top-level entry as its own root (no bare `div`).
 > Batch 51 (2026-11-23): **Rajutan shell wiring** — one menu bar via `source.menu` + `attachMenu`,
 > declarative `registerPage({ route, requires })`, pages rooted at `.page` (no nested `#app`).
@@ -29,8 +32,9 @@
 `examples/rajutan/` runs on the packages: `AioApp` shell (the mount point _is_ `#app.aio-shell`,
 no wrapper element), one menu bar (`source.menu` + `attachMenu`), declarative
 `registerPage({ route, requires })`, every page rooted at `main.page`.
-Next: replace the wizard's mock submit with the real job — `answersToBase` → `retry` →
-`assemblePreset` → envelope, then render `data.preset`.
+Next: **client half** — `examples/rajutan/src/lib/{ask,job}.ts`, wizard submit runs
+`answersToBase → retry → assemblePreset → envelope`, `#/result` renders `data.preset`; needs
+`VITE_ORCHESTRATOR_URL` from a deployed Web App (server side landed in b53).
 Open: `#canvas` preview bridge unproven; `build`/`result` sit outside the bar, so no entry is
 marked active there.
 → `.guidance/project/generator.md` §Next · memory `/memories/session/rajutan-app.md`

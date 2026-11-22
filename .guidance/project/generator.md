@@ -1,8 +1,7 @@
 # Generator — status (`orchestrator/**`)
 
-Status: batch 50 complete (Rajutan app migrated to the packages; its own repo, app commit
-`b0d892a`). Gate green: `npx tsc -p examples/rajutan/tsconfig.json` clean, `npx vite build` ok.
-
+Status: batch 53 complete (Apps Script orchestrator entry: `ask` over Gemini/DeepSeek, `sheet`
+template copy). Gate: `node --check` on 3 files ok, `temp/probe-ai.mjs` dispatch proven.
 Band rules: `orchestrator/AGENTS.md`. Why: `.guidance/plan-generator.md`.
 Index: `STATUS.md`.
 
@@ -10,7 +9,7 @@ Index: `STATUS.md`.
 
 | #   | Task                                                             | State | Gate                                                          |
 | --- | ---------------------------------------------------------------- | ----- | ------------------------------------------------------------- |
-| 1   | App → orchestrator wiring (`answersToBase` → `retry` → envelope) | next  | wizard submit replaces `mockBuildResult` with the real job    |
+| 1   | App → orchestrator wiring (`answersToBase` → `retry` → envelope) | next  | client `ask` hits `/exec`, result renders `data.preset`        |
 | 2   | Tarball install probe                                            | —     | clean folder: `npm i <tarball>` + a Node ESM import both boot |
 
 > The original gate named `gallery` **and `store`**; `store` is still one of the three missing
@@ -19,12 +18,12 @@ Index: `STATUS.md`.
 
 ## Next
 
-- **App wiring** (next): the shell wiring landed in b51 — one menu bar (`source.menu` +
-  `attachMenu`), routes registered as `registerPage({ route, requires })`, pages rooted at
-  `.page`. What remains is the job itself: the wizard still calls `mockBuildResult()`. Replace it
-  with `answersToBase → retry → assemblePreset → envelope` and render `data.preset`. Also
-  unproven: the `#canvas` preview bridge (RENDER_BUILDER). Open: `build`/`result` sit outside the
-  bar, so no entry is marked `is-active` on them.
+- **App wiring** (next): b53 landed the server half — `orchestrator/apps-script/`
+  (`doPost` → `ask` for Gemini/DeepSeek, `sheet` for template copy). What remains is the client:
+  `examples/rajutan/src/lib/{ask,job}.ts`, wizard submit calls the job instead of
+  `mockBuildResult()`, and `#/result` renders `data.preset`. Needs `VITE_ORCHESTRATOR_URL` from a
+  deployed Web App. Also unproven: the `#canvas` preview bridge (RENDER_BUILDER). Open:
+  `build`/`result` sit outside the bar, so no entry is marked `is-active` on them.
 - **Tarball install probe**: verify `npm i <tarball>` from a clean folder (a bundler project) plus a
   Node ESM import, so the published tree is proven consumable.
 - Regenerate `layout.json` inside the release workflow so the map cannot describe a moved package.
@@ -32,6 +31,13 @@ Index: `STATUS.md`.
   (STATUS card #3). Do not raise it until the orchestrator work is done or the owner asks.
 
 ## Landed
+
+- **batch 53 (2026-11-23)** — Apps Script orchestrator entry (`orchestrator/apps-script/`):
+  `doPost` routes `ask` (one model call; `AI_PROVIDER` = gemini|deepseek, keys in Script
+  Properties) and `sheet` (`TEMPLATE_SHEET_ID` copy via Drive). `appsscript.json` trimmed to
+  external_request + drive + userinfo.email; unused CRM library removed. Two API keys had been
+  pasted into `AI.js` → restored to property lookups (keys must be rotated). Proof: `node --check`
+  ×3 ok; `temp/probe-ai.mjs` reaches the missing-Property guard for both providers.
 
 - **batch 51 (2026-11-23)** — Rajutan shell wiring (`examples/rajutan`, app commit `b51`):
   `src/content/nav.ts` keeps one `BAR` + `menuFor(route)` (home-only `#how/#features/#faq`,

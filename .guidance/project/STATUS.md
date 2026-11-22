@@ -16,13 +16,13 @@
 > 76 rows, 39 → 37 packages; `@aio-ui/rating` + `@aio-ui/modules` kit deleted; `v0.2.4` release
 > artefact regenerated locally (76 rows) but **not published**. Batch 43: `v0.2.4` published, mode B.
 
-### 1. Generator — `answers` module — next
+### 1. Generator — AI retry loop — next
 
-The orchestrator band is the active queue. b47 landed and is committed; the next step is
-`orchestrator/src/answers.ts` (`modelFromWebType`, `validateAnswers`, `answersToBase`) implementing
-`docs/generator/TASK-answers-contract.md` §3–§5, tested in `orchestrator/__test__/answers.test.ts`.
-Keys stay dashed-case verbatim. Then the rest of the generator queue: release workflow, tarball
-install probe, AI retry loop, `layout.json` inside the workflow.
+The orchestrator band is the active queue. b48 landed `orchestrator/src/answers.ts`
+(`modelFromWebType`, `validateAnswers`, `answersToBase`) per
+`docs/generator/TASK-answers-contract.md` §3–§5, 17 tests. Next: feed `parseAiContent()` /
+`parsePreset()` issues back to the model verbatim (max 2 retries, §8 step 6), then the tarball
+install probe and `layout.json` inside the release workflow.
 → `.guidance/project/generator.md`
 
 ### 2. Optional hardening — one surface generator

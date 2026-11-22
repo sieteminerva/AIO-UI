@@ -185,7 +185,8 @@ export interface PresetAssembly {
   engine: { range: string; resolved: string };
   model: PresetModel;
   theme: string;
-  site: { name: string; locale: string; domain?: string };
+  /** `tagline` is the `web-reason` fallback; a tagline the AI wrote still wins. */
+  site: { name: string; locale: string; domain?: string; tagline?: string };
   /** Sheets the site may read, already created by the orchestrator. */
   data?: PresetDataSource[];
   /** Raw wizard answers, kept for regeneration. */

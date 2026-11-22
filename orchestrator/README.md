@@ -11,6 +11,7 @@ orchestrator/
     catalogue.ts           vocabulary → package
     plan.ts                preset → plan
     parse.ts               preset → validated preset
+    answers.ts             wizard answers → validated answers + preset base
     ai.ts                  AI contract + assemblePreset
     emit.ts                plan → assets/import map
     runtime.ts             plan → index.html + app.js
@@ -35,6 +36,7 @@ touch the filesystem. Test data and Node-only checks live in `__test__/`.
 | `src/catalogue.ts`         | Builder vocabulary → package/module/style resolution; theme & capability maps                             |
 | `src/plan.ts`              | `plan(preset)` / `assetsOf(preset)` — derives modules, bindings, refs, and assets                         |
 | `src/parse.ts`             | `parsePreset()`, `assertPreset()`, `validatePages()` — schema & closed-vocabulary checks                  |
+| `src/answers.ts`           | `modelFromWebType()`, `validateAnswers()`, `answersToBase()` — wizard answers → server-owned base          |
 | `src/ai.ts`                | AI contract `iAiSiteContent` v1, `parseAiContent()`, `assemblePreset()`, `aiResponseSchema()`             |
 | `src/emit.ts`              | `emitPlan()` → `{ links, importMap, table, bindings, moduleRefs }`; `createCdnResolver()`                 |
 | `src/runtime.ts`           | `emitRuntime()` → build-free `index.html` + `app.js` (import map + registrations + `mount()`)             |
@@ -52,7 +54,7 @@ touch the filesystem. Test data and Node-only checks live in `__test__/`.
 1. **AI writes intent, `plan()` resolves packages:** Gemini outputs `pages`, `theme`, and `data` intents (`iAiSiteContent`). Unknown builder words surface as `PresetIssue` items, never broken imports.
 2. **Additive & deterministic:** Signals only accumulate across pages; assets and stylesheets are deduplicated and sorted so identical presets yield byte-identical diffs.
 3. **Dual version pinning:** `presetSchema` versions the preset format; `engine.resolved` pins the exact immutable CDN tag (`@v0.2.4+`) in the generated import map.
-4. **Zero-node core for Apps Script:** Core engine files (`types`, `catalogue`, `plan`, `parse`, `ai`, `emit`, `runtime`, `generate`) are pure functions with zero Node.js or DOM dependencies, ready to be bundled into Google Apps Script.
+4. **Zero-node core for Apps Script:** Core engine files (`types`, `catalogue`, `plan`, `parse`, `answers`, `ai`, `emit`, `runtime`, `generate`) are pure functions with zero Node.js or DOM dependencies, ready to be bundled into Google Apps Script.
 
 ## Physical Output (`temp/results/`)
 

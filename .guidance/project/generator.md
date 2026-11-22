@@ -1,7 +1,7 @@
 # Generator — status (`orchestrator/**`)
 
-Status: batch b47 complete (isRoot + form preload + folder split + answers contract). Gate green:
-`npx vitest run orchestrator` → 111 pass / 1 skip, `npx tsc -p orchestrator/tsconfig.json` clean.
+Status: batch b48 complete (answers module: model / gates / server-owned base). Gate green:
+`npx vitest run orchestrator` → 128 pass / 1 skip, `npx tsc -p orchestrator/tsconfig.json` clean.
 
 Band rules: `orchestrator/AGENTS.md`. Why: `.guidance/plan-generator.md`.
 Index: `STATUS.md`.
@@ -10,7 +10,7 @@ Index: `STATUS.md`.
 
 | #   | Task                                | State | Gate                                                             |
 | --- | ----------------------------------- | ----- | ---------------------------------------------------------------- |
-| 1   | `answers` module (`src/answers.ts`) | next  | one test per wizard set + unknown `web-type` + confirmation gate |
+| 1   | AI retry loop (issues → Gemini)     | next  | `parsePreset`/`parseAiContent` issues fed back verbatim, max 2 retries |
 
 > The original gate named `gallery` **and `store`**; `store` is still one of the three missing
 > reference apps, so browser gates run on `gallery` until that app exists. `store` was probed in
@@ -18,11 +18,9 @@ Index: `STATUS.md`.
 
 ## Next
 
-- **`orchestrator/src/answers.ts`** (next): `modelFromWebType()`, `validateAnswers()`,
-  `answersToBase()` implementing `docs/generator/TASK-answers-contract.md` §3–§5. Keys stay
-  dashed-case verbatim; unknown `web-type` is an issue, never a guess. Tests in
-  `orchestrator/__test__/answers.test.ts`.
-- Then split the folder tree of `orchestrator/src/` if it grows past the eight engine modules;
+- **AI retry loop** (next): feed `parseAiContent()` / `parsePreset()` issues back to the model
+  verbatim, max 2 retries (`docs/generator/TASK-answers-contract.md` §8 step 6).
+- Split the folder tree of `orchestrator/src/` if it grows past the nine engine modules;
   the bundle boundary is `src/`, not a sub-folder name.
 - Verify `npm i <tarball>` from a clean folder (bundler project) and a Node ESM import.
 - Feed `parsePreset()` / `parseAiContent()` issues back to the model verbatim (retry loop).
@@ -31,6 +29,12 @@ Index: `STATUS.md`.
   (STATUS card #3). Do not raise it until the orchestrator work is done or the owner asks.
 
 ## Landed
+
+- **b48 (2026-11-22)** — `orchestrator/src/answers.ts`: `modelFromWebType()` (§3 map, no guess),
+  `validateAnswers()` (§8 gates 1–4 in order, dashed-case keys kept), `answersToBase()` (§5 base:
+  slugged `id`, engine pin, theme/locale, `web-reason` tagline fallback, `data[]` only with an
+  endpoint + sheets). `PresetAssembly.site.tagline` added so the fallback can travel; the AI
+  tagline still wins. 17 new tests → suite 128 pass / 1 skip, `tsc` clean.
 
 - **b47 (2026-11-22)** — `mount()` emits `isRoot: true` (opt out with `isRoot: false`); emitted app
   preloads the union of `pageDefinitions.requires` once before `render()` and names

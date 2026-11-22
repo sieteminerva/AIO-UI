@@ -37,6 +37,8 @@ Sheets and GitHub rows. Also proved: the Test deployment was pinned (`@2`) and e
 was inert until `clasp update-deployment` moved it to `@4`.
 Next: per-site repos (token with Administration) + `data[].endpoint`; then auth.
 Open: `/exec` is unauthenticated (`CLIENT_TOKEN` unset, `public/sw.js` never registered).
+**Mechanism + proposal (decided next): `orchestrator/mechanism.md`** — §1–§11 = what works and how;
+`# Proposal` = dataRef/inline decision, sheet contract, phases P0–P5 (owner to choose).
 → `.guidance/project/generator.md` §Next · memory `/memories/session/rajutan-app.md`
 
 ### 2. Generator — tarball install probe

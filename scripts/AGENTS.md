@@ -45,7 +45,7 @@ Package count: the workspace is **39 packages** (5 core + 22 components + 6 modu
   hashes. Ship a new version instead (`version.mjs --apply --version x.y.z`).
 - Release order is: `version.mjs --apply` → produce artefacts (`release.mjs --version x.y.z`
   → `--apply`) → `npm run verify` → `publish-cdn.mjs --apply` → upload the assets to a GitHub
-  release. Artefacts come **first**: `orchestrator/release.test.ts` reads them (it skips when
+  release. Artefacts come **first**: `orchestrator/__test__/release.test.ts` reads them (it skips when
   the directory is absent). Undo a release with `rm -rf .draft/release`.
 - `@cdn` is cached 12 h and a wildcard purge does not evict a file — purge the exact URL.
 - Only `.js/.json/.css` count as an extension when rewriting specifiers (a dotted basename like

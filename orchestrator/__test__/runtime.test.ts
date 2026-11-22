@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { emitSite } from "./emit.ts";
-import type { AssetResolver } from "./emit.ts";
+import { emitSite } from "../src/emit.ts";
+import type { AssetResolver } from "../src/emit.ts";
 import { galleryPreset, storePreset } from "./fixtures.ts";
-import { plan } from "./plan.ts";
-import { emitRuntime } from "./runtime.ts";
+import { plan } from "../src/plan.ts";
+import { emitRuntime } from "../src/runtime.ts";
 
 const fake: AssetResolver = {
   module: (specifier) => `https://cdn.test/mods/${specifier.replace(/[@/]/g, "_")}`,
@@ -65,6 +65,8 @@ describe("emitRuntime — app.js", () => {
     const { "app.js": app } = build(storePreset);
 
     expect(app).toContain('registry.register("form"');
+    // The package ships several exports; the manifest names the builder explicitly.
+    expect(app).toContain('export: "FormBuilder"');
     expect(app).toContain('{ id: "validation", path: "@aio-ui/form/validation-adapter", export: "validationFormAdapter" }');
     expect(app).toContain('{ id: "dropdown", path: "@aio-ui/input/dropdown", export: "dropdownInputModule" }');
 
@@ -73,11 +75,54 @@ describe("emitRuntime — app.js", () => {
     expect(app).not.toContain('registry.register("input"');
   });
 
-  it("mounts builder nodes instead of leaving empty host elements", () => {
+  it("marks builder nodes as roots instead of wrapping every one", () => {
     const { "app.js": app } = build(storePreset);
     expect(app).toContain("function mount(owner)");
     expect(app).toContain("PRESET.pages.forEach((page) => mount(page.content));");
+    expect(app).toContain("owner.isRoot = true;");
+    // The bridge survives for nodes that ask for a host.
     expect(app).toContain("const child = build(name, owner);");
+
+    const preset = inlinePreset(app);
+    const mount = inlineMount(app);
+    mount(preset.pages.map((page) => page.content));
+
+    const nodes = builderNodes(preset.pages);
+    expect(nodes.length).toBeGreaterThan(0);
+    nodes.forEach((node) => expect(node.isRoot).toBe(true));
+  });
+
+  it("marks nested builder nodes too, not only the page's first level", () => {
+    const { "app.js": app } = build(galleryPreset);
+    const preset = inlinePreset(app);
+
+    inlineMount(app)(preset.pages.map((page) => page.content));
+
+    const nodes = builderNodes(preset.pages);
+    expect(nodes.map((node) => node.builder)).toEqual(
+      expect.arrayContaining(["masonry", "carousel"]),
+    );
+    nodes.forEach((node) => expect(node.isRoot).toBe(true));
+  });
+
+  it("keeps a host container when the content asks for one", () => {
+    const preset = JSON.parse(JSON.stringify(galleryPreset)) as typeof galleryPreset;
+    const home = preset.pages[0].content as Record<string, any>;
+    home["section#hero"].content["div#masonry"].isRoot = false;
+
+    const { "app.js": app } = build(preset);
+    const emitted = inlinePreset(app);
+    inlineMount(app)(emitted.pages.map((page) => page.content));
+
+    const nodes = builderNodes(emitted.pages);
+    const masonry = nodes.find((node) => node.builder === "masonry")!;
+    expect(masonry.isRoot).toBe(false);
+    expect(typeof masonry.onCreated).toBe("function");
+
+    // Every other node still owns its element.
+    nodes
+      .filter((node) => node.builder !== "masonry")
+      .forEach((node) => expect(node.isRoot).toBe(true));
   });
 
   it("registers HttpService with the preset's endpoint", () => {
@@ -90,6 +135,25 @@ describe("emitRuntime — app.js", () => {
     const { "app.js": app } = build(galleryPreset);
     expect(app).toContain("defaultRoute: PRESET.pages[0]?.id");
     expect(app).toContain("await app.render();");
+  });
+
+  it("preloads every route's components once, before the first render", () => {
+    const { "app.js": app } = build(storePreset);
+
+    // A per-route preload can lose a race: the registry skips a component that is
+    // already loading, so the second route builds before the modules exist.
+    expect(app).toContain("await registry.load(requiredComponents);");
+    expect(app.indexOf("await registry.load(requiredComponents);")).toBeLessThan(
+      app.indexOf("await app.render();"),
+    );
+
+    const definitions = inlineDefinitions(app);
+    const source = /const requiredComponents = \[([\s\S]*?)\];/.exec(app);
+    expect(source).not.toBeNull();
+    // The closed set is the union of every page's requires, not a hand-written list.
+    const expected = [...new Set(definitions.flatMap((definition) => definition.requires))];
+    expect(expected).toContain("form");
+    expect(source![1]).toContain("pageDefinitions.flatMap((definition) => definition.requires)");
   });
 });
 
@@ -148,6 +212,33 @@ function inlineDefinitions(app: string): Array<{ route: string; requires: string
   const match = /const pageDefinitions = (\[[\s\S]*?\n\]);/.exec(app);
   expect(match).not.toBeNull();
   return JSON.parse(match![1]) as Array<{ route: string; requires: string[] }>;
+}
+
+/**
+ * The emitted `mount()` itself, so the test proves what the browser will do
+ * instead of grepping for a line. The function is plain browser JS by contract.
+ */
+function inlineMount(app: string): (owner: unknown) => void {
+  const match = /(function mount\(owner\) \{[\s\S]*?\n\})\nPRESET\.pages/.exec(app);
+  expect(match).not.toBeNull();
+  return new Function(`return (${match![1]});`)() as (owner: unknown) => void;
+}
+
+/** Every builder node in a page tree, after `mount()` has run over it. */
+function builderNodes(pages: Array<{ content: unknown }>): Array<Record<string, any>> {
+  const found: Array<Record<string, any>> = [];
+  const walk = (node: unknown): void => {
+    if (Array.isArray(node)) {
+      node.forEach(walk);
+      return;
+    }
+    if (!node || typeof node !== "object") return;
+    const record = node as Record<string, any>;
+    if (typeof record.builder === "string") found.push(record);
+    Object.values(record).forEach(walk);
+  };
+  pages.forEach((page) => walk(page.content));
+  return found;
 }
 
 /** Every `builder` word in a content tree — the same walk the emitted `mount()` does. */

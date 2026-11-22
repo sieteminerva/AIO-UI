@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { createCdnResolver, emitPlan, emitSite } from "./emit.ts";
-import type { AssetResolver, PackageLayout } from "./emit.ts";
+import { createCdnResolver, emitPlan, emitSite } from "../src/emit.ts";
+import type { AssetResolver, PackageLayout } from "../src/emit.ts";
 import { galleryPreset, storePreset } from "./fixtures.ts";
-import { plan } from "./plan.ts";
+import { plan } from "../src/plan.ts";
 
 /** Deterministic fake: URL is the specifier with separators replaced. */
 const fakeResolver: AssetResolver = {

@@ -651,7 +651,7 @@ by measuring, and each has cost at least one session.
   writes), and audit by diffing its keys against `packages/**/package.json`.
 - `node scripts/api.mjs --write` and `scripts/release.mjs` need a real tty — run them bare.
 - `releases/v<version>/` (the orphan-branch worktree) is a snapshot: after any `exports`/subpath change
-  `orchestrator/release.test.ts` fails on a missing file until `release.mjs --version <v> --apply`
+  `orchestrator/__test__/release.test.ts` fails on a missing file until `release.mjs --version <v> --apply`
   regenerates it. Without it the cases **skip silently**.
 
 ### Terminal (Git-bash on Windows)

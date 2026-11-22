@@ -233,7 +233,7 @@ Working areas — `orchestrator/` is tracked; `.draft/` and `.archives/` are loc
 | Sheets CMS / REST API / deployment           | `docs/generator/GoogleSheets CMS/`                                                                        |
 | Apps Script orchestrator flow                | `docs/generator/apps-script-integration.md`                                                               |
 | Generator engine internals                   | `orchestrator/README.md`                                                                                  |
-| The AI prompt that writes content            | `orchestrator/prompt.content.md`                                                                          |
+| The AI prompt that writes content            | `orchestrator/src/prompt.content.md`                                                                      |
 
 ## Conventions in one screen
 

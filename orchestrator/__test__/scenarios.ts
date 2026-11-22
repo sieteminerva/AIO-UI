@@ -9,9 +9,9 @@
  * They are also the fixtures behind `temp/results/*`: running the test suite
  * writes real folders that can be opened in a browser.
  */
-import { assemblePreset, assertAiContent } from "./ai.ts";
-import type { iAiSiteContent, PresetAssembly } from "./ai.ts";
-import type { iWebPreset } from "./types.ts";
+import { assemblePreset, assertAiContent } from "../src/ai.ts";
+import type { iAiSiteContent, PresetAssembly } from "../src/ai.ts";
+import type { iWebPreset } from "../src/types.ts";
 
 const ENGINE = { range: "^0.1.0", resolved: "0.1.3" };
 const GENERATED_AT = "2026-11-10T00:00:00.000Z";

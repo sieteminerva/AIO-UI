@@ -4,10 +4,10 @@ import {
   assemblePreset,
   assertAiContent,
   parseAiContent,
-} from "./ai.ts";
-import type { iAiSiteContent, PresetAssembly } from "./ai.ts";
-import { assertPreset, parsePreset } from "./parse.ts";
-import { plan } from "./plan.ts";
+} from "../src/ai.ts";
+import type { iAiSiteContent, PresetAssembly } from "../src/ai.ts";
+import { assertPreset, parsePreset } from "../src/parse.ts";
+import { plan } from "../src/plan.ts";
 
 const base: PresetAssembly = {
   id: "kriya",

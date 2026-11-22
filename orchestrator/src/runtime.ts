@@ -159,7 +159,8 @@ function emitApp(preset: iWebPreset, plan: PresetPlan, site: EmittedSite): strin
       // node (AioApp passes nodes), so the payload lives in `data.content`.
       if (binding.word === "form") {
         const modules = formModules ? `, modules: [${formModules}]` : "";
-        return `registry.register("form", (data) => { const payload = data?.content ?? data; return { path: "${binding.specifier}", config: payload?.config, schema: payload?.schema ?? payload${modules} }; });`;
+        // The package ships several exports; name the builder so the loader never guesses.
+        return `registry.register("form", (data) => { const payload = data?.content ?? data; return { path: "${binding.specifier}", export: "FormBuilder", config: payload?.config, schema: payload?.schema ?? payload${modules} }; });`;
       }
 
       // No `schema` for the rest: the registry falls back to the node content,
@@ -204,14 +205,26 @@ const pages = Object.fromEntries(PRESET.pages.map((page) => [page.id, page.conte
 const pageDefinitions = ${JSON.stringify(pageRequires(preset), null, 2)};
 
 /**
- * A node carrying a builder name is a host element: the renderer builds the
- * wrapper and stops, so the component itself must be mounted here. This is the
- * same bridge every example page writes by hand: onCreated(el, _render, build).
+ * A node carrying a builder name is either the component itself or a host box.
+ *
+ * Default: the component OWNS the element. The renderer builds the root for
+ * isRoot: true and moves the key's id/classes/attrs onto it, so a generated page
+ * carries no empty wrapper div per block. This is the same shape AioApp emits for
+ * a page block.
+ *
+ * isRoot: false asks for a host: the renderer creates the key's element and the
+ * bridge below mounts the component inside it. An onCreated hook also keeps the
+ * host, because the hook was handed that element and owns its mount.
  */
 function mount(owner) {
   if (Array.isArray(owner)) { owner.forEach(mount); return; }
   if (!owner || typeof owner !== "object") return;
   if (typeof owner.builder === "string") {
+    if (owner.isRoot !== false && typeof owner.onCreated !== "function") {
+      owner.isRoot = true;
+      mount(owner.content);
+      return;
+    }
     const name = owner.builder;
     const host = owner.onCreated;
     owner.onCreated = (el, render, build) => {
@@ -238,6 +251,17 @@ app
   .registerModule(registry)
   .registerModule(HashRouter)
   .registerModule(DOMRenderer)${httpModule}${animationsModule};
+
+/**
+ * One preload pass before the first paint.
+ *
+ * The registry skips a component that is already loading, so two routes rendering
+ * close together can build the second route before the first preload resolves — a
+ * form then arrives with no modules. The preset already names every word a page
+ * needs, so load that closed set once, in one call, before any route renders.
+ */
+const requiredComponents = [...new Set(pageDefinitions.flatMap((definition) => definition.requires))];
+await registry.load(requiredComponents);
 
 await app.render();
 `;

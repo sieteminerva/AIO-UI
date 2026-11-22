@@ -4,6 +4,10 @@
 > **only** after the user picks it — never "to orient" (`AGENT_RULES.md` §13). Rewritten each
 > session, newest on top. One card = one line + one pointer.
 >
+> Batch 47 (2026-11-22): **generator b47** — `mount()` emits `isRoot: true` (host opt-out), the
+> emitted app preloads every required component once before `render()` (fixes the
+> `[FormBuilder] No modules configured` race), engine moved to `orchestrator/src/` and checks to
+> `orchestrator/__test__/`, wizard answers contract frozen in `docs/generator/TASK-answers-contract.md`.
 > Batch 46 (2026-11-22): **docs synced to the 37-package / 76-row surface** (`5e5be6c`) — root
 > README, both CDN guides, release note, framework docs, handbook, input/form READMEs, catalogue
 > regenerated; `TASK-builder-array.md` + `TASK-releases-branch.md` deleted; `packages/TASKS.md`
@@ -12,12 +16,13 @@
 > 76 rows, 39 → 37 packages; `@aio-ui/rating` + `@aio-ui/modules` kit deleted; `v0.2.4` release
 > artefact regenerated locally (76 rows) but **not published**. Batch 43: `v0.2.4` published, mode B.
 
-### 1. Generator — `mount()` emits `isRoot: true` — next
+### 1. Generator — `answers` module — next
 
-The orchestrator band is the active queue. Emit `isRoot: true` in the generated `mount()` pass and
-probe `gallery` in a browser (one wrapper per block, metadata tree walks, `onDestroy` runs); `store`
-is still missing, so it cannot be the gate yet. Then the rest of the generator queue: release
-workflow, tarball install probe, AI retry loop, `layout.json` inside the workflow.
+The orchestrator band is the active queue. b47 landed and is committed; the next step is
+`orchestrator/src/answers.ts` (`modelFromWebType`, `validateAnswers`, `answersToBase`) implementing
+`docs/generator/TASK-answers-contract.md` §3–§5, tested in `orchestrator/__test__/answers.test.ts`.
+Keys stay dashed-case verbatim. Then the rest of the generator queue: release workflow, tarball
+install probe, AI retry loop, `layout.json` inside the workflow.
 → `.guidance/project/generator.md`
 
 ### 2. Optional hardening — one surface generator

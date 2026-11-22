@@ -317,7 +317,7 @@ cd "releases/v$V" && sha256sum -c checksums.txt | grep -v ': OK$' ; cd -
 ```
 
 > A release directory that does not exist yet is normal before Step 4, but it makes
-> `orchestrator/release.test.ts` **skip its 15 contract tests** rather than fail — re-run that
+> `orchestrator/__test__/release.test.ts` **skip its 15 contract tests** rather than fail — re-run that
 > file after Step 4 to prove the artefacts.
 
 ### Step 5 — publish the tarballs and the CDN tree
@@ -401,7 +401,7 @@ Generate copies whose import map points at the published tag, then serve the fil
 
 ```bash
 SMOKE_BASE=https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v$V/ \
-  npx vitest run orchestrator/release.test.ts
+  npx vitest run orchestrator/__test__/release.test.ts
 
 node temp/smoke/serve.mjs 5300
 # open http://localhost:5300/temp/cdn-smoke/store/#checkout
@@ -493,7 +493,7 @@ Regenerated since (surface refactor, **not published**): `releases/v0.2.4/` = 37
 
 - `scripts/release.mjs` — tarballs, `registry.json`, `layout.json`, `checksums.txt`
 - `scripts/publish-cdn.mjs` — orphan `cdn` branch, branch README, tag, push
-- `orchestrator/emit.ts` — `createCdnResolver()`: base + `dir` + `exports` subpaths + prefixes
-- `orchestrator/release.test.ts` — counts, checksums, every URL on disk, import-map closure
-- `orchestrator/prompt.content.md` — agent handoff
+- `orchestrator/src/emit.ts` — `createCdnResolver()`: base + `dir` + `exports` subpaths + prefixes
+- `orchestrator/__test__/release.test.ts` — counts, checksums, every URL on disk, import-map closure
+- `orchestrator/src/prompt.content.md` — agent handoff
 - `.guidance/RAJUTAN.md` §6–§8 — pipeline and commands

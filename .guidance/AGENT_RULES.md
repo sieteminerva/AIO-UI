@@ -348,7 +348,7 @@ Any batch that changes **what gets rendered**:
 
 - a builder (`packages/components/**`),
 - page content or a route (`examples/**`),
-- a preset fixture (`orchestrator/fixtures.ts`, `orchestrator/scenarios.ts`),
+- a preset fixture (`orchestrator/__test__/fixtures.ts`, `orchestrator/__test__/scenarios.ts`),
 - a selector map or a `template()` body.
 
 A refactor that provably does not touch output is exempt — and says so in the commit.

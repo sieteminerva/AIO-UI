@@ -1,14 +1,14 @@
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { BUILDER_CATALOGUE, UNIMPLEMENTED_BUILDERS } from "./catalogue.ts";
+import { BUILDER_CATALOGUE, UNIMPLEMENTED_BUILDERS } from "../src/catalogue.ts";
 
 /**
  * The prompt is code: it declares the vocabulary the validator enforces. If the
  * catalogue grows and the prompt is not updated, the model is told to use a
  * word it cannot use — or worse, the reverse. This test keeps them in lockstep.
  */
-const prompt = readFileSync(fileURLToPath(new URL("./prompt.content.md", import.meta.url)), "utf8");
+const prompt = readFileSync(fileURLToPath(new URL("../src/prompt.content.md", import.meta.url)), "utf8");
 
 /** Reads the `<!-- builders:begin -->…<!-- builders:end -->` block. */
 function builderBlock(source: string): string[] {

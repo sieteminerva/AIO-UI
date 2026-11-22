@@ -151,13 +151,13 @@ Each stage ends at a gate: `npm run verify` plus the named evidence.
 Order matters: A → B is what makes C cheap; D can run in parallel with B once A is frozen.
 
 **Where we are (2026-11-11): stage B complete in draft; stage C unblocked, orchestrator wiring next.**
-`orchestrator/` now holds: `types.ts` (`iWebPreset` v1), `catalogue.ts` (the capability
-table), `plan.ts` (`plan`/`assetsOf` → modules, bindings, moduleRefs, assets), `parse.ts`
-(`parsePreset`/`assertPreset`, shape + closed vocabulary), `ai.ts` (AI output contract
-`iAiSiteContent` v1 + `parseAiContent`/`assemblePreset`/`aiResponseSchema`), `emit.ts`
-(`{ links, importMap, table, bindings, moduleRefs }` + `createCdnResolver` + prefix map), `runtime.ts`
+`orchestrator/` now holds: `src/types.ts` (`iWebPreset` v1), `src/catalogue.ts` (the capability
+table), `src/plan.ts` (`plan`/`assetsOf` → modules, bindings, moduleRefs, assets), `src/parse.ts`
+(`parsePreset`/`assertPreset`, shape + closed vocabulary), `src/ai.ts` (AI output contract
+`iAiSiteContent` v1 + `parseAiContent`/`assemblePreset`/`aiResponseSchema`), `src/emit.ts`
+(`{ links, importMap, table, bindings, moduleRefs }` + `createCdnResolver` + prefix map), `src/runtime.ts`
 (`index.html` + `app.js`, build-free), `layout.mjs` → `layout.json` (37 packages) and
-`prompt.content.md` (whose builder list a test keeps in lockstep with the catalogue).
+`src/prompt.content.md` (whose builder list a test keeps in lockstep with the catalogue).
 100 draft tests (99 run + 1 opt-in CDN smoke); whole suite 428/46 (+1 skipped). `.draft/results/` now holds two generated sites
 (`gallery-static_v1`, `store-dynamic_v1`), each with `preset.json`, `index.html`, `app.js`,
 `server/adapter.json` and `FLOW.md`. The `dev/` copies run in a browser; on 2026-11-11 the
@@ -248,7 +248,7 @@ Building the 37-package folder exposed five defects unit tests could not see; al
 5. A CSS export (`animations/Animations.css`) pointed at a root source file that is not packed;
    subpath mapping now prefers `dist/` for CSS.
 
-The guard is `orchestrator/release.test.ts`: registry counts, every subpath/tarball/checksum,
+The guard is `orchestrator/__test__/release.test.ts`: registry counts, every subpath/tarball/checksum,
 every import-map URL on disk, and every reachable bare import has an exact key. `.draft/smoke/serve.mjs`
 plus `SMOKE_BASE=<cdn>` runs the same sites against the real tag; both paint with a clean console,
 styles included. `vitest` excludes the generated trees (`cdn-tree`, `cdn-smoke`, `smoke`).

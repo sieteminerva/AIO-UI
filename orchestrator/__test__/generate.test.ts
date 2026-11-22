@@ -2,12 +2,12 @@ import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { createCdnResolver } from "./emit.ts";
-import type { PackageLayout } from "./emit.ts";
-import { generateSite, PresetGenerationError } from "./generate.ts";
-import { parsePreset } from "./parse.ts";
+import { createCdnResolver } from "../src/emit.ts";
+import type { PackageLayout } from "../src/emit.ts";
+import { generateSite, PresetGenerationError } from "../src/generate.ts";
+import { parsePreset } from "../src/parse.ts";
 import { SCENARIOS, galleryScenario, storeScenario } from "./scenarios.ts";
-import type { iWebPreset } from "./types.ts";
+import type { iWebPreset } from "../src/types.ts";
 
 /**
  * Golden-output tests.
@@ -18,9 +18,10 @@ import type { iWebPreset } from "./types.ts";
  * release URL the site will use once the first tag exists.
  */
 const HERE = dirname(fileURLToPath(import.meta.url));
-const RESULTS = join(HERE, "..", "temp", "results");
+const ROOT = join(HERE, "..", "..");
+const RESULTS = join(ROOT, "temp", "results");
 
-const layout = JSON.parse(readFileSync(join(HERE, "layout.json"), "utf8")) as PackageLayout;
+const layout = JSON.parse(readFileSync(join(ROOT, "orchestrator", "layout.json"), "utf8")) as PackageLayout;
 const resolver = createCdnResolver({
   base: "https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.1.3/",
   layout,

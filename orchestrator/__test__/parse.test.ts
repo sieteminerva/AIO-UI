@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { galleryPreset, storePreset } from "./fixtures.ts";
-import { assertPreset, parsePreset, PresetValidationError } from "./parse.ts";
+import { assertPreset, parsePreset, PresetValidationError } from "../src/parse.ts";
 
 describe("parsePreset — accepts real presets", () => {
   it("passes both fixtures with no issues", () => {

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { galleryPreset, storePreset } from "./fixtures.ts";
-import { assetsOf, plan } from "./plan.ts";
-import type { iWebPreset } from "./types.ts";
+import { assetsOf, plan } from "../src/plan.ts";
+import type { iWebPreset } from "../src/types.ts";
 
 /** Specifier lookup helper: `has(plan, "@aio-ui/form")`. */
 function specifiers(assets: { specifier: string }[]): string[] {

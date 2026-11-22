@@ -32,7 +32,7 @@ Decided direction: **GitHub as the only origin**, two doors from one build.
   `version:check` runs inside `verify`. Undo with `git restore packages package.json`.
 - 1.2.2 **Release pipeline.** ✅ local half: `scripts/release.mjs` writes 37 tarballs +
   `registry.json` + `layout.json` + `checksums.txt` into `.draft/release/v<ver>/`
-  (dry-run by default), verified by `orchestrator/release.test.ts`. ✅ **Published:** tag
+  (dry-run by default), verified by `orchestrator/__test__/release.test.ts`. ✅ **Published:** tag
   `v0.2.1` on `sieteminerva/AIO-UI` points at the orphan `cdn` branch built by
   `scripts/publish-cdn.mjs` (it unpacks the tarballs so jsDelivr serves the import map); 40
   release assets uploaded. ⏳ GitHub Actions on tag still to write.
@@ -69,4 +69,3 @@ Decided direction: **GitHub as the only origin**, two doors from one build.
    **Official release** menunggu empat referensi model manual (§3.5, §3.10).
 2. **Model references** — `store`, `profile`, `blog` (§3.5); the official-release gate.
 3. **Docs batch** (1.1.1) — field types, dead code, `Form.css`, empty `ARCHITECTURE.MD`.
-

@@ -5,7 +5,7 @@
  * hide which capability came from where. Each one is also used by the tests as
  * the "does not load what it does not use" proof.
  */
-import type { iWebPreset } from "./types.ts";
+import type { iWebPreset } from "../src/types.ts";
 
 const engine = { range: "^0.1.0", resolved: "0.1.3" };
 

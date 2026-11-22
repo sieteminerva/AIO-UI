@@ -17,6 +17,9 @@ wizard → orchestrator (Apps Script, engine bundled) → preset.json
 ```
 
 - **Engine modules:** `types` → `catalogue` → `plan` → `parse` → `ai` → `emit` → `runtime` → `generate` (plus `scenarios` and `*.test.ts`).
+- **Layout:** the engine lives in `src/` and is the bundle boundary (pure functions only);
+  `__test__/` holds fixtures, scenarios and every check that may use Node APIs; `layout.mjs`/`layout.json`
+  stay at the root.
 - **Generated output:** `preset.json`, `index.html`, `app.js`, `server/adapter.json`, `FLOW.md`. Framework assets load via CDN tag, never copied into client repos.
 
 ## Hard Rules (Do Not Regress)
@@ -26,9 +29,12 @@ wizard → orchestrator (Apps Script, engine bundled) → preset.json
 3. **Exact subpaths + prefixes:** Map every package root, every exact `exports` subpath (`emit.ts` `exact()`), and directory prefixes (`@aio-ui/utilities/`). CSS subpaths prefer `dist/`.
 4. **Real HTML tag keys:** A builder node key must be a real tag (`div#masonry`); `parsePreset()` rejects custom-element builder keys (`<masonry>`).
 5. **Explicit symbol exports:** Form sub-module refs require `export: "<symbol>"` so `multistep` and adapters resolve cleanly.
-6. **Runtime mounts builders:** `mount()` walks `preset.pages`; `DOMRenderer` never builds builder nodes automatically.
+6. **Runtime marks builder roots:** `mount()` walks `preset.pages` and sets `isRoot: true`, so the
+   renderer builds the component as the element itself. Only `isRoot: false` (or an `onCreated`
+   hook) keeps a host wrapper and the `build()` bridge. `DOMRenderer` still never builds a builder
+   node that did not ask to be a root.
 7. **Browser-ready `app.js`:** Zero `import type` or TypeScript annotations in emitted `app.js` (guarded by `runtime.test.ts`).
-8. **Computed preload list:** `pageRequires()` derives `pageDefinitions = [{ route, requires }]` from `preset.pages` (excluding `input`, `dropdown`, `input-controls`).
+8. **Computed preload list:** `pageRequires()` derives `pageDefinitions = [{ route, requires }]` from `preset.pages` (excluding `input`, `dropdown`, `input-controls`), and the emitted app preloads that closed set once (`registry.load`) before the first `render()` — a per-route preload loses a race against a second route.
 9. **Strict shape validation:** `parsePreset()` emits `INVALID_SHAPE` for non-string `builder` values.
 10. **Tag immutability:** Never force-move a version tag jsDelivr has already served; bump the version for any fix. Never push `main` to the legacy `rajutan` remote.
 
@@ -41,8 +47,8 @@ node orchestrator/layout.mjs --out orchestrator/layout.json
 node scripts/release.mjs --version <ver> --apply    # build release tarballs + metadata
 node scripts/publish-cdn.mjs --apply                # publish unpacked tree to `cdn` + tag
 SMOKE_BASE=https://jsdelivr.net \
-  npx vitest run orchestrator/release.test.ts       # live CDN smoke test
-node .draft/smoke/serve.mjs 5300                    # preview /.draft/cdn-smoke/store/#checkout
+  npx vitest run orchestrator/__test__/release.test.ts  # live CDN smoke test
+python -m http.server 5300 --bind 127.0.0.1         # preview /temp/smoke/store/#checkout
 ```
 
 ## Context Routing (Read Only When Needed)

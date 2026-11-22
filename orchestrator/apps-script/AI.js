@@ -17,7 +17,8 @@
 const PROVIDERS = {
   gemini: {
     key: "GEMINI_API_KEY",
-    defaultModel: "gemini-2.5-flash",
+    // 2.5-flash is closed to new keys; override with the AI_MODEL Script Property.
+    defaultModel: "gemini-3.8-flash",
     call: callGemini,
   },
   deepseek: {

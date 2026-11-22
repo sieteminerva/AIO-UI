@@ -7,11 +7,11 @@ Index: `STATUS.md`.
 
 ## Active (max 3)
 
-| #   | Task                                                          | State           | Gate                                                          |
-| --- | ------------------------------------------------------------- | --------------- | ------------------------------------------------------------- |
-| 1   | App → orchestrator wiring (`answersToBase` → `retry` → envelope) | landed b55      | client `ask` hits `/exec`, result renders `data.preset`      |
-| 2   | Stage C — sheet copy + generated app (`live` url)                | landed b56      | one job returns a sheet url **and** a live url                |
-| 3   | Stage C — repo create + deploy (`data.repo`, real hosting)       | next            | `live` is a hosted url, not a `blob:`                         |
+| #   | Task                                                             | State      | Gate                                                    |
+| --- | ---------------------------------------------------------------- | ---------- | ------------------------------------------------------- |
+| 1   | App → orchestrator wiring (`answersToBase` → `retry` → envelope) | landed b55 | client `ask` hits `/exec`, result renders `data.preset` |
+| 2   | Stage C — sheet copy + generated app (`live` url)                | landed b56 | one job returns a sheet url **and** a live url          |
+| 3   | Stage C — repo create + deploy (`data.repo`, real hosting)       | next       | `live` is a hosted url, not a `blob:`                   |
 
 > `data[].endpoint` rides with row 3: it needs the per-site deployment that hosting creates.
 > The original gate named `gallery` **and `store`**; `store` is still one of the three missing
@@ -34,15 +34,18 @@ Index: `STATUS.md`.
 ## Landed
 
 - **batch 56 (2026-11-23)** — Rajutan **generated app**: `src/lib/app.ts` (`plan → emitPlan →
-  emitRuntime`, layout read from the CDN tag, `app.js` inlined into a `blob:` document) and
+emitRuntime`, layout read from the CDN tag, `app.js` inlined into a `blob:` document) and
   `runJob` now fills `data.live`; `ask.ts` gained `copySheet()` (`action:"sheet"`) and `runJob` fills
   `data.sheet`, reporting `status:"partial"` when a side effect fails. Proof: one real job returned
   sheet `uji-b56-live` **and** a live `blob:` url; the generated site booted from the CDN import map
   (home heading + hero + 3 sections) and routed `#portofolio` on click. Found and fixed: emitted
   content links by path (`/portofolio`) left the document (`#blocked`), so `runtime.ts` now maps
-  those clicks to hashes. `AI.js` DeepSeek gained `max_tokens: 8192` (default cut a preset mid-JSON)
-  and was `clasp push`ed. Engine 139 pass / 1 skip; app `tsc` + `vite build` clean; `npm run check`
-  clean.
+  those clicks to hashes. `AI.js` DeepSeek gained `max_tokens: 8192` and both providers
+  `temperature: 0.2` (clasp pushed). **Correction:** the failures are **malformed JSON**
+  (a stray `}` / trailing text right before `"notes"`), **not** truncation — the 8192 guess
+  stands only as a guard, and 9 of 9 profile runs still failed after the push, so `/exec`
+  may serve a pinned version rather than head. Engine 139 pass / 1 skip; app `tsc` +
+  `vite build` clean; `npm run check` clean.
 - **batch 55 (2026-11-23)** — Rajutan **client half** (`examples/rajutan`): `src/lib/{ask,prompt,job}.ts`
   run `answersToBase → retryAsync → assemblePreset` and build the `{status, meta, data}` envelope;
   the wizard submits the job (no more `mockBuildResult()`), `#/result` renders `data.preset` +

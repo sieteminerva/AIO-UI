@@ -37,7 +37,7 @@ touch the filesystem. Test data and Node-only checks live in `__test__/`.
 | `src/catalogue.ts`         | Builder vocabulary → package/module/style resolution; theme & capability maps                             |
 | `src/plan.ts`              | `plan(preset)` / `assetsOf(preset)` — derives modules, bindings, refs, and assets                         |
 | `src/parse.ts`             | `parsePreset()`, `assertPreset()`, `validatePages()` — schema & closed-vocabulary checks                  |
-| `src/answers.ts`           | `modelFromWebType()`, `validateAnswers()`, `answersToBase()` — wizard answers → server-owned base          |
+| `src/answers.ts`           | `modelFromWebType()`, `validateAnswers()`, `answersToBase()` — wizard answers → server-owned base         |
 | `src/ai.ts`                | AI contract `iAiSiteContent` v1, `parseAiContent()`, `assemblePreset()`, `aiResponseSchema()`             |
 | `src/retry.ts`             | `retry()` / `issueLines()` — re-ask the model with its own issues verbatim (2 retries), no `fetch`        |
 | `src/emit.ts`              | `emitPlan()` → `{ links, importMap, table, bindings, moduleRefs }`; `createCdnResolver()`                 |

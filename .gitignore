@@ -9,6 +9,10 @@ lerna-debug.log*
 
 node_modules
 .archives
+# The Rajutan app is its own repository (github.com/sieteminerva/rajutan). It lives under
+# `examples/` so the workspace links `@aio-ui/*` for development, but its history belongs
+# to that repository — never track it twice.
+/examples/rajutan/
 # Local scratch area: throwaway runs, probes, generated sites. Safe to delete wholesale.
 temp/
 # `releases/` is a real checkout of the orphan `releases` branch (tarballs + the

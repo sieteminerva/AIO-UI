@@ -8,9 +8,9 @@ Index: `STATUS.md`.
 
 ## Active (max 3)
 
-| #   | Task                                | State | Gate                                                             |
-| --- | ----------------------------------- | ----- | ---------------------------------------------------------------- |
-| 1   | Tarball install probe               | next  | clean folder: `npm i <tarball>` + a Node ESM import both boot      |
+| #   | Task                  | State | Gate                                                          |
+| --- | --------------------- | ----- | ------------------------------------------------------------- |
+| 1   | Tarball install probe | next  | clean folder: `npm i <tarball>` + a Node ESM import both boot |
 
 > The original gate named `gallery` **and `store`**; `store` is still one of the three missing
 > reference apps, so browser gates run on `gallery` until that app exists. `store` was probed in

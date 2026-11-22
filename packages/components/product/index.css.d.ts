@@ -5,4 +5,4 @@
  * condition here, which is what lets a consumer's TypeScript accept
  * `import "@aio-ui/product/index.css";` without an ambient `*.css` declaration of its own.
  */
-export {};
+export { };

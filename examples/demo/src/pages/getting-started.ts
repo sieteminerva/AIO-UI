@@ -66,13 +66,12 @@ function doc(build: BuildFn): HTMLElement {
   panel.append(
     section(
       "1 · Install",
-      "The packages are plain ES modules. The aggregate kits exist so an app installs three names instead of twenty:",
+      "The packages are plain ES modules. The aggregate kits exist so an app installs two names instead of twenty:",
       code(
         [
-          "npm install @aio-ui/frameworks @aio-ui/modules @aio-ui/styles",
+          "npm install @aio-ui/frameworks @aio-ui/styles",
           "",
           "# @aio-ui/frameworks  → base + core + app",
-          "# @aio-ui/modules     → router, theme, http-service, event-emitter, animations, module-loader",
           "# @aio-ui/styles      → app tokens (--app-*) and the layout primitives",
         ].join("\n"),
       ),

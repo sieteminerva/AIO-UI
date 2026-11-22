@@ -16,7 +16,7 @@
  */
 
 import type { FormModuleDefinition } from "./FormRegistry";
-import { INPUT_MODULE_DEFINITIONS } from "@aio-ui/input/modules";
+import { INPUT_MODULE_DEFINITIONS } from "@aio-ui/input";
 import { calculationFormAdapter } from "./adapters/Calculation";
 import { cascadeFormAdapter } from "./adapters/Cascade";
 import { multistepFormAdapter } from "./adapters/Multistep";

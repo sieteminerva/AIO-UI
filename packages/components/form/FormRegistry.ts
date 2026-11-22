@@ -1,6 +1,6 @@
 import type { iModuleDefinition } from "@aio-ui/module-loader";
 import type { iComponentModuleRef } from "@aio-ui/core";
-import { INPUT_MODULE_MANIFEST } from "@aio-ui/input/InputRegistry";
+import { INPUT_MODULE_MANIFEST } from "@aio-ui/input";
 import type { iFormModuleContext } from "./FormModuleTypes";
 
 /**

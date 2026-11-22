@@ -62,7 +62,7 @@ interface Registry {
 }
 
 /** Aggregators whose `export *` makes the import map a closure, not a list. */
-const BARRELS = ["@aio-ui/modules", "@aio-ui/themes"];
+const BARRELS = ["@aio-ui/themes"];
 
 /** The directories `scripts/release.mjs` treats as publishable sections. */
 const SECTIONS = [

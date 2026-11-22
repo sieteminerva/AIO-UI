@@ -1,12 +1,12 @@
 # CDN surface — target map
 
-Status: **stage 1 landed**, stage 2 pending. v3, 2026-11-22. Derived from the published `v0.2.4`
-registry (`releases/registry.json`, 131 rows) and `docs/releases/v0.2.4.md`.
+Status: **stage 1 + stage 2 landed**, 76 rows, 37 packages. v4, 2026-11-22. Derived from the published
+`v0.2.4` registry (`releases/registry.json`) and `docs/releases/v0.2.4.md`.
 
-| Stage | Rows | State                                                          |
-| ----- | ---- | -------------------------------------------------------------- |
-| 1     | 92   | landed — `3264981`, gates green (938 tests)                    |
-| 2     | 76   | pending — input restructure, `rating` + `modules` kit deletion |
+| Stage | Rows | State                                                         |
+| ----- | ---- | ------------------------------------------------------------- |
+| 1     | 92   | landed — `49b3b45`, gates green (938 tests)                   |
+| 2     | 76   | landed — input restructure, `rating` + `modules` kit deletion |
 
 Stage 1 covered: core, utilities, styles, base, form, product, id-address, table, message,
 animations. Stage 2 is the list below minus those packages.
@@ -95,7 +95,13 @@ same write/check shape as `api.mjs` and `catalogue.mjs`:
 
 Result: shrinking the CDN again = delete a folder or one array entry, then `npm run surface:write`.
 
-## Surviving list (82)
+## Surviving list — authoritative copy: `docs/releases/v0.2.4.md`
+
+The pre-refactor 82-row snapshot below is kept only as the planning record; the live 76-row list
+(37 packages, 45 exact JS + 29 CSS + 2 wildcard) is generated from `releases/registry.json` and
+lives in the release note. Open that, not this block, for the current URLs.
+
+<!-- pre-refactor snapshot (82 rows) -->
 
 Base `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.5/` — planned tag.
 

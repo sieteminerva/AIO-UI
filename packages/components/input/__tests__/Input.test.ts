@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 import { InputBuilder } from "../Input";
 import { InputAttributeBuilder } from "../Attribute";
 import { INPUT_TYPE_REGISTRY, inputTypeOf, scanInputAttributes } from "../FieldTypes";
-import { INPUT_MODULE_DEFINITIONS } from "../InputModules";
+import { INPUT_MODULE_DEFINITIONS } from "../index";
 import { ModuleLoader } from "@aio-ui/module-loader";
 
 /**

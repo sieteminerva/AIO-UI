@@ -24,7 +24,6 @@ export const componentAssets = {
     "@aio-ui/mode-switcher": () => import("@aio-ui/mode-switcher"),
     "@aio-ui/pricing-card": () => import("@aio-ui/pricing-card"),
     "@aio-ui/product": () => import("@aio-ui/product"),
-    "@aio-ui/rating": () => import("@aio-ui/rating"),
     "@aio-ui/section": () => import("@aio-ui/section"),
     "@aio-ui/skeleton": () => import("@aio-ui/skeleton"),
     "@aio-ui/tab": () => import("@aio-ui/tab"),
@@ -37,16 +36,16 @@ export const componentAssets = {
     "@aio-ui/form/multistep-adapter": () => import("@aio-ui/form/multistep-adapter"),
     "@aio-ui/form/calculation-adapter": () => import("@aio-ui/form/calculation-adapter"),
     "@aio-ui/form": () => import("@aio-ui/form"),
-    "@aio-ui/input/dropdown/module": () => import("@aio-ui/input/dropdown/module"),
-    "@aio-ui/input/file-uploader/module": () => import("@aio-ui/input/file-uploader/module"),
-    "@aio-ui/input/controls/module": () => import("@aio-ui/input/controls/module"),
-    "@aio-ui/input/popover/module": () => import("@aio-ui/input/popover/module"),
-    "@aio-ui/input/picker/module": () => import("@aio-ui/input/picker/module"),
+    "@aio-ui/input/dropdown": () => import("@aio-ui/input/dropdown"),
+    "@aio-ui/input/file-uploader": () => import("@aio-ui/input/file-uploader"),
+    "@aio-ui/input/controls": () => import("@aio-ui/input/controls"),
+    "@aio-ui/input/picker": () => import("@aio-ui/input/picker"),
     // The opt-in stacks, for a host that wants the whole layer in one import instead of
     // nine manifest refs. Every exact `exports` subpath is mapped here — a prefix cannot
     // add `.js`, so a missing key is a runtime 404, not a slow path.
     "@aio-ui/form": () => import("@aio-ui/form"),
-    "@aio-ui/input/modules": () => import("@aio-ui/input/modules"),
+    // The whole input layer is one import; each module is also its own subpath above.
+    "@aio-ui/input": () => import("@aio-ui/input"),
     // Adapters owned by other packages: the form never imports them, the host declares them.
     "@aio-ui/id-address": () => import("@aio-ui/id-address"),
     "@aio-ui/table": () => import("@aio-ui/table"),
@@ -77,8 +76,6 @@ export const componentAssets = {
     "@aio-ui/mode-switcher/ModeSwitcher.css": () => import("@aio-ui/mode-switcher/ModeSwitcher.css?inline"),
     "@aio-ui/pricing-card/PricingCard.css": () => import("@aio-ui/pricing-card/PricingCard.css?inline"),
     "@aio-ui/product/index.css": () => import("@aio-ui/product/index.css?inline"),
-    "@aio-ui/product/index.css": () => import("@aio-ui/product/index.css?inline"),
-    "@aio-ui/rating/Rating.css": () => import("@aio-ui/rating/Rating.css?inline"),
     "@aio-ui/section/Section.css": () => import("@aio-ui/section/Section.css?inline"),
     "@aio-ui/skeleton/Skeleton.css": () => import("@aio-ui/skeleton/Skeleton.css?inline"),
     "@aio-ui/tab/Tab.css": () => import("@aio-ui/tab/Tab.css?inline"),

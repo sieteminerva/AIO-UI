@@ -2,7 +2,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { InputBuilder } from "../Input";
-import { INPUT_MODULE_DEFINITIONS } from "../InputModules";
+import { INPUT_MODULE_DEFINITIONS } from "../index";
 
 /**
  * A degraded capability must never be silent.
@@ -38,7 +38,7 @@ describe("input layer reports what is missing", () => {
     expect(message).toContain("native select");
     // The fix is named by subpath and export — never as an import statement, which the
     // release pipeline would read as a real edge.
-    expect(message).toContain("@aio-ui/input/dropdown/module (dropdownInputModule)");
+    expect(message).toContain("@aio-ui/input/dropdown (dropdownInputModule)");
   });
 
   it("stays quiet for a dropdown when the module is there", () => {
@@ -61,7 +61,7 @@ describe("input layer reports what is missing", () => {
     const message = String(warn.mock.calls[0][0]);
     expect(message).toContain('"file" module');
     expect(message).toContain("onFileSelected never fires");
-    expect(message).toContain("@aio-ui/input/file-uploader/module (fileUploaderInputModule)");
+    expect(message).toContain("@aio-ui/input/file-uploader (fileUploaderInputModule)");
   });
 
   it("warns for a declared popover instead of dropping it in silence", () => {
@@ -110,7 +110,7 @@ describe("input layer reports what is missing", () => {
       module: "dropdown",
       severity: "warn",
     });
-    expect(detail.fix).toContain("@aio-ui/input/dropdown/module");
+    expect(detail.fix).toContain("@aio-ui/input/dropdown");
   });
 
   it("throws for a declared action set when no module can render buttons", () => {
@@ -123,7 +123,7 @@ describe("input layer reports what is missing", () => {
     );
 
     expect(() => new InputBuilder({ modules: [] }).create(amount() as any)).toThrow(
-      /@aio-ui\/input\/controls\/module/,
+      /@aio-ui\/input\/controls/,
     );
   });
 

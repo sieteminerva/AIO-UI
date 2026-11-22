@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 import { describe, expect, it, vi } from "vitest";
 
-import { fileUploaderInputModule } from "../FileUploader/FileUploader.InputModule";
+import { fileUploaderInputModule } from "../FileUploader/FileUploader";
 import { inputFormAdapter } from "@aio-ui/form";
 import { mountInputModules } from "../InputRegistry";
 import type { InputModuleDefinition } from "../InputModuleTypes";

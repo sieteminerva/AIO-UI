@@ -20,7 +20,6 @@ import { ModalBuilder } from "@aio-ui/modal";
 import { ModeSwitcherBuilder } from "@aio-ui/mode-switcher";
 import { PricingCardBuilder } from "@aio-ui/pricing-card";
 import { ProductBuilder } from "@aio-ui/product";
-import { RatingBuilder } from "@aio-ui/rating";
 import { SectionBuilder } from "@aio-ui/section";
 import { SkeletonBuilder } from "@aio-ui/skeleton";
 import { TabBuilder } from "@aio-ui/tab";
@@ -54,7 +53,6 @@ const builders: Array<[string, { contract?: iContentContract }]> = [
   ["mode-switcher", ModeSwitcherBuilder],
   ["pricing-card", PricingCardBuilder],
   ["product", ProductBuilder],
-  ["rating", RatingBuilder],
   ["section", SectionBuilder],
   ["skeleton", SkeletonBuilder],
   ["tab", TabBuilder],
@@ -63,7 +61,7 @@ const builders: Array<[string, { contract?: iContentContract }]> = [
 
 describe("declared content contracts", () => {
   it("covers every builder in the band", () => {
-    expect(builders).toHaveLength(22);
+    expect(builders).toHaveLength(21);
   });
 
   for (const [name, builder] of builders) {
@@ -94,7 +92,6 @@ const rejections: Array<[string, unknown]> = [
   ["masonry", 42],
   ["modal", 42],
   ["product", 42],
-  ["rating", "high"],
 ];
 
 describe("narrowed contracts reject a payload that fits no branch", () => {

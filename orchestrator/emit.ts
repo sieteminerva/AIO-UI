@@ -190,7 +190,7 @@ export interface CdnResolverOptions {
  * release folder).
  *
  * Subpaths follow the package's own `exports` map (`layout[pkg].subpaths`), so
- * `@aio-ui/input/dropdown/module` lands on `dist/Dropdown/Dropdown.InputModule.js`.
+ * `@aio-ui/input/dropdown` lands on `dist/Dropdown/Dropdown.js`.
  * A layout without `subpaths` falls back to the `dist/<subpath>.js` mirror rule.
  *
  * @param options - CDN base plus the package → directory map.

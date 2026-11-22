@@ -66,7 +66,7 @@ describe("emitRuntime — app.js", () => {
 
     expect(app).toContain('registry.register("form"');
     expect(app).toContain('{ id: "validation", path: "@aio-ui/form/validation-adapter", export: "validationFormAdapter" }');
-    expect(app).toContain('{ id: "dropdown", path: "@aio-ui/input/dropdown/module", export: "dropdownInputModule" }');
+    expect(app).toContain('{ id: "dropdown", path: "@aio-ui/input/dropdown", export: "dropdownInputModule" }');
 
     // Field-level modules are not page components.
     expect(app).not.toContain('registry.register("dropdown"');

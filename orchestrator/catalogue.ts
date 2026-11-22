@@ -87,15 +87,14 @@ export const BUILDER_CATALOGUE: Record<string, CatalogueEntry> = {
   article: { capability: "article", modules: ["@aio-ui/article"], styles: ["@aio-ui/article/Article.css"] },
   tab: { capability: "tab", modules: ["@aio-ui/tab"], styles: ["@aio-ui/tab/Tab.css"] },
   badge: { capability: "badge", modules: ["@aio-ui/badge"], styles: ["@aio-ui/badge/Badge.css"] },
-  rating: { capability: "rating", modules: ["@aio-ui/rating"], styles: ["@aio-ui/rating/Rating.css"] },
   "product-card": { capability: "product", modules: ["@aio-ui/product"], styles: ["@aio-ui/product/index.css"] },
   "product-card-grid": { capability: "product", modules: ["@aio-ui/product"], styles: ["@aio-ui/product/index.css"] },
   "product-detail": { capability: "product", modules: ["@aio-ui/product"], styles: ["@aio-ui/product/index.css"] },
   table: { capability: "table", modules: ["@aio-ui/table"], styles: ["@aio-ui/table/Table.css"] },
   form: { capability: "form", modules: ["@aio-ui/form"], styles: ["@aio-ui/form/Form.css"] },
   input: { capability: "input", modules: ["@aio-ui/input"], styles: ["@aio-ui/input/input.css"] },
-  dropdown: { capability: "dropdown", modules: ["@aio-ui/input/dropdown/module"], styles: ["@aio-ui/input/dropdown.css"] },
-  "input-controls": { capability: "controls", modules: ["@aio-ui/input/controls/module"], styles: ["@aio-ui/input/controls.css"] },
+  dropdown: { capability: "dropdown", modules: ["@aio-ui/input/dropdown"], styles: ["@aio-ui/input/dropdown.css"] },
+  "input-controls": { capability: "controls", modules: ["@aio-ui/input/controls"], styles: ["@aio-ui/input/controls.css"] },
 };
 
 /**
@@ -117,10 +116,10 @@ export const FORM_ADAPTER_CATALOGUE: Record<string, CatalogueEntry> = {
 
 /** Input-side modules, keyed by the field type or config that needs them. */
 export const INPUT_MODULE_CATALOGUE: Record<string, CatalogueEntry> = {
-  dropdown: { capability: "dropdown", modules: ["@aio-ui/input/dropdown/module"], styles: ["@aio-ui/input/dropdown.css"], id: "dropdown", export: "dropdownInputModule" },
-  file: { capability: "file-uploader", modules: ["@aio-ui/input/file-uploader/module"], styles: ["@aio-ui/input/file-uploader.css"], id: "file", export: "fileUploaderInputModule" },
-  controls: { capability: "controls", modules: ["@aio-ui/input/controls/module"], styles: ["@aio-ui/input/controls.css"], id: "controls", export: "inputControlsInputModule" },
-  popover: { capability: "popover", modules: ["@aio-ui/input/popover/module"], styles: [], id: "popover", export: "popoverInputModule" },
+  dropdown: { capability: "dropdown", modules: ["@aio-ui/input/dropdown"], styles: ["@aio-ui/input/dropdown.css"], id: "dropdown", export: "dropdownInputModule" },
+  file: { capability: "file-uploader", modules: ["@aio-ui/input/file-uploader"], styles: ["@aio-ui/input/file-uploader.css"], id: "file", export: "fileUploaderInputModule" },
+  controls: { capability: "controls", modules: ["@aio-ui/input/controls"], styles: ["@aio-ui/input/controls.css"], id: "controls", export: "inputControlsInputModule" },
+  popover: { capability: "popover", modules: ["@aio-ui/input"], styles: [], id: "popover", export: "popoverInputModule" },
 };
 
 /** Packages that belong to a capability rather than to a builder word. */

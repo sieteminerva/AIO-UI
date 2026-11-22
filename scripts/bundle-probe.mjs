@@ -10,11 +10,9 @@
  *
  * Direction matters, and both are checked:
  *
- *   - **negative** — `@aio-ui/form` root does not parse the five form adapters and the
- *     four input modules, `@aio-ui/input` root does not parse the four input sub-modules;
- *   - **positive** — `@aio-ui/form` parses **all nine** (it is the full stack: one
- *     import, whole form) and `@aio-ui/input/modules` parses its four, so the negative
- *     cases cannot be green merely because nothing resolved.
+ *   - **negative** — `@aio-ui/form` root does not parse another package's adapters;
+ *   - **positive** — `@aio-ui/form` and `@aio-ui/input` roots parse their whole stack (one
+ *     import, whole form), so a build that resolves nothing cannot pass.
  *
  * A build that produces no parsed module is a failure, not a pass.
  *
@@ -40,10 +38,10 @@ const FORM_ADAPTERS = [
 ];
 
 const INPUT_MODULES = [
-  "packages/components/input/Dropdown/Dropdown.InputModule.ts",
-  "packages/components/input/FileUploader/FileUploader.InputModule.ts",
-  "packages/components/input/InputControls/InputControls.InputModule.ts",
-  "packages/components/input/Popover.InputModule.ts",
+  "packages/components/input/Dropdown/Dropdown.ts",
+  "packages/components/input/FileUploader/FileUploader.ts",
+  "packages/components/input/InputControls/InputControls.ts",
+  "packages/components/input/InputPicker/InputPicker.ts",
 ];
 
 /** What each entry must and must not pull in. */
@@ -66,8 +64,9 @@ const CASES = [
   {
     name: "input-root",
     entry: "input-root.ts",
-    present: ["packages/components/input/Input.ts"],
-    absent: INPUT_MODULES,
+    // The root is now the one door: it pulls the builder and every module it registers.
+    present: ["packages/components/input/Input.ts", ...INPUT_MODULES],
+    absent: [],
   },
   {
     name: "form-full",
@@ -80,7 +79,7 @@ const CASES = [
   {
     name: "input-full",
     entry: "input-full.ts",
-    present: INPUT_MODULES,
+    present: ["packages/components/input/Input.ts", ...INPUT_MODULES],
     absent: [],
   },
 ];

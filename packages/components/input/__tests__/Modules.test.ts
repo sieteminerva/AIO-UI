@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ModuleLoader, resolveModuleDefinitions } from "@aio-ui/module-loader";
 
 import type { iInputAdapter, iInputModuleContext } from "../InputModuleTypes";
-import { INPUT_MODULE_DEFINITION_IDS, INPUT_MODULE_DEFINITIONS } from "../InputModules";
+import { INPUT_MODULE_DEFINITION_IDS, INPUT_MODULE_DEFINITIONS } from "../index";
 import { INPUT_MODULE_IDS, INPUT_MODULE_MANIFEST } from "../InputRegistry";
 import { INPUT_TYPE_REGISTRY } from "../FieldTypes";
 import { InputBuilder } from "../Input";
@@ -31,9 +31,9 @@ describe("input module registry", () => {
     expect(INPUT_MODULE_DEFINITIONS).toHaveLength(Object.values(INPUT_MODULE_IDS).length);
   });
 
-  it("points each ref at this package's `*/module` entry, exporting one named binding", () => {
+  it("points each ref at this package's own entry, exporting one named binding", () => {
     for (const ref of INPUT_MODULE_MANIFEST) {
-      expect(ref.path, `${ref.id} → ${ref.path}`).toMatch(/^@aio-ui\/input\/[a-z-]+\/module$/);
+      expect(ref.path, `${ref.id} → ${ref.path}`).toMatch(/^@aio-ui\/input(\/[a-z-]+)?$/);
       expect(ref.export, `${ref.id} has no named export`).toBeTruthy();
     }
   });

@@ -360,26 +360,49 @@
       "values": [
         "INPUT_MODULE_IDS",
         "INPUT_MODULE_MANIFEST",
+        "INPUT_STRUCTURAL_KEYS",
+        "INPUT_TYPE_REGISTRY",
+        "InputAttributeBuilder",
         "InputBuilder",
+        "collectFormValues",
         "inputFilesOf",
-        "mountInputModules"
+        "inputTypeOf",
+        "isInputAttributeAllowed",
+        "mountControls",
+        "mountInputModules",
+        "popoverInputModule",
+        "reportMissing",
+        "scanInputAttributes"
       ],
       "types": [
+        "CalculationPrimitive",
+        "CalculationValues",
+        "InputAttributeType",
         "InputModuleDefinition",
         "InputModuleId",
         "InputModuleItem",
         "InputModulePreset",
         "InputType",
         "iActionType",
+        "iAttributeProperty",
         "iBasicInputConfig",
         "iBasicInputNode",
         "iBasicSelectOption",
+        "iCalculationContext",
+        "iCalculationFormula",
+        "iCalculationLineItem",
+        "iCollectValuesOptions",
         "iInputActionContext",
         "iInputActionDefinition",
         "iInputActionHandler",
+        "iInputActionsSpec",
         "iInputAdapter",
         "iInputConfig",
-        "iInputModuleContext"
+        "iInputModuleContext",
+        "iInputTypeDefinition",
+        "iMissingModuleOptions",
+        "iMissingModuleReport",
+        "iModuleMissingDetail"
       ]
     },
     "@aio-ui/markdown": {
@@ -465,20 +488,6 @@
         "iResolveModuleRefsOptions"
       ]
     },
-    "@aio-ui/modules": {
-      "kind": "aggregator",
-      "barrel": "./index.ts",
-      "reexports": [
-        "@aio-ui/module-loader",
-        "@aio-ui/router",
-        "@aio-ui/http-service",
-        "@aio-ui/event-emitter",
-        "@aio-ui/theme",
-        "@aio-ui/animations"
-      ],
-      "values": [],
-      "types": []
-    },
     "@aio-ui/pricing-card": {
       "kind": "package",
       "barrel": "./index.ts",
@@ -505,17 +514,6 @@
         "iProductDetailConfig",
         "iProductGridConfig",
         "iProductRecord"
-      ]
-    },
-    "@aio-ui/rating": {
-      "kind": "package",
-      "barrel": "./index.ts",
-      "values": [
-        "RatingBuilder"
-      ],
-      "types": [
-        "RatingVisualType",
-        "iRatingConfig"
       ]
     },
     "@aio-ui/router": {

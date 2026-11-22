@@ -2,7 +2,7 @@
 import { describe, expect, it } from "vitest";
 
 import { ModuleLoader } from "@aio-ui/module-loader";
-import { INPUT_MODULE_DEFINITIONS } from "@aio-ui/input/modules";
+import { INPUT_MODULE_DEFINITIONS } from "@aio-ui/input";
 
 import { FormBuilder } from "../Form";
 import { FORM_ADAPTER_DEFINITIONS } from "../FormAdapters";

@@ -2,9 +2,9 @@ import type { iModuleDefinition } from "@aio-ui/module-loader";
 import type { iFormModuleContext } from "./FormModuleTypes";
 import { FORM_MODULE_IDS } from "./FormModuleTypes";
 import { InputBuilder } from "@aio-ui/input";
-import { inputFilesOf, mountControls, mountInputModules } from "@aio-ui/input/InputRegistry";
-import { INPUT_MODULE_IDS } from "@aio-ui/input/InputModuleTypes";
-import { reportMissing } from "@aio-ui/input/Missing";
+import { inputFilesOf, mountControls, mountInputModules } from "@aio-ui/input";
+import { INPUT_MODULE_IDS } from "@aio-ui/input";
+import { reportMissing } from "@aio-ui/input";
 
 /**
  * Field rendering adapter.
@@ -83,7 +83,7 @@ class InputFormAdapter {
 
     if (!controls && declaredAny(spec.actions)) {
       reportMissing(
-        { capability: "actions", module: INPUT_MODULE_IDS.controls, fix: "@aio-ui/input/controls/module (inputControlsInputModule)", consequence: "the declared action buttons would never render.", severity: "error" },
+        { capability: "actions", module: INPUT_MODULE_IDS.controls, fix: "@aio-ui/input/controls (inputControlsInputModule)", consequence: "the declared action buttons would never render.", severity: "error" },
         { owner: "FormBuilder", emit: this.#context.builderConfig?.emit }
       );
     }
@@ -110,7 +110,7 @@ class InputFormAdapter {
     // upload — the one degradation that must never be silent.
     if (!this.#canReadFiles) {
       reportMissing(
-        { capability: "file", module: INPUT_MODULE_IDS.file, fix: "@aio-ui/input/file-uploader/module (fileUploaderInputModule) — @aio-ui/form already includes it", consequence: "config.files receives no files and the selected bytes are dropped.", severity: "error" },
+        { capability: "file", module: INPUT_MODULE_IDS.file, fix: "@aio-ui/input/file-uploader (fileUploaderInputModule) — @aio-ui/form already includes it", consequence: "config.files receives no files and the selected bytes are dropped.", severity: "error" },
         { owner: "FormBuilder", emit: this.#context.builderConfig?.emit }
       );
     }

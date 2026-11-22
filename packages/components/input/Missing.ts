@@ -33,7 +33,7 @@ export interface iMissingModuleReport {
   capability: string;
   /** Id of the module that provides it — one of `INPUT_MODULE_IDS`. */
   module: string;
-  /** The subpath and export that fix it, e.g. `@aio-ui/input/dropdown/module (dropdownInputModule)`. */
+  /** The subpath and export that fix it, e.g. `@aio-ui/input/dropdown (dropdownInputModule)`. */
   fix: string;
   /** What the visitor sees instead, in one clause, used verbatim in both messages. */
   consequence: string;
@@ -86,7 +86,7 @@ export interface iModuleMissingDetail {
  *
  * @example
  * // A field fell back to a native select, so say it once.
- * reportMissing({ capability: "dropdown", module: "dropdown", fix: "@aio-ui/input/dropdown/module (dropdownInputModule)", consequence: "the field falls back to a native select with the same options", severity: "warn" }, { seen });
+ * reportMissing({ capability: "dropdown", module: "dropdown", fix: "@aio-ui/input/dropdown (dropdownInputModule)", consequence: "the field falls back to a native select with the same options", severity: "warn" }, { seen });
  */
 export function reportMissing(report: iMissingModuleReport, options: iMissingModuleOptions = {}): void {
   const { owner = "InputBuilder", seen, emit = null } = options;

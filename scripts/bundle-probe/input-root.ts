@@ -1,8 +1,8 @@
 /**
- * `@aio-ui/input` root — no sub-module.
+ * `@aio-ui/input` root — the builder and the modules it registers.
  *
- * A text field needs the builder and nothing else; the dropdown builder, the uploader,
- * the control set and the popover must stay out of this graph.
+ * One import is the whole layer (the price of a single door); the per-module subpaths are
+ * where a bundler trims. This case proves the root resolves to the real module files.
  */
 import { InputBuilder } from "@aio-ui/input";
 

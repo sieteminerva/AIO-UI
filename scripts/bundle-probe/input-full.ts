@@ -1,9 +1,9 @@
 /**
- * `@aio-ui/input/modules` — the opt-in full stack, positive direction.
+ * `@aio-ui/input` — the whole layer through the root, one import.
  *
- * Four modules in, four modules parsed; without this case the "absent" assertions would
- * prove only that the build resolved nothing.
+ * The root registers every module, so a text-only consumer that still imports the root
+ * parses them all; per-module subpaths are where a bundler can trim.
  */
-import { INPUT_MODULE_DEFINITIONS } from "@aio-ui/input/modules";
+import { INPUT_MODULE_DEFINITIONS } from "@aio-ui/input";
 
 export const probe = INPUT_MODULE_DEFINITIONS;

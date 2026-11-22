@@ -92,10 +92,10 @@ describe("plan — store pulls in what it declares", () => {
   });
 
   it("turns field types and config into input modules", () => {
-    expect(list).toContain("@aio-ui/input/dropdown/module");
-    expect(list).toContain("@aio-ui/input/file-uploader/module");
-    expect(list).toContain("@aio-ui/input/popover/module");
-    expect(list).toContain("@aio-ui/input/controls/module");
+    expect(list).toContain("@aio-ui/input/dropdown");
+    expect(list).toContain("@aio-ui/input/file-uploader");
+    expect(list).toContain("@aio-ui/input");
+    expect(list).toContain("@aio-ui/input/controls");
   });
 
   it("adds the table bridge and the address capability", () => {
@@ -107,7 +107,7 @@ describe("plan — store pulls in what it declares", () => {
   it("attaches a package's stylesheets to its own module entry", () => {
     expect(stylesOf(storePreset, "@aio-ui/form")).toEqual(["@aio-ui/form/Form.css"]);
     expect(stylesOf(storePreset, "@aio-ui/input")).toEqual(["@aio-ui/input/input.css"]);
-    expect(stylesOf(storePreset, "@aio-ui/input/dropdown/module")).toEqual(["@aio-ui/input/dropdown.css"]);
+    expect(stylesOf(storePreset, "@aio-ui/input/dropdown")).toEqual(["@aio-ui/input/dropdown.css"]);
   });
 });
 

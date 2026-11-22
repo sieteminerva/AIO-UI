@@ -9,7 +9,11 @@ import {
   type iComponentRoute,
   type iComponentModuleRef
 } from '@aio-ui/core';
-import { AnimationsService, EventEmitter, HttpService, HashRouter, ThemeRenderer } from '@aio-ui/modules';
+import { AnimationsService } from '@aio-ui/animations';
+import { EventEmitter } from '@aio-ui/event-emitter';
+import { HttpService } from '@aio-ui/http-service';
+import { HashRouter } from '@aio-ui/router';
+import { ThemeRenderer } from '@aio-ui/theme';
 import { productModules } from '@aio-ui/product';
 import { DefaultTheme, CyberpunkTheme, } from '@aio-ui/themes';
 

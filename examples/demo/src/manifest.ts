@@ -438,22 +438,6 @@ export const DEMO: iDemoEntry[] = [
     note: "config: { element: <dom id>, persist: true } — without `element` the toast mounts on document.body",
   },
   {
-    name: "rating",
-    path: "@aio-ui/rating",
-    stylesheet: "@aio-ui/rating/Rating.css",
-    category: "content",
-    tier: "basic",
-    kind: "element",
-    payload: 4.5,
-    config: { type: "star", max: 5 },
-    variants: [
-      { label: "4.5 dari 5", payload: 4.5 },
-      { label: "3 dari 5", payload: 3 },
-      { label: "tanpa nilai", payload: {} },
-    ],
-    note: "payload is a bare number or { value }; `type` picks the visual (star | round-bar | line-bar | count-up)",
-  },
-  {
     name: "table",
     path: "@aio-ui/table",
     stylesheet: "@aio-ui/table/Table.css",

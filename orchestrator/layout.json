@@ -4,8 +4,7 @@
     "entry": "dist/index.js",
     "stylesRoot": "dist",
     "subpaths": {
-      ".": "dist/index.js",
-      "./BaseAdapters/*": "src/BaseAdapters/*"
+      ".": "dist/index.js"
     }
   },
   "@aio-ui/core": {
@@ -13,30 +12,14 @@
     "entry": "dist/index.js",
     "stylesRoot": "dist",
     "subpaths": {
-      ".": "dist/index.js",
-      "./interface": "dist/interface.js",
-      "./node": "dist/types/node.js",
-      "./builder": "dist/types/builder.js",
-      "./registry": "dist/types/registry.js",
-      "./events": "dist/types/events.js",
-      "./content": "dist/types/content.js",
-      "./page": "dist/types/page.js",
-      "./renderer": "dist/types/renderer.js",
-      "./app": "dist/app/index.js",
-      "./api": "dist/types/api.js"
+      ".": "dist/index.js"
     }
   },
   "@aio-ui/styles": {
     "dir": "packages/styles",
     "stylesRoot": "src",
     "subpaths": {
-      ".": "src/index.css",
-      "./index.css": "src/index.css",
-      "./variables.css": "src/variables.css",
-      "./typography.css": "src/typography.css",
-      "./components.css": "src/components.css",
-      "./layout.css": "src/layout.css",
-      "./icon.css": "src/icon.css"
+      "./index.css": "src/index.css"
     }
   },
   "@aio-ui/utilities": {
@@ -44,14 +27,7 @@
     "entry": "dist/index.js",
     "stylesRoot": "dist",
     "subpaths": {
-      ".": "dist/index.js",
-      "./Metadata": "dist/Metadata.js",
-      "./SelectorToTree": "dist/SelectorToTree.js",
-      "./AttributeUtils": "dist/AttributeUtils.js",
-      "./DomUtils": "dist/DomUtils.js",
-      "./color.utils": "dist/color.utils.js",
-      "./helper": "dist/helper.js",
-      "./parseTableFile": "dist/parseTableFile.js"
+      ".": "dist/index.js"
     }
   },
   "@aio-ui/accordion": {
@@ -123,13 +99,8 @@
     "stylesRoot": "dist",
     "subpaths": {
       ".": "dist/index.js",
-      "./adapters": "dist/FormAdapters.js",
       "./Form.css": "dist/Form.css",
-      "./FormLayout": "dist/FormLayout.js",
       "./FormMessages": "dist/FormMessages.js",
-      "./FormModuleTypes": "dist/FormModuleTypes.js",
-      "./FormRegistry": "dist/FormRegistry.js",
-      "./Input.FormAdapter": "dist/Input.FormAdapter.js",
       "./calculation-adapter": "dist/adapters/Calculation.js",
       "./cascade-adapter": "dist/adapters/Cascade.js",
       "./multistep-adapter": "dist/adapters/Multistep.js",
@@ -142,11 +113,6 @@
     "stylesRoot": "dist",
     "subpaths": {
       ".": "dist/index.js",
-      "./adapter": "dist/id-address-adapter.js",
-      "./adapter.native": "dist/id-address-adapter.native.js",
-      "./adapter.base": "dist/id-address-adapter.base.js",
-      "./adapter.aio": "dist/id-address-adapter.aio.js",
-      "./form": "dist/IdAddress.FormAdapter.js",
       "./id-address.css": "dist/id-address.css"
     }
   },
@@ -156,28 +122,15 @@
     "stylesRoot": "dist",
     "subpaths": {
       ".": "dist/index.js",
-      "./modules": "dist/InputModules.js",
-      "./InputRegistry": "dist/InputRegistry.js",
-      "./InputModuleTypes": "dist/InputModuleTypes.js",
-      "./Missing": "dist/Missing.js",
-      "./FieldTypes": "dist/FieldTypes.js",
-      "./Attribute": "dist/Attribute.js",
-      "./FormValues": "dist/FormValues.js",
-      "./CalculationTypes": "dist/CalculationTypes.js",
+      "./input.css": "dist/input.css",
       "./dropdown": "dist/Dropdown/Dropdown.js",
       "./dropdown.css": "dist/Dropdown/Dropdown.css",
       "./file-uploader": "dist/FileUploader/FileUploader.js",
       "./file-uploader.css": "dist/FileUploader/FileUploader.css",
       "./controls": "dist/InputControls/InputControls.js",
       "./controls.css": "dist/InputControls/inputControls.css",
-      "./dropdown/module": "dist/Dropdown/Dropdown.InputModule.js",
-      "./file-uploader/module": "dist/FileUploader/FileUploader.InputModule.js",
-      "./controls/module": "dist/InputControls/InputControls.InputModule.js",
-      "./popover/module": "dist/Popover.InputModule.js",
       "./picker": "dist/InputPicker/InputPicker.js",
-      "./picker.css": "dist/InputPicker/InputPicker.css",
-      "./picker/module": "dist/InputPicker/InputPicker.inputModules.js",
-      "./input.css": "dist/input.css"
+      "./picker.css": "dist/InputPicker/InputPicker.css"
     }
   },
   "@aio-ui/markdown": {
@@ -213,8 +166,7 @@
     "stylesRoot": "dist",
     "subpaths": {
       ".": "dist/index.js",
-      "./Message.css": "dist/Message.css",
-      "./adapters/FormAdapter": "dist/adapters/FormAdapter.js"
+      "./Message.css": "dist/Message.css"
     }
   },
   "@aio-ui/modal": {
@@ -250,18 +202,7 @@
     "stylesRoot": "dist",
     "subpaths": {
       ".": "dist/index.js",
-      "./ProductCard.css": "dist/ProductCard.css",
-      "./ProductDetail.css": "dist/ProductDetail.css",
-      "./ProductGrid.css": "dist/ProductGrid.css"
-    }
-  },
-  "@aio-ui/rating": {
-    "dir": "packages/components/rating",
-    "entry": "dist/index.js",
-    "stylesRoot": "dist",
-    "subpaths": {
-      ".": "dist/index.js",
-      "./Rating.css": "dist/Rating.css"
+      "./index.css": "index.css"
     }
   },
   "@aio-ui/section": {
@@ -297,8 +238,7 @@
     "stylesRoot": "dist",
     "subpaths": {
       ".": "dist/index.js",
-      "./Table.css": "dist/Table.css",
-      "./adapters/FormAdapter": "dist/adapters/FormAdapter.js"
+      "./Table.css": "dist/Table.css"
     }
   },
   "@aio-ui/animations": {
@@ -308,7 +248,6 @@
     "subpaths": {
       ".": "dist/index.js",
       "./Animations.css": "dist/Animations.css",
-      "./behaviours": "dist/behaviours/registry.js",
       "./behaviours/*": "dist/behaviours/*.js",
       "./canvas/*": "dist/canvas/*.js"
     }
@@ -380,14 +319,6 @@
   },
   "@aio-ui/theme-horizontal": {
     "dir": "packages/themes/horizontal",
-    "entry": "dist/index.js",
-    "stylesRoot": "dist",
-    "subpaths": {
-      ".": "dist/index.js"
-    }
-  },
-  "@aio-ui/modules": {
-    "dir": "packages/kits/modules",
     "entry": "dist/index.js",
     "stylesRoot": "dist",
     "subpaths": {

@@ -2,7 +2,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { InputControlsBuilder } from "../InputControls/InputControls";
-import { inputControlsInputModule, normaliseActions } from "../InputControls/InputControls.InputModule";
+import { inputControlsInputModule, normaliseActions } from "../InputControls/InputControls";
 import { mountControls } from "../InputRegistry";
 
 /**

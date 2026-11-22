@@ -1,8 +1,8 @@
 // @vitest-environment happy-dom
 import { beforeEach, describe, expect, it } from "vitest";
 
-import { INPUT_MODULE_IDS } from "@aio-ui/input/InputRegistry";
-import type { iInputAdapter } from "@aio-ui/input/InputModuleTypes";
+import { INPUT_MODULE_IDS } from "@aio-ui/input";
+import type { iInputAdapter } from "@aio-ui/input";
 import { inspectPage } from "@aio-ui/core";
 import { ModuleLoader, resolveModuleDefinitions } from "@aio-ui/module-loader";
 
@@ -72,7 +72,7 @@ describe("form adapter manifest", () => {
     expect(inputScoped.sort()).toEqual(Object.values(INPUT_MODULE_IDS).sort());
     // Every input-scoped entry must point at the input package, not at the form.
     for (const ref of FORM_ADAPTER_MANIFEST.filter((r) => r.scope === "input")) {
-      expect(ref.path?.startsWith("@aio-ui/input/"), `${ref.id} → ${ref.path}`).toBe(true);
+      expect(ref.path, `${ref.id} → ${ref.path}`).toMatch(/^@aio-ui\/input(\/|$)/);
     }
   });
 
@@ -244,7 +244,7 @@ describe("hand-wired modules (no registry, no shell)", () => {
       inputModules: [],
     } as any) as any;
 
-    return expect(adapter.beforeSubmit({})).rejects.toThrow(/@aio-ui\/input\/file-uploader\/module/);
+    return expect(adapter.beforeSubmit({})).rejects.toThrow(/@aio-ui\/input\/file-uploader/);
   });
 
   it("resolves the manifest into the same stack the definitions describe", async () => {

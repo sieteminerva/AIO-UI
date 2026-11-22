@@ -3,8 +3,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { PickerBuilder } from "../InputPicker";
-import { pickerInputModule } from "../InputPicker.inputModules";
+import { PickerBuilder, pickerInputModule } from "../InputPicker";
 import { InputBuilder } from "../../Input";
 
 /**
@@ -209,7 +208,7 @@ describe("picker input module", () => {
     expect(root.querySelector("select")).not.toBeNull();
     const message = String(warn.mock.calls[0]?.[0] ?? "");
     expect(message).toContain('"picker" module');
-    expect(message).toContain("@aio-ui/input/picker/module (pickerInputModule)");
+    expect(message).toContain("@aio-ui/input/picker (pickerInputModule)");
   });
 });
 

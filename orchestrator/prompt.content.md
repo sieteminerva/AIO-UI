@@ -115,7 +115,6 @@ message
 article
 tab
 badge
-rating
 product-card
 product-card-grid
 product-detail

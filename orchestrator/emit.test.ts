@@ -81,8 +81,8 @@ describe("createCdnResolver", () => {
   });
 
   it("mirrors subpaths into dist/", () => {
-    expect(resolver.module("@aio-ui/input/dropdown/module")).toBe(
-      "https://cdn.jsdelivr.net/gh/u/r@v0.1.3/packages/components/input/dist/dropdown/module.js",
+    expect(resolver.module("@aio-ui/input/dropdown")).toBe(
+      "https://cdn.jsdelivr.net/gh/u/r@v0.1.3/packages/components/input/dist/dropdown.js",
     );
   });
 

@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 import { describe, expect, it, vi } from "vitest";
 import type { iMessageContent } from "@aio-ui/message";
-import type { iCalculationLineItem } from "@aio-ui/input/CalculationTypes";
+import type { iCalculationLineItem } from "@aio-ui/input";
 import { FormCalculationHandler } from "../adapters/Calculation";
 
 /**

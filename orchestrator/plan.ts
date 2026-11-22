@@ -33,7 +33,7 @@ function isRecord(value: unknown): value is UnknownRecord {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-/** `@aio-ui/input/dropdown/module` → `@aio-ui/input`. */
+/** `@aio-ui/input/dropdown` → `@aio-ui/input`. */
 function packageOf(specifier: string): string {
   return specifier.split("/").slice(0, 2).join("/");
 }

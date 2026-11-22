@@ -9,11 +9,11 @@ import type { FormValidationHandler } from "./adapters/Validation";
 import { FORM_MODULE_IDS } from "./FormModuleTypes";
 import type { FormModulePhase, iFormAdapter, iFormModuleContext } from "./FormModuleTypes";
 import type { FormModuleDefinition } from "./FormRegistry";
-import { INPUT_MODULE_IDS } from "@aio-ui/input/InputRegistry";
-import type { InputModuleItem, InputModulePreset } from "@aio-ui/input/InputModuleTypes";
+import { INPUT_MODULE_IDS } from "@aio-ui/input";
+import type { InputModuleItem, InputModulePreset } from "@aio-ui/input";
 import { ModuleLoader } from "@aio-ui/module-loader";
 import { applyRowColumns, applyRowSpan, childSpanOf, columnsOf } from "./FormLayout";
-import { collectFormValues } from "@aio-ui/input/FormValues";
+import { collectFormValues } from "@aio-ui/input";
 import type { HttpService } from "@aio-ui/http-service";
 import type { iFormMessages } from "./FormMessages";
 

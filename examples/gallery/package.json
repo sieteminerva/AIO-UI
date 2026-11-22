@@ -19,7 +19,6 @@
     "@aio-ui/input": "*",
     "@aio-ui/masonry": "*",
     "@aio-ui/message": "*",
-    "@aio-ui/rating": "*",
     "@aio-ui/router": "*",
     "@aio-ui/skeleton": "*",
     "@aio-ui/styles": "*",

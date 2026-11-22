@@ -28,7 +28,6 @@ import modalReadme from "../../../packages/components/modal/README.md?raw";
 import modeswitcherReadme from "../../../packages/components/mode-switcher/README.md?raw";
 import pricingcardReadme from "../../../packages/components/pricing-card/README.md?raw";
 import productReadme from "../../../packages/components/product/README.md?raw";
-import ratingReadme from "../../../packages/components/rating/README.md?raw";
 import sectionReadme from "../../../packages/components/section/README.md?raw";
 import skeletonReadme from "../../../packages/components/skeleton/README.md?raw";
 import tabReadme from "../../../packages/components/tab/README.md?raw";
@@ -62,7 +61,6 @@ const README_TEXT: Record<string, string> = {
   modeswitcher: modeswitcherReadme,
   pricingcard: pricingcardReadme,
   product: productReadme,
-  rating: ratingReadme,
   section: sectionReadme,
   skeleton: skeletonReadme,
   tab: tabReadme,

@@ -37,7 +37,6 @@ import { ModalBuilder } from "@aio-ui/modal";
 import { ModeSwitcherBuilder } from "@aio-ui/mode-switcher";
 import { PricingCardBuilder } from "@aio-ui/pricing-card";
 import { ProductCardBuilder, ProductDetailBuilder, ProductGridBuilder } from "@aio-ui/product";
-import { RatingBuilder } from "@aio-ui/rating";
 import { SectionBuilder } from "@aio-ui/section";
 import { TabBuilder } from "@aio-ui/tab";
 import { TableBuilder } from "@aio-ui/table";
@@ -64,7 +63,6 @@ const MOCKUPS: [name: string, make: () => unknown][] = [
   ["product-card", () => new ProductCardBuilder()],
   ["product-card-grid", () => new ProductGridBuilder()],
   ["product-detail", () => new ProductDetailBuilder()],
-  ["rating", () => new RatingBuilder()],
   ["section", () => new SectionBuilder()],
   ["tab", () => new TabBuilder()],
   ["table", () => new TableBuilder()],

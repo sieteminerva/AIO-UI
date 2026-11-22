@@ -159,8 +159,8 @@ new FormBuilder({ modules: new ModuleLoader("form", definitions) });
 ```
 
 **One import is the whole form.** `FORM_ADAPTER_DEFINITIONS` is nine entries: the four engines,
-`input`, and the four field modules (`dropdown`, `file`, `controls`, `popover`, re-exported from
-`@aio-ui/input/modules`). `prepare()` routes them by id — ids in `INPUT_MODULE_IDS` become the
+`input`, and the four field modules (`dropdown`, `file`, `controls`, `popover`, imported from their
+`@aio-ui/input/<subpath>` entries). `prepare()` routes them by id — ids in `INPUT_MODULE_IDS` become the
 field preset, everything else is loaded as a form feature — which is the same rule
 `provideModules()` uses for a manifest. So a hand-wired form gets a real dropdown, a real
 uploader and a real action set from one line. `bundle-probe` proves all nine are in that graph

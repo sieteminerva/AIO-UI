@@ -4,20 +4,22 @@
 > imports, so a component can move internally without breaking a host, a generated site,
 > or a preset.
 >
-> Status: **curated barrels, aggregators, surface gate and alias retirement — all done**
-> (0.1.0). What remains is listed at the end of §9.
-> Last updated 2026-11-11 — see §9 for what actually changed.
+> Status: **historical policy record** (0.1.0 → 0.2.1). The audit tables in §2–§3 describe the surface
+> *before* the `0.2.4` refactor; the current surface is **76 rows / 37 packages**, one door per
+> package — `packages/TASKS.md` and `docs/releases/v0.2.4.md` are the source of truth. The taxonomy
+> in §1 and the alias rule still hold.
+> Last updated 2026-11-22 — §9 is history, not the current map.
 
 ## 1. Taxonomy (the rule we adopt)
 
-| Kind                    | Entry                         | Example                                |
-| ----------------------- | ----------------------------- | -------------------------------------- |
-| Main consumer API       | **root barrel** `@aio-ui/x`   | `import { AioApp } from "@aio-ui/app"` |
-| Optional capability     | subpath                       | `@aio-ui/form/calculation-adapter`     |
-| Adapter / integration   | subpath                       | `@aio-ui/table`   |
-| CSS                     | subpath                       | `@aio-ui/form/Form.css`                |
-| Types-only contract     | subpath, or root when general | `@aio-ui/core`               |
-| Internal implementation | **not exported**              | `BaseAdapters/*`, `canvas/*`           |
+| Kind                    | Entry                         | Example                                 |
+| ----------------------- | ----------------------------- | --------------------------------------- |
+| Main consumer API       | **root barrel** `@aio-ui/x`   | `import { AioApp } from "@aio-ui/core"` |
+| Optional capability     | subpath                       | `@aio-ui/form/calculation-adapter`      |
+| Adapter / integration   | subpath                       | `@aio-ui/table`                         |
+| CSS                     | subpath                       | `@aio-ui/form/Form.css`                 |
+| Types-only contract     | subpath, or root when general | `@aio-ui/core`                          |
+| Internal implementation | **not exported**              | `BaseAdapters/*`, `canvas/*`            |
 
 Two corollaries:
 
@@ -71,7 +73,7 @@ minor, then remove; _internal_ = drop from `exports`.
 | Package                                   | Root barrel exports                                                               | Subpaths kept                                                                                                                                                                                  | Removed                                                                                                                                                                                 |
 | ----------------------------------------- | --------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `core`                                    | `ComponentRegistry`, `DOMRenderer`, `mergeBuildConfig`, builder port, event types | `./interface` (types), `./Stylesheets` (capability)                                                                                                                                            | `./node ./builder ./registry ./content ./page ./renderer ./api ./events` (alias→remove in 0.2.0), `./TemplateRegistry`, `./BuilderPort`, `./ComponentRegistry`, `./DOMRenderer` (alias) |
-| `base`                                    | `Builder`, `GLOBAL_INSTANCE_COUNTER`, base types                                  | `./Base` (alias)                                                                                                                                                                               | `./BaseAdapters/*` (internal) @aio-ui/frameworks; `HydrationGate` (0.2.0 — see §9)                                                                                                      |
+| `base`                                    | `Builder`, `GLOBAL_INSTANCE_COUNTER`, base types                                  | `./Base` (alias)                                                                                                                                                                               | `./BaseAdapters/*` (internal, no public door); `HydrationGate` (0.2.0 — see §9)                                                                                                         |
 | `app`                                     | as today                                                                          | `./types`, `./ports` (types contracts)                                                                                                                                                         | `./AioApp` (alias)                                                                                                                                                                      |
 | `module-loader`                           | **new** `ModuleLoader`, `ModuleRegistry`, definition types                        | `./ModuleRegistry`, `./ModuleLoader` (alias)                                                                                                                                                   | —                                                                                                                                                                                       |
 | `utilities`                               | **new** all helpers re-exported                                                   | all 7 helper subpaths                                                                                                                                                                          | —                                                                                                                                                                                       |
@@ -99,7 +101,7 @@ force a preset regeneration for every site. So: **0.1.x = add barrels + keep ali
 | ------------------------------------------------ | ---------------------------------------- | --------------------------------------------------------- |
 | `plan()` catalogue (`orchestrator/catalogue.ts`) | specifiers like `@aio-ui/form/Form`      | switch to root specifiers; keeps generated output shorter |
 | `registry.assets.ts` (demo + gallery)            | specifier → loader                       | regenerate entries; Vite needs static strings either way  |
-| `temp/results/**`                              | generated `app.js` / `dev/src/main.ts`   | regenerate (tests do it)                                  |
+| `temp/results/**`                                | generated `app.js` / `dev/src/main.ts`   | regenerate (tests do it)                                  |
 | `prompt.content.md`                              | never names packages                     | no change                                                 |
 | `docs/*`                                         | examples with subpaths                   | update examples in the same PR                            |
 | `scripts/bounds.mjs`                             | validates deep imports through `exports` | no change; it follows the map                             |
@@ -135,13 +137,13 @@ are unreachable by construction, not by discipline.
 
 **Still subpaths, on purpose:**
 
-| Kind                  | Example                                                                                                         | Why it stays                                       |
-| --------------------- | --------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- |
+| Kind                  | Example                                                                                               | Why it stays                                       |
+| --------------------- | ----------------------------------------------------------------------------------------------------- | -------------------------------------------------- |
 | Types-only contracts  | `@aio-ui/core`, `/node`, `/page`, `/api`, `/events`, `/content`, `/builder`, `/registry`, `/renderer` | one module of types without dragging the runtime   |
-| Capability modules    | `@aio-ui/form/validation-adapter`, `@aio-ui/input/dropdown/module`, `@aio-ui/id-address`                   | loaded on demand, one per capability               |
-| Adapters              | `@aio-ui/message`, `@aio-ui/table`                                    | integrations, not the component                    |
-| Shared type contracts | `@aio-ui/form/FormMessages`, `@aio-ui/form`                                                     | the form ↔ message type cycle, deliberately public |
-| CSS                   | `@aio-ui/form/Form.css`                                                                                         | shipped as files                                   |
+| Capability modules    | `@aio-ui/form/validation-adapter`, `@aio-ui/input/dropdown`, `@aio-ui/id-address`                    | loaded on demand, one per capability               |
+| Adapters              | `@aio-ui/message`, `@aio-ui/table`                                                                    | integrations, not the component                    |
+| Shared type contracts | `@aio-ui/form/FormMessages`, `@aio-ui/form`                                                           | the form ↔ message type cycle, deliberately public |
+| CSS                   | `@aio-ui/form/Form.css`                                                                               | shipped as files                                   |
 
 ### Emitted JS has to load without a bundler
 
@@ -177,13 +179,19 @@ failed under Node and every CDN URL pointed at a barrel that could not load.
 Every decision from §6 was answered by "add the barrel, keep the alias", and the kit
 question ("can `base` + `core` be one door?") was answered yes.
 
-### Aggregators — `packages/kits/*`
+> **Superseded in `0.2.4`.** `@aio-ui/app` and the `frameworks` / `modules` kits are gone (their
+> content lives in `core` and in the standalone module packages), `@aio-ui/rating` was deleted, and
+> every package now exposes one door per component. Read this section as release history — the
+> current surface is `docs/framework/api-map.json` and `docs/releases/v0.2.4.md`.
 
-| Package              | Contents                                                  |
-| -------------------- | --------------------------------------------------------- |
-| `@aio-ui/frameworks` | `core` + `base` + `app` (public interfaces included)      |
-| `@aio-ui/modules`    | `module-loader` + router, http, events, theme, animations |
-| `@aio-ui/themes`     | the three shipped themes                                  |
+### Aggregators — `packages/kits/*` (historical)
+
+| Package          | Contents                 |
+| ---------------- | ------------------------ |
+| `@aio-ui/themes` | the three shipped themes |
+
+`@aio-ui/frameworks` and `@aio-ui/modules` were removed in `0.2.4` (see the note above); `app` was
+folded into `core`.
 
 A kit is a **re-export only** package: no logic, no CSS, one `index.ts`. Consequences,
 all enforced rather than agreed:
@@ -191,8 +199,9 @@ all enforced rather than agreed:
 - `scripts/bounds.mjs` gives `kits` its own category (may point anywhere) and rejects
   any non-kit package that imports a kit — so aggregators can never become a hidden
   dependency of the framework itself.
-- A kit is _not_ a replacement for subpaths: `@aio-ui/modules` pulls every module, so
-  generated sites keep importing `@aio-ui/router` etc. one by one.
+- A kit is _not_ a replacement for subpaths: pulling an aggregator drags every package it
+  re-exports, so generated sites keep importing `@aio-ui/router` etc. one by one. Only
+  `@aio-ui/themes` survives.
 - `packages/kits` is registered in `npm workspaces`, `build-pack` (`GROUPS`), `bounds`
   (`describe`/`categoryOf`/`allowed`), `version`, `release` and `orchestrator/layout.mjs`.
 
@@ -200,7 +209,7 @@ all enforced rather than agreed:
 
 Added `.` to the 15 single-builder component packages (`accordion`, `article`, `badge`,
 `carousel`, `fab-menu`, `footer`, `masonry`, `menu`, `modal`, `mode-switcher`,
-`pricing-card`, `product`, `rating`, `section`, `tab`), plus `module-loader` and
+`pricing-card`, `product`, `section`, `tab`), plus `module-loader` and
 `utilities`. Each barrel is `export * from "./<Entry>";` — the exports are the same
 names that were already public, so nothing new leaks. `product` exports its three
 builders from one place.
@@ -211,10 +220,8 @@ they were.
 ### Consumers switched
 
 `orchestrator/catalogue.ts` now emits barrels for components
-(`@aio-ui/masonry`, not `@aio-ui/masonry/Masonry`) and `@aio-ui/frameworks` for the
-base layer, with the three dependency roots (`core`, `base`, `app`) listed as well
-because the kit's own `export * from "@aio-ui/core"` is a bare specifier the browser
-must find in the import map. CSS and adapter subpaths are untouched: those are
+(`@aio-ui/masonry`, not `@aio-ui/masonry/Masonry`) and imports `core` + `base` directly for the
+base layer instead of an aggregator kit. CSS and adapter subpaths are untouched: those are
 capabilities, not entries.
 
 Regenerate `orchestrator/layout.json` after adding a barrel — a package without `.`
@@ -253,7 +260,7 @@ Batch 20 moved the _hold_ out of core and made the mockup a component:
 
 | Moved / added                                      | Where                                                  | Why                                                                                                                  |
 | -------------------------------------------------- | ------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------- |
-| `holdUntilStyled`, `releaseMarkers`                | `@aio-ui/base`                  | hiding an unstyled root is a lifecycle detail of `create()`; core keeps only the loader (`ensureStylesheet`)         |
+| `holdUntilStyled`, `releaseMarkers`                | `@aio-ui/base`                                         | hiding an unstyled root is a lifecycle detail of `create()`; core keeps only the loader (`ensureStylesheet`)         |
 | `Builder.loading?()`                               | `@aio-ui/base`                                         | a component draws its own silhouette instead of a generic skin; opt-in, so no existing builder changes               |
 | `Skeleton`, `SkeletonBuilder`, `iSkeletonSpec`     | `@aio-ui/skeleton` (new package, mandatory)            | the mockup must be styled _before_ the real sheet exists, so its CSS ships with the app shell                        |
 | `--app-skeleton-bg`                                | `packages/styles/src/variables.css`                    | the one colour that has to exist before a component layer does                                                       |

@@ -63,12 +63,11 @@ parent already loaded the set: the field then never loads or unloads modules the
 
 Five sub-modules hang off the field: `dropdown` (a whole builder), `picker` (a grid behind
 one control), `file` (the uploader), `controls` (the action set) and `popover`. **None of them
-is compiled into the package root** since `0.2.2` — `scripts/bundle-probe.mjs` proves it
-against the parsed module graph. Ask for all five with one import:
+is compiled into the package root** — `scripts/bundle-probe.mjs` proves it against the parsed
+module graph. Ask for all five with one import:
 
 ```ts
-import { InputBuilder } from "@aio-ui/input";
-import { INPUT_MODULE_DEFINITIONS } from "@aio-ui/input/modules";
+import { InputBuilder, INPUT_MODULE_DEFINITIONS } from "@aio-ui/input";
 
 new InputBuilder({ modules: INPUT_MODULE_DEFINITIONS });
 ```
@@ -99,24 +98,25 @@ are flat on `config`, next to `options`, in the same vocabulary the rest of a sc
 by default), `image` / `media` (`src`), `swatch` (`color`). The value reaches the form through
 a hidden input named after the field, joined with commas when `isMultiple` is on.
 
-Each has its own `*/module` entry too, so a consumer can take one without instantiating the
-other four:
+Each subpath is a builder **and** its module definition — there is no separate `/module` door
+since `0.2.4`. Take one without instantiating the other four:
 
 ```ts
-import { dropdownInputModule } from "@aio-ui/input/dropdown/module";
-import { pickerInputModule } from "@aio-ui/input/picker/module";
-import { inputControlsInputModule } from "@aio-ui/input/controls/module";
+import { dropdownInputModule } from "@aio-ui/input/dropdown";
+import { pickerInputModule } from "@aio-ui/input/picker";
+import { inputControlsInputModule } from "@aio-ui/input/controls";
+import { fileUploaderInputModule } from "@aio-ui/input/file-uploader";
 
 new InputBuilder({ modules: [dropdownInputModule, pickerInputModule, inputControlsInputModule] });
 ```
 
 The two shapes, and what each is for:
 
-- `INPUT_MODULE_DEFINITIONS` (`@aio-ui/input/modules`) — what `modules` and `ModuleLoader` take:
+- `INPUT_MODULE_DEFINITIONS` (`@aio-ui/input`) — what `modules` and `ModuleLoader` take:
   `{ id, load }`.
-- `INPUT_MODULE_MANIFEST` (root) — the same list as `{ id, path, export }` refs, for an AST whose
-  host lets `ComponentRegistry` (or `resolveModuleDefinitions()`) resolve them. Strings only, which
-  is why the root can export it without pulling a single module in.
+- `INPUT_MODULE_MANIFEST` (`@aio-ui/input`) — the same list as `{ id, path, export }` refs, for an
+  AST whose host lets `ComponentRegistry` (or `resolveModuleDefinitions()`) resolve them. Strings
+  only, which is why the root can export it without pulling a single module in.
 
 **A ref is not a definition.** Handing a ref to a loader now throws
 `RegistryError` / `INVALID_DEFINITION` at registration instead of failing later as a field with

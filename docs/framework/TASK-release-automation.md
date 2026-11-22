@@ -1,7 +1,7 @@
 # TASK — session ritual fix + release automation
 
 Recorded 2026-11-21 (batch 44). Band: **Tooling** (`scripts/**` + `docs/`).
-Prior art: `docs/framework/TASK-releases-branch.md`, `docs/live-cdn-repo.md` §9.
+Prior art: `packages/TASKS.md`, `docs/live-cdn-repo.md` §9.
 
 **Status:** open — nothing implemented yet. Two jobs, in this order.
 
@@ -82,7 +82,7 @@ Two secondary defects found while reproducing:
 // node.exe -e … — reads releases/v0.2.4/registry.json, emits a markdown table
 // rows: one per entry of packages[name].subpaths, URL = registry.base + entry.dir + file
 // specifier: "." → the package name; otherwise name + subpath.slice(1)
-// 131 rows for v0.2.4 (128 exact + 3 wildcards)
+// 76 rows for v0.2.4 (74 exact + 2 wildcards)
 ```
 
 ### Proposal (for agreement, not yet built)
@@ -99,12 +99,12 @@ Two secondary defects found while reproducing:
 
 Measured 2026-11-21 (v0.2.4 artefacts):
 
-| Question                         | Answer                                                                                                                                                                                                          |
-| -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Is there a tarball for the pair? | **No.** `releases/v0.2.4/` holds 39 `.tgz`, none named `*bundle*`.                                                                                                                                              |
-| Is it a registry package?        | **No.** `registry.json.bundle` is metadata (`files`, `base`, `usage`); there is no `packages["@aio-ui/bundle"]` and no `exports` entry, so `release.mjs`'s pack loop never sees it.                             |
-| Is it on the CDN?                | **Yes.** All four files return `200` at the branch root under `@v0.2.4/`.                                                                                                                                       |
-| Is it in the note's CDN table?   | **No** — until batch 45 the generated table had 131 package rows and zero bundle rows; the note mentioned the pair only in prose. A prose-only URL is exactly the kind of "complete list" that is not complete. |
+| Question                         | Answer                                                                                                                                                                                                                           |
+| -------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Is there a tarball for the pair? | **No.** `releases/v0.2.4/` holds 37 `.tgz`, none named `*bundle*`.                                                                                                                                                               |
+| Is it a registry package?        | **No.** `registry.json.bundle` is metadata (`files`, `base`, `usage`); there is no `packages["@aio-ui/bundle"]` and no `exports` entry, so `release.mjs`'s pack loop never sees it.                                              |
+| Is it on the CDN?                | **Yes.** All four files return `200` at the branch root under `@v0.2.4/`.                                                                                                                                                        |
+| Is it in the note's CDN table?   | **No** — the generated table has 76 package rows (131 before the surface refactor) and zero bundle rows; the note mentions the pair only in prose. A prose-only URL is exactly the kind of "complete list" that is not complete. |
 
 So the pair is published but **unlisted and unpackaged**: a consumer can use it only if they read
 the prose. Three decisions, all for the owner:
@@ -117,7 +117,7 @@ the prose. Three decisions, all for the owner:
    npm registry, so a tarball URL is the only way `npm install` puts files on disk; "the pair is not
    an ES module" is a documentation problem, not a reason to refuse. Both tarballs must live under
    the `@aio-ui` scope so one `node_modules/@aio-ui/` holds everything:
-   - `@aio-ui/bundle` — the umbrella: `dependencies` are the 39 package tarball URLs (mode B), so
+   - `@aio-ui/bundle` — the umbrella: `dependencies` are the 37 package tarball URLs (mode B), so
      one URL installs the whole framework.
    - `@aio-ui/iife` — the four `aio-ui{,.min}.{js,css}` files, documented as `<script>`/`<link>`,
      never `import`.
@@ -135,7 +135,7 @@ URL-friendly characters.
 
 A package name is either `name` or `@scope/name`; a bare scope is invalid, so "one package called
 `@aio-ui`" is not available. The closest honest form is `@aio-ui/bundle` and `@aio-ui/iife`: they
-install to `node_modules/@aio-ui/bundle` and `node_modules/@aio-ui/iife`, beside the 39 hoisted
+install to `node_modules/@aio-ui/bundle` and `node_modules/@aio-ui/iife`, beside the 37 hoisted
 packages, so everything still sits under `node_modules/@aio-ui/`.
 
 Filenames are ours (`npm pack --pack-destination` + rename): use
@@ -155,7 +155,7 @@ in every tarball), a different axis that is already gated.
 
 | File                           | Change                                                                                                                                                                                                                                      |
 | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `scripts/release.mjs`          | stage two synthetic packages from a template (`@aio-ui/bundle` = `dependencies` of 39 URLs; `@aio-ui/iife` = `files` of the four artefacts), `npm pack`, rename, hash into `checksums.txt`, record `registry.aggregates` (`bundle`, `iife`) |
+| `scripts/release.mjs`          | stage two synthetic packages from a template (`@aio-ui/bundle` = `dependencies` of 37 URLs; `@aio-ui/iife` = `files` of the four artefacts), `npm pack`, rename, hash into `checksums.txt`, record `registry.aggregates` (`bundle`, `iife`) |
 | `scripts/publish-releases.mjs` | the orphan-tarball gate must read `registry.aggregates` too, or two extra `.tgz` fail the run                                                                                                                                               |
 | `scripts/publish-cdn.mjs`      | copy both tarballs to the branch root under the unversioned names (the `iife` files are already there as loose files)                                                                                                                       |
 | `templates/cdn/README.md.tpl`  | rows for `@aio-ui/bundle` and `@aio-ui/iife`, with the `<script>`-not-`import` warning                                                                                                                                                      |
@@ -164,7 +164,7 @@ in every tarball), a different axis that is already gated.
 
 Done when the note's _Bundled pair_ block is generator output, `--probe` covers the four loose
 files plus both tarballs, and `npm i <url>/aio-ui-bundle-0.2.4.tgz` in a scratch consumer creates
-`node_modules/@aio-ui/{bundle,iife}` together with the 39 packages.
+`node_modules/@aio-ui/{bundle,iife}` together with the 37 packages.
 
 ### Questions for the owner (answer before building)
 
@@ -186,10 +186,10 @@ files plus both tarballs, and `npm i <url>/aio-ui-bundle-0.2.4.tgz` in a scratch
 ## Done =
 
 - `session.mjs end` runs to completion with no human input, proven by the four acceptance probes.
-- `release-doc.mjs` regenerates `docs/releases/v0.2.4.md`'s CDN section byte-identically (same 131
+- `release-doc.mjs` regenerates `docs/releases/v0.2.4.md`'s CDN section byte-identically (same 76
   package rows + 4 loose bundle rows), and `--probe` reports 200 for the registry, the four loose
   files, both aggregate tarballs and one package tarball.
 - A scratch consumer run of `npm i <url>/aio-ui-bundle-0.2.4.tgz` produces
-  `node_modules/@aio-ui/bundle`, `node_modules/@aio-ui/iife` and the 39 hoisted packages.
+  `node_modules/@aio-ui/bundle`, `node_modules/@aio-ui/iife` and the 37 hoisted packages.
 - `docs/live-cdn-repo.md` §9's release-note line points at the generator instead of a `node -e`.
 - This file is deleted and the logbook card drops.

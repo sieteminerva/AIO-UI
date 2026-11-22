@@ -396,13 +396,13 @@ protected loading(): HTMLElement {
 **Coverage.** Every in-flow builder draws a mockup: `accordion`, `article`, `badge`,
 `carousel`, `code-block`, `footer`, `form`, `input`, `markdown`, `masonry`, `menu`,
 `mode-switcher`, `pricing-card`, `product-card`, `product-card-grid`, `product-detail`,
-`rating`, `section`, `tab`, `table`. The three overlays — `fab-menu`, `message`, `modal` — stay
+`section`, `tab`, `table`. The three overlays — `fab-menu`, `message`, `modal` — stay
 on the shimmer on purpose: the sheet that is missing is also the sheet that owns their
 placement (`position: fixed`, viewport anchoring), so a skeleton laid out in the document flow
 would point at the wrong place. `packages/components/skeleton/__tests__/Mockups.test.ts` is the
 census of both lists: add a row when you add a hook, and it fails if an overlay grows one.
 
-Multi-mode components (e.g. `Rating`'s four visual types, `Footer`'s two rows) branch on
+Multi-mode components (e.g. `Product`'s card / grid / detail, `Footer`'s two rows) branch on
 `this.config` inside `prepare()` and render only the keys that mode needs.
 
 ---
@@ -639,10 +639,10 @@ by measuring, and each has cost at least one session.
 
 ### Gates
 
-- `npm run check` = typecheck → check:bounds → check:edges → check:api → check:catalogue → version (40), about 12 s.
+- `npm run check` = typecheck → check:bounds → check:edges → check:api → check:catalogue → version (37), about 12 s.
   `npm run verify` = `check` + the test suite, about 54 s, once per batch. Both read source only;
   markdown-only edits after a green run do not invalidate it.
-- `npm run verify:pkgs` = build 40 packages → `verify` → example builds. Before a release, or any
+- `npm run verify:pkgs` = build 36 TS packages → `verify` → example builds. Before a release, or any
   time the work depends on `dist/` (the examples' production build resolves the `default`
   condition, which points at `dist/`).
 - **`orchestrator/layout.json` drifts silently** — neither `check:bounds` nor `check:api` sees a

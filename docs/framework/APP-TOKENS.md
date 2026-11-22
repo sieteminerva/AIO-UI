@@ -90,28 +90,28 @@ Every colour, radius and elevation a component uses comes from its own layer, de
 outside that block must not read an `--app-*` token directly — that is what makes a component
 rethemeable without touching its CSS.
 
-| Sheet                           | Prefix                                                                         |
-| ------------------------------- | ------------------------------------------------------------------------------ |
-| `accordion/Accordion.css`       | `--accordion-*`                                                                |
-| `article/Article.css`           | `--article-*`                                                                  |
-| `badge/Badge.css`               | `--badge-*`                                                                    |
-| `code-block/CodeBlock.css`      | `--code-block-*` (base colours are literal: dark paper in both modes)          |
-| `footer/Footer.css`             | `--footer-*`                                                                   |
-| `id-address/id-address.css`     | `--id-address-*`                                                               |
-| `input/input.css`               | `--input-*` (also read by `form`, `Dropdown`, `InputControls`, `FileUploader`) |
-| `masonry/Masonry.css`           | `--masonry-*`                                                                  |
-| `markdown/Markdown.css`         | `--markdown-*` (imports `CodeBlock.css` for the fences it renders)             |
-| `menu/Menu.css`                 | `--menu-*`                                                                     |
-| `message/Message.css`           | `--toast-*` (prefix predates the package name)                                 |
+| Sheet                            | Prefix                                                                         |
+| -------------------------------- | ------------------------------------------------------------------------------ |
+| `accordion/Accordion.css`        | `--accordion-*`                                                                |
+| `article/Article.css`            | `--article-*`                                                                  |
+| `badge/Badge.css`                | `--badge-*`                                                                    |
+| `code-block/CodeBlock.css`       | `--code-block-*` (base colours are literal: dark paper in both modes)          |
+| `footer/Footer.css`              | `--footer-*`                                                                   |
+| `id-address/id-address.css`      | `--id-address-*`                                                               |
+| `input/input.css`                | `--input-*` (also read by `form`, `Dropdown`, `InputControls`, `FileUploader`) |
+| `masonry/Masonry.css`            | `--masonry-*`                                                                  |
+| `markdown/Markdown.css`          | `--markdown-*` (imports `CodeBlock.css` for the fences it renders)             |
+| `menu/Menu.css`                  | `--menu-*`                                                                     |
+| `message/Message.css`            | `--toast-*` (prefix predates the package name)                                 |
 | `mode-switcher/ModeSwitcher.css` | `--mode-switcher-*`                                                            |
-| `product/ProductCard.css`       | `--product-card-*`                                                             |
-| `product/ProductDetail.css`     | `--product-detail-*`                                                           |
-| `product/ProductGrid.css`       | `--product-grid-*` (the cards keep their own)                                  |
-| `section/Section.css`           | `--section-*`                                                                  |
-| `tab/Tab.css`                   | `--tab-*`                                                                      |
-| `table/Table.css`               | `--table-*`                                                                    |
+| `product/ProductCard.css`        | `--product-card-*`                                                             |
+| `product/ProductDetail.css`      | `--product-detail-*`                                                           |
+| `product/ProductGrid.css`        | `--product-grid-*` (the cards keep their own)                                  |
+| `section/Section.css`            | `--section-*`                                                                  |
+| `tab/Tab.css`                    | `--tab-*`                                                                      |
+| `table/Table.css`                | `--table-*`                                                                    |
 
-Sheets with no layer of their own (`carousel`, `fab-menu`, `pricing-card`, `rating`) read no app
+Sheets with no layer of their own (`carousel`, `fab-menu`, `pricing-card`) read no app
 token either, so there is nothing to lift. `form/Form.css` owns no layer by design: it styles form
 chrome and consumes `--input-*`.
 

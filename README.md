@@ -155,12 +155,10 @@ npm run verify         # the full gate — run before claiming anything works
 │   │                       theme, animations
 │   ├── themes/             default, cyberpunk, horizontal
 │   ├── kits/               aggregators — re-exports only, no logic
-│   │   ├── frameworks/     @aio-ui/frameworks = core + base + app
-│   │   ├── modules/        @aio-ui/modules = module-loader + the runtime modules
-│   │   └── themes/         @aio-ui/themes = the three themes
-│   └── components/         accordion article badge carousel fab-menu footer form
-│                           id-address input masonry menu message modal
-│                           mode-switcher pricing-card product rating section tab table
+│   │   └── themes/         @aio-ui/themes = the three shipped themes
+│   └── components/         accordion article badge carousel code-block fab-menu footer
+│                           form id-address input markdown masonry menu message modal
+│                           mode-switcher pricing-card product section skeleton tab table
 │
 ├── examples/               host applications that prove the framework
 │   ├── gallery/            gallery/profile model (routes, content, assets)
@@ -254,14 +252,14 @@ Working areas — `orchestrator/` is tracked; `.draft/` and `.archives/` are loc
 
 ## Status snapshot
 
-Working: 40 packages build and are tested (690 tests, 100 of them the orchestrator generator suite),
-the form family (module registry,
-messages, animations, address adapters) runs, the generator produces real files
-(`.draft/results/`), versioning is fixed at `0.2.1`, and **tag `v0.2.1` is live** on
-`sieteminerva/AIO-UI`: jsDelivr serves every import-map URL from the `cdn` branch, and both
-generated sites paint from that tag with a clean console.
+Working: **37 packages** build and are tested (928 tests, 108 of them the orchestrator generator
+suite), the form family (module registry, messages, animations, address adapters) runs, the
+generator produces real files (`.draft/results/`), and versioning is fixed at `0.2.4`. The CDN
+surface is **76 rows over 37 packages** — one door per package, so input sub-modules ship from
+`@aio-ui/input/<sub>` and never from a `/module` entry.
 
-Open: the **official** release waits until all four webapp models exist as manual references —
-`gallery` does, `store` / `profile` / `blog` do not. Generated-site hosting (GitHub Pages vs
-Cloudflare Pages) is still open; it does not change the preset contract. Details live in
-`.guidance/RAJUTAN.md` §9 and `.guidance/plan.md` §3.10.
+Open: `v0.2.4` is published (39 packages, mode B, jsDelivr `200`), but the **post-refactor**
+artefacts (37 packages / 76 rows) are regenerated locally in the `releases` worktree and not yet
+republished. The **official** release also waits until all four webapp models exist as manual
+references — `gallery` does, `store` / `profile` / `blog` do not. Details live in
+`.guidance/project/STATUS.md` and `docs/live-cdn-repo.md` §9.

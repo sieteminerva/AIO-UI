@@ -1,8 +1,12 @@
-# Project Guidance
+# Gallery project brief
+
+The `examples/gallery` app's own brief — **not** the monorepo index. Orientation is
+`.guidance/project/STATUS.md`; band rules are the six `AGENTS.md` files named by the root router.
 
 ## Project
 
-Gallery portfolio archive and future example application for the AIO framework.
+Personal portfolio archive and the first reference app of the AIO framework (the other three —
+`store`, `profile`, `blog` — do not exist yet).
 
 ## Purpose
 

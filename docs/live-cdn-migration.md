@@ -6,10 +6,10 @@ the registry, the components and the stylesheets live inside the app, imports ar
 consumed as **packages** instead of copied files.
 
 Published surface, tag and URL shapes: [`live-cdn-repo.md`](./live-cdn-repo.md) §2 (live URLs)
-and §3 (clone, `file:` deps, workspace link, import map, and the 40-row package table in §3.4).
+and §3 (clone, `file:` deps, workspace link, import map, and the 37-row package table in §3.4).
 This document does not repeat them — it maps **your copied files onto those packages**.
 
-- Target: `@aio-ui` **0.2.1** / tag **`v0.2.1`** (40 packages, 23 components).
+- Target: `@aio-ui` **0.2.4** / tag **`v0.2.4`** (37 packages, 22 components, 1 kit).
 - Repo: `https://github.com/sieteminerva/AIO-UI`.
 - Assumes a bundler (Vite/webpack) unless you take §2C, the browser import map.
 
@@ -31,7 +31,7 @@ file names in a copy; match by content, not by spelling.
 | `src/lib/AttributeUtils.ts`, `DomUtils.ts`, `Metadata.ts`, `helper.ts` | `@aio-ui/utilities`                                                   |
 | `src/lib/SelectorToTree.ts`, `parseTableFile.ts`, `color.utils.ts`     | `@aio-ui/utilities`                                                   |
 | `src/lib/Markdown.ts` (parser + renderer)                              | `@aio-ui/markdown` — builder only; the parser is no longer public API |
-| `src/lib/bootstrap/*` (manual boot, global `app`)                      | `@aio-ui/app` → `AioApp`, `AppStorage`, `blockToNode`                 |
+| `src/lib/bootstrap/*` (manual boot, global `app`)                      | `@aio-ui/core` → `AioApp`, `AppStorage`, `blockToNode`                |
 
 > The Markdown **parser** used to ship from `@aio-ui/utilities`. It now lives inside
 > `@aio-ui/markdown` as a non-exported module, so `import { parseMarkdown } from
@@ -43,7 +43,7 @@ file names in a copy; match by content, not by spelling.
 | ------------------------------------------------------------------------------ | ---------------------------------------------------------- |
 | `src/lib/HashRouter.ts`                                                        | `@aio-ui/router` → `HashRouter`                            |
 | `src/lib/ThemeRegistry.ts`, theme swap / persistence                           | `@aio-ui/theme` → `ThemeRegistry`, `ThemeRenderer`         |
-| `src/lib/AppStorage.ts`                                                        | `@aio-ui/app` → `AppStorage`                               |
+| `src/lib/AppStorage.ts`                                                        | `@aio-ui/core` → `AppStorage`                              |
 | `src/lib/Animations.ts` + `behaviours/*` + `canvas/*`                          | `@aio-ui/animations` → `AnimationsService`                 |
 | `src/lib/EventEmitter.ts`                                                      | `@aio-ui/event-emitter` → `EventEmitter`                   |
 | `src/lib/HttpService.ts`                                                       | `@aio-ui/http-service` → `HttpService`                     |
@@ -63,13 +63,14 @@ src/components/form/**      →  @aio-ui/form      (+ its subpath exports, see b
 src/components/id-address/** →  @aio-ui/id-address
 ```
 
-All 23 component packages, their directories and their stylesheet subpaths are listed in
+All 22 component packages, their directories and their stylesheet subpaths are listed in
 [`live-cdn-repo.md`](./live-cdn-repo.md) §3.4 — use that table as the checklist.
 
 `@aio-ui/form` also publishes its engines as **subpaths** instead of a folder you copy:
-`./Input.FormAdapter`, `./FormRegistry`, `./FormLayout`, `./FormMessages`, `./FormModuleTypes`,
-`./validation-adapter`, `./cascade-adapter`, `./calculation-adapter`, `./multistep-adapter`.
-A copied `src/components/form/adapters/*` folder is replaced by those imports.
+`./FormMessages`, `./validation-adapter`, `./cascade-adapter`, `./calculation-adapter`,
+`./multistep-adapter`. A copied `src/components/form/adapters/*` folder is replaced by those
+imports — and since `0.2.4` there is no `/adapters` or `/module` door: the form root exports the
+registries and types itself.
 
 ## 2. Three ways to consume it
 
@@ -84,23 +85,23 @@ Detail (exact commands, `npm install` behaviour, rebuild rules) is in
 
 ### 2.1 The two traps shared by all three paths
 
-1. **Never consume the kits (`@aio-ui/frameworks`, `@aio-ui/modules`, `@aio-ui/themes`) as
-   `file:` deps.** They declare real dependencies on packages that are not on npm, so npm goes
-   to the registry and 404s. Import the individual packages, or use the workspace/CDN path.
+1. **Never consume the kit (`@aio-ui/themes`) as a `file:` dep.** It declares real dependencies on
+   packages that are not on npm, so npm goes to the registry and 404s. Import the individual
+   packages, or use the workspace/CDN path. (`@aio-ui/frameworks` and `@aio-ui/modules` no longer
+   exist — `core` and the modules are their own doors since `0.2.4`.)
 2. **A bare specifier without a map entry fails at runtime, not at build time.** Under path C,
    copy the specifier set from the generated site's `importMap` — it is already closed over
    every bare import reachable from the mapped files, which is what `release.test.ts` proves.
 
-Path C shape (all entries from §2 of the CDN guide; `@v0.2.1` is the current tag):
+Path C shape (all entries from §2 of the CDN guide; `@v0.2.4` is the current published tag):
 
 ```html
 <script type="importmap">
   {
     "imports": {
-      "@aio-ui/core": "https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.1/packages/core/dist/index.js",
-      "@aio-ui/core": "https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.1/packages/core/dist/interface.js",
-      "@aio-ui/form": "https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.1/packages/components/form/dist/index.js",
-      "@aio-ui/form/Form.css": "https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.1/packages/components/form/dist/Form.css"
+      "@aio-ui/core": "https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.4/packages/core/dist/index.js",
+      "@aio-ui/form": "https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.4/packages/components/form/dist/index.js",
+      "@aio-ui/form/Form.css": "https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.4/packages/components/form/dist/Form.css"
     }
   }
 </script>
@@ -200,7 +201,7 @@ reason. A production build shows no warning, only the wrong class.
 [ ] npm run build (or the CDN page) compiles with zero unresolved imports
 [ ] grep finds no relative import to a deleted folder (../lib, ./components/<name>)
 [ ] package.json lists every @aio-ui/* the app imports, peers included
-[ ] kits are NOT consumed as file: deps (frameworks / modules / themes)
+[ ] kits are NOT consumed as file: deps (themes only — frameworks/modules are gone)
 [ ] browser import map (path C) carries every root AND every exact exports subpath
 [ ] one stylesheet source: registry-injected, no hand-imported component CSS
 [ ] theme renders (app.theme.ids non-empty, app.theme.current is the intended id)

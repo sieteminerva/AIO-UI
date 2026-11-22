@@ -120,7 +120,7 @@ not listed, the package README `## Payload` is the only authority — read it, d
 | `footer`            | `@aio-ui/footer`                | `{ company, columns: [{ title?, description?, actions?: [{ label, href? }] }] }`                    |
 | `form`              | `@aio-ui/form`                  | `{ config: { fields: [...] } }` — see README for field types                                        |
 | `input`             | `@aio-ui/input`                 | see README                                                                                          |
-| `input-controls`    | `@aio-ui/input/controls/module` | see README                                                                                          |
+| `input-controls`    | `@aio-ui/input/controls`        | see README                                                                                          |
 | `masonry`           | `@aio-ui/masonry`               | see README                                                                                          |
 | `menu`              | `@aio-ui/menu`                  | `{ navigations: [{ href, label, title }] }`                                                         |
 | `message`           | `@aio-ui/message`               | see README                                                                                          |
@@ -130,7 +130,6 @@ not listed, the package README `## Payload` is the only authority — read it, d
 | `product-card`      | `@aio-ui/product`               | `{ uid, name, category, title, description, price, colors, artwork }`                               |
 | `product-card-grid` | `@aio-ui/product`               | `{ data: [<product-card payload>] }` or a bare array                                                |
 | `product-detail`    | `@aio-ui/product`               | `{ uid, category, title, description, price, currency, colors, artwork }`                           |
-| `rating`            | `@aio-ui/rating`                | see README                                                                                          |
 | `section`           | `@aio-ui/section`               | `[{ blocks: [{ imageUrl?, eyebrow?, title?, description?, actions? }] }]` (root id/class in config) |
 | `tab`               | `@aio-ui/tab`                   | `{ menu: string[], body: [{ panel: any }] }`                                                        |
 | `table`             | `@aio-ui/table`                 | see README                                                                                          |
@@ -145,7 +144,7 @@ Reserved-but-unimplemented words — using one is a defect, not a shortcut: `col
 ### The same table, machine-readable
 
 Don't want to read this file out of date? Fetch the compiled catalogue instead — it is generated
-from the 23 component READMEs, so it cannot drift from them:
+from the 22 component READMEs, so it cannot drift from them:
 
 ```
 https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@main/docs/framework/catalogue.json
@@ -212,7 +211,7 @@ new FormBuilder({ modules: new ModuleLoader("form", await resolveModuleDefinitio
 
 // A trimmed stack that still needs dropdown/file/controls/popover declares the input layer
 // separately — same four definitions, the form just has to know they are field presets.
-import { INPUT_MODULE_DEFINITIONS } from "@aio-ui/input/modules";
+import { INPUT_MODULE_DEFINITIONS } from "@aio-ui/input";
 new FormBuilder({ modules: loader, inputModules: INPUT_MODULE_DEFINITIONS });
 ```
 

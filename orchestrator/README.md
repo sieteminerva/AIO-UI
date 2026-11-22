@@ -16,7 +16,7 @@ Server-side site generator for **Rajutan**. Intentionally kept outside `packages
 | `generate.ts`       | `generateSite()` → complete 5-file static site output                                                     |
 | `scenarios.ts`      | Reference flows (`gallery-static`, `store-dynamic`)                                                       |
 | `layout.mjs`        | Workspace scanner → `layout.json` (`dir`, `entry`, `stylesRoot`, `bare`, `subpaths`)                      |
-| `layout.json`       | Generated map of all **40** `@aio-ui/*` packages                                                          |
+| `layout.json`       | Generated map of all **37** `@aio-ui/*` packages                                                          |
 | `prompt.content.md` | Gemini prompt locked to `Object.keys(BUILDER_CATALOGUE)`                                                  |
 | `fixtures.ts`       | Deterministic presets for plan/emit tests                                                                 |
 | `release.test.ts`   | Validates release artefacts, checksums, closed import map, and `.draft/smoke/`                            |
@@ -26,7 +26,7 @@ Server-side site generator for **Rajutan**. Intentionally kept outside `packages
 
 1. **AI writes intent, `plan()` resolves packages:** Gemini outputs `pages`, `theme`, and `data` intents (`iAiSiteContent`). Unknown builder words surface as `PresetIssue` items, never broken imports.
 2. **Additive & deterministic:** Signals only accumulate across pages; assets and stylesheets are deduplicated and sorted so identical presets yield byte-identical diffs.
-3. **Dual version pinning:** `presetSchema` versions the preset format; `engine.resolved` pins the exact immutable CDN tag (`@v0.2.1+`) in the generated import map.
+3. **Dual version pinning:** `presetSchema` versions the preset format; `engine.resolved` pins the exact immutable CDN tag (`@v0.2.4+`) in the generated import map.
 4. **Zero-node core for Apps Script:** Core engine files (`types`, `catalogue`, `plan`, `parse`, `ai`, `emit`, `runtime`, `generate`) are pure functions with zero Node.js or DOM dependencies, ready to be bundled into Google Apps Script.
 
 ## Physical Output (`.draft/results/`)

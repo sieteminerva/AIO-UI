@@ -292,5 +292,4 @@ An unresolved builder falls back to the host and warns once per builder name in 
 Gates (done): `packages/core/src/__tests__/DOMRenderer.isRoot.test.ts` — default host,
 replacement, attribute carry-over, `onCreated`, missing builder, single dev warning, metadata
 adoption, nested keys. Still open for the Generator band: emit `isRoot: true` in the generated
-`mount()` pass (`docs/generator/TASK-builder-array.md`, no longer blocked) and probe both generated
-sites in a browser.
+`mount()` pass and probe the generated sites in a browser (`.guidance/project/generator.md`).

@@ -30,12 +30,13 @@ modular; `dom-renderer` stays standalone). `releases/v0.2.4` (branch worktree) w
 still waits for the `store`, `profile`, `blog` reference apps.
 → `docs/releases/v0.2.4.md` · `docs/live-cdn-repo.md` §9 · `packages/TASKS.md`
 
-### 3. Optional hardening — `check:exports`
+### 3. Optional hardening — one surface generator
 
-`release.mjs` still derives subpaths with its own `subpathsOf()`. The planned `exports.json` +
-`check:exports` gate (a subpath pointing at a file `files[]` excludes is a silent 404 today) is
-unwritten; it is an improvement, not a blocker.
-→ `docs/framework/TASK-releases-branch.md` §4
+A CDN-surface change still edits 37 `package.json` export maps, then `api-map.json`, `catalogue.ts`
+and the registry. The planned `scripts/surface.mjs --write/--check` (same shape as `api.mjs`) is
+unwritten; it would also fail a subpath pointing at a file `files[]` excludes — a silent 404 today.
+Optional, not a blocker.
+→ `packages/TASKS.md` open item 4
 
 ## Map
 

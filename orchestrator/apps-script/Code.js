@@ -42,6 +42,8 @@ function doPost(e) {
         return reply({ status: "success", data: ask(payload) });
       case "sheet":
         return reply({ status: "success", data: copyTemplate(payload) });
+      case "deploy":
+        return reply({ status: "success", data: deploySite(payload) });
       default:
         return reply({
           status: "error",

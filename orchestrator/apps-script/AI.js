@@ -63,7 +63,9 @@ function callGemini(key, model, prompt) {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
   const body = {
     contents: [{ role: "user", parts: [{ text: prompt }] }],
-    generationConfig: { responseMimeType: "application/json", temperature: 0.7 },
+    // Low temperature: this is a structure task, not a prose task. Every failure seen in
+    // b56 was a stray bracket at the end of deeply nested content, never a style problem.
+    generationConfig: { responseMimeType: "application/json", temperature: 0.2 },
   };
   const data = fetchJson(url, {
     method: "post",
@@ -94,7 +96,7 @@ function callDeepSeek(key, model, prompt) {
     model,
     messages: [{ role: "user", content: prompt }],
     response_format: { type: "json_object" },
-    temperature: 0.7,
+    temperature: 0.2,
     max_tokens: 8192,
   };
   const data = fetchJson("https://api.deepseek.com/chat/completions", {

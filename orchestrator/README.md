@@ -13,6 +13,7 @@ orchestrator/
     parse.ts               preset → validated preset
     answers.ts             wizard answers → validated answers + preset base
     ai.ts                  AI contract + assemblePreset
+    retry.ts               ask → parse → re-ask with issues (max 2 retries)
     emit.ts                plan → assets/import map
     runtime.ts             plan → index.html + app.js
     generate.ts            the five files
@@ -38,6 +39,7 @@ touch the filesystem. Test data and Node-only checks live in `__test__/`.
 | `src/parse.ts`             | `parsePreset()`, `assertPreset()`, `validatePages()` — schema & closed-vocabulary checks                  |
 | `src/answers.ts`           | `modelFromWebType()`, `validateAnswers()`, `answersToBase()` — wizard answers → server-owned base          |
 | `src/ai.ts`                | AI contract `iAiSiteContent` v1, `parseAiContent()`, `assemblePreset()`, `aiResponseSchema()`             |
+| `src/retry.ts`             | `retry()` / `issueLines()` — re-ask the model with its own issues verbatim (2 retries), no `fetch`        |
 | `src/emit.ts`              | `emitPlan()` → `{ links, importMap, table, bindings, moduleRefs }`; `createCdnResolver()`                 |
 | `src/runtime.ts`           | `emitRuntime()` → build-free `index.html` + `app.js` (import map + registrations + `mount()`)             |
 | `src/generate.ts`          | `generateSite()` → complete 5-file static site output                                                     |
@@ -54,7 +56,7 @@ touch the filesystem. Test data and Node-only checks live in `__test__/`.
 1. **AI writes intent, `plan()` resolves packages:** Gemini outputs `pages`, `theme`, and `data` intents (`iAiSiteContent`). Unknown builder words surface as `PresetIssue` items, never broken imports.
 2. **Additive & deterministic:** Signals only accumulate across pages; assets and stylesheets are deduplicated and sorted so identical presets yield byte-identical diffs.
 3. **Dual version pinning:** `presetSchema` versions the preset format; `engine.resolved` pins the exact immutable CDN tag (`@v0.2.4+`) in the generated import map.
-4. **Zero-node core for Apps Script:** Core engine files (`types`, `catalogue`, `plan`, `parse`, `answers`, `ai`, `emit`, `runtime`, `generate`) are pure functions with zero Node.js or DOM dependencies, ready to be bundled into Google Apps Script.
+4. **Zero-node core for Apps Script:** Core engine files (`types`, `catalogue`, `plan`, `parse`, `answers`, `ai`, `retry`, `emit`, `runtime`, `generate`) are pure functions with zero Node.js or DOM dependencies, ready to be bundled into Google Apps Script.
 
 ## Physical Output (`temp/results/`)
 

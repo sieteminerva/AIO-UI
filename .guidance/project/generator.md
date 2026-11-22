@@ -1,7 +1,7 @@
 # Generator — status (`orchestrator/**`)
 
-Status: batch b48 complete (answers module: model / gates / server-owned base). Gate green:
-`npx vitest run orchestrator` → 128 pass / 1 skip, `npx tsc -p orchestrator/tsconfig.json` clean.
+Status: batch b49 complete (answers module + AI retry loop). Gate green:
+`npx vitest run orchestrator` → 135 pass / 1 skip, `npx tsc -p orchestrator/tsconfig.json` clean.
 
 Band rules: `orchestrator/AGENTS.md`. Why: `.guidance/plan-generator.md`.
 Index: `STATUS.md`.
@@ -10,7 +10,7 @@ Index: `STATUS.md`.
 
 | #   | Task                                | State | Gate                                                             |
 | --- | ----------------------------------- | ----- | ---------------------------------------------------------------- |
-| 1   | AI retry loop (issues → Gemini)     | next  | `parsePreset`/`parseAiContent` issues fed back verbatim, max 2 retries |
+| 1   | Tarball install probe               | next  | clean folder: `npm i <tarball>` + a Node ESM import both boot      |
 
 > The original gate named `gallery` **and `store`**; `store` is still one of the three missing
 > reference apps, so browser gates run on `gallery` until that app exists. `store` was probed in
@@ -18,17 +18,18 @@ Index: `STATUS.md`.
 
 ## Next
 
-- **AI retry loop** (next): feed `parseAiContent()` / `parsePreset()` issues back to the model
-  verbatim, max 2 retries (`docs/generator/TASK-answers-contract.md` §8 step 6).
-- Split the folder tree of `orchestrator/src/` if it grows past the nine engine modules;
-  the bundle boundary is `src/`, not a sub-folder name.
-- Verify `npm i <tarball>` from a clean folder (bundler project) and a Node ESM import.
-- Feed `parsePreset()` / `parseAiContent()` issues back to the model verbatim (retry loop).
+- **Tarball install probe** (next): verify `npm i <tarball>` from a clean folder (a bundler
+  project) plus a Node ESM import, so the published tree is proven consumable.
 - Regenerate `layout.json` inside the release workflow so the map cannot describe a moved package.
 - **Not this band:** publishing the `releases` branch is the last item in the whole queue
   (STATUS card #3). Do not raise it until the orchestrator work is done or the owner asks.
 
 ## Landed
+
+- **b49 (2026-11-22)** — `orchestrator/src/retry.ts`: `retry(ask, max = 2)` calls the model through
+  an injected `ask(issues)`, rejects with `parseAiContent()`, and re-asks with the issue list
+  verbatim; `issueLines()` renders `CODE: detail (at where)`. Pure — the caller owns `fetch`/
+  `UrlFetchApp`. 7 new tests → suite 135 pass / 1 skip, `tsc` clean.
 
 - **b48 (2026-11-22)** — `orchestrator/src/answers.ts`: `modelFromWebType()` (§3 map, no guess),
   `validateAnswers()` (§8 gates 1–4 in order, dashed-case keys kept), `answersToBase()` (§5 base:

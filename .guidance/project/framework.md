@@ -28,6 +28,9 @@ Why / stages: `.guidance/plan-framework.md`. Engineering rules:
 
 ## Landed (newest first)
 
+- **Batch 52 (2026-11-23)** — the mount point **is** the shell: `AioApp` paints `menu + page roots
+  - footer`as direct children of the container and marks it`aio-shell`; every page top-level
+entry is rendered and mounted as its own root, so `main.page`+`footer`stay siblings (no bare`div`). `#frame`releases builders per root;`destroy()`clears the host's children. Proof:`npm run verify`→ 954 pass / 1 skip; rajutan probe → 0 bare divs, 1`main` per route.
 - **Batch 45 (2026-11-22)** — CDN surface refactor: 131 → 76 rows, 39 → 37 packages. Input modules
   merged into their builders, `table`/`message`/`id-address` adapters into their roots, `rating` and
   the `@aio-ui/modules` kit deleted, core type-only subpaths collapsed. `v0.2.4` artefacts

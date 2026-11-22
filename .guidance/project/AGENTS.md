@@ -6,8 +6,9 @@
 
 ## Live claims
 
-| Agent | Band | Task | Write scope | Started | Checkpoint | State |
-| ----- | ---- | ---- | ----------- | ------- | ---------- | ----- |
+| Agent       | Band      | Task                                 | Write scope                                   | Started    | Checkpoint                         | State  |
+| ----------- | --------- | ------------------------------------ | --------------------------------------------- | ---------- | ---------------------------------- | ------ |
+| copilot b54 | Generator | Local env for the orchestrator probe | `examples/rajutan/.env*`, `temp/probe-ai.mjs` | 2026-11-23 | `/memories/session/rajutan-app.md` | active |
 
 ## Row shape
 

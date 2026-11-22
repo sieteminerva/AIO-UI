@@ -9,7 +9,7 @@ Index: `STATUS.md`.
 
 | #   | Task                                                             | State | Gate                                                          |
 | --- | ---------------------------------------------------------------- | ----- | ------------------------------------------------------------- |
-| 1   | App → orchestrator wiring (`answersToBase` → `retry` → envelope) | next  | client `ask` hits `/exec`, result renders `data.preset`        |
+| 1   | App → orchestrator wiring (`answersToBase` → `retry` → envelope) | next  | client `ask` hits `/exec`, result renders `data.preset`       |
 | 2   | Tarball install probe                                            | —     | clean folder: `npm i <tarball>` + a Node ESM import both boot |
 
 > The original gate named `gallery` **and `store`**; `store` is still one of the three missing

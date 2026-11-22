@@ -12,7 +12,7 @@
  *
  *   - **negative** — `@aio-ui/form` root does not parse the five form adapters and the
  *     four input modules, `@aio-ui/input` root does not parse the four input sub-modules;
- *   - **positive** — `@aio-ui/form/adapters` parses **all nine** (it is the full stack: one
+ *   - **positive** — `@aio-ui/form` parses **all nine** (it is the full stack: one
  *     import, whole form) and `@aio-ui/input/modules` parses its four, so the negative
  *     cases cannot be green merely because nothing resolved.
  *
@@ -51,10 +51,17 @@ const CASES = [
   {
     name: "form-root",
     entry: "form-root.ts",
-    present: ["packages/components/form/Form.ts", "packages/components/form/FormRegistry.ts"],
-    // Not one adapter, and not the field adapter either: a form with no modules is a form
-    // that refuses to render, which is why the root can be this light.
-    absent: [...FORM_ADAPTERS, ...INPUT_MODULES],
+    present: [
+      "packages/components/form/Form.ts",
+      "packages/components/form/FormRegistry.ts",
+      ...FORM_ADAPTERS,
+      ...INPUT_MODULES,
+    ],
+    // The root is the composition point: `FORM_ADAPTER_DEFINITIONS` (exported by the root)
+    // spreads the four field modules, so one import is the whole form. The split that stays
+    // real is between packages: the form never pulls another component's adapter, and a
+    // single adapter subpath (`@aio-ui/form/validation-adapter`) still pulls only itself.
+    absent: [],
   },
   {
     name: "input-root",

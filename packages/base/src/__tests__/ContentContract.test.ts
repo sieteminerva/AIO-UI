@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 import { describe, expect, it } from "vitest";
 
-import type { iContentContract } from "@aio-ui/core/interface";
+import type { iContentContract } from "@aio-ui/core";
 import { Builder } from "../Base";
 import { normalize, validate } from "../BaseAdapters/ContentContract";
 

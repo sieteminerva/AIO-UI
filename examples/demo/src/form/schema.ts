@@ -1,5 +1,5 @@
 import type { iComponentModuleRef } from "@aio-ui/core";
-import { FORM_ADAPTER_MANIFEST } from "@aio-ui/form/FormRegistry";
+import { FORM_ADAPTER_MANIFEST } from "@aio-ui/form";
 import type { iBasicInputNode } from "@aio-ui/input";
 
 /**
@@ -402,9 +402,9 @@ export const addressSource = { url: ADDRESS_URL, useAdapter: "aio" };
 export function formManifest(): iComponentModuleRef[] {
   return [
     ...FORM_ADAPTER_MANIFEST,
-    { id: "idAddress", path: "@aio-ui/id-address/form", export: "idAddressFormAdapter" },
-    { id: "table", path: "@aio-ui/table/adapters/FormAdapter", export: "tableFormAdapter" },
-    { id: "message", path: "@aio-ui/message/adapters/FormAdapter", export: "messageFormAdapter" },
+    { id: "idAddress", path: "@aio-ui/id-address", export: "idAddressFormAdapter" },
+    { id: "table", path: "@aio-ui/table", export: "tableFormAdapter" },
+    { id: "message", path: "@aio-ui/message", export: "messageFormAdapter" },
   ];
 }
 

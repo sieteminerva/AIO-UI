@@ -1,4 +1,4 @@
-import type { iBasicNode, iBuilderConfig, iBuilderRegistry, iContentContract, iElementAnimation } from "@aio-ui/core/interface";
+import type { iBasicNode, iBuilderConfig, iBuilderRegistry, iContentContract, iElementAnimation } from "@aio-ui/core";
 import { Builder } from "@aio-ui/base";
 import { Skeleton } from "@aio-ui/skeleton";
 

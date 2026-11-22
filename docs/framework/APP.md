@@ -325,7 +325,7 @@ state, which is the LITE promise.
 
 ## Events
 
-One channel carries two layers, both typed by `iPageEvents` in `@aio-ui/core/events`
+One channel carries two layers, both typed by `iPageEvents` in `@aio-ui/core`
 (`iPageEvents` extends `iComponentEvents`, so an emitter registered for pages accepts
 component events without a cast). A project may ignore the port entirely.
 

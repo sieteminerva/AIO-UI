@@ -36,7 +36,7 @@ export const componentAssets = {
     "@aio-ui/form/cascade-adapter": () => import("@aio-ui/form/cascade-adapter"),
     "@aio-ui/form/multistep-adapter": () => import("@aio-ui/form/multistep-adapter"),
     "@aio-ui/form/calculation-adapter": () => import("@aio-ui/form/calculation-adapter"),
-    "@aio-ui/form/Input.FormAdapter": () => import("@aio-ui/form/Input.FormAdapter"),
+    "@aio-ui/form": () => import("@aio-ui/form"),
     "@aio-ui/input/dropdown/module": () => import("@aio-ui/input/dropdown/module"),
     "@aio-ui/input/file-uploader/module": () => import("@aio-ui/input/file-uploader/module"),
     "@aio-ui/input/controls/module": () => import("@aio-ui/input/controls/module"),
@@ -45,12 +45,12 @@ export const componentAssets = {
     // The opt-in stacks, for a host that wants the whole layer in one import instead of
     // nine manifest refs. Every exact `exports` subpath is mapped here — a prefix cannot
     // add `.js`, so a missing key is a runtime 404, not a slow path.
-    "@aio-ui/form/adapters": () => import("@aio-ui/form/adapters"),
+    "@aio-ui/form": () => import("@aio-ui/form"),
     "@aio-ui/input/modules": () => import("@aio-ui/input/modules"),
     // Adapters owned by other packages: the form never imports them, the host declares them.
-    "@aio-ui/id-address/form": () => import("@aio-ui/id-address/form"),
-    "@aio-ui/table/adapters/FormAdapter": () => import("@aio-ui/table/adapters/FormAdapter"),
-    "@aio-ui/message/adapters/FormAdapter": () => import("@aio-ui/message/adapters/FormAdapter"),
+    "@aio-ui/id-address": () => import("@aio-ui/id-address"),
+    "@aio-ui/table": () => import("@aio-ui/table"),
+    "@aio-ui/message": () => import("@aio-ui/message"),
   } as Record<string, () => Promise<unknown>>,
   styles: {
     "@aio-ui/accordion/Accordion.css": () => import("@aio-ui/accordion/Accordion.css?inline"),
@@ -76,8 +76,8 @@ export const componentAssets = {
     "@aio-ui/modal/Modal.css": () => import("@aio-ui/modal/Modal.css?inline"),
     "@aio-ui/mode-switcher/ModeSwitcher.css": () => import("@aio-ui/mode-switcher/ModeSwitcher.css?inline"),
     "@aio-ui/pricing-card/PricingCard.css": () => import("@aio-ui/pricing-card/PricingCard.css?inline"),
-    "@aio-ui/product/ProductDetail.css": () => import("@aio-ui/product/ProductDetail.css?inline"),
-    "@aio-ui/product/ProductGrid.css": () => import("@aio-ui/product/ProductGrid.css?inline"),
+    "@aio-ui/product/index.css": () => import("@aio-ui/product/index.css?inline"),
+    "@aio-ui/product/index.css": () => import("@aio-ui/product/index.css?inline"),
     "@aio-ui/rating/Rating.css": () => import("@aio-ui/rating/Rating.css?inline"),
     "@aio-ui/section/Section.css": () => import("@aio-ui/section/Section.css?inline"),
     "@aio-ui/skeleton/Skeleton.css": () => import("@aio-ui/skeleton/Skeleton.css?inline"),

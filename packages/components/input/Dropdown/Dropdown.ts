@@ -5,7 +5,7 @@
  * - `style: "select"` (default) renders a popover menu (`.menu[popover]`) anchored to the control.
  * - `style: "datalist"` renders a native `<datalist>`.
  */
-import type { iElementProperty, iBuilderConfig, iBuilderRegistry } from "@aio-ui/core/interface";
+import type { iElementProperty, iBuilderConfig, iBuilderRegistry } from "@aio-ui/core";
 import { Builder } from "@aio-ui/base";
 
 

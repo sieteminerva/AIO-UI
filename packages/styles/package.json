@@ -6,33 +6,9 @@
     "src"
   ],
   "exports": {
-    ".": {
-      "types": "./src/index.css.d.ts",
-      "default": "./src/index.css"
-    },
     "./index.css": {
       "types": "./src/index.css.d.ts",
       "default": "./src/index.css"
-    },
-    "./variables.css": {
-      "types": "./src/variables.css.d.ts",
-      "default": "./src/variables.css"
-    },
-    "./typography.css": {
-      "types": "./src/typography.css.d.ts",
-      "default": "./src/typography.css"
-    },
-    "./components.css": {
-      "types": "./src/components.css.d.ts",
-      "default": "./src/components.css"
-    },
-    "./layout.css": {
-      "types": "./src/layout.css.d.ts",
-      "default": "./src/layout.css"
-    },
-    "./icon.css": {
-      "types": "./src/icon.css.d.ts",
-      "default": "./src/icon.css"
     }
   }
 }

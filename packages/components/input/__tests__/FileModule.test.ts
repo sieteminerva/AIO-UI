@@ -2,7 +2,7 @@
 import { describe, expect, it, vi } from "vitest";
 
 import { fileUploaderInputModule } from "../FileUploader/FileUploader.InputModule";
-import { inputFormAdapter } from "@aio-ui/form/Input.FormAdapter";
+import { inputFormAdapter } from "@aio-ui/form";
 import { mountInputModules } from "../InputRegistry";
 import type { InputModuleDefinition } from "../InputModuleTypes";
 

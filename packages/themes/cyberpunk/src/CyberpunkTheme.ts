@@ -1,4 +1,4 @@
-import type { iBasicNode, iBuilderRegistry, iThemeModule } from "@aio-ui/core/interface";
+import type { iBasicNode, iBuilderRegistry, iThemeModule } from "@aio-ui/core";
 
 /**
  * Cyberpunk theme — tokens only.

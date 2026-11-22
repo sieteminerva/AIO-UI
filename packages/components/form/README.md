@@ -101,14 +101,14 @@ the rest.
 ### Registering the form
 
 ```ts
-import { FORM_ADAPTER_MANIFEST } from "@aio-ui/form/FormRegistry";
+import { FORM_ADAPTER_MANIFEST } from "@aio-ui/form";
 
 // 1. The adapter stack: the form's own engines, then whatever the host adds.
 const modules = [
   ...FORM_ADAPTER_MANIFEST,
-  { id: "idAddress", path: "@aio-ui/id-address/form", export: "idAddressFormAdapter" },
-  { id: "table", path: "@aio-ui/table/adapters/FormAdapter", export: "tableFormAdapter" },
-  { id: "message", path: "@aio-ui/message/adapters/FormAdapter", export: "messageFormAdapter" },
+  { id: "idAddress", path: "@aio-ui/id-address", export: "idAddressFormAdapter" },
+  { id: "table", path: "@aio-ui/table", export: "tableFormAdapter" },
+  { id: "message", path: "@aio-ui/message", export: "messageFormAdapter" },
 ];
 
 // 2. The registry entry. `export` is required: the package publishes more than one builder.
@@ -136,19 +136,19 @@ element.addEventListener("formSubmit", (event) => console.log(event.detail.data)
 
 No registry, no `AioApp`: build the form yourself and hand it the modules it may use. Three
 shapes, and only one of them is a loader input. **The builder ships no stack of its own** since
-`0.2.2`: the adapters live behind `@aio-ui/form/adapters`, so importing `@aio-ui/form` does not
+`0.2.2`: the adapters live behind `@aio-ui/form`, so importing `@aio-ui/form` does not
 compile a single engine.
 
 ```ts
 import { ModuleLoader, resolveModuleDefinitions } from "@aio-ui/module-loader";
 import { FormBuilder, FORM_ADAPTER_MANIFEST } from "@aio-ui/form";
-import { FORM_ADAPTER_DEFINITIONS } from "@aio-ui/form/adapters";
+import { FORM_ADAPTER_DEFINITIONS } from "@aio-ui/form";
 
 // 1. Everything — one import, the whole stack: five form adapters + four field modules.
 new FormBuilder({ modules: new ModuleLoader("form", FORM_ADAPTER_DEFINITIONS) });
 
 // 2. Only what this form uses. Each adapter is its own subpath, so the rest is never loaded.
-import { inputFormAdapter } from "@aio-ui/form/Input.FormAdapter";
+import { inputFormAdapter } from "@aio-ui/form";
 import { validationFormAdapter } from "@aio-ui/form/validation-adapter";
 new FormBuilder({ modules: new ModuleLoader("form", [inputFormAdapter, validationFormAdapter]) });
 

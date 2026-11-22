@@ -17,7 +17,7 @@ import '@aio-ui/skeleton/Skeleton.css';
 import './style.css';
 
 import { EventEmitter } from '@aio-ui/event-emitter';
-import { FORM_ADAPTER_MANIFEST } from '@aio-ui/form/FormRegistry';
+import { FORM_ADAPTER_MANIFEST } from '@aio-ui/form';
 import { HttpService } from '@aio-ui/http-service';
 import { DefaultTheme } from '@aio-ui/theme-default';
 import { HorizontalTheme } from '@aio-ui/theme-horizontal';
@@ -110,7 +110,7 @@ async function start(container: HTMLElement) {
         // stack every field type throws "No module rendered the field".
         modules: [
           ...FORM_ADAPTER_MANIFEST,
-          { id: "table", path: "@aio-ui/table/adapters/FormAdapter", export: "tableFormAdapter" },
+          { id: "table", path: "@aio-ui/table", export: "tableFormAdapter" },
         ],
       };
     })

@@ -14,9 +14,9 @@
 | ----------------------- | ----------------------------- | -------------------------------------- |
 | Main consumer API       | **root barrel** `@aio-ui/x`   | `import { AioApp } from "@aio-ui/app"` |
 | Optional capability     | subpath                       | `@aio-ui/form/calculation-adapter`     |
-| Adapter / integration   | subpath                       | `@aio-ui/table/adapters/FormAdapter`   |
+| Adapter / integration   | subpath                       | `@aio-ui/table`   |
 | CSS                     | subpath                       | `@aio-ui/form/Form.css`                |
-| Types-only contract     | subpath, or root when general | `@aio-ui/core/interface`               |
+| Types-only contract     | subpath, or root when general | `@aio-ui/core`               |
 | Internal implementation | **not exported**              | `BaseAdapters/*`, `canvas/*`           |
 
 Two corollaries:
@@ -137,10 +137,10 @@ are unreachable by construction, not by discipline.
 
 | Kind                  | Example                                                                                                         | Why it stays                                       |
 | --------------------- | --------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- |
-| Types-only contracts  | `@aio-ui/core/interface`, `/node`, `/page`, `/api`, `/events`, `/content`, `/builder`, `/registry`, `/renderer` | one module of types without dragging the runtime   |
-| Capability modules    | `@aio-ui/form/validation-adapter`, `@aio-ui/input/dropdown/module`, `@aio-ui/id-address/form`                   | loaded on demand, one per capability               |
-| Adapters              | `@aio-ui/message/adapters/FormAdapter`, `@aio-ui/table/adapters/FormAdapter`                                    | integrations, not the component                    |
-| Shared type contracts | `@aio-ui/form/FormMessages`, `@aio-ui/form/FormModuleTypes`                                                     | the form ↔ message type cycle, deliberately public |
+| Types-only contracts  | `@aio-ui/core`, `/node`, `/page`, `/api`, `/events`, `/content`, `/builder`, `/registry`, `/renderer` | one module of types without dragging the runtime   |
+| Capability modules    | `@aio-ui/form/validation-adapter`, `@aio-ui/input/dropdown/module`, `@aio-ui/id-address`                   | loaded on demand, one per capability               |
+| Adapters              | `@aio-ui/message`, `@aio-ui/table`                                    | integrations, not the component                    |
+| Shared type contracts | `@aio-ui/form/FormMessages`, `@aio-ui/form`                                                     | the form ↔ message type cycle, deliberately public |
 | CSS                   | `@aio-ui/form/Form.css`                                                                                         | shipped as files                                   |
 
 ### Emitted JS has to load without a bundler
@@ -253,7 +253,7 @@ Batch 20 moved the _hold_ out of core and made the mockup a component:
 
 | Moved / added                                      | Where                                                  | Why                                                                                                                  |
 | -------------------------------------------------- | ------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------- |
-| `holdUntilStyled`, `releaseMarkers`                | `@aio-ui/base/BaseAdapters/Hydration`                  | hiding an unstyled root is a lifecycle detail of `create()`; core keeps only the loader (`ensureStylesheet`)         |
+| `holdUntilStyled`, `releaseMarkers`                | `@aio-ui/base`                  | hiding an unstyled root is a lifecycle detail of `create()`; core keeps only the loader (`ensureStylesheet`)         |
 | `Builder.loading?()`                               | `@aio-ui/base`                                         | a component draws its own silhouette instead of a generic skin; opt-in, so no existing builder changes               |
 | `Skeleton`, `SkeletonBuilder`, `iSkeletonSpec`     | `@aio-ui/skeleton` (new package, mandatory)            | the mockup must be styled _before_ the real sheet exists, so its CSS ships with the app shell                        |
 | `--app-skeleton-bg`                                | `packages/styles/src/variables.css`                    | the one colour that has to exist before a component layer does                                                       |

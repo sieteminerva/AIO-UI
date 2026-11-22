@@ -194,9 +194,9 @@ await schema.select(data.find((row) => row.kota_id === value));
 | Entry                                                                | What it gives you                                                           |
 | -------------------------------------------------------------------- | --------------------------------------------------------------------------- |
 | `@aio-ui/id-address`                                                 | `IdAddressBuilder` and the config/detail types                              |
-| `@aio-ui/id-address/adapter`                                         | the adapter interface and the bundled adapters                              |
-| `@aio-ui/id-address/adapter.native`, `/adapter.aio`, `/adapter.base` | one adapter each                                                            |
-| `@aio-ui/id-address/form`                                            | `idAddressFormAdapter`; needs `@aio-ui/form`, which is an **optional peer** |
+| `@aio-ui/id-address`                                         | the adapter interface and the bundled adapters                              |
+| `@aio-ui/id-address`, `/adapter.aio`, `/adapter.base` | one adapter each                                                            |
+| `@aio-ui/id-address`                                            | `idAddressFormAdapter`; needs `@aio-ui/form`, which is an **optional peer** |
 | `@aio-ui/id-address/id-address.css`                                  | state styling (`loading`, `error`) for the controls it decorates            |
 
 ### Quick start

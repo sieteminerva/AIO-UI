@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { normalize, validate } from "@aio-ui/base";
-import type { iContentContract } from "@aio-ui/core/interface";
+import type { iContentContract } from "@aio-ui/core";
 
 import { AccordionBuilder } from "@aio-ui/accordion";
 import { ArticleBuilder } from "@aio-ui/article";

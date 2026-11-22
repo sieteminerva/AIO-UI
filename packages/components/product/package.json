@@ -17,17 +17,9 @@
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
-    "./ProductCard.css": {
-      "types": "./ProductCard.css.d.ts",
-      "default": "./ProductCard.css"
-    },
-    "./ProductDetail.css": {
-      "types": "./ProductDetail.css.d.ts",
-      "default": "./ProductDetail.css"
-    },
-    "./ProductGrid.css": {
-      "types": "./ProductGrid.css.d.ts",
-      "default": "./ProductGrid.css"
+    "./index.css": {
+      "types": "./index.css.d.ts",
+      "default": "./index.css"
     }
   },
   "scripts": {

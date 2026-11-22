@@ -139,7 +139,7 @@ describe("Form.provideModules", () => {
     const form = new FormBuilder();
 
     expect(() => form.create({ content: [{ type: "text", id: "orphan", title: "Field" }] })).toThrow(
-      /@aio-ui\/form\/adapters/
+      /@aio-ui\/form\b/
     );
   });
 

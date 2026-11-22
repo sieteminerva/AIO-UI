@@ -17,11 +17,6 @@
     "./Message.css": {
       "types": "./Message.css.d.ts",
       "default": "./Message.css"
-    },
-    "./adapters/FormAdapter": {
-      "development": "./adapters/FormAdapter.ts",
-      "types": "./dist/adapters/FormAdapter.d.ts",
-      "default": "./dist/adapters/FormAdapter.js"
     }
   },
   "peerDependencies": {

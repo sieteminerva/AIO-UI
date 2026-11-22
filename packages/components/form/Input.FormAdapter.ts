@@ -110,7 +110,7 @@ class InputFormAdapter {
     // upload — the one degradation that must never be silent.
     if (!this.#canReadFiles) {
       reportMissing(
-        { capability: "file", module: INPUT_MODULE_IDS.file, fix: "@aio-ui/input/file-uploader/module (fileUploaderInputModule) — @aio-ui/form/adapters already includes it", consequence: "config.files receives no files and the selected bytes are dropped.", severity: "error" },
+        { capability: "file", module: INPUT_MODULE_IDS.file, fix: "@aio-ui/input/file-uploader/module (fileUploaderInputModule) — @aio-ui/form already includes it", consequence: "config.files receives no files and the selected bytes are dropped.", severity: "error" },
         { owner: "FormBuilder", emit: this.#context.builderConfig?.emit }
       );
     }

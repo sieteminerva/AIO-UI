@@ -3,13 +3,13 @@
  *
  * @summary This module exists so that `@aio-ui/form` **root** can stay free of the
  * adapter implementations. The root exports the manifest (`FORM_ADAPTER_MANIFEST`, plain
- * strings) and the builder; the classes live here, behind the `@aio-ui/form/adapters`
+ * strings) and the builder; the classes live here, behind the `@aio-ui/form`
  * subpath. A consumer that never imports this file never compiles these nine adapters —
  * `scripts/bundle-probe.mjs` proves exactly that, in the parsed module graph.
  *
  * @example
  * import { FormBuilder } from "@aio-ui/form";
- * import { FORM_ADAPTER_DEFINITIONS } from "@aio-ui/form/adapters";
+ * import { FORM_ADAPTER_DEFINITIONS } from "@aio-ui/form";
  * import { ModuleLoader } from "@aio-ui/module-loader";
  *
  * new FormBuilder({ modules: new ModuleLoader("form", FORM_ADAPTER_DEFINITIONS), schema });

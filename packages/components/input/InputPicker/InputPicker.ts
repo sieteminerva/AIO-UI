@@ -14,7 +14,7 @@
  * write goes through `#paint()` so a caller, a filter and a click can never disagree.
  */
 
-import type { iBuilderConfig } from "@aio-ui/core/interface";
+import type { iBuilderConfig } from "@aio-ui/core";
 import { Builder } from "@aio-ui/base";
 
 /** Every node this component can render. Order is documentation, not behaviour. */

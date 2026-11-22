@@ -5,7 +5,7 @@
  * instance per `type: "file"` element it creates and exposes the helpers other
  * layers need through `InputBuilder` statics.
  */
-import { truncateText } from "@aio-ui/utilities/helper";
+import { truncateText } from "@aio-ui/utilities";
 import { ensureStylesheet } from "@aio-ui/core";
 
 /**

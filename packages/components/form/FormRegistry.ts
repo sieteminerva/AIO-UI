@@ -9,7 +9,7 @@ import type { iFormModuleContext } from "./FormModuleTypes";
  * `FORM_ADAPTER_MANIFEST` is the stack as manifest `modules` refs, so a host can declare
  * it without importing classes and `ComponentRegistry` can resolve one entry at a time.
  * The live list (`FORM_ADAPTER_DEFINITIONS`, `{ id, load }`) lives in `./FormAdapters`,
- * behind the `@aio-ui/form/adapters` subpath, so that importing `@aio-ui/form` does not
+ * behind the `@aio-ui/form` subpath, so that importing `@aio-ui/form` does not
  * compile the five adapters. Keeping the refs here is what makes that split possible:
  * they are strings.
  *
@@ -34,7 +34,7 @@ export const FORM_ADAPTER_MANIFEST: iComponentModuleRef[] = [
   { id: "cascade", path: "@aio-ui/form/cascade-adapter", export: "cascadeFormAdapter", scope: "form" },
   { id: "multistep", path: "@aio-ui/form/multistep-adapter", export: "multistepFormAdapter", scope: "form" },
   { id: "calculation", path: "@aio-ui/form/calculation-adapter", export: "calculationFormAdapter", scope: "form" },
-  { id: "input", path: "@aio-ui/form/Input.FormAdapter", export: "inputFormAdapter", scope: "form" },
+  { id: "input", path: "@aio-ui/form", export: "inputFormAdapter", scope: "form" },
   // The input layer's own manifest, labelled with the layer it belongs to. Re-declaring
   // the four entries here by hand is how the two lists would drift apart.
   ...INPUT_MODULE_MANIFEST.map((ref) => ({ ...ref, scope: "input" })),

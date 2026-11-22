@@ -1,4 +1,4 @@
-import type { iNodeContent } from "@aio-ui/core/interface";
+import type { iNodeContent } from "@aio-ui/core";
 
 import { ThemeConsoleBuilder } from "./ThemeConsole/ThemeConsole";
 

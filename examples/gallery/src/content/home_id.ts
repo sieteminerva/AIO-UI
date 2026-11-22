@@ -1,4 +1,4 @@
-import type { iNodeContent } from "@aio-ui/core/interface";
+import type { iNodeContent } from "@aio-ui/core";
 
 function navScroll(selector: string): (e: Event) => void {
   return (e) => {

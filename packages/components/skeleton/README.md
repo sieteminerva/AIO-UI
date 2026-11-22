@@ -73,7 +73,7 @@ microtask, so an `"auto"` placeholder is never painted and the component appears
 loading state at all. `"auto"` stays available for a host that measures the sheet itself.
 
 `Skeleton.create` writes the number as `data-skeleton-duration`; the hold in
-`@aio-ui/base/BaseAdapters/Hydration` is the only reader, and it joins that floor with the
+`@aio-ui/base` is the only reader, and it joins that floor with the
 stylesheet promise (`Promise.all`). A skeleton never hides anything itself, and a warm sheet never
 builds one. The pulse _speed_ is a different knob: `--skeleton-pulse` in this package's layer.
 

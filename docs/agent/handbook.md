@@ -195,12 +195,12 @@ accepted and surface much later as `No module rendered the field`.
 ```ts
 import { ModuleLoader, resolveModuleDefinitions } from "@aio-ui/module-loader";
 import { FormBuilder, FORM_ADAPTER_MANIFEST } from "@aio-ui/form";
-import { inputFormAdapter } from "@aio-ui/form/Input.FormAdapter";
+import { inputFormAdapter } from "@aio-ui/form";
 
 // Want everything: one import of the definitions — note the subpath, not the root.
 // Nine entries: four engines, `input`, and the four field modules. A form built this way
 // has a real dropdown, a real uploader and a real action set.
-import { FORM_ADAPTER_DEFINITIONS } from "@aio-ui/form/adapters";
+import { FORM_ADAPTER_DEFINITIONS } from "@aio-ui/form";
 new FormBuilder({ modules: new ModuleLoader("form", FORM_ADAPTER_DEFINITIONS) });
 
 // Want less: each adapter is its own subpath, so the rest is never loaded.

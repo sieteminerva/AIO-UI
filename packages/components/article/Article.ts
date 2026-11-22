@@ -1,5 +1,5 @@
-import type { iElementProperty, iBuilderConfig, iBuilderRegistry, iContentContract } from "@aio-ui/core/interface";
-import { createImageError } from "@aio-ui/utilities/DomUtils";
+import type { iElementProperty, iBuilderConfig, iBuilderRegistry, iContentContract } from "@aio-ui/core";
+import { createImageError } from "@aio-ui/utilities";
 
 import { Builder } from "@aio-ui/base";
 import { Skeleton } from "@aio-ui/skeleton";

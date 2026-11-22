@@ -23,9 +23,9 @@
  * `onBack` returns. The host keeps what only it can know: where the data came from and
  * what "add to cart" means.
  */
-import type { iBuilderConfig, iContentContract } from "@aio-ui/core/interface";
+import type { iBuilderConfig, iContentContract } from "@aio-ui/core";
 import { Builder } from "@aio-ui/base";
-import type { iBuilderRegistry } from "@aio-ui/core/interface";
+import type { iBuilderRegistry } from "@aio-ui/core";
 
 import { DEFAULT_SELECTORS } from "./Product.kit";
 import type { ProductElementType } from "./Product.kit";
@@ -55,8 +55,8 @@ export interface iProductConfig extends iBuilderConfig<ProductElementType> {
 /** The sub-modules this component owns. Hosts pass this to `register`. */
 export function productModules() {
   return [
-    { id: "grid", scope: "grid", path: "@aio-ui/product", export: "ProductGridBuilder", stylesheet: "@aio-ui/product/ProductGrid.css" },
-    { id: "detail", scope: "detail", path: "@aio-ui/product", export: "ProductDetailBuilder", stylesheet: "@aio-ui/product/ProductDetail.css" },
+    { id: "grid", scope: "grid", path: "@aio-ui/product", export: "ProductGridBuilder", stylesheet: "@aio-ui/product/index.css" },
+    { id: "detail", scope: "detail", path: "@aio-ui/product", export: "ProductDetailBuilder", stylesheet: "@aio-ui/product/index.css" },
   ];
 }
 

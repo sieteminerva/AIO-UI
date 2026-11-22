@@ -80,9 +80,9 @@ describe("plan — store pulls in what it declares", () => {
     expect(list).toContain("@aio-ui/form");
     expect(list).toContain("@aio-ui/input");
     expect(list).toContain("@aio-ui/form/validation-adapter");
-    expect(list).toContain("@aio-ui/form/Input.FormAdapter");
+    expect(list).toContain("@aio-ui/form");
     expect(list).toContain("@aio-ui/message");
-    expect(list).toContain("@aio-ui/message/adapters/FormAdapter");
+    expect(list).toContain("@aio-ui/message");
   });
 
   it("turns config flags into adapters", () => {
@@ -100,8 +100,8 @@ describe("plan — store pulls in what it declares", () => {
 
   it("adds the table bridge and the address capability", () => {
     expect(list).toContain("@aio-ui/table");
-    expect(list).toContain("@aio-ui/table/adapters/FormAdapter");
-    expect(list).toContain("@aio-ui/id-address/form");
+    expect(list).toContain("@aio-ui/table");
+    expect(list).toContain("@aio-ui/id-address");
   });
 
   it("attaches a package's stylesheets to its own module entry", () => {

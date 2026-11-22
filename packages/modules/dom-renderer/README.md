@@ -42,8 +42,8 @@ are inlined so it imports nothing:
 
 | Seam               | In `@aio-ui/core`                  | Here                                       |
 | ------------------ | ---------------------------------- | ------------------------------------------ |
-| attribute helpers  | `@aio-ui/utilities/AttributeUtils` | inlined                                    |
-| metadata identity  | `@aio-ui/utilities/Metadata`       | inlined                                    |
+| attribute helpers  | `@aio-ui/utilities` | inlined                                    |
+| metadata identity  | `@aio-ui/utilities`       | inlined                                    |
 | template overrides | `TemplateRegistry` (core)          | a local `Map` with `register`/`unregister` |
 | dev warnings       | `import.meta.env?.DEV`             | `KIT_DEV = false`                          |
 

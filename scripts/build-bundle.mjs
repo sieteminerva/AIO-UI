@@ -23,7 +23,7 @@
  *   node scripts/build-bundle.mjs --entry-only    # regenerate temp/bundle/entry.*, no build
  */
 import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
-import { join, relative } from "node:path";
+import { join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { dirname } from "node:path";
 
@@ -174,21 +174,32 @@ if (missing.length) {
   process.exit(1);
 }
 
-const css = sheets.map((sheet) => `@import ${JSON.stringify(slash(relative(WORK, sheet.path)))};`).join("\n");
+// A sheet that only re-imports other sheets (a package's `index.css`) is not listed beside
+// them: the bundler inlines both copies. Its imports are the real entries.
+const reimported = new Set();
+for (const sheet of sheets) {
+  const text = readFileSync(sheet.path, "utf8");
+  for (const match of text.matchAll(/@import\s+(?:url\()?\s*["']([^"']+)["']/g)) {
+    reimported.add(resolve(dirname(sheet.path), match[1]));
+  }
+}
+const bundledSheets = sheets.filter((sheet) => !reimported.has(sheet.path));
+
+const css = bundledSheets.map((sheet) => `@import ${JSON.stringify(slash(relative(WORK, sheet.path)))};`).join("\n");
 
 writeFileSync(join(WORK, "entry.js"), js);
 writeFileSync(join(WORK, "entry.css"), `${css}\n`);
 
 // ---- 5. Report ----------------------------------------------------------
 const shipped = walk(join(ROOT, "packages")).filter((path) => !path.endsWith("styles\\src\\index.css"));
-const listed = new Set(sheets.map((sheet) => sheet.path));
+const listed = new Set([...bundledSheets.map((sheet) => sheet.path), ...reimported]);
 const unstyled = shipped.filter((path) => !listed.has(path));
 const count = (label, value) => `${label}: ${value}`;
 console.log(
   [
     count("packages", packages.length),
     count("exported names", owners.size),
-    count("sheets", sheets.length),
+    count("sheets", bundledSheets.length),
     count("sheets not in the bundle", unstyled.length),
   ].join(" · "),
 );

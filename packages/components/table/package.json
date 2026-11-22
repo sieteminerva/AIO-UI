@@ -24,11 +24,6 @@
     "./Table.css": {
       "types": "./Table.css.d.ts",
       "default": "./Table.css"
-    },
-    "./adapters/FormAdapter": {
-      "development": "./adapters/FormAdapter.ts",
-      "types": "./dist/adapters/FormAdapter.d.ts",
-      "default": "./dist/adapters/FormAdapter.js"
     }
   },
   "scripts": {

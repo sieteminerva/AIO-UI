@@ -25,39 +25,14 @@
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
-    "./adapters": {
-      "development": "./FormAdapters.ts",
-      "types": "./dist/FormAdapters.d.ts",
-      "default": "./dist/FormAdapters.js"
-    },
     "./Form.css": {
       "types": "./Form.css.d.ts",
       "default": "./Form.css"
-    },
-    "./FormLayout": {
-      "development": "./FormLayout.ts",
-      "types": "./dist/FormLayout.d.ts",
-      "default": "./dist/FormLayout.js"
     },
     "./FormMessages": {
       "development": "./FormMessages.ts",
       "types": "./dist/FormMessages.d.ts",
       "default": "./dist/FormMessages.js"
-    },
-    "./FormModuleTypes": {
-      "development": "./FormModuleTypes.ts",
-      "types": "./dist/FormModuleTypes.d.ts",
-      "default": "./dist/FormModuleTypes.js"
-    },
-    "./FormRegistry": {
-      "development": "./FormRegistry.ts",
-      "types": "./dist/FormRegistry.d.ts",
-      "default": "./dist/FormRegistry.js"
-    },
-    "./Input.FormAdapter": {
-      "development": "./Input.FormAdapter.ts",
-      "types": "./dist/Input.FormAdapter.d.ts",
-      "default": "./dist/Input.FormAdapter.js"
     },
     "./calculation-adapter": {
       "development": "./adapters/Calculation.ts",

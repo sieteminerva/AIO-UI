@@ -19,13 +19,13 @@ export const componentAssets = {
     "@aio-ui/form/cascade-adapter": () => import("@aio-ui/form/cascade-adapter"),
     "@aio-ui/form/multistep-adapter": () => import("@aio-ui/form/multistep-adapter"),
     "@aio-ui/form/calculation-adapter": () => import("@aio-ui/form/calculation-adapter"),
-    "@aio-ui/form/Input.FormAdapter": () => import("@aio-ui/form/Input.FormAdapter"),
+    "@aio-ui/form": () => import("@aio-ui/form"),
     "@aio-ui/input/dropdown/module": () => import("@aio-ui/input/dropdown/module"),
     "@aio-ui/input/file-uploader/module": () => import("@aio-ui/input/file-uploader/module"),
     "@aio-ui/input/controls/module": () => import("@aio-ui/input/controls/module"),
     "@aio-ui/input/popover/module": () => import("@aio-ui/input/popover/module"),
     "@aio-ui/input/picker/module": () => import("@aio-ui/input/picker/module"),
-    "@aio-ui/table/adapters/FormAdapter": () => import("@aio-ui/table/adapters/FormAdapter"),
+    "@aio-ui/table": () => import("@aio-ui/table"),
   } satisfies Record<string, () => Promise<unknown>>,
   styles: {
     // `?inline` keeps stylesheet text addressable so the registry can inject it

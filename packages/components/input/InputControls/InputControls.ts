@@ -12,7 +12,7 @@
  * a control set that can delete or clone the whole form is a footgun, not a feature.
  */
 import type { iActionType, iBasicInputNode, iInputActionContext, iInputActionDefinition } from "../Input";
-import type { iBuilderConfig, iElementProperty } from "@aio-ui/core/interface";
+import type { iBuilderConfig, iElementProperty } from "@aio-ui/core";
 import { Builder } from "@aio-ui/base";
 import { collectFormValues } from "../FormValues";
 

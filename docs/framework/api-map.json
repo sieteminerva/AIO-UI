@@ -14,7 +14,10 @@
       "kind": "package",
       "barrel": "./index.ts",
       "values": [
-        "AnimationsService"
+        "ANIMATION_BEHAVIOURS",
+        "ANIMATION_TYPES",
+        "AnimationsService",
+        "indexBehaviours"
       ],
       "types": [
         "AnimationServiceConfig"
@@ -46,13 +49,22 @@
       "kind": "package",
       "barrel": "./src/index.ts",
       "values": [
+        "Binding",
         "Builder",
+        "BuilderProxy",
         "GLOBAL_INSTANCE_COUNTER",
+        "ReactiveGraph",
+        "holdUntilStyled",
+        "isReactive",
         "normalize",
+        "releaseMarkers",
         "validate"
       ],
       "types": [
+        "BindableElement",
+        "EffectFn",
         "iBuilderInspection",
+        "iMockupFactory",
         "iNormalizedContent"
       ]
     },
@@ -87,6 +99,7 @@
         "ComponentRegistry",
         "DEFAULT_REGISTRY_SCOPE",
         "DOMRenderer",
+        "GLOBAL_DISPLAY_LOG",
         "Registry",
         "RegistryError",
         "TemplateRegistry",
@@ -115,11 +128,24 @@
         "useStylesheetAssets"
       ],
       "types": [
+        "BuilderFunctionsMap",
+        "ComponentBuilderFn",
+        "DefaultSelectors",
+        "InputBuilderConfigOptions",
+        "InputBuilderSelectorOption",
+        "InputControlsType",
+        "InputType",
         "RegisterFn",
         "RegistryDuplicatePolicy",
         "RegistryErrorCode",
         "TemplateHandler",
+        "ValidLayoutKey",
+        "iAdvancedBuilderNode",
+        "iAdvancedStandardNode",
         "iAnimationPort",
+        "iApiLinks",
+        "iApiMeta",
+        "iApiResponse",
         "iApp",
         "iAppConfig",
         "iAppModuleClass",
@@ -129,17 +155,47 @@
         "iAppSlot",
         "iAppSlots",
         "iAppSource",
+        "iBasicBuilderNode",
+        "iBasicInputNode",
+        "iBasicNode",
+        "iBasicStandardNode",
         "iBuilderAdapter",
+        "iBuilderConfig",
+        "iBuilderContent",
+        "iBuilderElementContext",
+        "iBuilderRegistry",
+        "iBuilderSelectorsConfig",
+        "iCardProperty",
         "iComponentAssetMaps",
         "iComponentEvents",
         "iComponentManifest",
+        "iComponentMeta",
         "iComponentModuleRef",
         "iComponentRegistryPort",
         "iComponentRoute",
+        "iCompositeBuilderOutput",
+        "iContentContract",
+        "iContentIssue",
+        "iContentSpec",
+        "iDOMStructure",
+        "iElementAnimation",
+        "iElementProperty",
         "iEventCallback",
         "iEventEmit",
         "iEventPort",
+        "iFieldDescriptor",
+        "iFieldType",
+        "iFormGroupNode",
+        "iHeaderProperty",
         "iHttpPort",
+        "iLandingPageBuilderSource",
+        "iLayoutItemNode",
+        "iMetadataContext",
+        "iNodeContent",
+        "iNodeLifecycleHooks",
+        "iNodeRecordItem",
+        "iNodeRecordRelations",
+        "iNodeRecords",
         "iPageBlock",
         "iPageContent",
         "iPageContext",
@@ -151,22 +207,28 @@
         "iPageEventSpec",
         "iPageEvents",
         "iPageInspection",
+        "iPageMetaReport",
         "iPagePhase",
         "iPagePort",
         "iPageReadyContext",
         "iPageRouteSpec",
         "iPageSlotSpec",
+        "iRecord",
+        "iRecordKey",
         "iRegistryEntry",
         "iRegistryErrorDetails",
         "iRegistryLike",
         "iRegistryOptions",
+        "iRendererLite",
         "iRendererPort",
         "iRouterFactory",
         "iRouterPort",
         "iStorageConfig",
         "iStorageDriver",
         "iStoragePort",
-        "iStyleLoader"
+        "iStyleLoader",
+        "iThemeModule",
+        "themeSwitcherPosition"
       ]
     },
     "@aio-ui/dom-renderer": {
@@ -225,17 +287,27 @@
       "barrel": "./index.ts",
       "values": [
         "DEFAULT_FORM_MESSAGES",
+        "FORM_ADAPTER_DEFINITIONS",
+        "FORM_ADAPTER_IDS",
         "FORM_ADAPTER_MANIFEST",
         "FORM_MODULE_IDS",
         "FormBuilder",
         "composeMessage",
+        "inputFormAdapter",
         "messageDraft",
         "resolveStyle"
       ],
       "types": [
+        "CascadeBlockedInfo",
+        "FormCascadeHost",
+        "FormCascadeMode",
         "FormModuleDefinition",
+        "FormModuleId",
         "FormModulePhase",
+        "iCascadeEventDetail",
+        "iCascadeState",
         "iFormAdapter",
+        "iFormCondition",
         "iFormConfig",
         "iFormMessage",
         "iFormMessageCategory",
@@ -243,8 +315,10 @@
         "iFormMessageField",
         "iFormMessageParams",
         "iFormMessageStyle",
+        "iFormMessageTarget",
         "iFormMessages",
-        "iFormModuleContext"
+        "iFormModuleContext",
+        "iFormTableTarget"
       ]
     },
     "@aio-ui/http-service": {
@@ -261,9 +335,16 @@
       "kind": "package",
       "barrel": "./index.ts",
       "values": [
-        "IdAddressBuilder"
+        "IdAddressAdapterAio",
+        "IdAddressAdapterBase",
+        "IdAddressAdapterNative",
+        "IdAddressBuilder",
+        "idAddressFormAdapter"
       ],
       "types": [
+        "IAddressAdapter",
+        "ISetOptionsFunction",
+        "ISetOptionsParamsConfig",
         "IdAddressCacheConfig",
         "IdAddressConfig",
         "IdAddressDetail",
@@ -339,7 +420,8 @@
       "kind": "package",
       "barrel": "./index.ts",
       "values": [
-        "MessageBuilder"
+        "MessageBuilder",
+        "messageFormAdapter"
       ],
       "types": [
         "iMessageConfig",
@@ -475,12 +557,6 @@
         "iSkeletonSpec"
       ]
     },
-    "@aio-ui/styles": {
-      "kind": "package",
-      "barrel": "./src/index.css",
-      "values": [],
-      "types": []
-    },
     "@aio-ui/tab": {
       "kind": "package",
       "barrel": "./index.ts",
@@ -500,7 +576,8 @@
       "kind": "package",
       "barrel": "./index.ts",
       "values": [
-        "TableBuilder"
+        "TableBuilder",
+        "tableFormAdapter"
       ],
       "types": [
         "iTableConfig"
@@ -570,6 +647,7 @@
         "hexToRgba",
         "mergeInputConfig",
         "numberToText",
+        "parseTableFile",
         "parseTableRecords",
         "parseTableText",
         "selectorToTree",

@@ -1,4 +1,4 @@
-import type { iBuilderConfig, iBuilderRegistry, iContentContract } from "@aio-ui/core/interface";
+import type { iBuilderConfig, iBuilderRegistry, iContentContract } from "@aio-ui/core";
 import { Builder } from "@aio-ui/base";
 import { Skeleton } from "@aio-ui/skeleton";
 import { AttrsConfigMap } from "./Carousel.kit";

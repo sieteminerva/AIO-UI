@@ -141,5 +141,5 @@ once someone designs that layer; on a light theme the card currently renders on 
 
 1. Add `"product"` to `iBuilderRegistry` in `packages/core/src/types/registry.ts`.
 2. Register with the sub-modules: `registry.register("product", () => ({ path: "@aio-ui/product", export: "ProductBuilder", modules: productModules() }))`.
-3. Add asset-map loaders for `@aio-ui/product/ProductGrid.css` and `@aio-ui/product/ProductDetail.css`.
+3. Add asset-map loaders for `@aio-ui/product/index.css` and `@aio-ui/product/index.css`.
 4. List it in the host's route plan: `registerModule(components, [{ route, components: ["product"] }])` — a builder called inside `onCreated` is invisible to `collect(nodes)`.

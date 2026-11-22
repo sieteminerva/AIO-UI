@@ -88,9 +88,9 @@ export const BUILDER_CATALOGUE: Record<string, CatalogueEntry> = {
   tab: { capability: "tab", modules: ["@aio-ui/tab"], styles: ["@aio-ui/tab/Tab.css"] },
   badge: { capability: "badge", modules: ["@aio-ui/badge"], styles: ["@aio-ui/badge/Badge.css"] },
   rating: { capability: "rating", modules: ["@aio-ui/rating"], styles: ["@aio-ui/rating/Rating.css"] },
-  "product-card": { capability: "product", modules: ["@aio-ui/product"], styles: ["@aio-ui/product/ProductCard.css"] },
-  "product-card-grid": { capability: "product", modules: ["@aio-ui/product"], styles: ["@aio-ui/product/ProductGrid.css"] },
-  "product-detail": { capability: "product", modules: ["@aio-ui/product"], styles: ["@aio-ui/product/ProductDetail.css"] },
+  "product-card": { capability: "product", modules: ["@aio-ui/product"], styles: ["@aio-ui/product/index.css"] },
+  "product-card-grid": { capability: "product", modules: ["@aio-ui/product"], styles: ["@aio-ui/product/index.css"] },
+  "product-detail": { capability: "product", modules: ["@aio-ui/product"], styles: ["@aio-ui/product/index.css"] },
   table: { capability: "table", modules: ["@aio-ui/table"], styles: ["@aio-ui/table/Table.css"] },
   form: { capability: "form", modules: ["@aio-ui/form"], styles: ["@aio-ui/form/Form.css"] },
   input: { capability: "input", modules: ["@aio-ui/input"], styles: ["@aio-ui/input/input.css"] },
@@ -112,7 +112,7 @@ export const FORM_ADAPTER_CATALOGUE: Record<string, CatalogueEntry> = {
   cascade: { capability: "cascade", modules: ["@aio-ui/form/cascade-adapter"], styles: [], id: "cascade", export: "cascadeFormAdapter" },
   multistep: { capability: "multistep", modules: ["@aio-ui/form/multistep-adapter"], styles: [], id: "multistep", export: "multistepFormAdapter" },
   calculation: { capability: "calculation", modules: ["@aio-ui/form/calculation-adapter"], styles: [], id: "calculation", export: "calculationFormAdapter" },
-  input: { capability: "input-adapter", modules: ["@aio-ui/form/Input.FormAdapter"], styles: [], id: "input", export: "inputFormAdapter" },
+  input: { capability: "input-adapter", modules: ["@aio-ui/form"], styles: [], id: "input", export: "inputFormAdapter" },
 };
 
 /** Input-side modules, keyed by the field type or config that needs them. */
@@ -129,9 +129,9 @@ export const CAPABILITY_CATALOGUE: Record<string, CatalogueEntry> = {
   http: { capability: "http-service", modules: ["@aio-ui/http-service"], styles: [] },
   events: { capability: "event-emitter", modules: ["@aio-ui/event-emitter"], styles: [] },
   animations: { capability: "animations", modules: ["@aio-ui/animations"], styles: ["@aio-ui/animations/Animations.css"] },
-  "id-address": { capability: "id-address", modules: ["@aio-ui/id-address/form"], styles: ["@aio-ui/id-address/id-address.css"], id: "idAddress", export: "idAddressFormAdapter" },
-  "form-message": { capability: "message-adapter", modules: ["@aio-ui/message/adapters/FormAdapter"], styles: [], id: "message", export: "messageFormAdapter" },
-  "form-table": { capability: "table-adapter", modules: ["@aio-ui/table/adapters/FormAdapter"], styles: [], id: "table", export: "tableFormAdapter" },
+  "id-address": { capability: "id-address", modules: ["@aio-ui/id-address"], styles: ["@aio-ui/id-address/id-address.css"], id: "idAddress", export: "idAddressFormAdapter" },
+  "form-message": { capability: "message-adapter", modules: ["@aio-ui/message"], styles: [], id: "message", export: "messageFormAdapter" },
+  "form-table": { capability: "table-adapter", modules: ["@aio-ui/table"], styles: [], id: "table", export: "tableFormAdapter" },
 };
 
 /**

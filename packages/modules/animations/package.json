@@ -22,11 +22,6 @@
       "types": "./Animations.css.d.ts",
       "default": "./Animations.css"
     },
-    "./behaviours": {
-      "development": "./behaviours/registry.ts",
-      "types": "./dist/behaviours/registry.d.ts",
-      "default": "./dist/behaviours/registry.js"
-    },
     "./behaviours/*": {
       "development": "./behaviours/*.ts",
       "types": "./dist/behaviours/*.d.ts",

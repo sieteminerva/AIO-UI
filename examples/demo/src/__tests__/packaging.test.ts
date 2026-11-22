@@ -73,7 +73,7 @@ describe("stylesheet exports", () => {
     it(`${manifest.name}${subpath === "." ? "" : subpath} — the declaration exists`, () => {
       const declaration = join(dir, `${sheet.replace(/^\.\//, "")}.d.ts`);
       expect(existsSync(declaration)).toBe(true);
-      expect(readFileSync(declaration, "utf8")).toContain("export {}");
+      expect(readFileSync(declaration, "utf8")).toMatch(/export\s*\{\s*\}/);
     });
   }
 });

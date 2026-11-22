@@ -86,6 +86,6 @@ imports it once.
 
 ## Known issue
 
-`utilities` imports types from `@aio-ui/core/interface` while `core` imports runtime
+`utilities` imports types from `@aio-ui/core` while `core` imports runtime
 helpers from `@aio-ui/utilities`. It is a type-only cycle, tolerated for now; if it ever
 becomes a problem, `interface.ts` should move to its own `@aio-ui/types` package.

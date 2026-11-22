@@ -88,7 +88,7 @@ function* files(dir) {
 /** Prose must never be mistaken for code. */
 const strip = (text) => text.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
 
-/** `@aio-ui/base/BaseAdapters/x` → `base`. */
+/** `@aio-ui/base` → `base`. */
 const target = (specifier) => specifier.slice(SCOPE.length).split("/")[0] || null;
 
 /** The `@aio-ui/*` packages one source file imports. */

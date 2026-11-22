@@ -344,7 +344,7 @@ public prepare(data: any): HTMLElement {
 ### Anti-FOUC markers belong to the framework, not the component
 
 One call at the end of `create()` does the whole job:
-`holdUntilStyled(root, this.stylesheet, mockup)` (`@aio-ui/base/BaseAdapters/Hydration`).
+`holdUntilStyled(root, this.stylesheet, mockup)` (`@aio-ui/base`).
 It asks the stylesheet seam (`@aio-ui/core`) whether this component's sheet is missing. If
 it is, the root is returned held and the same call releases it from its own
 `ensureStylesheet()` promise. If it is not, the root is released immediately. There is no

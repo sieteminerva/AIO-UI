@@ -27,7 +27,7 @@ export interface AssetResolver {
   /**
    * Exact bare subpath entries from each package's `exports` map.
    *
-   * Needed because a bare subpath such as `@aio-ui/utilities/AttributeUtils` has
+   * Needed because a bare subpath such as `@aio-ui/utilities` has
    * no extension: a prefix alone would produce a URL that 404s. Exact keys also
    * carry the real file when a subpath does not mirror its name
    * (`input/dropdown/module` → `dist/Dropdown/Dropdown.InputModule.js`).

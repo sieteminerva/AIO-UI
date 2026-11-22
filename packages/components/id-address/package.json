@@ -13,31 +13,6 @@
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
-    "./adapter": {
-      "development": "./id-address-adapter.ts",
-      "types": "./dist/id-address-adapter.d.ts",
-      "default": "./dist/id-address-adapter.js"
-    },
-    "./adapter.native": {
-      "development": "./id-address-adapter.native.ts",
-      "types": "./dist/id-address-adapter.native.d.ts",
-      "default": "./dist/id-address-adapter.native.js"
-    },
-    "./adapter.base": {
-      "development": "./id-address-adapter.base.ts",
-      "types": "./dist/id-address-adapter.base.d.ts",
-      "default": "./dist/id-address-adapter.base.js"
-    },
-    "./adapter.aio": {
-      "development": "./id-address-adapter.aio.ts",
-      "types": "./dist/id-address-adapter.aio.d.ts",
-      "default": "./dist/id-address-adapter.aio.js"
-    },
-    "./form": {
-      "development": "./IdAddress.FormAdapter.ts",
-      "types": "./dist/IdAddress.FormAdapter.d.ts",
-      "default": "./dist/IdAddress.FormAdapter.js"
-    },
     "./id-address.css": {
       "types": "./id-address.css.d.ts",
       "default": "./id-address.css"

@@ -1,4 +1,4 @@
-import type { iBuilderConfig, iBuilderRegistry, iContentContract } from "@aio-ui/core/interface";
+import type { iBuilderConfig, iBuilderRegistry, iContentContract } from "@aio-ui/core";
 import { Builder } from "@aio-ui/base";
 import { Skeleton } from "@aio-ui/skeleton";
 import type { iMessageContent } from "@aio-ui/message";
@@ -149,7 +149,7 @@ export interface iFormConfig extends iBuilderConfig<FormElementType> {
    * Loader that supplies the Form's own sub-modules — **required to render a field**.
    *
    * Since `0.2.2` the adapters are no longer compiled into `@aio-ui/form`: pass
-   * `new ModuleLoader("form", FORM_ADAPTER_DEFINITIONS)` from `@aio-ui/form/adapters`
+   * `new ModuleLoader("form", FORM_ADAPTER_DEFINITIONS)` from `@aio-ui/form`
    * (or a subset, or your own). A builder with no modules throws on the first
    * `create()` instead of failing one field at a time.
    *
@@ -247,7 +247,7 @@ export class FormBuilder extends Builder<FormElementType, iFormConfig> {
    * dimuat — kecuali satu hal: id milik `INPUT_MODULE_IDS` dilewati. Id itu bukan
    * perilaku form, melainkan preset sebuah field, dan `#routeInputModules()` yang
    * menyerahkannya ke lapisan input. Tanpa aturan ini
-   * `@aio-ui/form/adapters` (stack penuh) akan memuat dropdown sebagai fitur form.
+   * `@aio-ui/form` (stack penuh) akan memuat dropdown sebagai fitur form.
    */
   #resolved(context: iFormModuleContext): iFormAdapter[] {
     return [...this.#loadFeatures(context), ...this.#providedLive.values()] as iFormAdapter[];
@@ -436,7 +436,7 @@ export class FormBuilder extends Builder<FormElementType, iFormConfig> {
     this.config = this.resolveConfig(defaultConfig, config);
 
     // Step 1: Loader efektif — hanya dari consumer/manifest. Preset bawaan sengaja
-    // kosong: definisi adapter hidup di `@aio-ui/form/adapters`, di luar graf modul
+    // kosong: definisi adapter hidup di `@aio-ui/form`, di luar graf modul
     // root, jadi builder ini tidak boleh menyebutnya sama sekali. `prepare()` menolak
     // jalan tanpa modul, dan pesan errornya menyebut subpath yang harus diimpor.
     this.#loader = this.config.modules ?? new ModuleLoader<iFormModuleContext, any>("form", []);
@@ -457,8 +457,8 @@ export class FormBuilder extends Builder<FormElementType, iFormConfig> {
       throw new Error(
         "[FormBuilder] No modules configured, so not one field can be rendered. " +
         'Pass the stack: new ModuleLoader("form", FORM_ADAPTER_DEFINITIONS) — those definitions are ' +
-        "exported by @aio-ui/form/adapters — or, at minimum, [inputFormAdapter], " +
-        "exported by @aio-ui/form/Input.FormAdapter."
+        "exported by @aio-ui/form — or, at minimum, [inputFormAdapter], " +
+        "exported by @aio-ui/form."
       );
     }
 

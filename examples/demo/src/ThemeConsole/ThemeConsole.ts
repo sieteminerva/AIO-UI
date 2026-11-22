@@ -1,4 +1,4 @@
-import type { iBuilderConfig, iBuilderRegistry, iElementProperty } from "@aio-ui/core/interface";
+import type { iBuilderConfig, iBuilderRegistry, iElementProperty } from "@aio-ui/core";
 import { Builder } from "@aio-ui/base";
 
 // 🧩 The theme builder is instantiated BY THIS builder (no ComponentRegistry

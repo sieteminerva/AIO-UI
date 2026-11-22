@@ -115,11 +115,11 @@ if (/from\s+["']@aio-ui\//.test(renderer)) {
   process.exit(1);
 }
 
-const kit = `${PREAMBLE}// ---- inlined from @aio-ui/utilities/Metadata.ts -----------------------------
+const kit = `${PREAMBLE}// ---- inlined from @aio-ui/utilities.ts -----------------------------
 ${body(META)}
 export { buildNamespace };
 
-// ---- inlined from @aio-ui/utilities/AttributeUtils.ts -----------------------
+// ---- inlined from @aio-ui/utilities.ts -----------------------
 ${body(ATTR)}
 
 // ---- the renderer ----------------------------------------------------------

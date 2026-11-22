@@ -98,7 +98,7 @@ Path C shape (all entries from §2 of the CDN guide; `@v0.2.1` is the current ta
   {
     "imports": {
       "@aio-ui/core": "https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.1/packages/core/dist/index.js",
-      "@aio-ui/core/interface": "https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.1/packages/core/dist/interface.js",
+      "@aio-ui/core": "https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.1/packages/core/dist/interface.js",
       "@aio-ui/form": "https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.1/packages/components/form/dist/index.js",
       "@aio-ui/form/Form.css": "https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.1/packages/components/form/dist/Form.css"
     }

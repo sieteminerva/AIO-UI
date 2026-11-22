@@ -36,7 +36,7 @@ const available = existsSync(join(RELEASE, "registry.json"));
  * Blanks out comments before a specifier scan.
  *
  * `tsc` copies doc blocks into `dist`, and a README-style example inside one —
- * `import { FORM_ADAPTER_DEFINITIONS } from "@aio-ui/form/adapters"` — is documentation,
+ * `import { FORM_ADAPTER_DEFINITIONS } from "@aio-ui/form"` — is documentation,
  * not an import edge. Matching it would demand an import-map key for a file nobody loads
  * through that specifier, which is a false positive, not a finding.
  */
@@ -184,7 +184,7 @@ describe.skipIf(!available)("release artefacts", () => {
       });
 
       it("closes every bare import reachable from the mapped files", () => {
-        // A prefix alone cannot add `.js`: `@aio-ui/utilities/AttributeUtils`
+        // A prefix alone cannot add `.js`: `@aio-ui/utilities`
         // would become `…/dist/AttributeUtils` and 404. Every bare subpath used
         // by a loaded module must therefore have an exact entry.
         //

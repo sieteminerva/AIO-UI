@@ -1,5 +1,5 @@
 // Components/ProductGrid.ts — the list module: builds one card per record.
-import type { iBuilderConfig } from "@aio-ui/core/interface";
+import type { iBuilderConfig } from "@aio-ui/core";
 import { Builder } from "@aio-ui/base";
 import { Skeleton } from "@aio-ui/skeleton";
 import { ProductCardBuilder } from "./ProductCard";

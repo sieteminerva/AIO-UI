@@ -77,7 +77,7 @@ readme       https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.1/README.md
 @aio-ui/form         …@v0.2.1/packages/components/form/dist/index.js
 
 # exact export subpath → <dir>/<real file>
-@aio-ui/form/Input.FormAdapter
+@aio-ui/form
     …@v0.2.1/packages/components/form/dist/Input.FormAdapter.js
 @aio-ui/input/dropdown/module
     …@v0.2.1/packages/components/input/dist/Dropdown/Dropdown.InputModule.js
@@ -169,7 +169,7 @@ step (a new `exports` entry additionally needs a dev-server restart — Vite cac
 <script type="importmap">
   {
     "imports": {
-      "@aio-ui/core/interface": "/aio-ui/packages/core/dist/interface.js",
+      "@aio-ui/core": "/aio-ui/packages/core/dist/interface.js",
       "@aio-ui/code-block": "/aio-ui/packages/components/code-block/dist/index.js",
       "@aio-ui/code-block/CodeBlock.css": "/aio-ui/packages/components/code-block/dist/CodeBlock.css"
     }

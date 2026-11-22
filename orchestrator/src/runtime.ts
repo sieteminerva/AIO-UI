@@ -263,6 +263,22 @@ app
 const requiredComponents = [...new Set(pageDefinitions.flatMap((definition) => definition.requires))];
 await registry.load(requiredComponents);
 
+/**
+ * Generated content links by path (/kontak) — that is how a page is named. The app
+ * routes on the hash, so a path link would leave the document for a URL a static host
+ * does not serve (measured: the router answered #blocked on a generated site). One
+ * delegated listener keeps content authored the natural way and still lands on a route.
+ */
+document.addEventListener("click", (event) => {
+  const target = event.target;
+  const anchor = target instanceof Element ? target.closest("a[href]") : null;
+  if (!anchor) return;
+  const href = anchor.getAttribute("href");
+  if (!href || !href.startsWith("/") || href.startsWith("//")) return;
+  event.preventDefault();
+  location.hash = href;
+});
+
 await app.render();
 `;
 }

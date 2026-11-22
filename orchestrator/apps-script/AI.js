@@ -82,13 +82,20 @@ function callGemini(key, model, prompt) {
   return text;
 }
 
-/** DeepSeek is OpenAI-compatible; `json_object` needs the word "json" in the prompt. */
+/**
+ * DeepSeek is OpenAI-compatible; `json_object` needs the word "json" in the prompt.
+ *
+ * `max_tokens` is explicit: the provider default (4096) cut a five-page preset off
+ * mid-JSON, which the engine could only read as INVALID_SHAPE. 8192 is
+ * `deepseek-chat`'s own ceiling.
+ */
 function callDeepSeek(key, model, prompt) {
   const body = {
     model,
     messages: [{ role: "user", content: prompt }],
     response_format: { type: "json_object" },
     temperature: 0.7,
+    max_tokens: 8192,
   };
   const data = fetchJson("https://api.deepseek.com/chat/completions", {
     method: "post",

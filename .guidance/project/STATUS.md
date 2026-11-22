@@ -4,6 +4,11 @@
 > **only** after the user picks it — never "to orient" (`AGENT_RULES.md` §13). Rewritten each
 > session, newest on top. One card = one line + one pointer.
 >
+> Batch 50 (2026-11-23): **Rajutan app migrated** — `rajutan/` → `examples/rajutan/` (its own repo,
+> app commits `451454e` + `b0d892a`), `src/lib` (vendored pre-monorepo framework) deleted, entry
+> rewired to `AioApp`, `menu`/`accordion` are real builders, icons folded into `src/style.css`.
+> Batch 49 (2026-11-22): **generator b49** — `retry.ts` (issues verbatim, max 2 retries). Batch 48:
+> **generator b48** — `answers.ts` (model map, §8 gates, server-owned base).
 > Batch 47 (2026-11-22): **generator b47** — `mount()` emits `isRoot: true` (host opt-out), the
 > emitted app preloads every required component once before `render()` (fixes the
 > `[FormBuilder] No modules configured` race), engine moved to `orchestrator/src/` and checks to
@@ -16,21 +21,20 @@
 > 76 rows, 39 → 37 packages; `@aio-ui/rating` + `@aio-ui/modules` kit deleted; `v0.2.4` release
 > artefact regenerated locally (76 rows) but **not published**. Batch 43: `v0.2.4` published, mode B.
 
-### 1. Generator — tarball install probe — next
+### 1. Rajutan app — orchestrator wiring — next
 
-The orchestrator band is the active queue. b48/b49 landed `answers.ts` (model map, §8 gates,
-server-owned base) and `retry.ts` (issues fed back verbatim, max 2 retries). Next: prove the
-published tree is consumable — `npm i <tarball>` in a clean bundler folder plus a Node ESM
-import — then `layout.json` inside the release workflow.
+`examples/rajutan/` now runs on the packages: `AioApp` wiring, registry manifests, `menu` +
+`accordion` builders, app-local `editor/color-theme/form-editor`, icons in `src/style.css`.
+Next: replace the wizard's mock submit with the real job — `answersToBase` → `retry` →
+`assemblePreset` → envelope, then render `data.preset`. Open: `#canvas` preview bridge unproven.
+→ `.guidance/project/generator.md` §Next · memory `/memories/session/rajutan-app.md`
+
+### 2. Generator — tarball install probe
+
+b48/b49 landed `answers.ts` and `retry.ts`. Next: prove the published tree is consumable —
+`npm i <tarball>` in a clean bundler folder plus a Node ESM import — then `layout.json` inside
+the release workflow.
 → `.guidance/project/generator.md`
-
-### 2. Optional hardening — one surface generator
-
-A CDN-surface change still edits 37 `package.json` export maps, then `api-map.json`, `catalogue.ts`
-and the registry. The planned `scripts/surface.mjs --write/--check` (same shape as `api.mjs`) is
-unwritten; it would also fail a subpath pointing at a file `files[]` excludes — a silent 404 today.
-Optional, not a blocker.
-→ `packages/TASKS.md` open item 4
 
 ### 3. Release — publish is LAST (deferred by the owner)
 

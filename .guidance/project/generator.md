@@ -1,16 +1,17 @@
 # Generator — status (`orchestrator/**`)
 
-Status: batch b49 complete (answers module + AI retry loop). Gate green:
-`npx vitest run orchestrator` → 135 pass / 1 skip, `npx tsc -p orchestrator/tsconfig.json` clean.
+Status: batch 50 complete (Rajutan app migrated to the packages; its own repo, app commit
+`b0d892a`). Gate green: `npx tsc -p examples/rajutan/tsconfig.json` clean, `npx vite build` ok.
 
 Band rules: `orchestrator/AGENTS.md`. Why: `.guidance/plan-generator.md`.
 Index: `STATUS.md`.
 
 ## Active (max 3)
 
-| #   | Task                  | State | Gate                                                          |
-| --- | --------------------- | ----- | ------------------------------------------------------------- |
-| 1   | Tarball install probe | next  | clean folder: `npm i <tarball>` + a Node ESM import both boot |
+| #   | Task                                  | State | Gate                                                          |
+| --- | ------------------------------------- | ----- | ------------------------------------------------------------- |
+| 1   | App → orchestrator wiring (`answersToBase` → `retry` → envelope) | next | wizard submit replaces `mockBuildResult` with the real job |
+| 2   | Tarball install probe                 | —     | clean folder: `npm i <tarball>` + a Node ESM import both boot |
 
 > The original gate named `gallery` **and `store`**; `store` is still one of the three missing
 > reference apps, so browser gates run on `gallery` until that app exists. `store` was probed in
@@ -18,13 +19,21 @@ Index: `STATUS.md`.
 
 ## Next
 
-- **Tarball install probe** (next): verify `npm i <tarball>` from a clean folder (a bundler
-  project) plus a Node ESM import, so the published tree is proven consumable.
+- **App wiring** (next): `examples/rajutan/` runs on `AioApp` + package builders; its wizard still
+  calls `mockBuildResult()`. Replace it with `answersToBase → retry → assemblePreset → envelope`
+  and render `data.preset`. Also unproven: the `#canvas` preview bridge (RENDER_BUILDER).
+- **Tarball install probe**: verify `npm i <tarball>` from a clean folder (a bundler project) plus a
+  Node ESM import, so the published tree is proven consumable.
 - Regenerate `layout.json` inside the release workflow so the map cannot describe a moved package.
 - **Not this band:** publishing the `releases` branch is the last item in the whole queue
   (STATUS card #3). Do not raise it until the orchestrator work is done or the owner asks.
 
 ## Landed
+
+- **batch 50 (2026-11-23)** — Rajutan app migrated (`examples/rajutan`, own repo): `src/lib`
+  deleted, `AioApp` wiring + registry manifests, `menu`/`accordion` builders, icons in
+  `src/style.css`. Proof: app `tsc` clean, `vite build` ok, nav `.nav`/`data-position=top`,
+  `.accordion` 5 details, all routes render.
 
 - **b49 (2026-11-22)** — `orchestrator/src/retry.ts`: `retry(ask, max = 2)` calls the model through
   an injected `ask(issues)`, rejects with `parseAiContent()`, and re-asks with the issue list

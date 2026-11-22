@@ -29,11 +29,12 @@
 
 ### 1. Rajutan app — orchestrator wiring — next
 
-Batch 55 landed the **client half**: `src/lib/{ask,prompt,job}.ts` (wizard submit runs
-`answersToBase → retryAsync → assemblePreset → envelope`), `#/result` renders `data.preset`,
-and the wizard's `[data-level]` selects now have an address source (`config.address`).
+Batch 55 landed the **client half** (`examples/rajutan` `62e3e3c`, monorepo `6900c9e`):
+`src/lib/{ask,prompt,job}.ts` (wizard submit runs `answersToBase → retryAsync → assemblePreset →
+envelope`), `#/result` renders `data.preset`, and the wizard's `[data-level]` selects now have an
+address source (`config.address`).
 Next: Sheet copy (`action:"sheet"`), repo/deploy, and the `#canvas` preview bridge.
-Open: gemini default 503'd twice; `src/.env` is tracked in the app repo.
+Open: gemini default 503'd twice; use a Test deployment `/exec` — `/dev` is not CORS-callable.
 → `.guidance/project/generator.md` §Next · memory `/memories/session/rajutan-app.md`
 
 ### 2. Generator — tarball install probe

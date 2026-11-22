@@ -7,10 +7,11 @@ Index: `STATUS.md`.
 
 ## Active (max 3)
 
-| #   | Task                                                             | State | Gate                                                          |
-| --- | ---------------------------------------------------------------- | ----- | ------------------------------------------------------------- |
-| 1   | App → orchestrator wiring (`answersToBase` → `retry` → envelope) | next  | client `ask` hits `/exec`, result renders `data.preset`       |
-| 2   | Tarball install probe                                            | —     | clean folder: `npm i <tarball>` + a Node ESM import both boot |
+| #   | Task                                                             | State     | Gate                                                          |
+| --- | ---------------------------------------------------------------- | --------- | ------------------------------------------------------------- |
+| 1   | App → orchestrator wiring (`answersToBase` → `retry` → envelope) | landed b55 | client `ask` hits `/exec`, result renders `data.preset`       |
+| 2   | Tarball install probe                                            | next      | clean folder: `npm i <tarball>` + a Node ESM import both boot |
+| 3   | Stage C (`sheet` copy → repo/deploy → `data[].endpoint`)         | —         | a job returns a sheet url and a live url                      |
 
 > The original gate named `gallery` **and `store`**; `store` is still one of the three missing
 > reference apps, so browser gates run on `gallery` until that app exists. `store` was probed in

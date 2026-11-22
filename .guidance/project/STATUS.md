@@ -4,39 +4,39 @@
 > **only** after the user picks it — never "to orient" (`AGENT_RULES.md` §13). Rewritten each
 > session, newest on top. One card = one line + one pointer.
 >
+> Batch 46 (2026-11-22): **docs synced to the 37-package / 76-row surface** (`5e5be6c`) — root
+> README, both CDN guides, release note, framework docs, handbook, input/form READMEs, catalogue
+> regenerated; `TASK-builder-array.md` + `TASK-releases-branch.md` deleted; `packages/TASKS.md`
+> condensed to the decision record.
 > Batch 45 (2026-11-22): **CDN surface refactor landed** (stages `49b3b45` + `b55b5aa`) — 131 →
 > 76 rows, 39 → 37 packages; `@aio-ui/rating` + `@aio-ui/modules` kit deleted; `v0.2.4` release
-> artefact regenerated locally (76 rows) but **not published**; docs CDN list rewritten.
-> Batch 44 (2026-11-21): `v0.2.4` note carries the full live CDN table and the step is mandatory;
-> `session.mjs end` hang diagnosed. Batch 43: `v0.2.4` published, mode B.
+> artefact regenerated locally (76 rows) but **not published**. Batch 43: `v0.2.4` published, mode B.
 
-### 1. Fix `session.mjs end` + design release automation — next
+### 1. Generator — `mount()` emits `isRoot: true` — next
 
-`session.mjs end` blocks forever because the `node` alias (winpty) makes `isTTY` true, so six
-prompts wait for a human that is not there; proven — non-TTY runs exit in 1 s, winpty blocks until
-Enter is pressed six times. **Open:** make prompts opt-in plus a 2 s escape, print steps 1–9 before
-asking, then co-design `scripts/release-doc.mjs` so every release note generates its CDN table and
-probes it; §2.1 is now **decided** — two aggregate tarballs `@aio-ui/bundle` (umbrella, 39 deps) and
-`@aio-ui/iife` (the four files), because `"name": "@aio-ui"` is rejected by npm as measured.
-→ `docs/framework/TASK-release-automation.md`
+The orchestrator band is the active queue. Emit `isRoot: true` in the generated `mount()` pass and
+probe `gallery` in a browser (one wrapper per block, metadata tree walks, `onDestroy` runs); `store`
+is still missing, so it cannot be the gate yet. Then the rest of the generator queue: release
+workflow, tarball install probe, AI retry loop, `layout.json` inside the workflow.
+→ `.guidance/project/generator.md`
 
-### 2. Release — surface refactor landed, publish pending
-
-`v0.2.4` is live (39 packages, mode B, jsDelivr 200). **Since then** the CDN surface was refactored to
-**76 rows / 37 packages** (`49b3b45` + `b55b5aa`): input modules merged into their builders, `rating`
-and the `modules` kit removed, `core` **does not** absorb the module packages (decided — modules stay
-modular; `dom-renderer` stays standalone). `releases/v0.2.4` (branch worktree) was regenerated locally,
-**not committed/published**. **Open:** publish the `releases` branch when ready; the official release
-still waits for the `store`, `profile`, `blog` reference apps.
-→ `docs/releases/v0.2.4.md` · `docs/live-cdn-repo.md` §9 · `packages/TASKS.md`
-
-### 3. Optional hardening — one surface generator
+### 2. Optional hardening — one surface generator
 
 A CDN-surface change still edits 37 `package.json` export maps, then `api-map.json`, `catalogue.ts`
 and the registry. The planned `scripts/surface.mjs --write/--check` (same shape as `api.mjs`) is
 unwritten; it would also fail a subpath pointing at a file `files[]` excludes — a silent 404 today.
 Optional, not a blocker.
 → `packages/TASKS.md` open item 4
+
+### 3. Release — publish is LAST (deferred by the owner)
+
+`releases/v0.2.4` was regenerated locally after the surface refactor (37 packages / 76 rows) and is
+**not committed or published**; `@v0.2.4` still serves the 39-package tree.
+**Owner decision (2026-11-22): publish sits at the END of the task order — it is worked on only
+after the orchestrator band is finished, or when the owner asks for it. Do not raise it, do not
+propose it, do not ask about publishing before one of those two conditions is true.**
+The official release also waits for the `store`, `profile`, `blog` reference apps.
+→ `docs/releases/v0.2.4.md` · `docs/live-cdn-repo.md` §9
 
 ## Map
 
@@ -51,8 +51,10 @@ Optional, not a blocker.
 
 ## Cross-project
 
+- **Publish is the last item, on the owner's order** (card 3): only after the orchestrator band is
+  finished, or when the owner asks. Never raise it unprompted.
 - Official release waits for the `store`, `profile`, `blog` references (`gallery` exists).
 - Tree, packages and last tag are at **`0.2.4`** (pre-release, tag `v0.2.4` = branch `5eeee94`).
-- `main` is **28 commits ahead of `origin/main`** — the release branch and tag are pushed, the
+- `main` is **29 commits ahead of `origin/main`** — the release branch and tag are pushed, the
   source branch is not. One command when the owner wants it: `git push origin main`.
 - Scratch is `temp/` (deletable whole); `releases/` is the branch worktree, not scratch.

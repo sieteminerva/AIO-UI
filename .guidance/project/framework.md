@@ -17,9 +17,10 @@ Why / stages: `.guidance/plan-framework.md`. Engineering rules:
 - **Release automation** — make `session.mjs end` prompts opt-in (the winpty `node` alias makes
   `isTTY` true and blocks agents), then build `scripts/release-doc.mjs` so every release note
   generates and probes its CDN table. → `docs/framework/TASK-release-automation.md`
-- **Official release** — waits for the `store` / `profile` / `blog` reference apps (`gallery` is
-  the only one). `v0.2.4` itself is live; the post-refactor 37-package tree is regenerated and
-  **not published** (STATUS card #2).
+- **Publish — owner's order: LAST.** The post-refactor 37-package tree is regenerated and not
+  published; it is worked on only after the orchestrator band is finished, or when the owner asks.
+  Do not raise it unprompted (STATUS card #3). The official release also waits for the `store` /
+  `profile` / `blog` reference apps.
 - **Surface generator** — `scripts/surface.mjs --write/--check` to replace 37 hand-edited export
   maps and fail a subpath excluded by `files[]`. Optional, not a blocker. → `packages/TASKS.md`
 - **Proof reports** — `scripts/proof.mjs --report` lists every component package and whether it

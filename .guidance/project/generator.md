@@ -14,10 +14,12 @@ Index: `STATUS.md`.
 
 ## Next
 
-- GitHub release workflow: tag → `verify` → `release.mjs` → `publish-cdn.mjs` → upload assets.
+- Emit `isRoot: true` in the generated `mount()` pass, then probe `gallery` (active #1).
 - Verify `npm i <tarball>` from a clean folder (bundler project) and a Node ESM import.
 - Feed `parsePreset()` / `parseAiContent()` issues back to the model verbatim (retry loop).
 - Regenerate `layout.json` inside the release workflow so the map cannot describe a moved package.
+- **Not this band:** publishing the `releases` branch is the last item in the whole queue
+  (STATUS card #3). Do not raise it until the orchestrator work is done or the owner asks.
 
 ## Landed
 

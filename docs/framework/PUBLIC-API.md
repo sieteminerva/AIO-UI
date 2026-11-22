@@ -5,7 +5,7 @@
 > or a preset.
 >
 > Status: **historical policy record** (0.1.0 → 0.2.1). The audit tables in §2–§3 describe the surface
-> *before* the `0.2.4` refactor; the current surface is **76 rows / 37 packages**, one door per
+> _before_ the `0.2.4` refactor; the current surface is **76 rows / 37 packages**, one door per
 > package — `packages/TASKS.md` and `docs/releases/v0.2.4.md` are the source of truth. The taxonomy
 > in §1 and the alias rule still hold.
 > Last updated 2026-11-22 — §9 is history, not the current map.
@@ -140,7 +140,7 @@ are unreachable by construction, not by discipline.
 | Kind                  | Example                                                                                               | Why it stays                                       |
 | --------------------- | ----------------------------------------------------------------------------------------------------- | -------------------------------------------------- |
 | Types-only contracts  | `@aio-ui/core`, `/node`, `/page`, `/api`, `/events`, `/content`, `/builder`, `/registry`, `/renderer` | one module of types without dragging the runtime   |
-| Capability modules    | `@aio-ui/form/validation-adapter`, `@aio-ui/input/dropdown`, `@aio-ui/id-address`                    | loaded on demand, one per capability               |
+| Capability modules    | `@aio-ui/form/validation-adapter`, `@aio-ui/input/dropdown`, `@aio-ui/id-address`                     | loaded on demand, one per capability               |
 | Adapters              | `@aio-ui/message`, `@aio-ui/table`                                                                    | integrations, not the component                    |
 | Shared type contracts | `@aio-ui/form/FormMessages`, `@aio-ui/form`                                                           | the form ↔ message type cycle, deliberately public |
 | CSS                   | `@aio-ui/form/Form.css`                                                                               | shipped as files                                   |

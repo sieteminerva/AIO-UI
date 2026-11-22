@@ -11,18 +11,24 @@ Index: `STATUS.md`.
 | --- | ---------------------------------------------------------------- | ---------- | ------------------------------------------------------- |
 | 1   | App → orchestrator wiring (`answersToBase` → `retry` → envelope) | landed b55 | client `ask` hits `/exec`, result renders `data.preset` |
 | 2   | Stage C — sheet copy + generated app (`live` url)                | landed b56 | one job returns a sheet url **and** a live url          |
-| 3   | Stage C — repo create + deploy (`data.repo`, real hosting)       | next       | `live` is a hosted url, not a `blob:`                   |
+| 3   | Stage C — repo create + deploy (`data.repo`, real hosting)       | landed b57 | `live` is a hosted url, not a `blob:`                   |
 
-> `data[].endpoint` rides with row 3: it needs the per-site deployment that hosting creates.
+> `clasp push` is **not** a deploy: the Test deployment stays on the version it was created
+> with. After every push run `clasp version "…"` then `clasp update-deployment <id>` (find the
+> id with `clasp deployments`), or the live `/exec` keeps running old code — b56 pushed twice
+> with no effect until b57 updated the deployment.
+> `data[].endpoint` rides with per-site repos: it needs the deployment that hosting creates.
 > The original gate named `gallery` **and `store`**; `store` is still one of the three missing
 > reference apps, so browser gates run on `gallery` until that app exists. `store` was probed in
 > b47 for the form preload race and renders 1 form / 2 fieldset / 7 input with a clean console.
 
 ## Next
 
-- **Stage C, row 3** (next): repo create + deploy, so `live` becomes a hosted URL. Needs an owner
-  decision (account/org + where the token lives); `data[].endpoint` follows the per-site deployment.
-  Sheet copy and the generated-app preview are done (b56) — the preview is a `blob:` for the session.
+- **Per-site repos + `data[].endpoint`** (next): b57 proved the fixed-repo mode; the product mode
+  (one repo per site, named by the preset id) needs a token with **Administration: write**, and
+  `data[].endpoint` needs the per-site CMS deployment that follows hosting.
+- **Auth before any public URL** — `/exec` is still open (`CLIENT_TOKEN` unset, `sw.js` never
+  registered). Decide Stage A (shared token) vs Stage C (Google `id_token`).
 - **Tarball install probe**: verify `npm i <tarball>` from a clean folder (a bundler project) plus a
   Node ESM import, so the published tree is proven consumable.
 - Regenerate `layout.json` inside the release workflow so the map cannot describe a moved package.
@@ -32,6 +38,15 @@ Index: `STATUS.md`.
   (STATUS card #3). Do not raise it until the orchestrator work is done or the owner asks.
 
 ## Landed
+
+- **batch 57 (2026-11-23)** — **publish to GitHub Pages**: `orchestrator/apps-script/Deploy.js`
+  (`action:"deploy"`) commits `index.html` + `app.js` through the Contents API, enables Pages once
+  and answers `{repo, live}`; `GITHUB_SITE_REPO` takes a full URL (`…/test_site_rajutan.git`) and
+  enables a fixed-repo test mode that only needs Contents+Pages write. The client
+  (`ask.deploySite`, `job.ts`) replaces the session `blob:` with the hosted url and fills
+  `data.repo`. Proof: `https://sieteminerva.github.io/test_site_rajutan/` answered 200, served
+  `app.js`, rendered `Kriya Nusantara` (fixture) and then `Kriya B57` (real job, 1 model call);
+  `#/result` showed three assets — Live, Google Sheets, GitHub — plus 5 preset rows.
 
 - **batch 56 (2026-11-23)** — Rajutan **generated app**: `src/lib/app.ts` (`plan → emitPlan →
 emitRuntime`, layout read from the CDN tag, `app.js` inlined into a `blob:` document) and

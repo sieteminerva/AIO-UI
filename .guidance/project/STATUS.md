@@ -27,16 +27,16 @@
 > 76 rows, 39 → 37 packages; `@aio-ui/rating` + `@aio-ui/modules` kit deleted; `v0.2.4` release
 > artefact regenerated locally (76 rows) but **not published**. Batch 43: `v0.2.4` published, mode B.
 
-### 1. Rajutan app — generated site — next
+### 1. Rajutan app — published site — next
 
-Batch 56 landed the **generated app** (`examples/rajutan` `0d6c691`, monorepo `aad891d`):
-`runJob` returns a real Sheet (`action:"sheet"`) **and** a live url — `src/lib/app.ts` runs
-`plan → emitPlan → emitRuntime` over the CDN import map and opens the result as a `blob:` document;
-`runtime.ts` now maps content links written by path (`/portofolio`) to hashes instead of leaving the
-document. Proof: one job → sheet `uji-b56-live` + live url; generated site booted (hero + 3 sections)
-and navigated `#home → #portofolio`.
-Next: repo create + deploy so `live` is a hosted url, then `data[].endpoint`.
-Open: `/exec` is unauthenticated (`CLIENT_TOKEN` unset, `public/sw.js` never registered); gemini 503s.
+Batch 57 landed **hosting**: `action:"deploy"` (`orchestrator/apps-script/Deploy.js`) commits the
+emitted files to GitHub and enables Pages, so a job returns a **hosted** `data.live` and a
+`data.repo`. Proof: real job (deepseek, 1 model call) → sheet `kriya-b57` +
+`https://sieteminerva.github.io/test_site_rajutan/` serving `Kriya B57`; `#/result` shows Live,
+Sheets and GitHub rows. Also proved: the Test deployment was pinned (`@2`) and every earlier `push`
+was inert until `clasp update-deployment` moved it to `@4`.
+Next: per-site repos (token with Administration) + `data[].endpoint`; then auth.
+Open: `/exec` is unauthenticated (`CLIENT_TOKEN` unset, `public/sw.js` never registered).
 → `.guidance/project/generator.md` §Next · memory `/memories/session/rajutan-app.md`
 
 ### 2. Generator — tarball install probe

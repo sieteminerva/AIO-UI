@@ -27,14 +27,16 @@
 > 76 rows, 39 → 37 packages; `@aio-ui/rating` + `@aio-ui/modules` kit deleted; `v0.2.4` release
 > artefact regenerated locally (76 rows) but **not published**. Batch 43: `v0.2.4` published, mode B.
 
-### 1. Rajutan app — orchestrator wiring — next
+### 1. Rajutan app — generated site — next
 
-Batch 55 landed the **client half** (`examples/rajutan` `62e3e3c`, monorepo `6900c9e`):
-`src/lib/{ask,prompt,job}.ts` (wizard submit runs `answersToBase → retryAsync → assemblePreset →
-envelope`), `#/result` renders `data.preset`, and the wizard's `[data-level]` selects now have an
-address source (`config.address`).
-Next: Sheet copy (`action:"sheet"`), repo/deploy, and the `#canvas` preview bridge.
-Open: gemini default 503'd twice; use a Test deployment `/exec` — `/dev` is not CORS-callable.
+Batch 56 landed the **generated app** (`examples/rajutan` `0d6c691`, monorepo `aad891d`):
+`runJob` returns a real Sheet (`action:"sheet"`) **and** a live url — `src/lib/app.ts` runs
+`plan → emitPlan → emitRuntime` over the CDN import map and opens the result as a `blob:` document;
+`runtime.ts` now maps content links written by path (`/portofolio`) to hashes instead of leaving the
+document. Proof: one job → sheet `uji-b56-live` + live url; generated site booted (hero + 3 sections)
+and navigated `#home → #portofolio`.
+Next: repo create + deploy so `live` is a hosted url, then `data[].endpoint`.
+Open: `/exec` is unauthenticated (`CLIENT_TOKEN` unset, `public/sw.js` never registered); gemini 503s.
 → `.guidance/project/generator.md` §Next · memory `/memories/session/rajutan-app.md`
 
 ### 2. Generator — tarball install probe

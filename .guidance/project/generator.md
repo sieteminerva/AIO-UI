@@ -7,30 +7,42 @@ Index: `STATUS.md`.
 
 ## Active (max 3)
 
-| #   | Task                                                             | State     | Gate                                                          |
-| --- | ---------------------------------------------------------------- | --------- | ------------------------------------------------------------- |
-| 1   | App → orchestrator wiring (`answersToBase` → `retry` → envelope) | landed b55 | client `ask` hits `/exec`, result renders `data.preset`       |
-| 2   | Tarball install probe                                            | next      | clean folder: `npm i <tarball>` + a Node ESM import both boot |
-| 3   | Stage C (`sheet` copy → repo/deploy → `data[].endpoint`)         | —         | a job returns a sheet url and a live url                      |
+| #   | Task                                                          | State           | Gate                                                          |
+| --- | ------------------------------------------------------------- | --------------- | ------------------------------------------------------------- |
+| 1   | App → orchestrator wiring (`answersToBase` → `retry` → envelope) | landed b55      | client `ask` hits `/exec`, result renders `data.preset`      |
+| 2   | Stage C — sheet copy + generated app (`live` url)                | landed b56      | one job returns a sheet url **and** a live url                |
+| 3   | Stage C — repo create + deploy (`data.repo`, real hosting)       | next            | `live` is a hosted url, not a `blob:`                         |
 
+> `data[].endpoint` rides with row 3: it needs the per-site deployment that hosting creates.
 > The original gate named `gallery` **and `store`**; `store` is still one of the three missing
 > reference apps, so browser gates run on `gallery` until that app exists. `store` was probed in
 > b47 for the form preload race and renders 1 form / 2 fieldset / 7 input with a clean console.
 
 ## Next
 
-- **Stage C** (next): the client half landed in b55, so what remains is everything the job
-  still fakes — Sheet copy (`action:"sheet"`), repo create, deploy, and `data[].endpoint`.
-  Also unproven: the `#canvas` preview bridge (RENDER_BUILDER). Open: `build`/`result` sit outside
-  the bar, so no entry is marked `is-active` on them; `src/.env` is tracked in the app repo.
+- **Stage C, row 3** (next): repo create + deploy, so `live` becomes a hosted URL. Needs an owner
+  decision (account/org + where the token lives); `data[].endpoint` follows the per-site deployment.
+  Sheet copy and the generated-app preview are done (b56) — the preview is a `blob:` for the session.
 - **Tarball install probe**: verify `npm i <tarball>` from a clean folder (a bundler project) plus a
   Node ESM import, so the published tree is proven consumable.
 - Regenerate `layout.json` inside the release workflow so the map cannot describe a moved package.
+  Note: the repo's `layout.json` (37 packages) and the published `v0.2.4` tag's (39) are **different
+  trees** — the app therefore reads `layout.json` from the CDN tag it points at (b56).
 - **Not this band:** publishing the `releases` branch is the last item in the whole queue
   (STATUS card #3). Do not raise it until the orchestrator work is done or the owner asks.
 
 ## Landed
 
+- **batch 56 (2026-11-23)** — Rajutan **generated app**: `src/lib/app.ts` (`plan → emitPlan →
+  emitRuntime`, layout read from the CDN tag, `app.js` inlined into a `blob:` document) and
+  `runJob` now fills `data.live`; `ask.ts` gained `copySheet()` (`action:"sheet"`) and `runJob` fills
+  `data.sheet`, reporting `status:"partial"` when a side effect fails. Proof: one real job returned
+  sheet `uji-b56-live` **and** a live `blob:` url; the generated site booted from the CDN import map
+  (home heading + hero + 3 sections) and routed `#portofolio` on click. Found and fixed: emitted
+  content links by path (`/portofolio`) left the document (`#blocked`), so `runtime.ts` now maps
+  those clicks to hashes. `AI.js` DeepSeek gained `max_tokens: 8192` (default cut a preset mid-JSON)
+  and was `clasp push`ed. Engine 139 pass / 1 skip; app `tsc` + `vite build` clean; `npm run check`
+  clean.
 - **batch 55 (2026-11-23)** — Rajutan **client half** (`examples/rajutan`): `src/lib/{ask,prompt,job}.ts`
   run `answersToBase → retryAsync → assemblePreset` and build the `{status, meta, data}` envelope;
   the wizard submits the job (no more `mockBuildResult()`), `#/result` renders `data.preset` +

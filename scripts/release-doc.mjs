@@ -77,9 +77,7 @@ const bundleFiles = registry.bundle?.files ?? [];
 
 /** Pads a column to the width of its widest cell, the shape `prettier` writes. */
 function table(headers, rows) {
-  const widths = headers.map((header, column) =>
-    Math.max(header.length, ...rows.map((row) => row[column].length)),
-  );
+  const widths = headers.map((header, column) => Math.max(header.length, ...rows.map((row) => row[column].length)));
   const line = (cells) => `| ${cells.map((cell, column) => cell.padEnd(widths[column])).join(" | ")} |`;
   const rule = `| ${widths.map((width) => "-".repeat(width)).join(" | ")} |`;
   return [line(headers), rule, ...rows.map(line)].join("\n");
@@ -139,11 +137,20 @@ function replaceBlock(doc, name, content) {
 
 /** The package's main stylesheet: the CSS subpath named after the package, else the first one. */
 function pickStylesheet(name, entry) {
-  const keys = Object.keys(entry.subpaths ?? {}).filter((key) => key.endsWith(".css")).sort();
+  const keys = Object.keys(entry.subpaths ?? {})
+    .filter((key) => key.endsWith(".css"))
+    .sort();
   if (!keys.length) return undefined;
-  const short = name.slice(name.lastIndexOf("/") + 1).replace(/-/g, "").toLowerCase();
+  const short = name
+    .slice(name.lastIndexOf("/") + 1)
+    .replace(/-/g, "")
+    .toLowerCase();
   const match = keys.find((key) => {
-    const base = key.slice(key.lastIndexOf("/") + 1).replace(/\.css$/, "").replace(/-/g, "").toLowerCase();
+    const base = key
+      .slice(key.lastIndexOf("/") + 1)
+      .replace(/\.css$/, "")
+      .replace(/-/g, "")
+      .toLowerCase();
     return base === short;
   });
   return match ?? keys[0];
@@ -236,8 +243,10 @@ if (probe) {
 } else {
   const artefactRows = bundleFiles.length;
   if (!apply) {
-    console.log(`[doc] v${targetVersion} · ${counts.packages} package(s) · ${counts.entries} row(s) ` +
-      `(${counts.exact} exact + ${counts.wildcard} wildcard) · ${artefactRows} bundled-pair row(s)`);
+    console.log(
+      `[doc] v${targetVersion} · ${counts.packages} package(s) · ${counts.entries} row(s) ` +
+        `(${counts.exact} exact + ${counts.wildcard} wildcard) · ${artefactRows} bundled-pair row(s)`,
+    );
     console.log(`\n<!-- artefacts:block -->\n${artefactsTable()}\n`);
     console.log(`<!-- cdn-paths:block -->\n${cdnPathsTable()}`);
     console.log(`\n[doc] dry run — pass --apply to rewrite ${notePath}`);
@@ -251,7 +260,9 @@ if (probe) {
     doc = replaceBlock(doc, "cdn-paths", cdnPathsTable());
     writeFileSync(join(ROOT, notePath), doc, "utf8");
     console.log(`[doc] rewrote artefacts + cdn-paths blocks in ${notePath}`);
-    console.log(`[doc] ${counts.packages} package(s) · ${counts.entries} row(s) ` +
-      `(${counts.exact} exact + ${counts.wildcard} wildcard) · ${artefactRows} bundled-pair row(s)`);
+    console.log(
+      `[doc] ${counts.packages} package(s) · ${counts.entries} row(s) ` +
+        `(${counts.exact} exact + ${counts.wildcard} wildcard) · ${artefactRows} bundled-pair row(s)`,
+    );
   }
 }

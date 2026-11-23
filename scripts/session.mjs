@@ -297,7 +297,7 @@ async function end(f, rl) {
   const step = (n, title, state) => say(`${String(n).padStart(2)}. ${title} — ${state}`);
   // A field whose answer comes from a prompt shows `awaiting answer`; with no prompt (or a flag)
   // the step line reflects the flag, or `NOT RECORDED` when it will stay empty.
-  const pending = (given) => (given ?? (rl ? "awaiting answer" : "NOT RECORDED"));
+  const pending = (given) => given ?? (rl ? "awaiting answer" : "NOT RECORDED");
   const gateFlag = valueOf("--gate");
   const docFlag = valueOf("--doc");
   const taskFlag = valueOf("--task");

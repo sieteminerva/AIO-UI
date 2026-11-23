@@ -5,10 +5,15 @@ Prior art: `packages/TASKS.md`, `docs/live-cdn-repo.md` §9.
 
 **Status:** b60–b62 landed (2026-11-24). Scope was three batches: **b60** job 1 (§1), **b61**
 `release-doc.mjs` (§2), **b62** `## install` blocks in every package README (§3) — all committed.
-Still open: §2.1 (aggregate tarballs, behind Q5/Q6), the publish step (LAST, card 3), and the
-per-package release question below.
-Owner decision 2026-11-24 supersedes Q7: **the CDN stays versioned** (`@v<x>`), no versionless
-alias — breaking changes are expected, so a silent moving alias is the bigger risk.
+**b64** (2026-11-24) regenerated the local `releases/v0.2.4` artefacts from the 37-package tree
+(was 39): 37 tarballs + 4 loose bundle files, `orchestrator/__test__/release.test.ts` 14/14 green.
+Nothing published — card 3 still rules.
+
+Owner decisions 2026-11-24: **Q7 reversed** — the CDN stays versioned (`@v<x>`), no versionless
+alias, because breaking changes are expected and a silent moving alias is the bigger risk;
+**Q5 parked** — aggregate tarballs (`@aio-ui/bundle`, `@aio-ui/iife`) are not designed now;
+**Q6 answered** — versioned filenames only, no root `.tgz` alias when they land;
+**Option A accepted for design** — per-package versions under one global tag (§Per-package releases).
 
 ## 1. `session.mjs end` blocks forever under the winpty alias
 
@@ -202,12 +207,14 @@ Shape — idempotent, marker-bounded, one block per README:
 
 ```md
 <!-- install:begin -->
+
 ## Install
 
     npm install <registry.packages[name].tarball>
 
 CDN (ES module, no build step) — `<registry.base><entry.dir>/<entry.subpaths["."]>`
 Stylesheet — `<registry.base><entry.dir>/<stylesheet subpath>`
+
 <!-- install:end -->
 ```
 
@@ -236,27 +243,85 @@ pipeline allows, and what it does not:
   on the `releases` branch (or as a GitHub Release asset). `npm install <tarball-url>` consumers
   get the patch; no CDN tag moves.
 - **Does not work — moving one package inside an old CDN tag.** jsDelivr tags the whole repo and
-  tags are immutable (`publish-cdn.mjs`): a patched package needs a *new* tag, and `@v<x>` serves
+  tags are immutable (`publish-cdn.mjs`): a patched package needs a _new_ tag, and `@v<x>` serves
   the whole tree. The versionless alias was cancelled (Q7), so consumers on `@v0.2.4` never move.
 - **Needs a structural change — true per-package semver.** `version.mjs` fixes one number for the
   family ("34 numbers that must agree"), `release.mjs` Gate 1 requires every package to equal
-  `--version`, and mode-B `dependencies` pin a *specific* tarball version, so patching a package
+  `--version`, and mode-B `dependencies` pin a _specific_ tarball version, so patching a package
   others depend on requires repacking those dependents (or switching edges to ranges).
   `registry.base` is a single tag; per-package tags would mean a per-package base and import map.
 
-Proposal (Option A, for the owner): keep **one monotonically increasing global CDN tag** per
-release, but let `registry.packages[name].version` differ from the tag. A patch release bumps only
-the changed package(s), repacks all packages into the new `v<x>/` folder (cheap, mode B), and
+### Option A — accepted for design (2026-11-24), not yet built
+
+One monotonically increasing global **tag** per release; a **package version that may differ from
+it**. A patch release bumps only the changed package(s), writes a new `v<tag>/` folder, and
 `release.mjs` / `version.mjs` relax "every package == global version" to "changed ≥ previous".
-Effect: real per-package version numbers and tarball installs, with one unavoidable global tag
-bump. Option B (a tag per package, e.g. `input-v0.2.5`) keeps the old tags but costs a per-package
-base, import map and publish loop — not recommended unless a CDN user must pin a single package.
+Option B (a tag per package, e.g. `input-v0.2.5`) stays rejected: a per-package base means a
+per-package import map and publish loop for a case nobody has asked for.
+
+**Rules**
+
+- `registry.version` keeps meaning the **tag**; `registry.packages[name].version` is the new
+  per-package field (today it does not exist — the registry only names `dir`, `subpaths`,
+  `tarball`, `integrity`, `size`).
+- Tarball **filename** carries the package version (`aio-ui-input-0.2.5.tgz`); the **folder**
+  carries the tag (`v0.2.5/`).
+- Internal edges are already rewritten to the sibling's own version (`release.mjs`'s
+  `tarballUrl(dep, depVersion)`), so a patched package points at its siblings correctly with no
+  change to that code.
+- A package whose version did not change is **not repacked**: its previous bytes are copied into
+  the new folder, so one version keeps exactly one byte identity and one checksum. Repacking
+  would produce the same version twice with different bytes (mtime, zlib) — an integrity trap.
+- The bump is **declared** (`version.mjs --bump <name>`); a forgotten bump is caught by
+  `release.mjs`, which repacks nothing extra but compares the plan against the previous registry:
+  a package whose version did not move but whose bytes would differ is a **warning**, and
+  `--strict` turns it into an error.
+
+**Invariants `version.mjs --check` asserts** (against the newest `releases/v*/registry.json` it can
+find, so a clean checkout without artefacts skips them and says so):
+
+1. every `packages[x].version` ≤ the root tag (semver, pre-release allowed);
+2. no package version decreased against the previous registry;
+3. every internal range on `@aio-ui/*` equals `^<that package's own version>`;
+4. the tag is greater than the previous tag.
+
+**Changes**
+
+| File                           | Change                                                                                                                                                                                                                                                                                                                                                                                        |
+| ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `scripts/version.mjs`          | single-version drift stops being an error; `--check` loads the newest released registry and asserts the four invariants; `--bump <name…> [--level patch\|minor\|major]` bumps those packages and follows their internal ranges; `--tag <x.y.z>` writes only the root manifest version.                                                                                                          |
+| `scripts/release.mjs`          | Gate 1 becomes per-package (version ≤ tag, ≥ previous); `tarballName()` takes the package version; `registry.packages[name].version` and `registry.mode` (`"A"`/`"B"`, today absent) are recorded; unchanged packages copy the previous tarball instead of repacking; the checksum-vs-version drift report runs before the size gates.                                                       |
+| `scripts/publish-releases.mjs` | logic unchanged (it derives filenames from `entry.tarball`), but the closing `verify:` line stops hardcoding `aio-ui-form-<tag>.tgz` and prints a real asset name.                                                                                                                                                                                                                             |
+| `scripts/publish-release-assets.mjs` | the release-note install example derives a real asset name from the registry instead of `${version}`.                                                                                                                                                                                                                                                                                       |
+| `scripts/publish-cdn.mjs`      | no change: it unpacks by `entry.tarball.split("/").pop()` and the branch README already prints the asset name.                                                                                                                                                                                                                                                                              |
+| `scripts/release-doc.mjs`      | `--readme` already prints `entry.tarball`; print the package version beside the package name so a reader sees `0.2.4` while the tag is `0.2.5`.                                                                                                                                                                                                                                                |
+| `orchestrator/__test__/release.test.ts` | add: the folder name equals the tag while filenames carry package versions; an unchanged package's bytes equal the previous folder's.                                                                                                                                                                                                                                              |
+| `docs/live-cdn-repo.md` §9     | chain gains `--bump` and `--strict`, plus one line stating "one tag per release, package versions may differ".                                                                                                                                                                                                                                                                          |
+
+**Downsides, stated**
+
+- Every release still copies the whole tree into a new tag, because jsDelivr resolves per tag;
+  unchanged bytes are duplicated in git. The 3 MB gzip budget and `--allow-growth` stay the guard.
+- The same package version can be reachable from two folders. Reuse-copy makes the bytes identical,
+  so integrity does not depend on which URL a consumer picked — but the URL count still grows.
+- Two consumers pinning different sibling versions of the same package still get a second nested
+  copy under `node_modules`; mode B already behaves that way today.
+
+**Done when**
+
+- `version.mjs --bump input --apply` moves only `@aio-ui/input`, with no tag change, and
+  `version:check` stays green.
+- `release.mjs --version 0.2.5 --apply --strict` writes a folder holding `aio-ui-input-0.2.5.tgz`
+  beside `aio-ui-form-0.2.4.tgz`, records both versions, and passes strict because the unchanged
+  bytes match `v0.2.4/`.
+- A consumer installing `aio-ui-input-0.2.5.tgz` from `v0.2.5/` resolves its siblings to the
+  copied 0.2.4 tarballs in the same folder.
 
 ### Release blockers to clear before the next publish
 
-1. Stale committed registry: `releases/v0.2.4/registry.json` is the 39-package tree, the workspace
-   is 37 → `orchestrator/__test__/release.test.ts` fails 9 tests and `npm run verify` is not green.
-   Regenerate with `release.mjs --version 0.2.4 --apply` (writes the `releases` worktree, not `main`).
+1. ~~Stale committed registry~~ — **cleared locally 2026-11-24 (b64):** `releases/v0.2.4` was
+   regenerated from the 37-package tree (37 `.tgz` + 4 loose files); `release.test.ts` is 14/14.
+   The worktree is **not committed**: committing the folder is the publish step (card 3).
 2. Aggregate tarballs `@aio-ui/bundle` / `@aio-ui/iife` (§2.1) are not built; the bundled pair is
    loose files only, so `npm install` of the pair is impossible and the "Bundled pair" block has no
    tarball rows.
@@ -271,30 +336,37 @@ base, import map and publish loop — not recommended unless a CDN user must pin
 
 ## Next — start here (cold)
 
-1. **b60** — `scripts/session.mjs`: `openPrompt()` (:164) becomes opt-in through `--interactive`
-   or `AIO_SESSION_INTERACTIVE=1`; `end()` prints steps 1–9 before the first `ask()`; `finally`
-   runs `rl?.close(); process.stdin.pause();`. Accept the four probes in §1; document the flag in
-   the `scripts/README.md` row.
-2. **b61** — `scripts/release-doc.mjs` + `templates/release/note.md.tpl`: write only the blocks
-   between `<!-- cdn-paths:begin/end -->` and `<!-- artefacts:begin/end -->` in
-   `docs/releases/v0.2.4.md` (markers placed by hand once); must reproduce the 76 package rows and
-   the four _Bundled pair_ rows byte-identically.
-3. **b62** — `release-doc.mjs --readme` writes the `install:begin/end` block of §3 into every
-   `packages/**/README.md`, then `node scripts/catalogue.mjs --apply`.
-4. **Probe** — `npm run check:live` (separate gate, callable any time) fetches `registry.json`, the
-   four loose bundle files, one package tarball, and both aggregate tarballs once §2.1 lands.
-5. **Parked** — §2.1 aggregate tarballs (`@aio-ui/bundle`, `@aio-ui/iife`) wait for Q5/Q6.
+1. **b65** — `scripts/version.mjs`: `--bump <name…> [--level …]`, `--tag <x.y.z>`, and `--check`
+   against the newest released registry (invariants 1–4 of Option A). Gate: a synthetic previous
+   registry + a temp package tree, no `releases/` write.
+2. **b66** — `scripts/release.mjs`: package-version tarball names, `registry.packages[name].version`,
+   `registry.mode`, reuse-copy for unchanged packages, checksum-vs-version report + `--strict`.
+   Gate: `release.mjs --version 0.2.4 --apply` still reproduces the b64 bytes for every package
+   whose version did not move.
+3. **b67** — the followers: `publish-release-assets.mjs` example, `publish-releases.mjs` verify
+   line, `release-doc.mjs --readme` prints the package version, the two new `release.test.ts`
+   assertions, `docs/live-cdn-repo.md` §9.
+4. **Parked (owner, 2026-11-24)** — §2.1 aggregate tarballs; Q6 answered "versioned filenames
+   only", so when they land there is no root `.tgz` alias.
+5. **LAST** — publish (`publish-releases` → `publish-cdn` → `publish-assets`), only on the owner's
+   word (card 3).
+
+> b60–b62 are done (§1–§3 above); their acceptance probes live there, not here.
 
 ## Done =
 
 - `session.mjs end` runs to completion with no human input, proven by the four acceptance probes.
 - `release-doc.mjs` regenerates `docs/releases/v0.2.4.md`'s CDN section byte-identically (same 76
   package rows + 4 loose bundle rows), and `--probe` reports 200 for the registry, the four loose
-  files, both aggregate tarballs and one package tarball.
+  files and one package tarball.
 - Every `packages/**/README.md` carries an `install:begin/end` block naming its tarball and its
   CDN paths, `node scripts/catalogue.mjs --check` is green after the rewrite, and a second
   `--apply` changes no byte.
-- A scratch consumer run of `npm i <url>/aio-ui-bundle-0.2.4.tgz` produces
-  `node_modules/@aio-ui/bundle`, `node_modules/@aio-ui/iife` and the 37 hoisted packages.
+- **Per-package (Option A):** one package can be patched and installed without moving any other
+  package's version; `release.mjs --strict` is green because unchanged bytes were copied, not
+  repacked; `version:check` fails on a decreasing version, a package newer than the tag, or a
+  range that disagrees with its own version.
 - `docs/live-cdn-repo.md` §9's release-note line points at the generator instead of a `node -e`.
+- **Not** part of done: aggregate tarballs (§2.1), parked by the owner 2026-11-24 — a scratch
+  `npm i aio-ui-bundle-<x>.tgz` check is deferred with them.
 - This file is deleted and the logbook card drops.

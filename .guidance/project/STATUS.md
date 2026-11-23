@@ -45,9 +45,12 @@ steps print before the first ask and stdin is released, so the winpty hang is go
 block (tarball + CDN URL + stylesheet) into 29 package READMEs, catalogue regenerated.
 **Owner decision (2026-11-24): the CDN stays versioned** — every generated URL copies
 `registry.base` verbatim; the versionless alias is cancelled.
-Open: aggregate tarballs (`@aio-ui/bundle`, `@aio-ui/iife`) parked behind Q5/Q6; publish is still
-LAST (card 3); `orchestrator/__test__/release.test.ts` stays red on the stale 39-package committed
-registry until the 37 tree is published.
+**b64 (2026-11-24):** local `releases/v0.2.4` regenerated to the 37-package tree (37 `.tgz` + 4
+loose files, `release.test.ts` 14/14 green, nothing published); per-package release **Option A
+accepted for design** with the change table in the task doc; Q5 aggregates parked, Q6 = versioned
+filenames only.
+Open: aggregate tarballs (`@aio-ui/bundle`, `@aio-ui/iife`) parked behind Q5; implement Option A
+(b65 `version.mjs` → b66 `release.mjs` → b67 followers); publish is still LAST (card 3).
 → `docs/framework/TASK-release-automation.md` §Next · `.guidance/project/framework.md` §Next
 
 ### 2. Rajutan app — published site

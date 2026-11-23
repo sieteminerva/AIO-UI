@@ -5,16 +5,24 @@
  * Turns a built workspace into the artefacts a generated site needs, without
  * publishing to npm:
  *
- *   releases/v<version>/              (inside the orphan-branch worktree)
- *     aio-ui-<name>-<version>.tgz   one per package   (installable by URL)
- *     registry.json                 specifier → tarball + integrity + subpaths
- *     layout.json                   package → dir/entry/stylesRoot/bare
- *     checksums.txt                 sha256 per tarball
+ *   releases/v<tag>/                  (inside the orphan-branch worktree)
+ *     aio-ui-<name>-<x.y.z>.tgz       one per package, named by the *package* version
+ *     registry.json                   specifier → tarball + integrity + subpaths + version
+ *     layout.json                     package → dir/entry/stylesRoot/bare
+ *     checksums.txt                   sha256 per tarball
  *
  * Usage:
  *   node scripts/release.mjs --version 0.1.0            # plan only
  *   node scripts/release.mjs --version 0.1.0 --apply    # write artefacts (mode B by default)
  *   node scripts/release.mjs --version 0.1.0 --apply --bundle   # mode A: self-contained
+ *   node scripts/release.mjs --version 0.1.0 --apply --strict   # an unbumped change fails
+ *   node scripts/release.mjs --version 0.1.0 --previous 0.0.9   # compare against a chosen tag
+ *
+ * One **tag** per release, one **version per package** (Option A, 2026-11-24). A package whose
+ * version did not move is not repacked: its bytes are copied from the previous folder, so one
+ * version keeps exactly one identity. A package whose source changed without a bump is reported
+ * (and, with `--strict`, refused). The detector is a `tree` hash of the shipped files, kept in
+ * the registry; `package.json` and `README.md` are excluded because both are generated.
  *
  * Two modes, same graph:
  *
@@ -26,6 +34,9 @@
  *
  * Both strip the `development` export condition: the tarball is a published artefact.
  *
+ * Every URL is built from the tag (`releases/v<tag>/`) plus the *package* version in the file
+ * name, which is why two packages in one folder can legitimately carry different numbers.
+ *
  * The output directory is the `releases` worktree (`./releases`, see
  * scripts/releases-worktree.mjs), not a scratch folder: the tarball a consumer
  * installs is a file in that checkout, and `publish-releases.mjs --apply` commits
@@ -33,10 +44,11 @@
  */
 import { execSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { copyFileSync, cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { copyFileSync, cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { join, relative, sep } from "node:path";
 import { gzipSync } from "node:zlib";
 import { ensureWorktree } from "./releases-worktree.mjs";
+import { compare, parse } from "./semver.mjs";
 
 const ROOT = process.cwd();
 const SCOPE = "@aio-ui/";
@@ -59,6 +71,8 @@ const valueOf = (name) => {
 const version = valueOf("--version");
 const apply = flag("--apply");
 const bundle = flag("--bundle");
+const strict = flag("--strict");
+const previousArg = valueOf("--previous");
 const allowGrowth = flag("--allow-growth");
 const repository = process.env.GITHUB_REPOSITORY || "sieteminerva/AIO-UI";
 const outDir = version ? join(ROOT, "releases", `v${version}`) : null;
@@ -110,15 +124,21 @@ function packageDirs() {
 const packages = packageDirs()
   .map((dir) => ({ dir, manifest: JSON.parse(readFileSync(join(dir, "package.json"), "utf8")) }))
   .filter((entry) => String(entry.manifest.name ?? "").startsWith(SCOPE));
+const byName = new Map(packages.map((entry) => [entry.manifest.name, entry]));
 
-// Gate 1: every package carries the released version, otherwise the tarballs
-// and the registry would disagree with their own manifests.
-const mismatched = packages.filter((entry) => entry.manifest.version !== version);
-if (mismatched.length) {
-  console.error(
-    `[release] ${mismatched.length} package(s) are not at ${version}. ` +
-      `Run: node scripts/version.mjs --apply --version ${version}`,
-  );
+// Gate 1 (per-package): every version is semver, and no package may outrun the tag. The tag is
+// the next release; a package above it would be published under a number it does not own.
+const invalid = packages.filter((entry) => !parse(entry.manifest.version));
+if (invalid.length) {
+  console.error(`[release] ${invalid.length} package(s) have no semver version:`);
+  invalid.slice(0, 5).forEach((entry) => console.error(`  - ${entry.manifest.name}@${entry.manifest.version}`));
+  process.exit(1);
+}
+const ahead = packages.filter((entry) => compare(entry.manifest.version, version) > 0);
+if (ahead.length) {
+  console.error(`[release] ${ahead.length} package(s) are newer than the tag ${version}:`);
+  ahead.slice(0, 5).forEach((entry) => console.error(`  - ${entry.manifest.name}@${entry.manifest.version}`));
+  console.error(`[release] raise the tag: node scripts/version.mjs --apply --tag <x.y.z>`);
   process.exit(1);
 }
 
@@ -166,11 +186,137 @@ function subpathsOf(manifest, dir) {
 
 console.log(`[release] target v${version} · ${packages.length} package(s) · repo ${repository}`);
 
-if (!apply) {
-  for (const entry of packages.slice(0, 5)) {
-    console.log(`  ${entry.manifest.name} → ${relative(ROOT, entry.dir)}`);
+/** The newest released folder, or the one named by `--previous <tag|path>`. */
+function loadPrevious() {
+  const read = (dir) => JSON.parse(readFileSync(join(dir, "registry.json"), "utf8"));
+  if (previousArg) {
+    const dir = existsSync(join(ROOT, previousArg)) ? join(ROOT, previousArg) : join(ROOT, "releases", `v${previousArg}`);
+    if (!existsSync(join(dir, "registry.json"))) {
+      console.error(`[release] --previous ${previousArg}: no registry.json at ${relative(ROOT, dir)}`);
+      process.exit(1);
+    }
+    return { tag: previousArg.replace(/^v/, ""), dir, registry: read(dir) };
   }
-  if (packages.length > 5) console.log(`  … ${packages.length - 5} more`);
+  const root = join(ROOT, "releases");
+  if (!existsSync(root)) return undefined;
+  const folder = readdirSync(root, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory() && parse(entry.name.slice(1)) && entry.name.slice(1) !== version)
+    .filter((entry) => existsSync(join(root, entry.name, "registry.json")))
+    .sort((one, two) => compare(one.name.slice(1), two.name.slice(1)))
+    .at(-1);
+  if (!folder) return undefined;
+  const tag = folder.name.slice(1);
+  return { tag, dir: join(root, folder.name), registry: read(join(root, folder.name)) };
+}
+const previous = loadPrevious();
+if (previous && parse(previous.tag) && compare(version, previous.tag) < 0) {
+  console.error(`[release] v${version} is older than the released v${previous.tag} — a tag is a contract`);
+  process.exit(1);
+}
+
+/**
+ * Every file npm would ship from `files` (`["dist", "*.ts"]`), relative to `dir`. A wildcard
+ * matches one path segment, which is what npm does for a bare `*.ts`.
+ */
+function shippedFiles(dir, patterns) {
+  const out = [];
+  const walk = (current, prefix) => {
+    for (const entry of readdirSync(current, { withFileTypes: true })) {
+      const rel = `${prefix}/${entry.name}`;
+      if (entry.isDirectory()) walk(join(current, entry.name), rel);
+      else out.push(rel);
+    }
+  };
+  for (const pattern of patterns) {
+    if (!pattern.includes("*")) {
+      const full = join(dir, pattern);
+      if (!existsSync(full)) continue;
+      if (statSync(full).isDirectory()) walk(full, pattern);
+      else out.push(pattern);
+      continue;
+    }
+    const escape = (part) => part.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const shape = new RegExp(`^${pattern.split("*").map(escape).join("[^/]*")}$`);
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      if (entry.isFile() && shape.test(entry.name)) out.push(entry.name);
+    }
+  }
+  return out;
+}
+
+/**
+ * sha256 over the files that actually ship, paths sorted. `package.json` and `README.md` are
+ * excluded: both are rewritten at release time, so hashing them would make every release look
+ * like a source change. A package without `files` falls back to the whole directory.
+ */
+function treeHash(entry) {
+  const rows = [];
+  const add = (rel) => {
+    const bytes = readFileSync(join(entry.dir, ...rel.split("/")));
+    rows.push(`${rel}:${createHash("sha256").update(bytes).digest("hex")}`);
+  };
+
+  if (Array.isArray(entry.manifest.files)) {
+    for (const rel of shippedFiles(entry.dir, entry.manifest.files)) add(rel);
+  } else {
+    const walk = (current, prefix) => {
+      for (const child of readdirSync(current, { withFileTypes: true })) {
+        const rel = prefix ? `${prefix}/${child.name}` : child.name;
+        if (child.isDirectory()) {
+          if (child.name === "node_modules" || child.name === ".turbo") continue;
+          walk(join(current, child.name), rel);
+        } else if (rel !== "package.json" && rel !== "README.md") {
+          add(rel);
+        }
+      }
+    };
+    walk(entry.dir, "");
+  }
+  return createHash("sha256").update(rows.sort().join("\n")).digest("hex");
+}
+
+/** The plan before anything is written: what moves, what can be copied, what changed unbumped. */
+const plan = packages.map((entry) => {
+  const name = entry.manifest.name;
+  const packageVersion = entry.manifest.version;
+  const deps = {};
+  for (const dep of internalEdges(entry.manifest)) deps[dep] = byName.get(dep).manifest.version;
+  const tree = treeHash(entry);
+  const before = previous?.registry.packages?.[name];
+  const beforeVersion = before ? (before.version ?? previous.registry.version) : undefined;
+  const sourceChanged = Boolean(before?.tree && before.tree !== tree);
+  const depsChanged = Boolean(before) && JSON.stringify(before.deps ?? {}) !== JSON.stringify(deps);
+  const reusable =
+    Boolean(before) &&
+    beforeVersion === packageVersion &&
+    !sourceChanged &&
+    !depsChanged &&
+    before.selfContained === bundle &&
+    existsSync(join(previous.dir, before.tarball.split("/").pop()));
+  return { entry, name, packageVersion, deps, tree, before, beforeVersion, sourceChanged, depsChanged, reusable };
+});
+
+const decreased = plan.filter((item) => item.beforeVersion && compare(item.packageVersion, item.beforeVersion) < 0);
+if (decreased.length) {
+  console.error(`[release] ${decreased.length} package(s) are older than v${previous.tag}:`);
+  decreased.slice(0, 5).forEach((item) => console.error(`  - ${item.name} ${item.packageVersion} < ${item.beforeVersion}`));
+  process.exit(1);
+}
+
+const unbumped = plan.filter((item) => item.sourceChanged && item.beforeVersion === item.packageVersion);
+if (unbumped.length) {
+  console.error(`[release] ${unbumped.length} package(s) changed without a version bump${strict ? " — strict, refusing" : " (warning)"}:`);
+  unbumped.slice(0, 8).forEach((item) => console.error(`  - ${item.name}@${item.packageVersion} — run: node scripts/version.mjs --apply --bump ${item.name} --tag <x.y.z>`));
+  if (strict) process.exit(1);
+}
+
+if (!apply) {
+  const reuse = plan.filter((item) => item.reusable).length;
+  console.log(`[release] previous ${previous ? `v${previous.tag}` : "none"} · reuse ${reuse} · repack ${plan.length - reuse}`);
+  for (const item of plan.slice(0, 5)) {
+    console.log(`  ${item.name}@${item.packageVersion} → ${relative(ROOT, item.entry.dir)}${item.reusable ? " (copied)" : ""}`);
+  }
+  if (plan.length > 5) console.log(`  … ${plan.length - 5} more`);
   console.log(`[release] dry run — pass --apply to write ${relative(ROOT, outDir)}`);
   process.exit(0);
 }
@@ -187,6 +333,7 @@ const registry = {
   repository,
   base: `https://cdn.jsdelivr.net/gh/${repository}@v${version}/`,
   generatedAt: new Date().toISOString(),
+  mode: bundle ? "A" : "B",
   packages: {},
 };
 
@@ -194,7 +341,6 @@ const checksums = [];
 const layout = {};
 const sizes = [];
 let totalBytes = 0;
-const byName = new Map(packages.map((entry) => [entry.manifest.name, entry]));
 
 /** `@aio-ui/*` names this manifest requires: install requirements, all three fields. */
 function internalEdges(manifest) {
@@ -220,13 +366,13 @@ function publishedExports(value) {
 }
 
 /** Tarball name npm will produce for a package: `@aio-ui/form` → `aio-ui-form-0.1.0.tgz`. */
-function tarballName(packageName, targetVersion) {
-  return `aio-ui-${packageName.slice(SCOPE.length)}-${targetVersion}.tgz`;
+function tarballName(packageName, packageVersion) {
+  return `aio-ui-${packageName.slice(SCOPE.length)}-${packageVersion}.tgz`;
 }
 
-/** The URL a consumer's npm can follow: that tarball as a file on the `releases` branch. */
-function tarballUrl(packageName, targetVersion) {
-  return `https://github.com/${repository}/raw/releases/v${targetVersion}/${tarballName(packageName, targetVersion)}`;
+/** The URL a consumer's npm can follow: that tarball inside the tag's folder on `releases`. */
+function tarballUrl(packageName, packageVersion) {
+  return `https://github.com/${repository}/raw/releases/v${version}/${tarballName(packageName, packageVersion)}`;
 }
 
 /**
@@ -274,51 +420,69 @@ function stagePackage(name, target, ancestry) {
 const stageRoot = join(ROOT, "releases", ".stage");
 writeFileSync(join(ROOT, "releases", ".gitignore"), "/.stage/\n", "utf8");
 
-for (const entry of packages) {
-  const name = entry.manifest.name;
+for (const item of plan) {
+  const { entry, name, packageVersion, deps, tree, before, reusable } = item;
   const dir = relative(ROOT, entry.dir).replace(/\\/g, "/");
-  const exportMap = entry.manifest.exports ?? {};
-
-  // `npm pack` is the same tool a consumer's installer runs, so the tarball
-  // layout matches `files[]` exactly — no hand-rolled archive.
-  // A single quoted command string is the only form that survives this
-  // workspace path (it contains spaces) on every platform.
-  // The `./` prefix is required: npm parses a two-segment relative path
-  // (`packages/app`) as GitHub shorthand `owner/repo` and packs over ssh
-  // instead of the local directory. `dir` is relative to ROOT, never absolute —
-  // "./C:\\…" is read as a path inside the cwd and resolves to nothing.
+  const filename = tarballName(name, packageVersion);
   let bundledCount = 0;
-  let packSource = entry.dir;
-  {
-    packSource = join(stageRoot, entry.manifest.name.split("/").pop());
-    bundledCount = stagePackage(name, packSource, new Set([name]));
-  }
-  const packDir = relative(ROOT, packSource).replace(/\\/g, "/");
-  const output = execSync(`npm pack "./${packDir}" --pack-destination "${outDir}" --json`, {
-    cwd: ROOT,
-    encoding: "utf8",
-    // A bundled tarball's `--json` file list is megabytes long; the 1 MB default
-    // kills the run with ENOBUFS on the first self-contained package.
-    maxBuffer: 256 * 1024 * 1024,
-  });
-  const [packed] = JSON.parse(output);
+  let integrity;
+  let size;
 
-  const tarballPath = join(outDir, packed.filename);
-  const bytes = readFileSync(tarballPath).length;
-  const sha256 = createHash("sha256").update(readFileSync(tarballPath)).digest("hex");
-  checksums.push(`${sha256}  ${packed.filename}`);
-  totalBytes += bytes;
-  sizes.push({ name, bytes, file: tarballPath });
+  if (reusable) {
+    // Same version, same shipped bytes: copy the previous tarball so one version keeps exactly
+    // one identity. Repacking would produce a different zlib stream under the same number.
+    copyFileSync(join(previous.dir, before.tarball.split("/").pop()), join(outDir, filename));
+    integrity = before.integrity;
+    size = before.size;
+  } else {
+    // `npm pack` is the same tool a consumer's installer runs, so the tarball
+    // layout matches `files[]` exactly — no hand-rolled archive.
+    // A single quoted command string is the only form that survives this
+    // workspace path (it contains spaces) on every platform.
+    // The `./` prefix is required: npm parses a two-segment relative path
+    // (`packages/app`) as GitHub shorthand `owner/repo` and packs over ssh
+    // instead of the local directory. `dir` is relative to ROOT, never absolute —
+    // "./C:\\…" is read as a path inside the cwd and resolves to nothing.
+    const packSource = join(stageRoot, name.split("/").pop());
+    bundledCount = stagePackage(name, packSource, new Set([name]));
+    const packDir = relative(ROOT, packSource).replace(/\\/g, "/");
+    const output = execSync(`npm pack "./${packDir}" --pack-destination "${outDir}" --json`, {
+      cwd: ROOT,
+      encoding: "utf8",
+      // A bundled tarball's `--json` file list is megabytes long; the 1 MB default
+      // kills the run with ENOBUFS on the first self-contained package.
+      maxBuffer: 256 * 1024 * 1024,
+    });
+    const [packed] = JSON.parse(output);
+    if (packed.filename !== filename) {
+      console.error(
+        `[release] ${name}: npm packed ${packed.filename}, expected ${filename} — ` +
+          `the manifest version and the tag disagree`,
+      );
+      process.exit(1);
+    }
+    integrity = packed.integrity;
+    size = packed.size;
+  }
+
+  const tarballPath = join(outDir, filename);
+  const bytes = readFileSync(tarballPath);
+  checksums.push(`${createHash("sha256").update(bytes).digest("hex")}  ${filename}`);
+  totalBytes += bytes.length;
+  sizes.push({ name, bytes: bytes.length, file: tarballPath });
 
   const subpaths = subpathsOf(entry.manifest, entry.dir);
   registry.packages[name] = {
     dir,
+    version: packageVersion,
+    deps,
+    tree,
     subpaths,
     // Raw file on the orphan branch: one URL, no GitHub Release asset to upload, and
     // the same bytes jsDelivr already serves for the unpacked tree.
-    tarball: `https://github.com/${repository}/raw/releases/v${version}/${packed.filename}`,
-    integrity: packed.integrity,
-    size: packed.size,
+    tarball: tarballUrl(name, packageVersion),
+    integrity,
+    size,
     selfContained: bundle,
     bundled: bundledCount,
   };

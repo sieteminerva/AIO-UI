@@ -38,6 +38,7 @@
     "build:bundle": "node scripts/build-bundle.mjs",
     "check:api": "node scripts/api.mjs --check",
     "check:catalogue": "node scripts/catalogue.mjs --check",
+    "check:live": "node scripts/release-doc.mjs --probe",
     "catalogue": "node scripts/catalogue.mjs",
     "catalogue:apply": "node scripts/catalogue.mjs --apply",
     "session": "node scripts/session.mjs"

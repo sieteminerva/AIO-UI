@@ -1,6 +1,6 @@
 {
   "name": "@aio-ui/table",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "type": "module",
   "files": [
     "dist",
@@ -9,11 +9,11 @@
     "adapters"
   ],
   "peerDependencies": {
-    "@aio-ui/base": "^0.2.4",
-    "@aio-ui/core": "^0.2.4",
-    "@aio-ui/form": "^0.2.4",
-    "@aio-ui/module-loader": "^0.2.4",
-    "@aio-ui/utilities": "^0.2.4"
+    "@aio-ui/base": "^0.2.5",
+    "@aio-ui/core": "^0.2.5",
+    "@aio-ui/form": "^0.2.5",
+    "@aio-ui/module-loader": "^0.2.5",
+    "@aio-ui/utilities": "^0.2.5"
   },
   "exports": {
     ".": {

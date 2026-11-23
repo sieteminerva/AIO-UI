@@ -1,13 +1,13 @@
 {
   "name": "@aio-ui/module-loader",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "type": "module",
   "files": [
     "dist",
     "*.ts"
   ],
   "peerDependencies": {
-    "@aio-ui/core": "^0.2.4"
+    "@aio-ui/core": "^0.2.5"
   },
   "exports": {
     ".": {

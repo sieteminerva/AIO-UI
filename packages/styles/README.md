@@ -6,15 +6,13 @@ so a host links it (or lets `ensureStylesheet` request it) and every component t
 tokens restyles itself.
 
 <!-- install:begin -->
-
 ## Install
 
-Version — `0.2.4` (tag `v0.2.4`)
+Version — `0.2.5` (tag `v0.2.5`)
 
-    npm install https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.4/aio-ui-styles-0.2.4.tgz
+    npm install https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.5/aio-ui-styles-0.2.5.tgz
 
-CDN (no build step) — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.4/packages/styles/src/index.css`
-
+CDN (no build step) — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.5/packages/styles/src/index.css`
 <!-- install:end -->
 
 ## Sheets

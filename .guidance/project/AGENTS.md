@@ -8,6 +8,7 @@
 
 | Agent       | Band                | Task                                                                          | Write scope                                                                                                                                                                                                 | Started    | Checkpoint                 | State  |
 | ----------- | ------------------- | ----------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- | -------------------------- | ------ |
+| copilot b69 | Tooling             | Release v0.2.5 — local chain done, publish pending                            | `scripts/**`, `releases/**`, `docs/releases/**`, `packages/**/package.json`, `packages/**/README.md`, `package.json`                                                                                          | 2026-11-24 | `/memories/session/release-v025.md` | handoff |
 
 ## Row shape
 

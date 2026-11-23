@@ -1,6 +1,6 @@
 {
   "name": "@aio-ui/animations",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "type": "module",
   "files": [
     "dist",
@@ -9,8 +9,8 @@
     "canvas"
   ],
   "peerDependencies": {
-    "@aio-ui/core": "^0.2.4",
-    "@aio-ui/utilities": "^0.2.4"
+    "@aio-ui/core": "^0.2.5",
+    "@aio-ui/utilities": "^0.2.5"
   },
   "exports": {
     ".": {

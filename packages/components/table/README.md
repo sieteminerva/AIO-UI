@@ -17,12 +17,12 @@ retheme it without touching markup by redeclaring a `--app-*` token on an ancest
 <!-- install:begin -->
 ## Install
 
-Version — `0.2.4` (tag `v0.2.4`)
+Version — `0.2.5` (tag `v0.2.5`)
 
-    npm install https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.4/aio-ui-table-0.2.4.tgz
+    npm install https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.5/aio-ui-table-0.2.5.tgz
 
-CDN (ES module, no build step) — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.4/packages/components/table/dist/index.js`
-Stylesheet — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.4/packages/components/table/dist/Table.css`
+CDN (ES module, no build step) — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.5/packages/components/table/dist/index.js`
+Stylesheet — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.5/packages/components/table/dist/Table.css`
 <!-- install:end -->
 
 ## Payload

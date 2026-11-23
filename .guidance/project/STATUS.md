@@ -4,6 +4,10 @@
 > **only** after the user picks it — never "to orient" (`AGENT_RULES.md` §13). Rewritten each
 > session, newest on top. One card = one line + one pointer.
 >
+> Batch 60–62 (2026-11-24): **release automation** — `session.mjs` prompt is opt-in
+> (`--interactive`), no more winpty hang; `release-doc.mjs` regenerates a note's CDN tables
+> byte-identically and writes `## Install` blocks into every package README; `check:live` probes
+> the published CDN. Aggregate tarballs still parked.
 > Batch 59 (2026-11-24): **framework seams** — tab lookups scoped to own menu/body + per-instance
 > id stem (nested tab no longer drives its parent), `messageFormAdapter` pinned from the package
 > root + gallery module map, and `options`/`multiple` moved onto the field for
@@ -31,17 +35,20 @@
 > 76 rows, 39 → 37 packages; `@aio-ui/rating` + `@aio-ui/modules` kit deleted; `v0.2.4` release
 > artefact regenerated locally (76 rows) but **not published**. Batch 43: `v0.2.4` published, mode B.
 
-### 1. Release automation — next (tooling band)
+### 1. Release automation — b60–b62 landed (tooling band)
 
-`docs/framework/TASK-release-automation.md` §Next is the checklist from cold: **b60**
-`session.mjs end` becomes opt-in-interactive (no more winpty hang), **b61** `release-doc.mjs`
-regenerates only the marker-bounded blocks of `docs/releases/v<x>.md` (76 rows + 4 bundle rows),
-**b62** `release-doc.mjs --readme` writes a `## Install` block (tarball + CDN paths) into every
-package README, then `catalogue.mjs --apply`. Probe becomes `npm run check:live`.
-**Owner decision (2026-11-24): the CDN stays versioned** — versionless alias is cancelled, so
-every generated URL copies `registry.base` verbatim.
-Open: aggregate tarballs (`@aio-ui/bundle`, `@aio-ui/iife`) parked behind Q5/Q6.
-→ `docs/framework/TASK-release-automation.md` §3 · `.guidance/project/framework.md` §Next
+**b60** `session.mjs` prompting is opt-in (`--interactive` / `AIO_SESSION_INTERACTIVE=1`); the nine
+steps print before the first ask and stdin is released, so the winpty hang is gone. **b61**
+`release-doc.mjs` rewrites only the `artefacts` + `cdn-paths` marker blocks of
+`docs/releases/v<x>.md` (76 rows + 4 bundle rows, byte-identical on a 37-package fixture) and
+`npm run check:live` probes the published CDN (6/6 200). **b62** `--readme` writes a `## Install`
+block (tarball + CDN URL + stylesheet) into 29 package READMEs, catalogue regenerated.
+**Owner decision (2026-11-24): the CDN stays versioned** — every generated URL copies
+`registry.base` verbatim; the versionless alias is cancelled.
+Open: aggregate tarballs (`@aio-ui/bundle`, `@aio-ui/iife`) parked behind Q5/Q6; publish is still
+LAST (card 3); `orchestrator/__test__/release.test.ts` stays red on the stale 39-package committed
+registry until the 37 tree is published.
+→ `docs/framework/TASK-release-automation.md` §Next · `.guidance/project/framework.md` §Next
 
 ### 2. Rajutan app — published site
 

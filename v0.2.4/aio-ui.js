@@ -353,7 +353,7 @@ var AioUI = (function() {
 	var _proxy$1 = /* @__PURE__ */ new WeakMap();
 	var _scopes$1 = /* @__PURE__ */ new WeakMap();
 	var _model$1 = /* @__PURE__ */ new WeakMap();
-	var _paint$2 = /* @__PURE__ */ new WeakMap();
+	var _paint$4 = /* @__PURE__ */ new WeakMap();
 	var _stopEffect$1 = /* @__PURE__ */ new WeakMap();
 	var _Binding_brand$1 = /* @__PURE__ */ new WeakSet();
 	/**
@@ -383,7 +383,7 @@ var AioUI = (function() {
 			_classPrivateFieldInitSpec(this, _proxy$1, void 0);
 			_classPrivateFieldInitSpec(this, _scopes$1, /* @__PURE__ */ new Map());
 			_classPrivateFieldInitSpec(this, _model$1, null);
-			_classPrivateFieldInitSpec(this, _paint$2, null);
+			_classPrivateFieldInitSpec(this, _paint$4, null);
 			_classPrivateFieldInitSpec(this, _stopEffect$1, null);
 			_classPrivateFieldSet2(_proxy$1, this, proxy);
 		}
@@ -406,7 +406,7 @@ var AioUI = (function() {
 			if (!model || !(scope instanceof HTMLElement)) return;
 			if (_classPrivateFieldGet2(_scopes$1, this).has(scope)) return;
 			_classPrivateFieldGet2(_model$1, this) ?? _classPrivateFieldSet2(_model$1, this, _classPrivateFieldGet2(_proxy$1, this).makeReactive("model", model));
-			_classPrivateFieldGet2(_paint$2, this) ?? _classPrivateFieldSet2(_paint$2, this, paint ?? null);
+			_classPrivateFieldGet2(_paint$4, this) ?? _classPrivateFieldSet2(_paint$4, this, paint ?? null);
 			const state = _classPrivateFieldGet2(_model$1, this);
 			const controls = _assertClassBrand(_Binding_brand$1, this, _scan$1).call(this, scope);
 			for (const control of controls) _classPrivateFieldGet2(_proxy$1, this).writeValue(control.element, _classPrivateFieldGet2(_proxy$1, this).getByPath(state, control.path));
@@ -447,7 +447,7 @@ var AioUI = (function() {
 			_classPrivateFieldGet2(_stopEffect$1, this)?.call(this);
 			_classPrivateFieldSet2(_stopEffect$1, this, null);
 			_classPrivateFieldSet2(_model$1, this, null);
-			_classPrivateFieldSet2(_paint$2, this, null);
+			_classPrivateFieldSet2(_paint$4, this, null);
 		}
 		/**
 		* Re-reads the controls of an already wired scope.
@@ -471,7 +471,7 @@ var AioUI = (function() {
 				if (control.element === document.activeElement) continue;
 				_classPrivateFieldGet2(_proxy$1, this).writeValue(control.element, _classPrivateFieldGet2(_proxy$1, this).getByPath(model, control.path));
 			}
-			_classPrivateFieldGet2(_paint$2, this)?.call(this, scope, model);
+			_classPrivateFieldGet2(_paint$4, this)?.call(this, scope, model);
 		}
 	}
 	function _scan$1(scope) {
@@ -1014,7 +1014,7 @@ var AioUI = (function() {
 	*
 	* The anti-FOUC *hold* is deliberately absent: hiding an unstyled root is a lifecycle
 	* detail of `Builder.create()` (which knows its own `loading()` mockup), so it lives next
-	* to the builder in `@aio-ui/base/BaseAdapters/Hydration`. This module only answers "is
+	* to the builder in `@aio-ui/base`. This module only answers "is
 	* the sheet there" and "give me the sheet".
 	*/
 	/** Host-declared loaders, keyed by the module specifier the host chose. */
@@ -1783,6 +1783,53 @@ var AioUI = (function() {
 			else el.setAttribute(attr.name, attr.value);
 		}
 	}
+	// packages/utilities/dist/DomUtils.js
+	function createImageError$1() {
+		return `data:image/svg+xml;base64,${btoa(`
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+      <rect width="512" height="512" fill="lightgray" />
+      <text
+        x="50%"
+        y="50%"
+        font-family="sans-serif"
+        font-size="3rem"
+        fill="white"
+        text-anchor="middle"
+        dominant-baseline="middle"
+      >
+        Image Error
+      </text>
+    </svg>
+  `)}`;
+	}
+	// packages/utilities/dist/helper.js
+	/**
+	* Truncate a filename so the total length (including extension) is at most maxLength.
+	* If truncation happens, the returned string WILL have length === maxLength.
+	*
+	* @param {string} name - full filename, e.g. "very long name.mp3"
+	* @param {number} maxLength - desired max length (positive integer)
+	* @param {string} marker - truncation marker to show in the middle (default "(..)")
+	* @returns {string}
+	*/
+	function truncateText$1(name, maxLength = 20, marker = "..") {
+		if (typeof name !== "string") return name;
+		if (!Number.isInteger(maxLength) || maxLength <= 0) return "";
+		if (name.length <= maxLength) return name;
+		const dotIndex = name.lastIndexOf(".");
+		const hasExt = dotIndex > 0;
+		const base = hasExt ? name.slice(0, dotIndex) : name;
+		const ext = hasExt ? name.slice(dotIndex) : "";
+		const extLen = ext.length;
+		if (extLen >= maxLength) return name.slice(-maxLength);
+		const prefixLen = maxLength - marker.length - extLen;
+		if (prefixLen > 0) {
+			const suffix = base.slice(-3);
+			return base.slice(0, prefixLen - suffix.length) + marker + suffix + ext;
+		}
+		const truncatedMarkerLen = Math.max(0, maxLength - extLen);
+		return marker.slice(0, truncatedMarkerLen) + ext;
+	}
 	// packages/utilities/dist/Metadata.js
 	function ensureMetadataIdentity$1(selector, scopeId = "", childSuffix = "", templateKey) {
 		const cleanScope = scopeId || "";
@@ -1895,7 +1942,224 @@ var AioUI = (function() {
 		const rawSeed = [String(configSeed || "").trim(), String(contentSeed || "").trim()].filter(Boolean).join("::");
 		return rawSeed ? stableHash(rawSeed) : "anonymous";
 	}
-	// packages/core/dist/DOMRenderer.js
+	// packages/utilities/dist/parseTableFile.js
+	/**
+	* Table file parsing — CSV/JSON → `{ header, body, footer }`.
+	*
+	* Pure text in, plain object out. It used to live inside `FileUploader` as a static that
+	* took a *form id*, which meant the input layer had to know about tables and the table
+	* layer had to ask the input layer for data it already had (the `File`). Now the owner of
+	* the file hands it over, and the transformation has one home.
+	*
+	* No DOM beyond `FileReader`, so it can be tested with plain strings.
+	*/
+	/** Empty result — used when there is no file, or the file is empty. */
+	var EMPTY_TABLE$1 = {
+		header: [],
+		body: [],
+		footer: null
+	};
+	/**
+	* Detects the delimiter from the header line.
+	*
+	* Counted **outside quotes only**, and only on the first record: a text cell is free to
+	* contain semicolons, and quoted headers may contain newlines.
+	*
+	* @param headerLine - First record, before parsing.
+	* @returns `";"` when it wins, `","` otherwise.
+	*/
+	function detectDelimiter$1(headerLine) {
+		const countOutsideQuotes = (text, target) => {
+			let quoted = false;
+			let count = 0;
+			for (const char of text) if (char === "\"") quoted = !quoted;
+			else if (!quoted && char === target) count++;
+			return count;
+		};
+		return countOutsideQuotes(headerLine, ";") > countOutsideQuotes(headerLine, ",") ? ";" : ",";
+	}
+	/**
+	* Splits CSV text into records.
+	*
+	* A state machine, because a cell may contain the delimiter, a quote, or a newline: a
+	* naive `split(",")` breaks on the first quoted address. `""` inside a quoted cell is a
+	* literal quote, and CRLF counts as one record break.
+	*
+	* @param text - Whole file contents.
+	* @param separator - Delimiter chosen by {@link detectDelimiter}.
+	* @returns Rows of raw cell strings; blank rows are dropped.
+	*/
+	function splitCsvRows$1(text, separator) {
+		const rows = [];
+		let row = [];
+		let cell = "";
+		let quoted = false;
+		let index = 0;
+		const pushCell = () => {
+			row.push(cell);
+			cell = "";
+		};
+		const pushRow = () => {
+			pushCell();
+			if (row.some((value) => value.trim() !== "")) rows.push(row);
+			row = [];
+		};
+		while (index < text.length) {
+			const char = text[index];
+			if (quoted) {
+				if (char === "\"") {
+					if (text[index + 1] === "\"") {
+						cell += "\"";
+						index += 2;
+						continue;
+					}
+					quoted = false;
+					index++;
+					continue;
+				}
+				cell += char;
+				index++;
+				continue;
+			}
+			if (char === "\"") {
+				quoted = true;
+				index++;
+				continue;
+			}
+			if (char === separator) {
+				pushCell();
+				index++;
+				continue;
+			}
+			if (char === "\n" || char === "\r") {
+				if (char === "\r" && text[index + 1] === "\n") index++;
+				pushRow();
+				index++;
+				continue;
+			}
+			cell += char;
+			index++;
+		}
+		if (cell !== "" || row.length > 0) {
+			pushCell();
+			if (row.some((value) => value.trim() !== "")) rows.push(row);
+		}
+		return rows;
+	}
+	/** Trims a cell and casts a plain numeric value to a number. */
+	function castCell$1(cell) {
+		const value = cell.trim();
+		return value !== "" && !Number.isNaN(Number(value)) ? Number(value) : value;
+	}
+	/**
+	* Parses CSV text into table data.
+	*
+	* @param text - Whole file contents.
+	* @returns Header from the first record, body from the rest, `footer` left null for the
+	*   table layer to decide.
+	*/
+	function parseTableText$1(text) {
+		if (!text || text.trim() === "") return { ...EMPTY_TABLE$1 };
+		const [header = [], ...body] = splitCsvRows$1(text, detectDelimiter$1((() => {
+			let quoted = false;
+			for (let index = 0; index < text.length; index++) {
+				const char = text[index];
+				if (char === "\"") quoted = !quoted;
+				if (!quoted && (char === "\n" || char === "\r")) return text.slice(0, index);
+			}
+			return text;
+		})()));
+		return {
+			header: header.map(castCell$1),
+			body: body.map((row) => row.map(castCell$1)),
+			footer: null
+		};
+	}
+	/**
+	* Parses an array of records into table data, keeping the key order of the first record.
+	*
+	* @param records - Parsed JSON records.
+	* @returns Header from the first record's keys, body from its values.
+	*/
+	function parseTableRecords$1(records) {
+		if (!Array.isArray(records) || records.length === 0) return { ...EMPTY_TABLE$1 };
+		const first = records[0];
+		if (typeof first !== "object" || first === null) return { ...EMPTY_TABLE$1 };
+		return {
+			header: Object.keys(first),
+			body: records.map((record) => Object.values(record)),
+			footer: null
+		};
+	}
+	/**
+	* Reads a `.csv`/`.json` file and parses it into table data.
+	*
+	* The extension decides the parser; anything else resolves to an empty table instead of
+	* throwing, because "the user picked the wrong file" is a normal state, not an error.
+	*
+	* @param file - File selected by the user.
+	* @returns Table data.
+	*/
+	async function parseTableFile$1(file) {
+		const extension = file.name.split(".").pop()?.toLowerCase();
+		if (extension !== "csv" && extension !== "json") return { ...EMPTY_TABLE$1 };
+		const text = await file.text();
+		if (extension === "json") try {
+			return parseTableRecords$1(JSON.parse(text));
+		} catch {
+			return { ...EMPTY_TABLE$1 };
+		}
+		return parseTableText$1(text);
+	}
+	// packages/utilities/dist/SelectorToTree.js
+	/**
+	* 👑 THE SOVEREIGN SELECTOR GRAPH PARSER (SIHIR KILAT HASIL IDE DEWA ANDA!)
+	* Membedah kamus selectors kaku milik anak komponen menggunakan split(">") JIT di RAM,
+	* lalu memutahkan peta silsilah komposit utuh Record<TType, relations> untuk siap di-merge!
+	* @param scopeId
+	* @param selectors Kamus config.selectors milik komponen anak (e.g. this.config.selectors)
+	* @returns Peta silsilah kedaulatan internal elemen yang suci bersih
+	*/
+	function selectorToTree$1(scopeId, selectors) {
+		const allKeys = Object.keys(selectors);
+		const hasContainerRoot = allKeys.includes("@container");
+		const scopedRelation = {};
+		for (const currentKey of allKeys) {
+			const globalCurrentKey = `${scopeId}:${currentKey}`;
+			if (!scopedRelation[currentKey]) scopedRelation[currentKey] = {
+				scope: scopeId,
+				key: currentKey,
+				parent: null,
+				children: []
+			};
+			if (currentKey.includes(">")) {
+				const parts = currentKey.split(">");
+				parts.pop();
+				const parentTypeKey = parts.join(">");
+				const globalParentKey = `${scopeId}:${parentTypeKey}`;
+				if (!scopedRelation[parentTypeKey]) scopedRelation[parentTypeKey] = {
+					scope: scopeId,
+					key: parentTypeKey,
+					parent: null,
+					children: []
+				};
+				scopedRelation[currentKey].parent = globalParentKey;
+				if (!scopedRelation[parentTypeKey].children?.includes(globalCurrentKey)) scopedRelation[parentTypeKey].children?.push(globalCurrentKey);
+			} else if (currentKey !== "@container" && hasContainerRoot) {
+				const globalContainerKey = `${scopeId}:@container`;
+				if (!scopedRelation[globalContainerKey]) scopedRelation[globalContainerKey] = {
+					scope: scopeId,
+					key: "@container",
+					parent: null,
+					children: []
+				};
+				scopedRelation[currentKey].parent = globalContainerKey;
+				if (!scopedRelation[globalContainerKey].children?.includes(globalCurrentKey)) scopedRelation[globalContainerKey].children?.push(globalCurrentKey);
+			}
+		}
+		return scopedRelation;
+	}
+	// packages/core/dist/DOMRenderer/index.js
 	var _cleanupMap$1 = /* @__PURE__ */ new WeakMap();
 	var DOMRenderer$1 = class {
 		constructor(config) {
@@ -2441,54 +2705,6 @@ var AioUI = (function() {
 			releaseMarkers$1(root);
 		});
 	}
-	// packages/utilities/dist/SelectorToTree.js
-	/**
-	* 👑 THE SOVEREIGN SELECTOR GRAPH PARSER (SIHIR KILAT HASIL IDE DEWA ANDA!)
-	* Membedah kamus selectors kaku milik anak komponen menggunakan split(">") JIT di RAM,
-	* lalu memutahkan peta silsilah komposit utuh Record<TType, relations> untuk siap di-merge!
-	* @param scopeId
-	* @param selectors Kamus config.selectors milik komponen anak (e.g. this.config.selectors)
-	* @returns Peta silsilah kedaulatan internal elemen yang suci bersih
-	*/
-	function selectorToTree$1(scopeId, selectors) {
-		const allKeys = Object.keys(selectors);
-		const hasContainerRoot = allKeys.includes("@container");
-		const scopedRelation = {};
-		for (const currentKey of allKeys) {
-			const globalCurrentKey = `${scopeId}:${currentKey}`;
-			if (!scopedRelation[currentKey]) scopedRelation[currentKey] = {
-				scope: scopeId,
-				key: currentKey,
-				parent: null,
-				children: []
-			};
-			if (currentKey.includes(">")) {
-				const parts = currentKey.split(">");
-				parts.pop();
-				const parentTypeKey = parts.join(">");
-				const globalParentKey = `${scopeId}:${parentTypeKey}`;
-				if (!scopedRelation[parentTypeKey]) scopedRelation[parentTypeKey] = {
-					scope: scopeId,
-					key: parentTypeKey,
-					parent: null,
-					children: []
-				};
-				scopedRelation[currentKey].parent = globalParentKey;
-				if (!scopedRelation[parentTypeKey].children?.includes(globalCurrentKey)) scopedRelation[parentTypeKey].children?.push(globalCurrentKey);
-			} else if (currentKey !== "@container" && hasContainerRoot) {
-				const globalContainerKey = `${scopeId}:@container`;
-				if (!scopedRelation[globalContainerKey]) scopedRelation[globalContainerKey] = {
-					scope: scopeId,
-					key: "@container",
-					parent: null,
-					children: []
-				};
-				scopedRelation[currentKey].parent = globalContainerKey;
-				if (!scopedRelation[globalContainerKey].children?.includes(globalCurrentKey)) scopedRelation[globalContainerKey].children?.push(globalCurrentKey);
-			}
-		}
-		return scopedRelation;
-	}
 	// packages/base/dist/Base.js
 	var _a;
 	var GLOBAL_INSTANCE_COUNTER$1 = /* @__PURE__ */ new Map();
@@ -2498,7 +2714,7 @@ var AioUI = (function() {
 	var _Builder_brand$1 = /* @__PURE__ */ new WeakSet();
 	var _staticHierarchy$1 = /* @__PURE__ */ new WeakMap();
 	var _missingModules$1 = /* @__PURE__ */ new WeakMap();
-	var _modules$2 = /* @__PURE__ */ new WeakMap();
+	var _modules$3 = /* @__PURE__ */ new WeakMap();
 	var _bindings$1 = /* @__PURE__ */ new WeakMap();
 	var Builder$1 = class Builder$1 {
 		static resetCounters() {
@@ -2544,7 +2760,7 @@ var AioUI = (function() {
 		}
 		constructor() {
 			_classPrivateMethodInitSpec(this, _Builder_brand$1);
-			_classPrivateFieldInitSpec(this, _caller$1, _assertClassBrand(Builder$1, _a, _active$4)._);
+			_classPrivateFieldInitSpec(this, _caller$1, _assertClassBrand(Builder$1, _a, _active$3)._);
 			_classPrivateFieldInitSpec(this, _projected$1, /* @__PURE__ */ new Map());
 			_defineProperty(
 				this,
@@ -2658,7 +2874,7 @@ var AioUI = (function() {
 				}
 			);
 			_classPrivateFieldInitSpec(this, _missingModules$1, /* @__PURE__ */ new Set());
-			_classPrivateFieldInitSpec(this, _modules$2, {});
+			_classPrivateFieldInitSpec(this, _modules$3, {});
 			_defineProperty(
 				this,
 				/** 📦 NODE STORE — registri node milik instance ini: typeKey → record. */
@@ -2733,7 +2949,7 @@ var AioUI = (function() {
 		* @param modules - Module id to resolved module.
 		*/
 		provideModules(modules) {
-			_classPrivateFieldSet2(_modules$2, this, modules);
+			_classPrivateFieldSet2(_modules$3, this, modules);
 		}
 		/**
 		* Resolves a sub-module declared in this component's manifest `modules`.
@@ -2745,7 +2961,7 @@ var AioUI = (function() {
 		* @returns The resolved module, or `undefined` when it is not available.
 		*/
 		module(id) {
-			const resolved = _classPrivateFieldGet2(_modules$2, this)[id];
+			const resolved = _classPrivateFieldGet2(_modules$3, this)[id];
 			if (resolved !== void 0) return resolved;
 			if (!_classPrivateFieldGet2(_missingModules$1, this).has(id)) {
 				_classPrivateFieldGet2(_missingModules$1, this).add(id);
@@ -2796,8 +3012,8 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 			this.storage.nodes.clear();
 			this.activeLiveThemeId = this.config?.themeId || document.body.dataset.theme?.replace(/^theme-/, "") || "default";
 			const body = this.setProxy(identity.namespace, content);
-			const previousActive = _assertClassBrand(Builder$1, _a, _active$4)._;
-			_active$4._ = _assertClassBrand(Builder$1, _a, this);
+			const previousActive = _assertClassBrand(Builder$1, _a, _active$3)._;
+			_active$3._ = _assertClassBrand(Builder$1, _a, this);
 			try {
 				const DOMTree = this.prepare(body, this.config);
 				if (!DOMTree || !(DOMTree instanceof HTMLElement)) throw new Error(`[Builder:${String(this.builderId)}] prepare() returned no valid DOM element. Check selectors, template(), and the builder's render path.`);
@@ -2808,7 +3024,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 				holdUntilStyled$1(DOMTree, _assertClassBrand(_Builder_brand$1, this, _stylesheetSpecifier$1).call(this), mockup);
 				return DOMTree;
 			} finally {
-				_active$4._ = _assertClassBrand(Builder$1, _a, previousActive);
+				_active$3._ = _assertClassBrand(Builder$1, _a, previousActive);
 			}
 		}
 		/**
@@ -3254,7 +3470,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 		const paint = typeof this.paint === "function" ? this.paint.bind(this) : void 0;
 		_classPrivateFieldGet2(_bindings$1, this).wire(scope, model, paint);
 	}
-	var _active$4 = { _: null };
+	var _active$3 = { _: null };
 	var _namespaceStack$1 = { _: [] };
 	_defineProperty(Builder$1, "contract", void 0);
 	_a = Builder$1;
@@ -3528,7 +3744,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 	// packages/components/accordion/index.ts
 	var accordion_exports = /* @__PURE__ */ __exportAll({ AccordionBuilder: () => AccordionBuilder });
 	// packages/modules/animations/behaviours/typewriter.ts
-	var TypewriterBehaviour$1 = class {
+	var TypewriterBehaviour = class {
 		/**
 		* Pemecah karakter menggunakan Intl.Segmenter (grapheme murni)
 		*/
@@ -3761,9 +3977,9 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 		}
 	};
 	/** `animation="typewriter"` — typing engine with rewrite and loop scenarios. */
-	var typewriterBehaviour$1 = {
+	var typewriterBehaviour = {
 		type: "typewriter",
-		animate: ({ node, options, delay, stopped, done }) => TypewriterBehaviour$1.animate(node, {
+		animate: ({ node, options, delay, stopped, done }) => TypewriterBehaviour.animate(node, {
 			...options,
 			delay
 		}, () => done(), stopped)
@@ -3780,7 +3996,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 	*   sehingga rantai bisa terpicu sedini segmen pertama selesai. Oleh karena
 	*   itu callback-nya bernama onSegmentDone dan menerima elemen segmen.
 	*/
-	var StaggerFadeBehaviour$1 = class {
+	var StaggerFadeBehaviour = class {
 		/** Konversi string durasi CSS ('0.6s' | '600ms') ke angka milidetik untuk WAAPI */
 		static _toMs(durationStr) {
 			return durationStr.endsWith("ms") ? parseFloat(durationStr) : parseFloat(durationStr) * 1e3;
@@ -3849,11 +4065,11 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 		}
 	};
 	/** `animation="stagger-fade"` — segment-by-segment entrance. */
-	var staggerFadeBehaviour$1 = {
+	var staggerFadeBehaviour = {
 		type: "stagger-fade",
 		optionKey: "staggerFade",
 		animate: ({ node, options, done }) => {
-			StaggerFadeBehaviour$1.animate(node, options, (segment) => done(segment));
+			StaggerFadeBehaviour.animate(node, options, (segment) => done(segment));
 		}
 	};
 	// packages/modules/animations/behaviours/fade-in.ts
@@ -3868,7 +4084,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 	*   translateY(10px) -> 0 (500ms, ease-out) via WAAPI fill:forwards,
 	* - event 'animation:done' dipicu lewat Promise .finished bawaan WAAPI.
 	*/
-	var FadeInBehaviour$1 = class {
+	var FadeInBehaviour = class {
 		static async animate(node, options, onDone) {
 			const delay = node.getAttribute("data-fade-delay") || "0s";
 			node.style.setProperty("--fade-delay", delay);
@@ -3893,10 +4109,10 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 		}
 	};
 	/** `animation="fade-in"` — WAAPI opacity/translate entrance. */
-	var fadeInBehaviour$1 = {
+	var fadeInBehaviour = {
 		type: "fade-in",
 		optionKey: "fade",
-		animate: ({ node, options, done }) => FadeInBehaviour$1.animate(node, options, () => done())
+		animate: ({ node, options, done }) => FadeInBehaviour.animate(node, options, () => done())
 	};
 	// packages/modules/animations/behaviours/scramble.ts
 	/**
@@ -3907,7 +4123,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 	* dengan pengecekan node.isConnected di tiap loop utama dan sub-loop,
 	* lalu memicu event 'animation:done' tepat setelah efek selesai total.
 	*/
-	var ScrambleBehaviour$1 = class {
+	var ScrambleBehaviour = class {
 		/** Utilitas jeda non-blocking */
 		static sleep(ms) {
 			return new Promise((resolve) => setTimeout(resolve, ms));
@@ -3943,28 +4159,28 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 		}
 	};
 	/** `animation="text-scramble"` — Matrix/Cyberpunk decode entrance. */
-	var scrambleBehaviour$1 = {
+	var scrambleBehaviour = {
 		type: "text-scramble",
 		optionKey: "scramble",
-		animate: ({ node, options, stopped, done }) => ScrambleBehaviour$1.animate(node, options, () => done(), stopped)
+		animate: ({ node, options, stopped, done }) => ScrambleBehaviour.animate(node, options, () => done(), stopped)
 	};
 	// packages/modules/animations/behaviours/count-up.ts
-	var CountUpBehaviour$1 = class {
+	var CountUpBehaviour = class {
 		static animate(node) {
 			const targetNumber = parseInt(node.textContent || "", 10) || 0;
 			node.setAttribute("data-target-number", String(targetNumber));
 		}
 	};
 	/** `animation="count-up"` — reads the target number and hands it to the counter. */
-	var countUpBehaviour$1 = {
+	var countUpBehaviour = {
 		type: "count-up",
 		animate: ({ node, done }) => {
-			CountUpBehaviour$1.animate(node);
+			CountUpBehaviour.animate(node);
 			done();
 		}
 	};
 	// packages/modules/animations/behaviours/loading-placeholder.ts
-	var LoadingPlaceholderBehaviour$1 = class {
+	var LoadingPlaceholderBehaviour = class {
 		static async animate(node, options, onDone, isStopped = () => false) {
 			const attrDuration = node.getAttribute("data-duration");
 			const parsedAttrDelay = attrDuration !== null ? parseInt(attrDuration, 10) : NaN;
@@ -4001,26 +4217,27 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 	* Built-in behaviours, in declaration order. Add a behaviour here only when it
 	* belongs to the framework itself; project-specific effects register at runtime.
 	*/
-	var ANIMATION_BEHAVIOURS$1 = [
-		typewriterBehaviour$1,
-		staggerFadeBehaviour$1,
-		fadeInBehaviour$1,
-		scrambleBehaviour$1,
-		countUpBehaviour$1,
+	var ANIMATION_BEHAVIOURS = [
+		typewriterBehaviour,
+		staggerFadeBehaviour,
+		fadeInBehaviour,
+		scrambleBehaviour,
+		countUpBehaviour,
 		{
 			type: "loading-placeholder",
 			optionKey: "loadingPlaceholder",
-			animate: ({ node, options, stopped, done }) => LoadingPlaceholderBehaviour$1.animate(node, options, () => done(), stopped)
+			animate: ({ node, options, stopped, done }) => LoadingPlaceholderBehaviour.animate(node, options, () => done(), stopped)
 		}
 	];
-	ANIMATION_BEHAVIOURS$1.map((b) => b.type);
+	/** The `animation` attribute values the engine understands out of the box. */
+	var ANIMATION_TYPES = ANIMATION_BEHAVIOURS.map((b) => b.type);
 	/**
 	* Indexes a behaviour list by `type`.
 	*
 	* @throws {Error} On a duplicate type — silently keeping the last one hides a
 	*   real configuration mistake (two packages claiming `animation="fade-in"`).
 	*/
-	function indexBehaviours$1(behaviours) {
+	function indexBehaviours(behaviours) {
 		const index = /* @__PURE__ */ new Map();
 		for (const behaviour of behaviours) {
 			if (!behaviour?.type) throw new Error("[animations] A behaviour definition is missing its `type`.");
@@ -4030,16 +4247,16 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 		return index;
 	}
 	// packages/modules/animations/Animations.ts
-	var _behaviours$1 = /* @__PURE__ */ new WeakMap();
-	var _pendingScan$1 = /* @__PURE__ */ new WeakMap();
-	var _scanFrame$1 = /* @__PURE__ */ new WeakMap();
+	var _behaviours = /* @__PURE__ */ new WeakMap();
+	var _pendingScan = /* @__PURE__ */ new WeakMap();
+	var _scanFrame = /* @__PURE__ */ new WeakMap();
 	/**
 	* AnimationsService — unified lifecycle and execution engine for declarative DOM animations.
 	*
 	* Implements tree-agnostic document-order sequencing, WeakMap/Map node tracking,
 	* dynamic mutation discovery, and viewport intersection entry/exit management.
 	*/
-	var AnimationsService$1 = class {
+	var AnimationsService = class {
 		constructor(config = {}) {
 			_defineProperty(this, "globalDelay", void 0);
 			_defineProperty(this, "config", void 0);
@@ -4062,10 +4279,10 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 				null
 			);
 			_defineProperty(this, "viewObserver", null);
-			_classPrivateFieldInitSpec(this, _behaviours$1, void 0);
-			_classPrivateFieldInitSpec(this, _pendingScan$1, /* @__PURE__ */ new Set());
-			_classPrivateFieldInitSpec(this, _scanFrame$1, null);
-			_classPrivateFieldSet2(_behaviours$1, this, indexBehaviours$1([...ANIMATION_BEHAVIOURS$1, ...config.behaviours ?? []]));
+			_classPrivateFieldInitSpec(this, _behaviours, void 0);
+			_classPrivateFieldInitSpec(this, _pendingScan, /* @__PURE__ */ new Set());
+			_classPrivateFieldInitSpec(this, _scanFrame, null);
+			_classPrivateFieldSet2(_behaviours, this, indexBehaviours([...ANIMATION_BEHAVIOURS, ...config.behaviours ?? []]));
 			this.globalDelay = config.delay ?? 500;
 			this.config = {
 				typewriter: {
@@ -4105,12 +4322,12 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 		*/
 		use(behaviour) {
 			if (!behaviour?.type) throw new Error("[AnimationsService] A behaviour definition is missing its `type`.");
-			_classPrivateFieldGet2(_behaviours$1, this).set(behaviour.type, behaviour);
+			_classPrivateFieldGet2(_behaviours, this).set(behaviour.type, behaviour);
 			return this;
 		}
 		/** The `animation` attribute values this service can currently run. */
 		get types() {
-			return [..._classPrivateFieldGet2(_behaviours$1, this).keys()];
+			return [..._classPrivateFieldGet2(_behaviours, this).keys()];
 		}
 		/**
 		* Scans a subtree for elements with `[animation]` in document order and mounts them.
@@ -4136,7 +4353,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 		mount(node) {
 			if (this.records.has(node)) return;
 			const type = node.getAttribute("animation") || "";
-			if (!_classPrivateFieldGet2(_behaviours$1, this).has(type)) {
+			if (!_classPrivateFieldGet2(_behaviours, this).has(type)) {
 				console.warn(`[AnimationsService] Unknown animation type: "${type}"`);
 				return;
 			}
@@ -4224,7 +4441,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 			const rec = this.records.get(node);
 			if (!rec) return;
 			if (rec.once && rec.played) return;
-			const behaviour = _classPrivateFieldGet2(_behaviours$1, this).get(rec.type);
+			const behaviour = _classPrivateFieldGet2(_behaviours, this).get(rec.type);
 			if (!behaviour) return;
 			if (rec.state === "running") this.stop(node);
 			rec.state = "running";
@@ -4336,11 +4553,11 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 				rec.controller.abort();
 				this.stop(node);
 			});
-			if (_classPrivateFieldGet2(_scanFrame$1, this) !== null) {
-				cancelAnimationFrame(_classPrivateFieldGet2(_scanFrame$1, this));
-				_classPrivateFieldSet2(_scanFrame$1, this, null);
+			if (_classPrivateFieldGet2(_scanFrame, this) !== null) {
+				cancelAnimationFrame(_classPrivateFieldGet2(_scanFrame, this));
+				_classPrivateFieldSet2(_scanFrame, this, null);
 			}
-			_classPrivateFieldGet2(_pendingScan$1, this).clear();
+			_classPrivateFieldGet2(_pendingScan, this).clear();
 			this.records.clear();
 			this.scopes.clear();
 		}
@@ -4457,13 +4674,13 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 		* keeps the cost proportional to the number of mutations, not nodes.
 		*/
 		_queueScan(root) {
-			_classPrivateFieldGet2(_pendingScan$1, this).add(root);
-			if (_classPrivateFieldGet2(_scanFrame$1, this) !== null) return;
-			_classPrivateFieldSet2(_scanFrame$1, this, requestAnimationFrame(() => {
-				_classPrivateFieldSet2(_scanFrame$1, this, requestAnimationFrame(() => {
-					_classPrivateFieldSet2(_scanFrame$1, this, null);
-					const roots = [..._classPrivateFieldGet2(_pendingScan$1, this)];
-					_classPrivateFieldGet2(_pendingScan$1, this).clear();
+			_classPrivateFieldGet2(_pendingScan, this).add(root);
+			if (_classPrivateFieldGet2(_scanFrame, this) !== null) return;
+			_classPrivateFieldSet2(_scanFrame, this, requestAnimationFrame(() => {
+				_classPrivateFieldSet2(_scanFrame, this, requestAnimationFrame(() => {
+					_classPrivateFieldSet2(_scanFrame, this, null);
+					const roots = [..._classPrivateFieldGet2(_pendingScan, this)];
+					_classPrivateFieldGet2(_pendingScan, this).clear();
 					roots.forEach((node) => {
 						if (node.isConnected) this.scan(node);
 					});
@@ -4471,28 +4688,14 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 			}));
 		}
 	};
-	_defineProperty(AnimationsService$1, "slot", "animation");
+	_defineProperty(AnimationsService, "slot", "animation");
 	// packages/modules/animations/index.ts
-	var animations_exports = /* @__PURE__ */ __exportAll({ AnimationsService: () => AnimationsService$1 });
-	// packages/utilities/dist/DomUtils.js
-	function createImageError$1() {
-		return `data:image/svg+xml;base64,${btoa(`
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
-      <rect width="512" height="512" fill="lightgray" />
-      <text
-        x="50%"
-        y="50%"
-        font-family="sans-serif"
-        font-size="3rem"
-        fill="white"
-        text-anchor="middle"
-        dominant-baseline="middle"
-      >
-        Image Error
-      </text>
-    </svg>
-  `)}`;
-	}
+	var animations_exports = /* @__PURE__ */ __exportAll({
+		ANIMATION_BEHAVIOURS: () => ANIMATION_BEHAVIOURS,
+		ANIMATION_TYPES: () => ANIMATION_TYPES,
+		AnimationsService: () => AnimationsService,
+		indexBehaviours: () => indexBehaviours
+	});
 	// packages/components/article/Article.ts
 	/**
 	* The DOM only carries the record's key; the component keeps the record itself.
@@ -5438,7 +5641,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 	var _proxy = /* @__PURE__ */ new WeakMap();
 	var _scopes = /* @__PURE__ */ new WeakMap();
 	var _model = /* @__PURE__ */ new WeakMap();
-	var _paint$1 = /* @__PURE__ */ new WeakMap();
+	var _paint$3 = /* @__PURE__ */ new WeakMap();
 	var _stopEffect = /* @__PURE__ */ new WeakMap();
 	var _Binding_brand = /* @__PURE__ */ new WeakSet();
 	/**
@@ -5468,7 +5671,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 			_classPrivateFieldInitSpec(this, _proxy, void 0);
 			_classPrivateFieldInitSpec(this, _scopes, /* @__PURE__ */ new Map());
 			_classPrivateFieldInitSpec(this, _model, null);
-			_classPrivateFieldInitSpec(this, _paint$1, null);
+			_classPrivateFieldInitSpec(this, _paint$3, null);
 			_classPrivateFieldInitSpec(this, _stopEffect, null);
 			_classPrivateFieldSet2(_proxy, this, proxy);
 		}
@@ -5491,7 +5694,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 			if (!model || !(scope instanceof HTMLElement)) return;
 			if (_classPrivateFieldGet2(_scopes, this).has(scope)) return;
 			_classPrivateFieldGet2(_model, this) ?? _classPrivateFieldSet2(_model, this, _classPrivateFieldGet2(_proxy, this).makeReactive("model", model));
-			_classPrivateFieldGet2(_paint$1, this) ?? _classPrivateFieldSet2(_paint$1, this, paint ?? null);
+			_classPrivateFieldGet2(_paint$3, this) ?? _classPrivateFieldSet2(_paint$3, this, paint ?? null);
 			const state = _classPrivateFieldGet2(_model, this);
 			const controls = _assertClassBrand(_Binding_brand, this, _scan).call(this, scope);
 			for (const control of controls) _classPrivateFieldGet2(_proxy, this).writeValue(control.element, _classPrivateFieldGet2(_proxy, this).getByPath(state, control.path));
@@ -5532,7 +5735,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 			_classPrivateFieldGet2(_stopEffect, this)?.call(this);
 			_classPrivateFieldSet2(_stopEffect, this, null);
 			_classPrivateFieldSet2(_model, this, null);
-			_classPrivateFieldSet2(_paint$1, this, null);
+			_classPrivateFieldSet2(_paint$3, this, null);
 		}
 		/**
 		* Re-reads the controls of an already wired scope.
@@ -5556,7 +5759,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 				if (control.element === document.activeElement) continue;
 				_classPrivateFieldGet2(_proxy, this).writeValue(control.element, _classPrivateFieldGet2(_proxy, this).getByPath(model, control.path));
 			}
-			_classPrivateFieldGet2(_paint$1, this)?.call(this, scope, model);
+			_classPrivateFieldGet2(_paint$3, this)?.call(this, scope, model);
 		}
 	}
 	function _scan(scope) {
@@ -5915,7 +6118,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 	var _Builder_brand = /* @__PURE__ */ new WeakSet();
 	var _staticHierarchy = /* @__PURE__ */ new WeakMap();
 	var _missingModules = /* @__PURE__ */ new WeakMap();
-	var _modules$1 = /* @__PURE__ */ new WeakMap();
+	var _modules$2 = /* @__PURE__ */ new WeakMap();
 	var _bindings = /* @__PURE__ */ new WeakMap();
 	var Builder = class Builder {
 		static resetCounters() {
@@ -5961,7 +6164,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 		}
 		constructor() {
 			_classPrivateMethodInitSpec(this, _Builder_brand);
-			_classPrivateFieldInitSpec(this, _caller, _active$3._);
+			_classPrivateFieldInitSpec(this, _caller, _active$2._);
 			_classPrivateFieldInitSpec(this, _projected, /* @__PURE__ */ new Map());
 			_defineProperty(
 				this,
@@ -6075,7 +6278,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 				}
 			);
 			_classPrivateFieldInitSpec(this, _missingModules, /* @__PURE__ */ new Set());
-			_classPrivateFieldInitSpec(this, _modules$1, {});
+			_classPrivateFieldInitSpec(this, _modules$2, {});
 			_defineProperty(
 				this,
 				/** 📦 NODE STORE — registri node milik instance ini: typeKey → record. */
@@ -6150,7 +6353,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 		* @param modules - Module id to resolved module.
 		*/
 		provideModules(modules) {
-			_classPrivateFieldSet2(_modules$1, this, modules);
+			_classPrivateFieldSet2(_modules$2, this, modules);
 		}
 		/**
 		* Resolves a sub-module declared in this component's manifest `modules`.
@@ -6162,7 +6365,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 		* @returns The resolved module, or `undefined` when it is not available.
 		*/
 		module(id) {
-			const resolved = _classPrivateFieldGet2(_modules$1, this)[id];
+			const resolved = _classPrivateFieldGet2(_modules$2, this)[id];
 			if (resolved !== void 0) return resolved;
 			if (!_classPrivateFieldGet2(_missingModules, this).has(id)) {
 				_classPrivateFieldGet2(_missingModules, this).add(id);
@@ -6213,8 +6416,8 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 			this.storage.nodes.clear();
 			this.activeLiveThemeId = this.config?.themeId || document.body.dataset.theme?.replace(/^theme-/, "") || "default";
 			const body = this.setProxy(identity.namespace, content);
-			const previousActive = _active$3._;
-			_active$3._ = this;
+			const previousActive = _active$2._;
+			_active$2._ = this;
 			try {
 				const DOMTree = this.prepare(body, this.config);
 				if (!DOMTree || !(DOMTree instanceof HTMLElement)) throw new Error(`[Builder:${String(this.builderId)}] prepare() returned no valid DOM element. Check selectors, template(), and the builder's render path.`);
@@ -6225,7 +6428,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 				holdUntilStyled(DOMTree, _assertClassBrand(_Builder_brand, this, _stylesheetSpecifier).call(this), mockup);
 				return DOMTree;
 			} finally {
-				_active$3._ = previousActive;
+				_active$2._ = previousActive;
 			}
 		}
 		/**
@@ -6671,16 +6874,22 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 		const paint = typeof this.paint === "function" ? this.paint.bind(this) : void 0;
 		_classPrivateFieldGet2(_bindings, this).wire(scope, model, paint);
 	}
-	var _active$3 = { _: null };
+	var _active$2 = { _: null };
 	var _namespaceStack = { _: [] };
 	_defineProperty(Builder, "contract", void 0);
 	Object.freeze(Builder.prototype);
 	setBuilderAdapter$1({ resetCounters: () => Builder.resetCounters() });
 	// packages/base/src/index.ts
 	var src_exports$6 = /* @__PURE__ */ __exportAll({
+		Binding: () => Binding,
 		Builder: () => Builder,
+		BuilderProxy: () => BuilderProxy,
 		GLOBAL_INSTANCE_COUNTER: () => GLOBAL_INSTANCE_COUNTER,
+		ReactiveGraph: () => ReactiveGraph,
+		holdUntilStyled: () => holdUntilStyled,
+		isReactive: () => isReactive,
 		normalize: () => normalize,
+		releaseMarkers: () => releaseMarkers,
 		validate: () => validate
 	});
 	// packages/components/carousel/Carousel.kit.ts
@@ -7302,7 +7511,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 		}
 	};
 	/** Default button text per action type. */
-	var ACTION_LABELS = {
+	var ACTION_LABELS$2 = {
 		copy: "Copy",
 		edit: "Edit",
 		save: "Save",
@@ -7452,7 +7661,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 				case "@container>figure>actions>custom": {
 					const button = el;
 					const type = typeKey.split(">").pop();
-					const label = payload?.label ?? ACTION_LABELS[type];
+					const label = payload?.label ?? ACTION_LABELS$2[type];
 					button.type = "button";
 					button.dataset.action = type;
 					button.textContent = label;
@@ -8667,12 +8876,12 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 	var _componentRoutes = /* @__PURE__ */ new WeakMap();
 	var _registrations = /* @__PURE__ */ new WeakMap();
 	var _controllers = /* @__PURE__ */ new WeakMap();
-	var _active$2 = /* @__PURE__ */ new WeakMap();
+	var _active$1 = /* @__PURE__ */ new WeakMap();
 	var _abort = /* @__PURE__ */ new WeakMap();
 	var _ports = /* @__PURE__ */ new WeakMap();
 	var _AioApp_brand = /* @__PURE__ */ new WeakSet();
 	var _container = /* @__PURE__ */ new WeakMap();
-	var _root = /* @__PURE__ */ new WeakMap();
+	var _root$2 = /* @__PURE__ */ new WeakMap();
 	var _route = /* @__PURE__ */ new WeakMap();
 	var _theme = /* @__PURE__ */ new WeakMap();
 	var _fragment = /* @__PURE__ */ new WeakMap();
@@ -8692,11 +8901,11 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 			_classPrivateFieldInitSpec(this, _componentRoutes, /* @__PURE__ */ new Map());
 			_classPrivateFieldInitSpec(this, _registrations, /* @__PURE__ */ new Map());
 			_classPrivateFieldInitSpec(this, _controllers, /* @__PURE__ */ new Map());
-			_classPrivateFieldInitSpec(this, _active$2, null);
+			_classPrivateFieldInitSpec(this, _active$1, null);
 			_classPrivateFieldInitSpec(this, _abort, null);
 			_classPrivateFieldInitSpec(this, _ports, /* @__PURE__ */ new Map());
 			_classPrivateFieldInitSpec(this, _container, null);
-			_classPrivateFieldInitSpec(this, _root, null);
+			_classPrivateFieldInitSpec(this, _root$2, null);
 			_classPrivateFieldInitSpec(this, _route, "");
 			_classPrivateFieldInitSpec(this, _theme, void 0);
 			_classPrivateFieldInitSpec(this, _fragment, "");
@@ -8752,7 +8961,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 		}
 		/** Root element of the mounted page, `null` before `render()`. */
 		get shell() {
-			return _classPrivateFieldGet2(_root, this);
+			return _classPrivateFieldGet2(_root$2, this);
 		}
 		/** Route list derived from content, controllers, and page definitions — what the router validates. */
 		get routes() {
@@ -8848,8 +9057,8 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 			_assertClassBrand(_AioApp_brand, this, _release$2).call(this);
 			_get_events.call(_assertClassBrand(_AioApp_brand, this))?.emit("destroyed", { route: _classPrivateFieldGet2(_route, this) });
 			_assertClassBrand(_AioApp_brand, this, _releasePorts).call(this, [..._classPrivateFieldGet2(_ports, this).keys()].reverse());
-			_classPrivateFieldGet2(_root, this)?.remove();
-			_classPrivateFieldSet2(_root, this, null);
+			_classPrivateFieldGet2(_root$2, this)?.remove();
+			_classPrivateFieldSet2(_root$2, this, null);
 			_classPrivateFieldSet2(_container, this, null);
 			_classPrivateFieldGet2(_controllers, this).clear();
 			_classPrivateFieldSet2(_rendered, this, false);
@@ -8964,7 +9173,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 			_get_events.call(_assertClassBrand(_AioApp_brand, this))?.emit("themeChanged", {
 				theme: state.theme,
 				previous,
-				shell: _classPrivateFieldGet2(_root, this)
+				shell: _classPrivateFieldGet2(_root$2, this)
 			});
 			_assertClassBrand(_AioApp_brand, this, _log).call(this, "themeChanged", { theme: state.theme });
 		}
@@ -9036,7 +9245,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 			const tree = assembleShell(menuEl, pageEl, footerEl);
 			_classPrivateFieldSet2(_route, this, target);
 			_classPrivateFieldSet2(_fragment, this, fragment || "");
-			_assertClassBrand(_AioApp_brand, this, _paint).call(this, tree, themed);
+			_assertClassBrand(_AioApp_brand, this, _paint$2).call(this, tree, themed);
 			if (sequence !== _classPrivateFieldGet2(_sequence, this)) return _assertClassBrand(_AioApp_brand, this, _supersede).call(this, target, sequence);
 			const blocks = _assertClassBrand(_AioApp_brand, this, _ready).call(this, target, themed, tree, controller, menuEl, footerEl);
 			_get_events.call(_assertClassBrand(_AioApp_brand, this))?.emit("ready", {
@@ -9079,7 +9288,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 		const entry = _classPrivateFieldGet2(_controllers, this).get(route);
 		if (entry) {
 			const controller = new entry.module(entry.config, context);
-			_classPrivateFieldSet2(_active$2, this, controller);
+			_classPrivateFieldSet2(_active$1, this, controller);
 			return {
 				controller,
 				context
@@ -9133,7 +9342,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 					customControllerInstance?.onDestroy?.();
 				}
 			};
-			_classPrivateFieldSet2(_active$2, this, controller);
+			_classPrivateFieldSet2(_active$1, this, controller);
 			return {
 				controller,
 				context
@@ -9194,10 +9403,10 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 	* fragment switch and on a theme switch, and both create a new instance.
 	*/
 	function _release$2() {
-		const controller = _classPrivateFieldGet2(_active$2, this);
-		_classPrivateFieldSet2(_active$2, this, null);
-		if (_classPrivateFieldGet2(_root, this)) try {
-			_get_themes.call(_assertClassBrand(_AioApp_brand, this))?.deactivate?.(_classPrivateFieldGet2(_root, this));
+		const controller = _classPrivateFieldGet2(_active$1, this);
+		_classPrivateFieldSet2(_active$1, this, null);
+		if (_classPrivateFieldGet2(_root$2, this)) try {
+			_get_themes.call(_assertClassBrand(_AioApp_brand, this))?.deactivate?.(_classPrivateFieldGet2(_root$2, this));
 		} catch (error) {
 			console.error("[AioApp] theme deactivate failed:", error);
 		}
@@ -9229,12 +9438,12 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 	* scroll lock a previous route left, animate, honour a deep link — so they live in one
 	* place instead of a chain of one-call helpers.
 	*/
-	function _paint(tree, page) {
+	function _paint$2(tree, page) {
 		const container = _classPrivateFieldGet2(_container, this);
 		if (!container) return;
-		if (_classPrivateFieldGet2(_root, this)) _get_registry.call(_assertClassBrand(_AioApp_brand, this))?.releaseBuilders?.(_classPrivateFieldGet2(_root, this));
+		if (_classPrivateFieldGet2(_root$2, this)) _get_registry.call(_assertClassBrand(_AioApp_brand, this))?.releaseBuilders?.(_classPrivateFieldGet2(_root$2, this));
 		container.replaceChildren(tree);
-		_classPrivateFieldSet2(_root, this, tree);
+		_classPrivateFieldSet2(_root$2, this, tree);
 		document.body.style.overflow = "";
 		const title = isPageDocument(page) ? page.title : void 0;
 		if (title) document.title = title;
@@ -9790,6 +9999,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 		ComponentRegistry: () => ComponentRegistry,
 		DEFAULT_REGISTRY_SCOPE: () => "app",
 		DOMRenderer: () => DOMRenderer,
+		GLOBAL_DISPLAY_LOG: () => false,
 		Registry: () => Registry,
 		RegistryError: () => RegistryError,
 		TemplateRegistry: () => TemplateRegistry,
@@ -9830,7 +10040,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 	* Unknown event names are accepted on purpose: a component may name its own
 	* (`formValidation`, `tabs:content-loaded`) without registering anything first.
 	*/
-	var EventEmitter$1 = class {
+	var EventEmitter = class {
 		constructor() {
 			_defineProperty(this, "listeners", {});
 			_defineProperty(
@@ -9880,9 +10090,9 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 			this.clear();
 		}
 	};
-	_defineProperty(EventEmitter$1, "slot", "events");
+	_defineProperty(EventEmitter, "slot", "events");
 	// packages/modules/event-emitter/index.ts
-	var event_emitter_exports = /* @__PURE__ */ __exportAll({ EventEmitter: () => EventEmitter$1 });
+	var event_emitter_exports = /* @__PURE__ */ __exportAll({ EventEmitter: () => EventEmitter });
 	// packages/components/fab-menu/FabMenu.ts
 	var FabMenuBuilder = class extends Builder$1 {
 		constructor(config = {}) {
@@ -10292,7 +10502,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 	* Kept in a leaf file so module definitions can import an id without importing
 	* the runtime composition module, which would create a circular import.
 	*/
-	var FORM_MODULE_IDS = {
+	var FORM_MODULE_IDS$1 = {
 		validation: "validation",
 		cascade: "cascade",
 		multistep: "multistep",
@@ -10301,6 +10511,3237 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 		idAddress: "idAddress",
 		table: "table",
 		message: "message"
+	};
+	// packages/components/input/dist/InputModuleTypes.js
+	/**
+	* Input module contract — ids and types only.
+	*
+	* Kept in a leaf file on purpose: a module definition needs its own id, and importing
+	* that id from `InputRegistry.ts` (which imports the definitions) would close a cycle and
+	* leave `INPUT_MODULE_IDS` undefined while the definitions are being built. The Form family
+	* solves the same problem the same way (`FormModuleTypes.ts`).
+	*/
+	/** Stable ids for input sub-modules. */
+	var INPUT_MODULE_IDS$1 = {
+		dropdown: "dropdown",
+		file: "file",
+		controls: "controls",
+		popover: "popover",
+		picker: "picker"
+	};
+	// packages/components/input/dist/Dropdown/Dropdown.js
+	var _state$1 = /* @__PURE__ */ new WeakMap();
+	var DropdownBuilder$1 = class extends Builder$1 {
+		constructor(config) {
+			super();
+			_defineProperty(this, "builderId", "dropdown");
+			_defineProperty(this, "name", "dropdown");
+			_defineProperty(this, "stylesheet", "./Dropdown.css");
+			_defineProperty(this, "listId", void 0);
+			_defineProperty(this, "debounceTimeout", null);
+			_defineProperty(this, "abortController", new AbortController());
+			_classPrivateFieldInitSpec(this, _state$1, void 0);
+			this.listId = `dl-${Math.random().toString(36).substr(2, 9)}`;
+			const defaultConfig = {
+				themeId: "default",
+				namespace: null,
+				selectors: {
+					"@dropdown": {
+						tagName: "div",
+						className: "dropdown"
+					},
+					"@dropdown>label": {
+						tagName: "label",
+						className: "label"
+					},
+					"@dropdown>input": {
+						tagName: "input",
+						attrs: {
+							type: "text",
+							list: this.listId,
+							autocomplete: "off"
+						}
+					},
+					"@dropdown>hidden": {
+						tagName: "input",
+						attrs: { type: "hidden" }
+					},
+					"@dropdown>list": {
+						tagName: "datalist",
+						attrs: { id: this.listId },
+						className: "list"
+					},
+					"@dropdown>list>option": {
+						tagName: "option",
+						className: "item"
+					},
+					"@dropdown>menu": {
+						tagName: "div",
+						className: "menu"
+					},
+					"@dropdown>menu>item": {
+						tagName: "div",
+						className: "item"
+					},
+					"@dropdown>menu>empty": {
+						tagName: "div",
+						className: "no-results"
+					},
+					"@dropdown>tags": {
+						tagName: "div",
+						className: "tags"
+					},
+					"@dropdown>tags>item": {
+						tagName: "span",
+						className: "badge"
+					}
+				},
+				emit: null,
+				attributes: [],
+				apiUrl: null,
+				debounceDelay: 400,
+				style: "select",
+				min: 3,
+				max: 10,
+				isMultiple: false,
+				onMultiChange: (_a) => {},
+				onSelect: () => {}
+			};
+			this.config = this.resolveConfig(defaultConfig, config);
+		}
+		template(typeKey, el, payload) {
+			switch (typeKey) {
+				case "@dropdown":
+					el.dataset.style = this.config.style || "select";
+					const hidden = this.render("@dropdown>hidden", payload);
+					const input = this.render("@dropdown>input", payload);
+					const options = this.config.style === "datalist" ? this.render("@dropdown>list", payload?.options || []) : this.render("@dropdown>menu", payload?.options || []);
+					const tags = this.render("@dropdown>tags", payload?.selectedMultiItems || []);
+					el.append(...[
+						tags,
+						input,
+						hidden,
+						options
+					].filter(Boolean));
+					break;
+				case "@dropdown>input":
+					if (payload?.id) el.id = String(payload.id);
+					if (payload?.placeholder) el.setAttribute("placeholder", String(payload.placeholder));
+					if (payload?.value != null) el.value = String(payload.value);
+					el.ariaReadOnly = "true";
+					if (this.config.style !== "datalist") el.removeAttribute("list");
+					break;
+				case "@dropdown>label":
+					el.setAttribute("for", String(payload.id));
+					el.textContent = payload.title || "";
+					break;
+				case "@dropdown>hidden":
+					if (payload?.name) el.setAttribute("name", payload.name);
+					if (payload?.id) el.id = `${payload.id}-value`;
+					if (payload?.value != null) el.value = String(payload.value);
+					this.applyAttributes(el, payload?.attributes || this.config.attributes);
+					break;
+				case "@dropdown>list":
+					const limit = this.config.max || 10;
+					const limitedPayload = payload.slice(0, limit);
+					if (Array.isArray(payload)) for (const itemData of limitedPayload) {
+						const item = this.render("@dropdown>list>option", itemData);
+						if (item) el.appendChild(item);
+					}
+					break;
+				case "@dropdown>list>option":
+					if (payload) {
+						el.setAttribute("value", payload.label);
+						el.setAttribute("data-id", String(payload.id));
+					}
+					break;
+				case "@dropdown>menu":
+					if (this.config.style !== "datalist") {
+						el.setAttribute("popover", "manual");
+						el.setAttribute("role", "listbox");
+					}
+					if (Array.isArray(payload)) {
+						const items = payload.slice(0, this.config.max || 10);
+						for (const itemData of items) {
+							const item = this.render("@dropdown>menu>item", itemData);
+							if (item) el.appendChild(item);
+						}
+						if (items.length === 0) {
+							el.classList.add("empty");
+							const empty = this.render("@dropdown>menu>empty", null);
+							if (empty) el.appendChild(empty);
+						} else el.classList.remove("empty");
+					}
+					break;
+				case "@dropdown>menu>empty":
+					el.setAttribute("role", "option");
+					el.setAttribute("aria-disabled", "true");
+					el.textContent = "Tidak ada hasil yang cocok";
+					break;
+				case "@dropdown>menu>item":
+					if (payload) {
+						el.setAttribute("role", "option");
+						el.setAttribute("data-id", String(payload.id));
+						el.setAttribute("data-label", String(payload.label));
+						el.textContent = payload.label;
+					}
+					break;
+				case "@dropdown>tags":
+					if (Array.isArray(payload)) for (const item of payload) {
+						const tag = this.render("@dropdown>tags>item", item);
+						if (tag) el.appendChild(tag);
+					}
+					break;
+				case "@dropdown>tags>item": el.innerHTML = `${payload.label} <button type="button" class="remove" data-id="${payload.id}">&times;</button>`;
+			}
+		}
+		prepare(content, _config) {
+			_classPrivateFieldSet2(_state$1, this, {
+				options: Array.isArray(content?.options) ? content.options : [],
+				selectedMultiItems: [],
+				keyword: "",
+				isLoading: false,
+				value: content?.value
+			});
+			return this.render("@dropdown", {
+				...content,
+				..._classPrivateFieldGet2(_state$1, this)
+			});
+		}
+		initialize(el, _payload, _context) {
+			if (!el) return;
+			const style = el.dataset.style || "select";
+			const input = el.querySelector("input[type='text']");
+			const tagsContainer = el.querySelector(".tags");
+			if (!input || !tagsContainer) return;
+			const hidden = el.querySelector("input[type='hidden']");
+			if (style === "datalist") this.initDatalistMode(el, input, tagsContainer, hidden);
+			else this.initSelectMode(el, input, tagsContainer, hidden);
+		}
+		initDatalistMode(el, input, tagsContainer, hidden) {
+			const datalist = el.querySelector("datalist");
+			if (!datalist) return;
+			if (_classPrivateFieldGet2(_state$1, this).options.length > 0) datalist.dataset.options = JSON.stringify(_classPrivateFieldGet2(_state$1, this).options);
+			input.addEventListener("input", (_e) => {
+				_classPrivateFieldGet2(_state$1, this).keyword = input.value;
+				this.handleSearch(input, datalist, hidden);
+			}, { signal: this.abortController.signal });
+			input.addEventListener("blur", () => {
+				if (this.config.isMultiple) return;
+				const prevValue = _classPrivateFieldGet2(_state$1, this).value;
+				const currentText = input.value;
+				if (currentText === "") {
+					_classPrivateFieldGet2(_state$1, this).value = "";
+					const hid = input.closest(".dropdown")?.querySelector("input[type='hidden']");
+					if (hid) hid.value = "";
+					if (this.config.onSelect) this.config.onSelect("", null);
+					this.emitChange(hid ?? input, prevValue);
+					return;
+				}
+				if (!datalist.querySelector(`option[value="${CSS.escape(currentText)}"]`)) {
+					input.value = "";
+					_classPrivateFieldGet2(_state$1, this).keyword = "";
+					_classPrivateFieldGet2(_state$1, this).value = "";
+					const hid = input.closest(".dropdown")?.querySelector("input[type='hidden']");
+					if (hid) hid.value = "";
+					if (this.config.onSelect) this.config.onSelect("", null);
+					this.emitChange(hid ?? input, prevValue);
+					this.renderOptions(datalist);
+				}
+			}, { signal: this.abortController.signal });
+			tagsContainer.addEventListener("click", (e) => {
+				const target = e.target;
+				if (target.classList.contains("remove")) {
+					const idToRemove = target.getAttribute("data-id");
+					this.removeTag(idToRemove, tagsContainer);
+					this.renderTags(tagsContainer);
+				}
+			}, { signal: this.abortController.signal });
+		}
+		initSelectMode(el, input, tagsContainer, hidden) {
+			const menu = el.querySelector(".menu");
+			if (!menu) return;
+			if (_classPrivateFieldGet2(_state$1, this).options.length > 0) menu.dataset.options = JSON.stringify(_classPrivateFieldGet2(_state$1, this).options);
+			const box = () => menu.parentElement;
+			input.setAttribute("aria-haspopup", "listbox");
+			input.setAttribute("aria-expanded", "false");
+			const anchorName = `--anchor-${input.id || this.listId}`;
+			(input.closest(".dropdown") || input).style.setProperty("anchor-name", anchorName);
+			menu.style.setProperty("position-anchor", anchorName);
+			let hideTimer = null;
+			let outsideBound = false;
+			const onOutsideDown = (e) => {
+				const boxEl = box();
+				if (boxEl && !boxEl.contains(e.target)) close();
+			};
+			const unbindOutside = () => {
+				if (!outsideBound) return;
+				document.removeEventListener("mousedown", onOutsideDown);
+				outsideBound = false;
+			};
+			const bindOutside = () => {
+				if (outsideBound) return;
+				document.addEventListener("mousedown", onOutsideDown, { signal: this.abortController.signal });
+				outsideBound = true;
+			};
+			const open = () => {
+				if (hideTimer) {
+					window.clearTimeout(hideTimer);
+					hideTimer = null;
+				}
+				bindBoxClick();
+				bindOutside();
+				if (!menu.matches(":popover-open")) menu.showPopover();
+				requestAnimationFrame(() => menu.classList.add("visible"));
+				input.setAttribute("aria-expanded", "true");
+			};
+			const close = () => {
+				unbindOutside();
+				menu.classList.remove("visible");
+				input.setAttribute("aria-expanded", "false");
+				if (hideTimer) window.clearTimeout(hideTimer);
+				hideTimer = window.setTimeout(() => {
+					if (!menu.classList.contains("visible") && menu.matches(":popover-open")) try {
+						menu.hidePopover();
+					} catch {}
+				}, 160);
+			};
+			const toggle = () => menu.matches(":popover-open") ? close() : open();
+			let clickBoundTo = null;
+			const onBoxClick = (e) => {
+				const boxEl = box();
+				if (!boxEl || !boxEl.contains(e.target)) return;
+				const t = e.target;
+				if (t.closest(".item") || t === input) return;
+				if (!t.closest(".remove")) {
+					toggle();
+					input.focus();
+				}
+			};
+			const bindBoxClick = () => {
+				const boxEl = box();
+				if (!boxEl || boxEl === clickBoundTo) return;
+				clickBoundTo?.removeEventListener("click", onBoxClick);
+				boxEl.addEventListener("click", onBoxClick, { signal: this.abortController.signal });
+				clickBoundTo = boxEl;
+			};
+			bindBoxClick();
+			menu.addEventListener("mousedown", (e) => e.preventDefault(), { signal: this.abortController.signal });
+			input.addEventListener("click", toggle, { signal: this.abortController.signal });
+			input.addEventListener("input", () => {
+				_classPrivateFieldGet2(_state$1, this).keyword = input.value;
+				open();
+				this.handleSelectSearch(menu, input);
+			}, { signal: this.abortController.signal });
+			menu.addEventListener("click", (e) => {
+				const item = e.target.closest(".item");
+				if (!item) return;
+				const id = String(item.getAttribute("data-id") ?? "");
+				const label = item.getAttribute("data-label") || item.textContent || "";
+				menu.querySelectorAll(".item").forEach((opt) => {
+					if (this.config.isMultiple) {
+						const optId = String(opt.getAttribute("data-id") ?? "");
+						const isSelected = _classPrivateFieldGet2(_state$1, this).selectedMultiItems.some((i) => String(i.id) === optId) || opt === item;
+						opt.classList.toggle("selected", isSelected);
+					} else opt.classList.toggle("selected", opt === item);
+				});
+				const prevValue = _classPrivateFieldGet2(_state$1, this).value;
+				if (this.config.isMultiple) {
+					if (!_classPrivateFieldGet2(_state$1, this).selectedMultiItems.some((i) => String(i.id) === id)) _classPrivateFieldGet2(_state$1, this).selectedMultiItems.push({
+						id,
+						label
+					});
+					_classPrivateFieldGet2(_state$1, this).value = _classPrivateFieldGet2(_state$1, this).selectedMultiItems.map((i) => i.id).join(",");
+					if (hidden) hidden.value = _classPrivateFieldGet2(_state$1, this).value;
+					if (this.config.onMultiChange) this.config.onMultiChange(_classPrivateFieldGet2(_state$1, this).selectedMultiItems);
+					input.value = "";
+					_classPrivateFieldGet2(_state$1, this).keyword = "";
+					this.renderTags(tagsContainer);
+					this.filterMenu(menu, "");
+					input.focus();
+				} else {
+					_classPrivateFieldGet2(_state$1, this).value = id;
+					if (hidden) hidden.value = id;
+					input.value = label;
+					_classPrivateFieldGet2(_state$1, this).keyword = "";
+					if (this.config.onSelect) this.config.onSelect(label, id);
+					close();
+				}
+				this.emitChange(hidden ?? input, prevValue);
+			}, { signal: this.abortController.signal });
+			tagsContainer.addEventListener("click", (e) => {
+				const target = e.target;
+				if (target.classList.contains("remove")) {
+					const idToRemove = target.getAttribute("data-id");
+					this.removeTag(idToRemove, tagsContainer);
+					this.renderTags(tagsContainer);
+					if (hidden) hidden.value = _classPrivateFieldGet2(_state$1, this).value;
+				}
+			}, { signal: this.abortController.signal });
+			input.addEventListener("keydown", (e) => {
+				if (e.key === "Escape") {
+					e.preventDefault();
+					close();
+				}
+				if (e.key === "Enter") {
+					e.preventDefault();
+					const first = menu.querySelector(".item");
+					if (first) first.click();
+				}
+			}, { signal: this.abortController.signal });
+		}
+		handleSelectSearch(menu, input) {
+			const value = input.value;
+			if (!this.config.apiUrl) {
+				this.filterMenu(menu, value);
+				return;
+			}
+			_classPrivateFieldGet2(_state$1, this).isLoading = true;
+			this.renderInputState(input);
+			clearTimeout(this.debounceTimeout);
+			this.debounceTimeout = setTimeout(async () => {
+				try {
+					const data = await (await fetch(`${this.config.apiUrl}?search=${encodeURIComponent(value)}`)).json();
+					const unselectedData = this.config.isMultiple ? data.filter((p) => !_classPrivateFieldGet2(_state$1, this).selectedMultiItems.some((item) => String(item.id) === String(p.id))) : data;
+					_classPrivateFieldGet2(_state$1, this).options = unselectedData.slice(0, this.config.max || 10);
+					this.renderOptions(menu);
+				} catch (error) {
+					console.error("DropdownBuilder Fetch Error:", error);
+				} finally {
+					_classPrivateFieldGet2(_state$1, this).isLoading = false;
+					this.renderInputState(input);
+				}
+			}, this.config.debounceDelay);
+		}
+		filterMenu(menu, keyword) {
+			const serialized = menu.dataset.options;
+			const source = serialized ? JSON.parse(serialized) : _classPrivateFieldGet2(_state$1, this).options;
+			const norm = keyword.trim().toLocaleLowerCase();
+			_classPrivateFieldGet2(_state$1, this).options = source.filter((option) => option.label.toLocaleLowerCase().includes(norm)).slice(0, this.config.max || 10);
+			this.renderOptions(menu);
+		}
+		handleSearch(input, datalist, hidden) {
+			const value = _classPrivateFieldGet2(_state$1, this).keyword;
+			const prevValue = _classPrivateFieldGet2(_state$1, this).value;
+			const minLength = this.config.min ?? 2;
+			const matchedOption = datalist.querySelector(`option[value="${CSS.escape(value)}"]`);
+			if (matchedOption) {
+				const selectedId = matchedOption.getAttribute("data-id") || "";
+				if (this.config.isMultiple) {
+					if (!_classPrivateFieldGet2(_state$1, this).selectedMultiItems.some((item) => String(item.id) === String(selectedId))) {
+						_classPrivateFieldGet2(_state$1, this).selectedMultiItems.push({
+							id: selectedId,
+							label: value
+						});
+						_classPrivateFieldGet2(_state$1, this).value = _classPrivateFieldGet2(_state$1, this).selectedMultiItems.map((item) => item.id).join(",");
+						const hidden = input.closest(".dropdown")?.querySelector("input[type='hidden']");
+						if (hidden) hidden.value = _classPrivateFieldGet2(_state$1, this).value;
+						if (this.config.onMultiChange) this.config.onMultiChange(_classPrivateFieldGet2(_state$1, this).selectedMultiItems);
+					}
+					input.value = "";
+					_classPrivateFieldGet2(_state$1, this).keyword = "";
+					_classPrivateFieldGet2(_state$1, this).options = [];
+				} else {
+					_classPrivateFieldGet2(_state$1, this).value = selectedId;
+					const hidden = input.closest(".dropdown")?.querySelector("input[type='hidden']");
+					if (hidden) hidden.value = selectedId;
+					if (this.config.onSelect) this.config.onSelect(value, selectedId);
+				}
+				if (this.config.isMultiple) this.renderOptions(datalist);
+				const tagsContainer = datalist.parentElement?.querySelector(".tags");
+				if (tagsContainer) this.renderTags(tagsContainer);
+				this.emitChange(hidden ?? input, prevValue);
+				return;
+			}
+			if (value.length < minLength) {
+				if (!this.config.apiUrl) this.renderLocalOptions(datalist, value);
+				else {
+					_classPrivateFieldGet2(_state$1, this).options = [];
+					this.renderOptions(datalist);
+				}
+				return;
+			}
+			if (!this.config.apiUrl) {
+				this.renderLocalOptions(datalist, value);
+				return;
+			}
+			_classPrivateFieldGet2(_state$1, this).isLoading = true;
+			this.renderInputState(input);
+			clearTimeout(this.debounceTimeout);
+			this.debounceTimeout = setTimeout(async () => {
+				try {
+					const unselectedData = (await (await fetch(`${this.config.apiUrl}?search=${encodeURIComponent(value)}`)).json()).filter((p) => !_classPrivateFieldGet2(_state$1, this).selectedMultiItems.some((item) => String(item.id) === String(p.id)));
+					const maxLimit = this.config.max || 10;
+					_classPrivateFieldGet2(_state$1, this).options = unselectedData.slice(0, maxLimit);
+					this.renderOptions(datalist);
+				} catch (error) {
+					console.error("DropdownBuilder Fetch Error:", error);
+				} finally {
+					_classPrivateFieldGet2(_state$1, this).isLoading = false;
+					this.renderInputState(input);
+				}
+			}, this.config.debounceDelay);
+		}
+		renderOptions(listEl) {
+			listEl.innerHTML = "";
+			const typeKey = listEl.tagName === "DATALIST" ? "@dropdown>list" : "@dropdown>menu";
+			this.template(typeKey, listEl, _classPrivateFieldGet2(_state$1, this).options);
+		}
+		renderLocalOptions(datalist, keyword) {
+			const serializedOptions = datalist.dataset.options;
+			const sourceOptions = serializedOptions ? JSON.parse(serializedOptions) : _classPrivateFieldGet2(_state$1, this).options;
+			const normalizedKeyword = keyword.trim().toLocaleLowerCase();
+			_classPrivateFieldGet2(_state$1, this).options = sourceOptions.filter((option) => option.label.toLocaleLowerCase().includes(normalizedKeyword)).slice(0, this.config.max || 10);
+			this.renderOptions(datalist);
+		}
+		renderTags(tagsContainerEl) {
+			tagsContainerEl.innerHTML = "";
+			this.template("@dropdown>tags", tagsContainerEl, _classPrivateFieldGet2(_state$1, this).selectedMultiItems);
+		}
+		renderInputState(inputEl) {
+			inputEl.classList.toggle("loading", _classPrivateFieldGet2(_state$1, this).isLoading);
+		}
+		/**
+		* 🔔 Event `change` BAWAAN (default) — meniru semantik <select>/<input> native:
+		* 1. Ditembak pada input tersembunyi (pembawa atribut `name`), BUKAN input teks:
+		*    - BuilderProxy.bind() menempelkan listener `change` LANGSUNG di elemen [name].
+		*    - Delegasi form (Cascade.attach) menangkap event yang menggelembung dari sana.
+		* 2. Hanya ditembak jika `#state.value` benar-benar berbeda dari `prevValue`
+		*    (klik item yang sama / hapus tag yang tidak ada TIDAK memicu change — persis native).
+		* 3. `bubbles: true` mengikuti konvensi codebase (InputControls/Cascade/FileUploader).
+		*/
+		emitChange(target, prevValue) {
+			if (!target || prevValue === _classPrivateFieldGet2(_state$1, this).value) return;
+			target.dispatchEvent(new Event("change", { bubbles: true }));
+		}
+		removeTag(id, tagsContainer) {
+			if (!id) return;
+			const prevValue = _classPrivateFieldGet2(_state$1, this).value;
+			_classPrivateFieldGet2(_state$1, this).selectedMultiItems = _classPrivateFieldGet2(_state$1, this).selectedMultiItems.filter((item) => String(item.id) !== String(id));
+			_classPrivateFieldGet2(_state$1, this).value = _classPrivateFieldGet2(_state$1, this).selectedMultiItems.map((item) => item.id).join(",");
+			const hidden = tagsContainer.closest(".dropdown")?.querySelector("input[type='hidden']");
+			if (hidden) hidden.value = _classPrivateFieldGet2(_state$1, this).value;
+			if (this.config.onMultiChange) this.config.onMultiChange(_classPrivateFieldGet2(_state$1, this).selectedMultiItems);
+			this.emitChange(hidden, prevValue);
+		}
+		/**
+		* Lifecycle: batalkan semua listener (via AbortController), bersihkan debounce,
+		* lalu serahkan pembersihan DOM/registry ke induk Builder.
+		*/
+		destroy(typeKey) {
+			this.abortController.abort();
+			if (this.debounceTimeout) {
+				clearTimeout(this.debounceTimeout);
+				this.debounceTimeout = null;
+			}
+			super.destroy(typeKey);
+		}
+		applyAttributes(el, attributes) {
+			for (const attribute of attributes) {
+				if (!attribute?.name) continue;
+				el.setAttribute(attribute.name, String(attribute.value ?? ""));
+			}
+		}
+	};
+	var _context2$1 = /* @__PURE__ */ new WeakMap();
+	/**
+	* Dropdown input module.
+	*
+	* `type: "dropdown"` is the one field type whose markup a sibling builder owns: the
+	* dropdown has its own open/close state, filtering and keyboard handling. Owning it here
+	* keeps `InputBuilder` free of a direct import, so a project that never uses a dropdown
+	* never pays for it.
+	*/
+	var DropdownInputModule$1 = class {
+		constructor(context) {
+			_classPrivateFieldInitSpec(this, _context2$1, void 0);
+			_classPrivateFieldSet2(_context2$1, this, context);
+		}
+		/**
+		* Builds the dropdown for a `dropdown` field.
+		*
+		* @param field - Resolved field payload.
+		* @returns The dropdown root, or `null` for any other type.
+		*/
+		renderControl(field) {
+			if (field.type !== "dropdown") return null;
+			const cfg = field.config ?? {};
+			const options = (cfg.options || []).map((option) => typeof option === "string" ? {
+				id: option,
+				label: option
+			} : {
+				id: option.value,
+				label: option.label
+			});
+			const payload = {
+				id: field.id,
+				title: field.title,
+				placeholder: field.placeholder,
+				value: field.value,
+				options,
+				name: field.name || field.id,
+				attributes: cfg.attributes || []
+			};
+			const element = new DropdownBuilder$1({
+				...cfg.dropdown,
+				themeId: _classPrivateFieldGet2(_context2$1, this).builderConfig.themeId || "default",
+				namespace: _classPrivateFieldGet2(_context2$1, this).builderConfig.namespace,
+				emit: _classPrivateFieldGet2(_context2$1, this).builderConfig.emit
+			}).create({
+				content: payload,
+				config: {
+					apiUrl: cfg.apiUrl || null,
+					debounceDelay: cfg.debounceDelay,
+					style: cfg.style || "select",
+					min: cfg.min,
+					max: cfg.max,
+					isMultiple: cfg.isMultiple,
+					onSelect: cfg.onSelect,
+					onMultiChange: cfg.onMultiChange
+				}
+			});
+			const hidden = element.querySelector("input[type='hidden']");
+			if (hidden && field.id) hidden.setAttribute("name", field.name || field.id);
+			return element;
+		}
+	};
+	/**
+	* Dropdown module definition.
+	*
+	* @example
+	* // registered by INPUT_MODULE_DEFINITIONS; omit it from a custom preset to drop the builder
+	*/
+	var dropdownInputModule$1 = {
+		id: INPUT_MODULE_IDS$1.dropdown,
+		load: (context) => new DropdownInputModule$1(context)
+	};
+	// packages/components/input/dist/FileUploader/FileUploader.js
+	/**
+	* 🧩 INPUT ADAPTER — file uploader for `InputBuilder`.
+	*
+	* Owned by the input layer, not by `FormBuilder`: `InputBuilder` mounts one
+	* instance per `type: "file"` element it creates and exposes the helpers other
+	* layers need through `InputBuilder` statics.
+	*/
+	/**
+	* Where this sheet is fetched from, spelled as the host keys it.
+	*
+	* Resolution falls back to the file name, so this must end in the same name the host
+	* uses (`@aio-ui/input/file-uploader.css`) — `"./FileUploader.css"` matched nothing and
+	* the uploader rendered unstyled without an error.
+	*/
+	var FILE_UPLOADER_STYLESHEET$1 = "./file-uploader.css";
+	/**
+	* @class
+	* @classdesc
+	*  A robust file upload manager that handles file selection, validation, and UI rendering.
+	*
+	* This class provides a comprehensive solution for managing file inputs, including:
+	* - Drag-and-drop support.
+	* - Real-time validation (file size, MIME types, upload limits).
+	* - Customizable UI views (thumbnails or list).
+	* - Automatic integration with Google Apps Script (via binary byte-stream conversion).
+	* - Support for multiple instances on a single page.
+	*/
+	var FileUploader$1 = class FileUploader$1 {
+		/**
+		* @typedef {Object} FileUploaderConfigMessages
+		* @property {function(number): string} selectedFiles - Message for selected files count.
+		* @property {function(number): string} readyFiles - Message for files ready to upload count.
+		* @property {function(number): string} unAllowedFiles - Message for unallowed files count.
+		* @property {function(number): string} tooMany - Message when too many files are selected.
+		* @property {function(string): string} tooLarge - Message when a file exceeds max size.
+		* @property {function(string): string} nearLimit - Message when a file is near max size.
+		* @property {function(string): string} notAccepted - Message when a file type is not accepted.
+		*/
+		/**
+		* @typedef {Object} FileUploaderConfig
+		* @property {string[]} [accept=["image/*", ".pdf"]] - Accepted file types/extensions.
+		* @property {string} [input='input[type="file"][data-uploader]'] - Selector for file input elements.
+		* @property {string} [closeButton=".close.icon"] - Selector for close button.
+		* @property {number} [maxFileSize=5242880] - Maximum file size in bytes (default 5MB).
+		* @property {number} [maxUpload=10] - Maximum number of files allowed to upload.
+		* @property {number} [warnFileSize=2097152] - File size in bytes to trigger a warning (default 2MB).
+		* @property {"thumbnails"|"list"|string} [view="thumbnails"] - Display mode for selected files.
+		* @property {boolean} [renderThumbnail=true] - Whether to render image thumbnails.
+		* @property {string|boolean} [groupUnallowed=true] - Whether to group unallowed files in the display.
+		* @property {FileUploaderConfigMessages} [messages] - Custom messages for various scenarios.
+		*/
+		/**
+		*
+		* @description
+		* Initializes a new FileUploader instance for a given file input element.
+		* It prevents multiple instances on the same input and sets up drag-and-drop functionality,
+		* file selection change listeners, and configuration based on defaults, provided config,
+		* and data attributes on the input element.
+		*
+		* @example
+		* // Initialize a file uploader on an input with data-uploader attribute
+		* const inputElement = document.querySelector('input[type="file"][data-uploader]');
+		* const uploader = new FileUploader(inputElement, {
+		*   maxUpload: 5,
+		*   accept: ["image/png", ".jpg"],
+		*   view: "list"
+		* });
+		*
+		* @example
+		* // Access static methods
+		* FileUploader.initAll(); // Initializes all uploaders on the page
+		* const files = FileUploader.getFiles("myFormId"); // Get files from a form
+		*
+		* @param {HTMLInputElement} input - The file input element to attach the uploader to.
+		* @param {FileUploaderConfig} [config={}] - Configuration options for the uploader.
+		* @throws {Error} (Implicit) If `input` is not a valid HTMLInputElement or its `closest('.field')` fails.
+		*
+		* @summary
+		* 1. **Instance Check**: Prevents re-initialization if an instance already exists on the input.
+		* 2. **DOM References**: Stores references to the input and its closest field container.
+		* 3. **Config Merging**: Merges default, provided, and data-attribute configurations.
+		* 4. **UI Setup**: Creates a `viewContainer` for displaying file previews.
+		* 5. **State Initialization**: Sets up arrays for `filesToUpload`, `_selectedFiles`, and `unAllowedFiles`.
+		* 6. **Event Listeners**: Attaches `change` and drag-and-drop listeners.
+		* 7. **Form Reset Listener**: Adds a global reset listener to the parent form if not already bound.
+		* 8. **Instance Storage**: Stores the instance on the input element for future reference.
+		*/
+		constructor(input, config = {}) {
+			_defineProperty(this, "input", null);
+			_defineProperty(this, "container", null);
+			_defineProperty(this, "viewContainer", null);
+			_defineProperty(this, "uploadInfo", null);
+			_defineProperty(this, "filesToUpload", []);
+			_defineProperty(this, "_selectedFiles", []);
+			_defineProperty(this, "unAllowedFiles", []);
+			_defineProperty(this, "_config", {});
+			ensureStylesheet$1(FILE_UPLOADER_STYLESHEET$1).catch(() => null);
+			if (input._uploaderInstance) return input._uploaderInstance;
+			this.input = input;
+			this.input.title = "You can select or drop the files here to upload.";
+			this.container = input.closest(".field");
+			const domAccept = (input.getAttribute("accept") || "").split(",").map((s) => s.trim()).filter(Boolean);
+			const configAccept = Array.isArray(config.accept) && config.accept.length > 0 ? config.accept.map((s) => s.trim()).filter(Boolean) : void 0;
+			const defaultAccept = Array.isArray(this.config.accept) && this.config.accept.length > 0 ? this.config.accept.map((s) => s.trim()).filter(Boolean) : void 0;
+			const resolvedMaxUpload = Number(input.dataset.maxUpload) || config.maxUpload || this.config.maxUpload;
+			const resolvedAccept = configAccept ?? (domAccept.length > 0 ? domAccept : defaultAccept ?? ["image/*", ".pdf"]);
+			this._config = {
+				...this.config,
+				...config,
+				maxUpload: resolvedMaxUpload,
+				maxFileSize: Number(input.dataset.maxFileSize) * 1024 * 1024 || config.maxFileSize || this.config.maxFileSize,
+				warnFileSize: Number(input.dataset.warnFileSize) * 1024 * 1024 || config.warnFileSize || this.config.warnFileSize,
+				groupUnallowed: input.dataset.groupUnallowed ?? config.groupUnallowed ?? this.config.groupUnallowed,
+				view: input.dataset.view || config.view || this.config.view,
+				accept: resolvedAccept,
+				renderThumbnail: input.dataset.thumbnail !== void 0 ? input.dataset.thumbnail !== "false" : config.renderThumbnail ?? this.config.renderThumbnail ?? true
+			};
+			this._syncInputAttributes();
+			this.viewContainer = document.createElement("div");
+			this.viewContainer.className = "file hidden";
+			if (this.container && this.viewContainer) this.container.append(this.viewContainer);
+			this.uploadInfo = null;
+			this.filesToUpload = [];
+			this._selectedFiles = [];
+			this.unAllowedFiles = [];
+			this._onSelectionChange();
+			this._onDragNdrop();
+			const form = this.input.closest("form");
+			if (form && !form.dataset.uploaderResetBound && form instanceof HTMLFormElement) {
+				form.addEventListener("reset", () => FileUploader$1.reset(form));
+				form.dataset.uploaderResetBound = "true";
+			}
+			input._uploaderInstance = this;
+		}
+		/**
+		* @private
+		*
+		* @description
+		* Attaches an event listener to the file input element to handle file selections.
+		* When files are selected (or changed), it converts the FileList to an array and
+		* passes them to the `handleFiles` method for processing.
+		*
+		* @returns {void}
+		*
+		* @example
+		* // This method is called internally by the constructor.
+		* // It listens for the 'change' event on `this.input`.
+		*
+		* @summary
+		* 1. **Event Listener**: Adds a 'change' event listener to `this.input`.
+		* 2. **File Extraction**: When the event fires, it extracts the selected files from `e.target.files`.
+		* 3. **File Handling**: Converts the `FileList` to an array and calls `this.handleFiles` with the new files.
+		*/
+		_onSelectionChange() {
+			if (!this.input) return;
+			this.input.addEventListener("change", (e) => {
+				const target = e.target;
+				const files = Array.from(target?.files ?? []);
+				this.handleFiles(files, false);
+			});
+		}
+		/**
+		* @private
+		*
+		* @description
+		* Attaches event listeners for drag-and-drop functionality to the file input's container.
+		* It handles `dragover`, `dragleave`, and `drop` events to allow users to drag files
+		* onto the input area, visually indicating the drag state and processing the dropped files.
+		*
+		* @returns {void}
+		*
+		* @summary
+		* 1. **Drag Over**: Adds a `dragover` event listener to prevent default to allow dropping,
+		*    and adds a `dragover` class to the container for visual feedback.
+		* 2. **Drag Leave**: Removes the `dragover` class when a file is dragged out of the container.
+		* 3. **Drop**: Prevents default on `drop`, removes the `dragover` class,
+		*    extracts files from the `dataTransfer` object, and calls `this.handleFiles` to process them.
+		*/
+		_onDragNdrop() {
+			if (!this.container) return;
+			this.container.addEventListener("dragover", (e) => {
+				e.preventDefault();
+				this.container?.classList.add("dragover");
+			});
+			this.container.addEventListener("dragleave", (_e) => {
+				this.container?.classList.remove("dragover");
+			});
+			this.container.addEventListener("drop", (e) => {
+				e.preventDefault();
+				this.container?.classList.remove("dragover");
+				const files = Array.from(e.dataTransfer?.files ?? []);
+				if (!files.length || !this.input) return;
+				this.handleFiles(files);
+			});
+		}
+		/**
+		* @private
+		*
+		*
+		* @description
+		* Attaches a click event listener to a close icon associated with a file item in the UI.
+		* When clicked, it removes the visual representation of the file, updates the internal
+		* `_selectedFiles` array, and re-processes the remaining files to ensure the UI and
+		* internal state are consistent. If no files remain, it clears the entire view.
+		*
+		* @param {File} file - The File object corresponding to the item being removed.
+		* @param {HTMLElement} closeIcon - The DOM element (e.g., an icon or button) that triggers the removal.
+		* @param {HTMLElement} wrapper - The DOM element that visually represents the file item (e.g., a div containing the thumbnail and info).
+		* @returns {void}
+		*
+		* @example
+		* // This method is called internally when rendering file items.
+		* // `this._onCloseRemoveItem(fileObject, closeButtonElement, fileItemWrapperElement);`
+		*
+		* @summary
+		* 1. **Event Listener**: Attaches a 'click' listener to the `closeIcon`.
+		* 2. **UI Removal**: Removes the `wrapper` element from the DOM.
+		* 3. **State Update**: Filters `_selectedFiles` to remove the specified `file`.
+		* 4. **Conditional Clear/Re-process**: If no files remain, calls `clearView(true)`. Otherwise, calls `handleFiles([])` to re-evaluate and re-render the current `_selectedFiles`.
+		*/
+		_onCloseRemoveItem(file, closeIcon, wrapper) {
+			closeIcon.addEventListener("click", () => {
+				wrapper.remove();
+				this._selectedFiles = this._selectedFiles.filter((f) => f.name !== file.name);
+				if (this._selectedFiles.length === 0) {
+					this.clearView(true, true);
+					return;
+				}
+				this.handleFiles([], true);
+			});
+		}
+		/**
+		*
+		* @param {File[]} newFiles - An array of new File objects to be added and processed.
+		*
+		* @description
+		* Processes a new set of files, merging them with already selected files,
+		* validating them against configured rules (max size, accepted types, max upload count),
+		* and then updating the UI to reflect the current state of allowed and unallowed files.
+		* It ensures that the native file input's `files` property is updated to only contain
+		* the files that are deemed "allowed" for upload.
+		*
+		* @example
+		* // Called when files are selected via input change or drag-and-drop.
+		* // `uploader.handleFiles(e.target.files);`
+		*
+		* @returns {void}
+		*
+		* @summary
+		* 1. **File Key Generation**: Defines a unique key for each file based on name, size, and last modified date.
+		* 2. **Merge New Files**: If `newFiles` are provided, it merges them into `_selectedFiles`, avoiding duplicates.
+		* 3. **Reset Partitions**: Clears `filesToUpload` and `unAllowedFiles` for a fresh evaluation.
+		* 4. **Initial Validation**: Runs `runValidation` on all `_selectedFiles` to get base validation results, without considering `maxUpload` yet.
+		* 5. **Select Allowed Files (up to maxUpload)**: Filters for initially allowed files and selects a subset based on `maxUpload` limit.
+		* 6. **Final Validation Pass**: Re-evaluates all `_selectedFiles` against the `maxUpload` limit, demoting files that were initially allowed but exceed the limit.
+		* 7. **Sort Files**: Sorts the files based on their validation status (allowed first, then warnings, then hard failures).
+		* 8. **Update Partitions**: Populates `filesToUpload` and `unAllowedFiles` based on the final sorted validations.
+		* 9. **Update Native FileList**: Attempts to update the native `input.files` property with only the `filesToUpload`.
+		* 10. **Render View**: Calls `renderView` to update the UI with the processed files.
+		*/
+		handleFiles(newFiles, emitChange = true) {
+			const fileKey = (file) => `${file.name}|${file.size}|${file.lastModified || 0}`;
+			const allowsMultiple = this.input?.multiple ?? false;
+			const maxUpload = this.config.maxUpload ?? Infinity;
+			if (Array.isArray(newFiles) && newFiles.length > 0) {
+				const incomingFiles = allowsMultiple && maxUpload > 1 ? newFiles : [newFiles[0]];
+				if (!allowsMultiple || maxUpload <= 1) this._selectedFiles = incomingFiles.filter(Boolean);
+				else {
+					const existing = new Set(this._selectedFiles.map((f) => fileKey(f)));
+					for (const f of incomingFiles) {
+						const k = fileKey(f);
+						if (!existing.has(k)) {
+							this._selectedFiles.push(f);
+							existing.add(k);
+						}
+					}
+				}
+			}
+			this.filesToUpload.length = 0;
+			this.unAllowedFiles.length = 0;
+			const max = this.config.maxUpload ?? Infinity;
+			const entries = this._selectedFiles.map((file, idx) => {
+				return {
+					file,
+					base: this.runValidation(file, void 0),
+					originalIndex: idx
+				};
+			});
+			const chosenAllowed = entries.filter((e) => e.base.allowed === true).slice(0, max).map((e) => e.file);
+			const chosenAllowedSet = new Set(chosenAllowed.map((f) => fileKey(f)));
+			const final = entries.map((e) => {
+				const { file, base } = e;
+				const key = fileKey(file);
+				if (chosenAllowedSet.has(key)) return {
+					file,
+					validation: {
+						...base,
+						allowed: true,
+						unAllowedGroup: false
+					}
+				};
+				if (!base.allowed) return {
+					file,
+					validation: {
+						...base,
+						allowed: false
+					}
+				};
+				const messages = this.config.messages ?? FileUploader$1.config.messages;
+				return {
+					file,
+					validation: {
+						...base,
+						allowed: false,
+						unAllowedGroup: true,
+						message: messages?.tooMany(max) ?? null
+					}
+				};
+			});
+			const weight = (v) => {
+				if (v.allowed) return 0;
+				if (v.notAccepted || v.unAllowedGroup || v.maxFileSize) return 2;
+				return 1;
+			};
+			const stable = final.map((item, i) => ({
+				item,
+				i
+			}));
+			stable.sort((a, b) => {
+				const wa = weight(a.item.validation);
+				const wb = weight(b.item.validation);
+				if (wa !== wb) return wa - wb;
+				return a.i - b.i;
+			});
+			const sorted = stable.map((s) => s.item);
+			this.filesToUpload = sorted.filter((v) => v.validation.allowed).map((v) => v.file);
+			this.unAllowedFiles = sorted.filter((v) => !v.validation.allowed).map((v) => {
+				const { name: _ignoredName, ...validation } = v.validation;
+				return {
+					name: v.file.name,
+					file: v.file,
+					...validation
+				};
+			});
+			try {
+				const dt = new DataTransfer();
+				this.filesToUpload.forEach((f) => dt.items.add(f));
+				if (this.input) {
+					this.input.files = dt.files;
+					if (emitChange) this.input.dispatchEvent(new Event("change", { bubbles: true }));
+				}
+			} catch (err) {
+				console.warn("Could not set input.files programmatically:", err);
+			}
+			this.renderView(final);
+		}
+		/**
+		*
+		* @param {Object[]} validations - An array of objects, each containing a `File` object and its `validation` result.
+		*
+		* @description
+		* Renders the visual representation of the selected files (both allowed and unallowed)
+		* based on the configured `view` mode ("list" or "thumbnails"). It first clears
+		* any existing view and then calls the appropriate build method (`_buildListView` or `_buildThumbnailsView`).
+		* Finally, it updates the upload information summary.
+		*
+		* @returns {void}
+		*
+		* @example
+		* // Called internally by `handleFiles` after file processing.
+		* // `this.renderView(finalValidationResults);`
+		*
+		* @summary
+		* 1. **Reset UI**: Clears the `viewContainer`'s content and class, then adds the appropriate view class and removes 'hidden'.
+		* 2. **Conditional Build**: Calls `_buildListView` if `config.view` is "list", otherwise calls `_buildThumbnailsView`.
+		* 3. **Update Info**: Calls `updateUploadInfo` to display a summary of selected and allowed files.
+		*/
+		renderView(validations) {
+			if (!this.viewContainer) return;
+			this.viewContainer.className = `file${this.config.view === "list" ? " list" : " thumbnails"} hidden`;
+			this.viewContainer.replaceChildren();
+			this.viewContainer.classList.remove("hidden");
+			if (!validations.length) {
+				this.viewContainer.replaceChildren();
+				this.viewContainer.classList.add("hidden");
+				return;
+			}
+			if (this.config.view === "list") this._buildListView(validations);
+			else this._buildThumbnailsView(validations);
+			this.updateUploadInfo(this._selectedFiles.length, this.filesToUpload.length);
+		}
+		/**
+		* @private
+		*
+		*
+		* @description
+		* Removes the file uploader and cleans up all associated event listeners and DOM elements.
+		* This method should be called when the file uploader is no longer needed to prevent memory leaks.
+		*
+		* @returns {void}
+		*
+		* @summary
+		* 1. **Remove Element**: Removes the main `container` element from the DOM.
+		* 2. **Clean State**: Resets the `input`, `container`, `viewContainer`, `uploadInfo`, and file arrays.
+		* 3. **Event Cleanup**: Removes all event listeners attached to the input and its container.
+		*
+		* @example
+		* // Call this method when you want to remove the file uploader.
+		* // `uploaderInstance.destroy();`
+		*/
+		destroy() {
+			if (this.container && this.container.parentNode) this.container.remove();
+			if (this.input) delete this.input._uploaderInstance;
+			this.input = null;
+			this.container = null;
+			this.viewContainer = null;
+			this.uploadInfo = null;
+			this.filesToUpload = [];
+			this._selectedFiles = [];
+			this.unAllowedFiles = [];
+		}
+		/**
+		* @private
+		*
+		* @param {Object[]} validations - An array of objects, each containing a `File` object and its `validation` result.
+		*
+		* @description
+		* Builds and appends the list-style view for files to the `viewContainer`.
+		* Each file is represented as an `item` with a thumbnail (if enabled), content (message),
+		* file size, and a close button. It also handles grouping of unallowed files if configured.
+		*
+		* @returns {void}
+		*
+		* @example
+		* // Called internally by `renderView` when `config.view` is "list".
+		* // `this._buildListView(validations);`
+		*
+		* @summary
+		* 1. **Initialize Counter**: Sets `countMSNA` to track files unallowed due to max size or non-acceptance.
+		* 2. **Iterate Validations**: Loops through each file and its validation result.
+		* 3. **Skip Grouped Unallowed**: If `groupUnallowed` is true and the file is part of an `unAllowedGroup` (exceeded max upload count), it skips rendering the individual item.
+		* 4. **Count Max Size/Not Accepted**: Increments `countMSNA` for files unallowed due to size or type, if `groupUnallowed` is active.
+		* 5. **Create Item Elements**: Creates `div.item`, `div.content`, `div.label.filesize`, and `div.close.button` for each file.
+		* 6. **Thumbnail**: Creates and appends a thumbnail if `renderThumbnail` is true.
+		* 7. **Message**: Appends the file message (name, status, validation message).
+		* 8. **File Size**: Displays the formatted file size and adds 'unallowed' class if applicable.
+		* 9. **Close Button**: Creates a close button and attaches `_onCloseRemoveItem` listener.
+		* 10. **Append to View**: Appends all created elements to the `item`, then appends the `item` to `viewContainer`.
+		* 11. **Grouped Summary**: If `groupUnallowed` is true and there are files exceeding the max upload limit, it creates and appends a summary item for them.
+		*/
+		_buildListView(validations) {
+			const viewContainer = this.viewContainer;
+			if (!viewContainer) return;
+			let countMSNA = 0;
+			validations.forEach(({ file, validation }) => {
+				if (this.config.groupUnallowed && validation.unAllowedGroup) return;
+				if (this.config.groupUnallowed && validation.maxFileSize || this.config.groupUnallowed && validation.notAccepted) countMSNA++;
+				const item = document.createElement("div");
+				item.classList.add("item");
+				const thumb = this.config.renderThumbnail ? this.createImageThumbnail(file) : null;
+				const content = document.createElement("div");
+				content.classList.add("content");
+				content.appendChild(this.createMessage(file, validation));
+				const size = document.createElement("div");
+				size.classList.add("label", "filesize");
+				size.textContent = this._formatFileSize(file.size);
+				if (!validation.allowed) size.classList.add("unallowed");
+				const close = document.createElement("div");
+				close.classList.add("close", "button");
+				close.insertAdjacentHTML("afterbegin", `<i class="icon trash"></i>`);
+				this._onCloseRemoveItem(file, close, item);
+				if (thumb) item.append(thumb);
+				item.append(content, size, close);
+				viewContainer.appendChild(item);
+			});
+			if (this._config.groupUnallowed) {
+				const groupedExceeded = validations.find((v) => v.validation.unAllowedGroup);
+				if (groupedExceeded) {
+					const unallowedCount = this._selectedFiles.length - (this.filesToUpload.length + countMSNA);
+					const message = groupedExceeded.validation.message ?? "File is not allowed.";
+					const item = this.createUnallowedItem("list", message, unallowedCount);
+					item.title = this.unAllowedFiles.map((f) => f.name).join(", ");
+					viewContainer.appendChild(item);
+				}
+			}
+		}
+		/**
+		* @private
+		*
+		* @param {Object[]} validations - An array of objects, each containing a `File` object and its `validation` result.
+		*
+		* @description
+		* Builds and appends the thumbnail-style view for files to the `viewContainer`.
+		* It creates two main rows: one for thumbnails and one for details (messages).
+		* Each file's thumbnail is displayed with its size and a close button, and its
+		* validation message is shown in the details row. It also handles grouping of
+		* unallowed files if configured.
+		*
+		* @returns {void}
+		*
+		* @example
+		* // Called internally by `renderView` when `config.view` is "thumbnails".
+		* // `this._buildThumbnailsView(validations);`
+		*
+		* @summary
+		* 1. **Create Row Containers**: Creates `rowThumbs` for thumbnails and `rowDetails` for messages.
+		* 2. **Initialize Counter**: Sets `countMSNA` to track files unallowed due to max size or non-acceptance.
+		* 3. **Iterate Validations**: Loops through each file and its validation result.
+		* 4. **Skip Grouped Unallowed**: If `groupUnallowed` is true and the file is part of an `unAllowedGroup`, it skips rendering the individual item.
+		* 5. **Count Max Size/Not Accepted**: Increments `countMSNA` for files unallowed due to size or type, if `groupUnallowed` is active.
+		* 6. **Create Item Elements**: Creates `div.item` for each file.
+		* 7. **Thumbnail**: Creates and appends a thumbnail if `renderThumbnail` is true, adding 'unallowed' or 'warning' classes as needed.
+		* 8. **File Size**: Displays the formatted file size.
+		* 9. **Close Button**: Creates a close button and attaches `_onCloseRemoveItem` listener.
+		* 10. **Append to Rows**: Appends the item to `rowThumbs` and the message to `rowDetails`.
+		* 11. **Append Rows to View**: Appends `rowThumbs` and `rowDetails` to `viewContainer`.
+		* 12. **Grouped Summary**: If `groupUnallowed` is true and there are files exceeding the max upload limit, it creates and appends a summary item for them in `rowDetails`.
+		*/
+		_buildThumbnailsView(validations) {
+			const viewContainer = this.viewContainer;
+			if (!viewContainer) return;
+			const rowThumbs = document.createElement("div");
+			rowThumbs.classList.add("filerow");
+			const rowDetails = document.createElement("div");
+			rowDetails.classList.add("filerow", "details");
+			rowDetails.insertAdjacentHTML("afterbegin", `<div class="title">Details</div>`);
+			let countMSNA = 0;
+			validations.forEach(({ file, validation }) => {
+				if (this.config.groupUnallowed && validation.unAllowedGroup) return;
+				if (this.config.groupUnallowed && validation.maxFileSize || this.config.groupUnallowed && validation.notAccepted) countMSNA++;
+				const item = document.createElement("div");
+				item.classList.add("item");
+				if (this.config.renderThumbnail) {
+					const thumb = this.createImageThumbnail(file);
+					if (!validation.allowed) thumb.classList.add("unallowed");
+					if (validation.allowed && validation.warning) thumb.classList.add("warning");
+					item.append(thumb);
+				}
+				const size = document.createElement("div");
+				size.classList.add("label", "filesize");
+				size.textContent = this._formatFileSize(file.size);
+				const close = document.createElement("div");
+				close.classList.add("close", "button");
+				close.title = `Remove ${file.name}`;
+				close.insertAdjacentHTML("afterbegin", `<i class="icon close"></i>`);
+				this._onCloseRemoveItem(file, close, item);
+				item.append(size, close);
+				rowThumbs.appendChild(item);
+				rowDetails.appendChild(this.createMessage(file, validation));
+			});
+			viewContainer.append(rowThumbs, rowDetails);
+			if (this._config.groupUnallowed) {
+				const groupedExceeded = validations.find((v) => v.validation.unAllowedGroup);
+				if (groupedExceeded) {
+					const unallowedCount = this._selectedFiles.length - (this.filesToUpload.length + countMSNA);
+					const msg = this.createUnallowedItem("thumbnails", groupedExceeded.validation.message, unallowedCount);
+					msg.dataset.filename = this.unAllowedFiles.map((f) => f.name).join(", ");
+					rowDetails.appendChild(msg);
+				}
+			}
+		}
+		/**
+		* @public
+		*
+		* @param {"list"|"thumbnails"} view - The current view mode ("list" or "thumbnails").
+		* @param {string} msg - The validation message explaining why the files are unallowed.
+		* @param {number} count - The number of unallowed files being grouped.
+		*
+		* @description
+		* Creates a DOM element to display a grouped summary of unallowed files,
+		* typically used when `groupUnallowed` is enabled and multiple files
+		* exceed the `maxUpload` limit or are unallowed for other reasons.
+		* The structure of the element varies slightly based on the `view` mode.
+		*
+		* @returns {HTMLElement} The created DOM element representing the grouped unallowed files message.
+		*
+		* @example
+		* // Called internally by `_buildListView` or `_buildThumbnailsView` for grouped unallowed files.
+		* // `this.createUnallowedItem("list", "Too many files selected.", 3);`
+		*
+		* @summary
+		* 1. **Message Text**: Constructs a generic message indicating the number of files not uploaded.
+		* 2. **List View**:
+		*    - Creates a `div.item` as the main container.
+		*    - Adds a generic file icon thumbnail.
+		*    - Creates a `div.content` to hold the filename and info.
+		*    - Displays the `messageText` as the filename.
+		*    - Displays the specific `msg` from validation as info, with a 'times circle' icon.
+		* 3. **Thumbnails View**:
+		*    - Creates a `div.message.unallowed.group` as the main container.
+		*    - Displays the `messageText` with a file icon as the filename.
+		*    - Displays the specific `msg` from validation as info, with a 'times circle' icon.
+		* 4. **Return Element**: Returns the constructed DOM element.
+		*
+		* @security
+		* - Uses `textContent` for `msg` to prevent XSS when inserting validation messages.
+		*/
+		createUnallowedItem(view, msg, count) {
+			const messageText = `${count} file(s) will not be uploaded.`;
+			if (view === "list") {
+				const item = document.createElement("div");
+				item.classList.add("item");
+				const exImg = document.createElement("div");
+				exImg.classList.add("thumbnail", "image");
+				exImg.insertAdjacentHTML("afterbegin", `<i class="icon file"></i>`);
+				const content = document.createElement("div");
+				content.classList.add("content");
+				const messageGroup = document.createElement("div");
+				messageGroup.classList.add("message", "group");
+				const filename = document.createElement("div");
+				filename.classList.add("filename");
+				filename.style.color = "var(--input-file-unallowed-color)";
+				filename.textContent = messageText;
+				const info = document.createElement("div");
+				info.classList.add("info", "unallowed");
+				info.textContent = msg;
+				const icon = document.createElement("i");
+				icon.classList.add("icon", "cross", "circle");
+				info.appendChild(icon);
+				messageGroup.append(filename, info);
+				content.appendChild(messageGroup);
+				item.append(exImg, content);
+				return item;
+			} else {
+				const item = document.createElement("div");
+				item.classList.add("message", "unallowed", "group");
+				const filename = document.createElement("div");
+				filename.classList.add("filename");
+				filename.style.color = "var(--input-file-unallowed-color)";
+				filename.insertAdjacentHTML("afterbegin", `<i class="icon file"></i> ${messageText}`);
+				const info = document.createElement("div");
+				info.classList.add("info", "unallowed");
+				info.textContent = msg;
+				const icon = document.createElement("i");
+				icon.classList.add("icon", "close", "circle");
+				info.appendChild(icon);
+				item.append(filename, info);
+				return item;
+			}
+		}
+		/**
+		* @public
+		*
+		* @description
+		* Creates a `div` element containing an `img` tag that displays a thumbnail
+		* for the given file. If the file is an image, it uses `URL.createObjectURL`
+		* to generate a preview. For other file types, it generates an SVG icon
+		* based on the file extension.
+		*
+		* @param {File} file - The File object for which to create a thumbnail.
+		* @returns {HTMLDivElement} The `div` element containing the thumbnail image.
+		*
+		*/
+		createImageThumbnail(file) {
+			const thumb = document.createElement("div");
+			thumb.classList.add("thumbnail", "image");
+			const img = document.createElement("img");
+			if (file.type.startsWith("image/")) {
+				img.src = URL.createObjectURL(file);
+				img.onload = () => URL.revokeObjectURL(img.src);
+			} else img.src = this._getSvgThumbnail(file);
+			img.title = file.name;
+			thumb.appendChild(img);
+			return thumb;
+		}
+		/**
+		* @public
+		*
+		* @param {number} allSelectedFiles
+		* @param {number} totalAllowedFiles
+		* @returns {void}
+		*/
+		updateUploadInfo(allSelectedFiles, totalAllowedFiles) {
+			const messages = this.config.messages ?? FileUploader$1.config.messages;
+			if (!this.viewContainer || !messages) return;
+			const totalFilesMsg = `
+      <div class="message">
+        <i class="copy file icon"></i>
+        ${messages.selectedFiles(allSelectedFiles)}
+      </div>`;
+			const allowedFilesMsg = `
+      <div class="message allowed">
+        <i class="checkmark circle icon"></i>
+        ${messages.readyFiles(totalAllowedFiles)}
+      </div>`;
+			const unAllowedFilesMsg = `
+      <div class="message unallowed">
+        <i class="cross circle icon"></i>
+        ${messages.unAllowedFiles(allSelectedFiles - totalAllowedFiles)}
+      </div>`;
+			this.uploadInfo = document.createElement("div");
+			this.uploadInfo.classList.add("item", "info");
+			this.viewContainer.prepend(this.uploadInfo);
+			if (this._selectedFiles.length - this.filesToUpload.length > 0) this.uploadInfo.insertAdjacentHTML("beforeend", `${totalFilesMsg} ${allowedFilesMsg} ${unAllowedFilesMsg}`);
+			else this.uploadInfo.insertAdjacentHTML("beforeend", `${totalFilesMsg} ${allowedFilesMsg}`);
+		}
+		/**
+		* @public
+		*
+		*
+		* @description
+		* Creates a DOM element to display a file's name, status, and any associated validation message.
+		* It includes an icon representing the file type and another icon indicating its validation status.
+		*
+		* @returns {HTMLDivElement} The created DOM element representing the file message.
+		*
+		* @example
+		* // Called internally by `_buildListView` or `_buildThumbnailsView`.
+		* // `this.createMessage(fileObject, { allowed: true, message: "Ready to upload" });`
+		*
+		* @summary
+		* 1. **Create Wrapper**: Creates a `div` element with class "message" to contain the file information.
+		* 2. **Define Icons**: Sets up an object mapping validation states ("allowed", "unallowed", "warning") to their respective Semantic UI icon HTML.
+		* 3. **Filename Element**: Creates a `div` for the filename, including a file type icon and a truncated version of the file's name.
+		* 4. **Info Element**: Creates a `div` for additional information or validation messages.
+		* 5. **Conditional Message**: If a `validation.message` exists, it adds appropriate styling ("warning" or "unallowed") and displays the message along with its corresponding icon.
+		* 6. **Default Message**: If no specific validation message, it displays "Ready to upload" with the "allowed" icon.
+		* 7. **Append Elements**: Appends the filename and info elements to the wrapper.
+		* 8. **Return Element**: Returns the constructed wrapper element.
+		*
+		* @param {File} file - The File object for which to create the message.
+		* @param {Object} validation - The validation result object for the file.
+		* @param {boolean} validation.allowed - Whether the file is allowed for upload.
+		* @param {string} [validation.message] - The validation message (e.g., warning, error).
+		*/
+		createMessage(file, validation) {
+			const wrapper = document.createElement("div");
+			wrapper.classList.add("message");
+			const icons = {
+				allowed: `<i class="checkmark circle icon"></i>`,
+				unallowed: `<i class="cross circle icon"></i>`,
+				warning: `<i class="error icon"></i>`
+			};
+			const filename = document.createElement("div");
+			filename.classList.add("filename");
+			filename.insertAdjacentHTML("beforeend", this._getFileIconSVG(file) + truncateText$1(file.name, 15));
+			const info = document.createElement("div");
+			info.classList.add("info");
+			if (validation.message) {
+				const state = validation.allowed ? "warning" : "unallowed";
+				info.classList.add(state);
+				info.insertAdjacentHTML("beforeend", validation.message + " " + icons[state]);
+			} else {
+				info.classList.add("allowed");
+				info.insertAdjacentHTML("beforeend", "Ready to upload " + icons.allowed);
+			}
+			wrapper.append(filename, info);
+			return wrapper;
+		}
+		/**
+		* @public
+		*
+		*
+		* @description
+		* Clears the file uploader view and resets its internal state.
+		* This method removes all file previews from the UI and clears the internal arrays that store file references.
+		* It can optionally clear the actual file input element as well.
+		*
+		* @param {boolean} [clearInput=false] - If true, the file input element will also be cleared.
+		* @returns {void}
+		*
+		* @example
+		* // Clear the view and the input
+		* uploaderInstance.clearView(true);
+		*
+		* @example
+		* // Clear only the view, keeping the input value
+		* uploaderInstance.clearView(false);
+		*
+		* @summary
+		* 1. **View Container Cleanup**: Removes all content from `this.viewContainer` and hides it.
+		* 2. **State Reset**: Clears the `filesToUpload` and `unAllowedFiles` arrays.
+		* 3. **Optional Input Reset**: If `clearInput` is true, it also clears the `_selectedFiles` array and resets the value of the actual file input element.
+		*/
+		clearView(clearInput = false, emitChange = false) {
+			if (this.viewContainer) {
+				this.viewContainer.className = "";
+				this.viewContainer.replaceChildren();
+				this.viewContainer.classList.add("hidden");
+			}
+			this.filesToUpload.length = 0;
+			this.unAllowedFiles.length = 0;
+			if (clearInput) {
+				this._selectedFiles = [];
+				if (this.input) {
+					this.input.value = "";
+					if (emitChange) this.input.dispatchEvent(new Event("change", { bubbles: true }));
+				}
+			}
+		}
+		/**
+		* @typedef {Object} FileValidationResult
+		* @property {boolean} allowed - True if the file is allowed for upload, false otherwise.
+		* @property {boolean} [unAllowedGroup] - True if the file was disallowed because it exceeded the maxUpload limit.
+		* @property {string|null} message - A message explaining the validation status (e.g., warning, error).
+		* @property {string} name - The name of the file.
+		* @property {boolean} [notAccepted] - True if the file type is not accepted.
+		* @property {boolean} [maxFileSize] - True if the file size exceeds the maximum allowed.
+		* @property {boolean} [warning] - True if the file triggers a warning (e.g., near max size).
+		*/
+		/**
+		* @public
+		*
+		* @description
+		* Validates a given file against the configured rules such as maximum file size,
+		* accepted file types, and maximum number of files allowed for upload.
+		* It returns an object detailing the validation result, including whether the file is allowed,
+		* any specific reasons for disallowance, and a user-friendly message.
+		*
+		* @param {File} file - The File object to validate.
+		* @param {number} [index] - The index of the file in the selection. Used for `maxUpload` validation.
+		* @returns {FileValidationResult} An object containing the validation status and message.
+		*
+		* @example
+		* // Validate a file
+		* const myFile = new File(["content"], "document.pdf", { type: "application/pdf" });
+		* const validationResult = uploader.runValidation(myFile);
+		* console.log(validationResult);
+		* // { allowed: true, message: null, name: "document.pdf" }
+		*
+		* @example
+		* // Validate a file that exceeds max size
+		* const largeFile = new File(new ArrayBuffer(6 * 1024 * 1024), "large.jpg", { type: "image/jpeg" });
+		* const validationResult = uploader.runValidation(largeFile);
+		* console.log(validationResult);
+		* // { allowed: false, maxFileSize: true, message: "Exceeds the maximum file size of 5.0 MB.", name: "large.jpg" }
+		*
+		* @example
+		* // Validate a file that is beyond the maxUpload limit (assuming maxUpload is 2 and this is the 3rd file)
+		* // const validationResult = uploader.runValidation(anotherFile, 2); // index 2 means 3rd file
+		* // console.log(validationResult);
+		* // { allowed: false, unAllowedGroup: true, message: "Maximum of 2 files allowed.", name: "another.png" }
+		*
+		* @summary
+		* 1. **Extract Config**: Destructures relevant configuration properties.
+		* 2. **Max Upload Check**: If `index` is provided and exceeds `maxUpload`, marks the file as `unAllowedGroup`.
+		* 3. **Accepted File Type Check**: Uses `_isAcceptedFile` to check if the file type is allowed. If not, constructs a readable error message.
+		* 4. **Max File Size Check**: Compares `file.size` with `maxFileSize`.
+		* 5. **Warning File Size Check**: Compares `file.size` with `warnFileSize` to issue a warning if near the limit.
+		* 6. **Default Allowed**: If all checks pass, the file is marked as allowed.
+		*/
+		runValidation(file, index) {
+			const { maxFileSize, maxUpload, warnFileSize, accept } = this.config;
+			const messages = this.config.messages ?? FileUploader$1.config.messages;
+			if (typeof index === "number" && maxUpload && index >= maxUpload) return {
+				allowed: false,
+				unAllowedGroup: true,
+				message: messages?.tooMany(maxUpload) ?? null,
+				name: file.name
+			};
+			if (accept && !this._isAcceptedFile(file, accept)) {
+				const readableTypes = accept.map((type) => {
+					if (type.startsWith(".")) return type.toUpperCase().replace(".", "");
+					if (type.includes("/*")) {
+						const category = type.split("/")[0];
+						return category.charAt(0).toUpperCase() + category.slice(1) + "s";
+					}
+					if (type.includes("/")) return type.split("/")[1].toUpperCase();
+					return type;
+				});
+				return {
+					allowed: false,
+					notAccepted: true,
+					message: (messages?.notAccepted(readableTypes.join(", ")) ?? "File type is not accepted.") + ` You tried '${file.type || file.name}'.`,
+					name: file.name
+				};
+			}
+			if (maxFileSize && file.size > maxFileSize) return {
+				allowed: false,
+				maxFileSize: true,
+				message: messages?.tooLarge(this._formatFileSize(maxFileSize)) ?? null,
+				name: file.name
+			};
+			const maxSize = maxFileSize ?? Number.POSITIVE_INFINITY;
+			if (warnFileSize && file.size > warnFileSize && file.size < maxSize) return {
+				allowed: true,
+				warning: true,
+				message: messages?.nearLimit(this._formatFileSize(maxSize)) ?? null,
+				name: file.name
+			};
+			return {
+				allowed: true,
+				message: null,
+				name: file.name
+			};
+		}
+		/**
+		* @public
+		*
+		* @description
+		* Getter for the merged configuration object. It combines the static default configuration
+		* with any instance-specific configuration provided during instantiation.
+		*
+		* @returns {FileUploaderConfig} The merged configuration object for this instance.
+		*
+		* @example
+		* const uploader = new FileUploader(inputElement, { maxUpload: 5 });
+		* console.log(uploader.config.maxUpload); // Output: 5
+		* console.log(uploader.config.view);     // Output: "thumbnails" (default)
+		*
+		* @summary
+		* 1. **Merge Configurations**: Spreads the static `FileUploader.config` (defaults)
+		*    and the instance's `_config` (overrides) into a new object.
+		* 2. **Return Merged Config**: Returns the resulting merged configuration.
+		*/
+		get config() {
+			return {
+				...FileUploader$1.config,
+				...this._config
+			};
+		}
+		/**
+		* @public
+		*
+		* @description
+		* Getter for the default configuration object.
+		*
+		* @returns {FileUploaderConfig} The default configuration object for the FileUploader class.
+		*
+		* @example
+		* console.log(FileUploader.config.maxUpload); // Output: 10
+		* console.log(FileUploader.config.view);     // Output: "thumbnails" (default)
+		*
+		* @summary
+		* 1. **Access Static Default Config**: Checks for a cached `_configDefaults` property.
+		* 2. **Create Defaults if Needed**: If no cached defaults, it initializes a new configuration object
+		*    with default values for all settings (e.g., `accept`, `maxFileSize`, `view`, etc.)
+		* 3. **Return Defaults**: Returns the default configuration object.
+		*/
+		static get config() {
+			return this._configDefaults || {
+				accept: ["image/*", ".pdf"],
+				input: "input[type=\"file\"][data-uploader]",
+				container: "",
+				closeButton: ".close.icon",
+				maxFileSize: 5242880,
+				maxUpload: 10,
+				warnFileSize: 2097152,
+				view: "thumbnails",
+				renderThumbnail: true,
+				groupUnallowed: true,
+				icons: {
+					remove: `<i class="close icon"></i>`,
+					allowed: `<i class="check circle icon"></i>`,
+					unallowed: `<i class="times circle icon"></i>`,
+					warning: `<i class="circle exclamation icon"></i>`,
+					image: `<i class="file image icon"></i>`,
+					audio: `<i class="file audio icon"></i>`,
+					video: `<i class="file video icon"></i>`,
+					pdf: `<i class="file pdf icon"></i>`,
+					file: `<i class="file icon"></i>`,
+					files: `<i class="copy file icon"></i>`
+				},
+				messages: {
+					selectedFiles: (count) => `${count} selected file(s)`,
+					readyFiles: (count) => `${count} file(s) ready to upload.`,
+					unAllowedFiles: (count) => `${count} file(s) not allowed.`,
+					tooMany: (limit) => `Maximum of ${limit} files allowed.`,
+					tooLarge: (maxSize) => `Exceeds the maximum file size of ${maxSize}.`,
+					nearLimit: (warnSize) => `Is near the max file size (${warnSize}).`,
+					notAccepted: (acceptablefileType) => `Only '${acceptablefileType}' type are allowed.`
+				}
+			};
+		}
+		/**
+		*
+		* @static
+		*
+		* @description
+		* Setter for the static default configuration of the `FileUploader` class.
+		* This allows global modification of default settings for all future `FileUploader` instances
+		* that do not explicitly override these settings.
+		*
+		* @param {FileUploaderConfig} custom - An object containing custom configuration properties
+		*   to merge with the existing static defaults.
+		* @returns {void}
+		*
+		* @example
+		* FileUploader.config = { maxUpload: 20, accept: ["image/*"] };
+		* // Now, all new FileUploader instances will default to max 20 uploads and only images.
+		*
+		* @summary
+		* 1. **Merge Custom Config**: Merges the provided `custom` configuration with the current static defaults.
+		* 2. **Update Defaults**: Stores the new merged configuration as the static `_configDefaults`.
+		*/
+		static set config(custom) {
+			this._configDefaults = {
+				...this.config,
+				...custom
+			};
+		}
+		/**
+		* @private
+		*
+		* @description
+		* Synchronizes native input attributes with the resolved uploader configuration.
+		* This keeps the browser file picker behavior aligned with the uploader logic.
+		*/
+		_syncInputAttributes() {
+			if (!this.input) return;
+			const acceptValue = (this._config.accept ?? []).join(",");
+			if (acceptValue) this.input.setAttribute("accept", acceptValue);
+			else this.input.removeAttribute("accept");
+			if ((this._config.maxUpload ?? Infinity) > 1) {
+				this.input.setAttribute("multiple", "");
+				this.input.multiple = true;
+			} else {
+				this.input.removeAttribute("multiple");
+				this.input.multiple = false;
+			}
+		}
+		static reset(input = null) {
+			const selector = this.config.input ?? "input[type=\"file\"][data-uploader]";
+			if (input instanceof HTMLInputElement) {
+				const uploaderInstance = input._uploaderInstance;
+				if (uploaderInstance) uploaderInstance.clearView(true);
+			} else if (input instanceof HTMLFormElement) input.querySelectorAll(selector).forEach((inp) => {
+				inp._uploaderInstance?.clearView(true);
+			});
+			else document.querySelectorAll(selector).forEach((inp) => {
+				inp._uploaderInstance?.clearView(true);
+			});
+		}
+		/**
+		* @static
+		*
+		* @description
+		* Retrieves all files selected across all `FileUploader` instances within a specific form.
+		* It groups the files by their input name attribute.
+		*
+		* @param {string} formId - The ID of the form element.
+		* @returns {Object} An object where keys are the input names and values are arrays of File objects for that input.
+		*
+		* @example
+		* const filesData = FileUploader.getFiles("myForm");
+		* console.log(filesData); // { profilePic: [File...], gallery: [File...] }
+		*
+		* @summary
+		* 1. **Find Form**: Locates the form element by ID or uses the document if no ID is provided.
+		* 2. **Find Inputs**: Selects all file input elements within the form using the configured selector.
+		* 3. **Collect Files**: Iterates through each input, retrieves the associated `FileUploader` instance.
+		* 4. **Group by Name**: Collects the `filesToUpload` for each instance and groups them by the input's `name` attribute.
+		* 5. **Return Result**: Returns the grouped files.
+		*/
+		static getFiles(formId) {
+			const form = formId ? document.getElementById(formId) : null;
+			const selector = this.config.input ?? "input[type=\"file\"][data-uploader]";
+			const inputs = (form || document).querySelectorAll(selector);
+			const result = {};
+			inputs.forEach((input) => {
+				const uploader = input._uploaderInstance;
+				if (uploader && input.name) result[input.name] = Array.from(uploader.filesToUpload);
+			});
+			return result;
+		}
+		/**
+		* @static
+		*
+		* @description
+		* Processes all active file attachment inputs inside a target form, converting them
+		* into clean, binary byte-stream payloads optimized for the Google Apps Script transport bridge.
+		* This version uses FileReader with onload callback, which is more widely supported and performant for large files compared to the arrayBuffer() method.
+		*
+		* @param {string} formId - The HTML DOM element ID string for the form context
+		* @returns {Promise<Object>} An object mapping input names to binary structural files
+		*/
+		static async getFilesForGoogleDrive(formId) {
+			const filesMap = FileUploader$1.getFiles(formId);
+			const result = {};
+			if (!filesMap || Object.keys(filesMap).length === 0) return result;
+			const entries = Object.entries(filesMap);
+			for (const [inputName, fileArray] of entries) {
+				if (!fileArray || fileArray.length === 0) continue;
+				result[inputName] = await Promise.all(fileArray.map((file) => {
+					return new Promise((resolve, reject) => {
+						const reader = new FileReader();
+						reader.readAsArrayBuffer(file);
+						reader.onload = () => {
+							const arrayBuffer = reader.result;
+							if (!(arrayBuffer instanceof ArrayBuffer)) {
+								reject(/* @__PURE__ */ new Error(`Unable to read file data for '${file.name}'.`));
+								return;
+							}
+							const byteArray = Array.from(new Uint8Array(arrayBuffer));
+							resolve({
+								name: file.name,
+								mimeType: file.type,
+								size: file.size,
+								bytes: byteArray
+							});
+						};
+						reader.onerror = (error) => {
+							console.error(`[FileUploader] Failed to process payload data for '${file.name}':`, error);
+							reject(error);
+						};
+					});
+				}));
+			}
+			return result;
+		}
+		/**
+		* @static
+		*
+		* @description
+		* Initializes all `FileUploader` instances within a given DOM element.
+		* It finds all file input elements with the `data-uploader` attribute and creates a `FileUploader` instance for each.
+		* This method uses a global flag (`data-uploader-initialized`) to prevent re-initialization of the same element.
+		*
+		* @param {Document | HTMLFormElement | HTMLElement} [root=document] - The root element to search for file inputs. Defaults to the entire document.
+		* @param {FileUploaderConfig} [config={}] - Optional configuration object to override default settings.
+		* @returns {FileUploader[]} An array of all initialized `FileUploader` instances.
+		*
+		* @example
+		* // Initialize all file uploaders in the document
+		* const uploaders = FileUploader.initAll();
+		*
+		* // Initialize within a specific form
+		* const form = document.getElementById("myForm");
+		* const formUploaders = FileUploader.initAll(form);
+		*
+		* // With custom configuration
+		* const customUploaders = FileUploader.initAll(document, { maxUpload: 5 });
+		*
+		* @summary
+		* 1. **Set Default Config**: Applies the static `this.config` with any provided `config` overrides.
+		* 2. **Find Inputs**: Selects all file inputs using the configured selector.
+		* 3. **Iterate and Initialize**: Loops through each input.
+		* 4. **Check Initialization**: Skips inputs that have already been initialized (checked via `data-uploader-initialized`).
+		* 5. **Create Instance**: Creates a new `FileUploader` instance for the input, passing the element and config.
+		* 6. **Mark as Initialized**: Sets a flag on the input to prevent re-initialization.
+		* 7. **Collect Instances**: Adds the new instance to an array.
+		* 8. **Return Result**: Returns the array of all `FileUploader` instances.
+		* @memberof FileUploader
+		*/
+		static initAll(root = document, config = {}) {
+			const selector = {
+				...this.config,
+				...config
+			}.input ?? "input[type=\"file\"][data-uploader]";
+			const inputs = root.querySelectorAll(selector);
+			const uploaders = [];
+			inputs.forEach((input) => {
+				if (input instanceof HTMLInputElement && input.dataset.uploaderInitialized !== "true") uploaders.push(new FileUploader$1(input, config));
+			});
+			return uploaders;
+		}
+		/**
+		* @private
+		*
+		* @description
+		* Formats a given number of bytes into a human-readable string (e.g., "1.2 MB", "500 KB").
+		* It iteratively divides the byte count by 1024 and updates the unit until the value
+		* is less than 1024 or the largest unit (GB) is reached.
+		*
+		* @param {number} bytes - The number of bytes to format.
+		* @returns {string} The formatted file size string.
+		*
+		* @example
+		* // Called internally to display file sizes.
+		* // `this._formatFileSize(1234567);` // Returns "1.2 MB"
+		*
+		* @summary
+		* 1. **Initialize Units**: Defines an array of size units (B, KB, MB, GB).
+		* 2. **Iterate and Convert**: Divides `bytes` by 1024 and increments the unit index (`i`) until `bytes` is less than 1024 or the last unit is reached.
+		* 3. **Format Output**: Returns the formatted number (to one decimal place) concatenated with the appropriate unit.
+		*/
+		_formatFileSize(bytes) {
+			const units = [
+				"B",
+				"KB",
+				"MB",
+				"GB"
+			];
+			let i = 0;
+			while (bytes >= 1024 && i < units.length - 1) {
+				bytes /= 1024;
+				i++;
+			}
+			return `${bytes.toFixed(1)} ${units[i]}`;
+		}
+		/**
+		* @private
+		*
+		* @description
+		* Checks if a given file's type or extension is accepted based on a list of rules.
+		* The rules can be MIME types (e.g., "image/jpeg"), wildcard MIME types (e.g., "image/*"),
+		* or file extensions (e.g., ".pdf").
+		*
+		* @param {File} file - The File object to check.
+		* @param {string[]} acceptList - An array of strings representing accepted file types or extensions.
+		* @returns {boolean} True if the file is accepted, false otherwise.
+		*
+		* @example
+		* // Check if an image file is accepted
+		* const imageFile = new File([], "photo.jpg", { type: "image/jpeg" });
+		* uploader._isAcceptedFile(imageFile, ["image/*", ".png"]); // Returns true
+		*
+		* // Check if a PDF file is accepted by extension
+		* const pdfFile = new File([], "document.pdf", { type: "application/pdf" });
+		* uploader._isAcceptedFile(pdfFile, [".pdf"]); // Returns true
+		*
+		* @summary
+		* 1. **Handle Empty Accept List**: If `acceptList` is empty or null, all files are accepted.
+		* 2. **Normalize File Info**: Converts file name and type to lowercase for case-insensitive comparison.
+		* 3. **Iterate Rules**: Loops through each rule in `acceptList`.
+		* 4. **Normalize Rule**: Converts the current rule to lowercase and trims whitespace.
+		* 5. **Extension Match**: If the rule starts with ".", checks if the file name ends with the rule.
+		* 6. **Wildcard MIME Match**: If the rule ends with "/*", checks if the file type starts with the rule's prefix.
+		* 7. **Exact MIME Match**: Otherwise, checks for an exact match with the file type.
+		* 8. **Return Result**: Returns `true` if any rule matches, `false` otherwise.
+		*/
+		_isAcceptedFile(file, acceptList) {
+			if (!acceptList || acceptList.length === 0) return true;
+			const fileName = file.name.toLowerCase();
+			const fileType = file.type.toLowerCase();
+			return acceptList.some((rule) => {
+				rule = rule.toLowerCase().trim();
+				if (rule.startsWith(".")) return fileName.endsWith(rule);
+				if (rule.endsWith("/*")) return fileType.startsWith(rule.replace("/*", ""));
+				return fileType === rule;
+			});
+		}
+		/**
+		* @private
+		*
+		* @description
+		* Returns an HTML string for a Semantic UI icon representing the file type.
+		* It checks the file's MIME type and returns a specific icon for images, audio, video, and PDFs.
+		* For any other file type, it returns a generic file icon.
+		*
+		* @param {File} file - The File object for which to get the icon.
+		* @returns {string} An HTML string containing the `<i>` tag for the Semantic UI icon.
+		*
+		* @example
+		* // Called internally to display file type icons.
+		* // `this._getFileIconSVG(myImageFile);` // Returns `<i class="file image outline icon"></i>`
+		* // `this._getFileIconSVG(myPdfFile);`   // Returns `<i class="file pdf outline icon"></i>`
+		*
+		* @summary
+		* 1. **Check MIME Type**: Determines the file type category (image, audio, video, PDF).
+		* 2. **Return Specific Icon**: Returns an appropriate Semantic UI icon HTML string based on the category.
+		* 3. **Return Generic Icon**: If no specific category matches, returns a generic file icon.
+		*/
+		_getFileIconSVG(file) {
+			const type = file.type;
+			if (type.startsWith("image/")) return `<i class="file jpg icon"></i>`;
+			if (type.startsWith("audio/")) return `<i class="file mp3 icon"></i>`;
+			if (type.startsWith("video/")) return `<i class="file mp4 icon"></i>`;
+			if (type === "application/pdf") return `<i class="file pdf icon"></i>`;
+			return `<i class="file icon"></i>`;
+		}
+		/**
+		* @private
+		*
+		* @description
+		* Generates a Data URL for an SVG thumbnail representing the file, primarily for non-image files.
+		* The SVG contains a file icon shape and the file's extension in uppercase.
+		* The color of the SVG icon is determined by common file extensions (e.g., PDF, DOC, XLS).
+		*
+		* @param {File} file - The File object for which to generate the SVG thumbnail.
+		* @returns {string} A Data URL (base64 encoded SVG) that can be used as an `<img>` src.
+		*
+		* @example
+		* // Called internally to display thumbnails for non-image files.
+		* // `this._getSvgThumbnail(myPdfFile);` // Returns a Data URL for a red PDF icon.
+		*
+		* @summary
+		* 1. **Extract Extension**: Gets the file extension from the file name.
+		* 2. **Determine Color**: Assigns a specific color based on common file extensions.
+		* 3. **Construct SVG**: Builds an SVG string with a file shape and the uppercase extension.
+		* 4. **Encode to Data URL**: Base64 encodes the SVG string and prepends the Data URL prefix.
+		*/
+		_getSvgThumbnail(file) {
+			const ext = (file.name.split(".").pop() || "").toLowerCase();
+			let color = "#888";
+			if (["pdf"].includes(ext)) color = "#e63946";
+			if (["doc", "docx"].includes(ext)) color = "#457b9d";
+			if (["xls", "xlsx"].includes(ext)) color = "#2a9d8f";
+			if (["ppt", "pptx"].includes(ext)) color = "#f4a261";
+			if (["zip", "rar"].includes(ext)) color = "#6d597a";
+			const svg = `
+        <svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"${color}\">
+          <path d=\"M6 2C5.4477 2 5 2.4477 5 3V21C5 21.5523 5.4477 22 6 22H18C18.5523 22 19 21.5523 19 21V8L13 2H6Z\"/>
+          <text x=\"12\" y=\"17\" text-anchor=\"middle\" font-size=\"5\" fill=\"white\" font-family=\"Arial, sans-serif\">
+            ${ext.toUpperCase()}
+          </text>
+        </svg>
+      `;
+			return `data:image/svg+xml;base64,${btoa(svg)}`;
+		}
+	};
+	_defineProperty(FileUploader$1, "_configDefaults", void 0);
+	/**
+	* File input module.
+	*
+	* The uploader is the heaviest optional piece of the input layer (preview grid, size and
+	* count validation), so it is a module: a `file` field gets it, nothing else does.
+	*
+	* What this module does **not** do is decide what a selected file means. It reports raw
+	* `File` objects — through `config.onFileSelected` on the field and through the global
+	* `elementChanged` event — and offers `getFiles(formId)` for callers that want the
+	* current selection. Parsing a CSV into a table, serializing to a Drive payload, showing
+	* a preview: all of that belongs to whoever owns the file, not to the input layer.
+	*/
+	var FileUploaderInputModule$1 = class {
+		/**
+		* Attaches the uploader to a file field and wires the selection callback.
+		*
+		* @summary The uploader looks for its host `.field` when constructed, so this runs after
+		* the control is mounted. Calling it twice is safe: the constructor is idempotent per
+		* element, and the `change` listener is installed once per input.
+		*/
+		decorate(_wrapper, control, field, host) {
+			if (field.type !== "file" || !(control instanceof HTMLInputElement)) return;
+			if (!control.__fileSelectedBound) {
+				control.__fileSelectedBound = true;
+				control.addEventListener("change", () => {
+					const files = Array.from(control.files ?? []);
+					const onFileSelected = field.config?.onFileSelected;
+					if (typeof onFileSelected === "function") try {
+						onFileSelected(files, field);
+					} catch (error) {
+						console.error("[InputBuilder] onFileSelected failed:", error);
+					}
+					host.builderConfig.emit?.("elementChanged", {
+						builder: "input",
+						type: "@field>file",
+						element: control,
+						data: {
+							field: field.id,
+							files
+						}
+					});
+				});
+			}
+			try {
+				new FileUploader$1(control);
+			} catch (error) {
+				console.warn("[InputBuilder] file adapter init failed:", error);
+			}
+		}
+		/**
+		* Covers file inputs that bypass `InputBuilder` (raw HTML inside a form).
+		*
+		* @param root - Subtree to scan.
+		*/
+		mount(root) {
+			try {
+				FileUploader$1.initAll(root);
+			} catch (error) {
+				console.warn("[InputBuilder] file adapter init failed:", error);
+			}
+		}
+		/**
+		* The files currently selected inside a form, keyed by input name.
+		*
+		* @param formId - Id of the form that owns the file inputs.
+		* @returns Raw `File` arrays; empty when nothing is selected.
+		*/
+		getFiles(formId) {
+			return FileUploader$1.getFiles(formId);
+		}
+	};
+	/**
+	* File module definition.
+	*
+	* @example
+	* // registered by INPUT_MODULE_DEFINITIONS; a form that never uploads can drop it
+	*/
+	var fileUploaderInputModule$1 = {
+		id: INPUT_MODULE_IDS$1.file,
+		load: () => new FileUploaderInputModule$1()
+	};
+	// packages/components/input/dist/FormValues.js
+	/**
+	* Submit values — what a form actually contains.
+	*
+	* `Object.fromEntries(new FormData(form))` is not enough for a form builder: it drops every
+	* unchecked checkbox, collapses a group of checkboxes that share a name to the last value,
+	* and keeps only the last selected option of a multi-select. A payload that lies is worse
+	* than no payload, because the consumer cannot tell the difference.
+	*
+	* The rules are deliberately explicit:
+	*
+	* | Control                  | Value                                             |
+	* | ------------------------ | ------------------------------------------------- |
+	* | text / number / date / … | the string in the field                           |
+	* | `select`                 | the selected value                                |
+	* | `select[multiple]`       | array of selected values                          |
+	* | `checkbox` (lone)        | `true` / `false` — "not ticked" is information    |
+	* | `checkbox` (shared name) | array of the ticked values                        |
+	* | `radio` group            | value of the checked option, or omitted           |
+	* | `file`                   | never — uploads are a decision (`config.files`)   |
+	*
+	* Disabled controls and buttons are skipped, exactly like a real submission would.
+	*/
+	/** Controls that never contribute a value to the payload. */
+	var SKIPPED_TYPES$1 = /* @__PURE__ */ new Set([
+		"file",
+		"submit",
+		"button",
+		"reset",
+		"image"
+	]);
+	/**
+	* Reads every successful control of a form — or of any container holding controls.
+	*
+	* @param form - Live form element, a `<fieldset>` group, or any wrapper (a `.field`).
+	* @param options - Collection options; see {@link iCollectValuesOptions}.
+	* @returns Payload keyed by control name.
+	*
+	* @summary A `<fieldset>` and a `.field` wrapper are scopes a control set can own, and
+	* `search` has to read them with the same vocabulary a submit uses — one definition of
+	* "what this form holds", not two that drift apart. `elements` is used when the root has
+	* it (it skips nothing and keeps document order); a plain wrapper falls back to a query.
+	*/
+	function collectFormValues$1(form, options = {}) {
+		const controls = Array.from(typeof HTMLFieldSetElement !== "undefined" && form instanceof HTMLFieldSetElement || form instanceof HTMLFormElement ? form.elements : form.querySelectorAll("input, select, textarea"));
+		const entries = [];
+		for (const control of controls) {
+			if (!control || !control.name) continue;
+			if (SKIPPED_TYPES$1.has(control.type)) continue;
+			if (control.disabled) continue;
+			if (control instanceof HTMLInputElement && (control.type === "checkbox" || control.type === "radio")) {
+				entries.push({
+					name: control.name,
+					kind: "toggle",
+					toggle: control.type,
+					value: control.value,
+					checked: control.checked
+				});
+				continue;
+			}
+			if (control instanceof HTMLSelectElement && control.multiple) {
+				entries.push({
+					name: control.name,
+					kind: "field",
+					toggle: null,
+					value: Array.from(control.selectedOptions).map((option) => option.value),
+					checked: true
+				});
+				continue;
+			}
+			entries.push({
+				name: control.name,
+				kind: "field",
+				toggle: null,
+				value: control.value,
+				checked: true
+			});
+		}
+		return options.excludeEmpty ? stripEmpty$1(assemble$1(entries)) : assemble$1(entries);
+	}
+	/**
+	* Removes values a consumer would treat as "nothing".
+	*
+	* @param data - Assembled payload.
+	* @returns Payload without `""`, `false` and empty arrays.
+	*/
+	function stripEmpty$1(data) {
+		const kept = {};
+		for (const [name, value] of Object.entries(data)) {
+			if (value === "" || value === false) continue;
+			if (Array.isArray(value) && value.length === 0) continue;
+			kept[name] = value;
+		}
+		return kept;
+	}
+	/** A toggle's contribution: `true` when it was left at the browser's default value. */
+	function toggleValue$1(entry) {
+		return entry.value === "on" ? true : entry.value;
+	}
+	/**
+	* Collapses per-control entries into one value per name.
+	*
+	* @param entries - Raw contributions, in document order.
+	* @returns Payload.
+	*/
+	function assemble$1(entries) {
+		const grouped = /* @__PURE__ */ new Map();
+		for (const entry of entries) {
+			const bucket = grouped.get(entry.name);
+			if (bucket) bucket.push(entry);
+			else grouped.set(entry.name, [entry]);
+		}
+		const data = {};
+		for (const [name, bucket] of grouped) {
+			const fields = bucket.filter((entry) => entry.kind === "field");
+			const toggles = bucket.filter((entry) => entry.kind === "toggle");
+			if (fields.length) {
+				data[name] = fields[fields.length - 1].value;
+				continue;
+			}
+			const radios = toggles.filter((entry) => entry.toggle === "radio");
+			const boxes = toggles.filter((entry) => entry.toggle === "checkbox");
+			const ticked = toggles.filter((entry) => entry.checked);
+			if (radios.length) {
+				if (ticked.length) data[name] = toggleValue$1(ticked[0]);
+				continue;
+			}
+			if (boxes.length === 1) {
+				data[name] = boxes[0].checked ? toggleValue$1(boxes[0]) : false;
+				continue;
+			}
+			data[name] = ticked.map(toggleValue$1);
+		}
+		return data;
+	}
+	// packages/components/input/dist/InputControls/InputControls.js
+	/** Every control a set may act on, in document order. */
+	var CONTROL_SELECTOR$1 = "input, select, textarea";
+	/** Types `readOnly` does not apply to — those lock through `disabled` instead. */
+	var READONLY_TYPES$1 = /* @__PURE__ */ new Set([
+		"text",
+		"search",
+		"url",
+		"tel",
+		"email",
+		"password",
+		"number",
+		"date",
+		"month",
+		"week",
+		"time",
+		"datetime-local"
+	]);
+	/** Controls that are never part of a set's data (buttons, hidden inputs). */
+	var NOT_DATA_TYPES$1 = /* @__PURE__ */ new Set([
+		"button",
+		"submit",
+		"reset",
+		"image",
+		"hidden"
+	]);
+	var _editableState$1 = /* @__PURE__ */ new WeakMap();
+	var _searchBound$1 = /* @__PURE__ */ new WeakMap();
+	var _InputControlsBuilder_brand$1 = /* @__PURE__ */ new WeakSet();
+	var InputControlsBuilder$1 = class extends Builder$1 {
+		constructor(config) {
+			super();
+			_classPrivateMethodInitSpec(this, _InputControlsBuilder_brand$1);
+			_defineProperty(this, "builderId", "input-controls");
+			_defineProperty(this, "name", "input-controls");
+			_defineProperty(
+				this,
+				/** Matches the host's key (`@aio-ui/input/controls.css`): resolution is by basename. */
+				"stylesheet",
+				"./controls.css"
+			);
+			_classPrivateFieldInitSpec(this, _editableState$1, /* @__PURE__ */ new WeakMap());
+			_classPrivateFieldInitSpec(this, _searchBound$1, /* @__PURE__ */ new WeakSet());
+			const defaultConfig = {
+				themeId: "default",
+				namespace: null,
+				selectors: {
+					"@controls": {
+						tagName: "div",
+						className: "controls"
+					},
+					"@controls>add": {
+						tagName: "button",
+						className: "add",
+						icon: "icon plus"
+					},
+					"@controls>delete": {
+						tagName: "button",
+						className: "delete",
+						icon: "icon trash"
+					},
+					"@controls>save": {
+						tagName: "button",
+						className: "save",
+						icon: "icon checkmark"
+					},
+					"@controls>edit": {
+						tagName: "button",
+						className: "edit",
+						icon: "icon edit"
+					},
+					"@controls>copy": {
+						tagName: "button",
+						className: "copy",
+						icon: "icon copy file"
+					},
+					"@controls>search": {
+						tagName: "button",
+						className: "search",
+						icon: "icon search"
+					},
+					"@controls>custom": {
+						tagName: "button",
+						className: "custom"
+					}
+				},
+				emit: null
+			};
+			this.config = this.resolveConfig(defaultConfig, config);
+		}
+		/**
+		* 🧱 METODE PREPARE
+		*/
+		prepare(payload) {
+			const content = payload;
+			const actions = content.actions ?? [];
+			const position = content.position;
+			const input = content.input ?? null;
+			const scope = content.scope ?? content.parentElement ?? null;
+			const container = this.render("@controls", position);
+			container.__payload = {
+				actions,
+				scope,
+				input
+			};
+			for (const action of actions) {
+				const Templatekey = `@controls>${action.type}`;
+				const button = this.render(Templatekey, {
+					scope,
+					parentElement: scope,
+					input,
+					action
+				});
+				container.appendChild(button);
+			}
+			container.querySelectorAll("button").forEach((button) => {
+				button.type = "button";
+			});
+			return container;
+		}
+		template(typeKey, el, payload, props) {
+			switch (typeKey) {
+				case "@controls":
+					el.setAttribute("position", payload);
+					break;
+				default:
+					const button = el;
+					const { action } = payload;
+					button.title = "Click to " + action.label;
+					button.type = "button";
+					if (action?.label) button.textContent = action.label;
+					if (props?.icon) {
+						const icon = document.createElement("i");
+						icon.className = props.icon;
+						button.appendChild(icon);
+					}
+					button.__payload = payload;
+			}
+		}
+		/**
+		* 🧱 METODE INITIALIZE
+		*
+		* Applies the edit policy for the scope, then wires every button. Safe to call twice on
+		* the same controls (a duplicated group does), because buttons are re-bound by
+		* assignment and the Enter listener is bound once per scope.
+		*/
+		initialize(controls, _payload) {
+			if (!controls) return;
+			const actions = _payload?.content?.actions ?? controls.__payload?.actions ?? [];
+			const scope = _payload?.content?.scope ?? _payload?.content?.parentElement ?? controls.__payload?.scope ?? controls.__payload?.parentElement;
+			if (!scope) return;
+			_assertClassBrand(_InputControlsBuilder_brand$1, this, _applyEditPolicy$1).call(this, scope, actions);
+			controls.querySelectorAll("button").forEach((button) => {
+				this.bindButton(button, controls, actions);
+			});
+			if (actions.some((action) => action.type === "search")) _assertClassBrand(_InputControlsBuilder_brand$1, this, _bindEnterToSearch$1).call(this, scope, controls);
+			if (actions.some((action) => action.type === "edit")) _assertClassBrand(_InputControlsBuilder_brand$1, this, _togglePair$1).call(this, controls, "edit");
+		}
+		bindButton(button, controls, actions) {
+			button.onclick = async (event) => {
+				event.preventDefault();
+				const payload = button.__payload;
+				const scope = payload?.scope ?? payload?.parentElement;
+				const action = payload?.action;
+				if (!scope || !action) return;
+				const elements = _assertClassBrand(_InputControlsBuilder_brand$1, this, _controls$1).call(this, scope);
+				const context = {
+					parentElement: scope,
+					input: payload?.input ?? null,
+					action: action.type,
+					button,
+					element: elements[0] ?? null,
+					value: _assertClassBrand(_InputControlsBuilder_brand$1, this, _valueOf$1).call(this, scope, elements),
+					values: _assertClassBrand(_InputControlsBuilder_brand$1, this, _query$1).call(this, scope),
+					event
+				};
+				switch (action.type) {
+					case "copy":
+						await this.copy(context.values ?? context.value);
+						context.result = context.values ?? context.value;
+						break;
+					case "edit":
+						this._unlock(scope);
+						context.result = true;
+						this.toggleEdit(button, controls, "save", actions);
+						break;
+					case "save":
+						context.result = this.update(scope);
+						this.toggleEdit(button, controls, "edit", actions);
+						break;
+					case "add":
+						context.result = this.duplicate(scope, actions);
+						break;
+					case "search":
+						context.result = this.search(scope);
+						break;
+					case "delete":
+					case "remove": context.result = this.delete(scope);
+				}
+				this.emit(action.type, context);
+				if (action.type === "search") _assertClassBrand(_InputControlsBuilder_brand$1, this, _setSearching$1).call(this, scope, true);
+				const outcome = action.onClick(scope, context);
+				if (action.type === "search") try {
+					await outcome;
+				} finally {
+					_assertClassBrand(_InputControlsBuilder_brand$1, this, _setSearching$1).call(this, scope, false);
+				}
+			};
+		}
+		toggleEdit(currentButton, controls, actionType, actions) {
+			if ((actionType === "edit" || actionType === "save") && actions.some((action) => action.type === actionType) && _assertClassBrand(_InputControlsBuilder_brand$1, this, _togglePair$1).call(this, controls, actionType)) return;
+			const payload = currentButton.__payload;
+			const editAction = {
+				type: actionType,
+				label: actionType,
+				onClick: () => {}
+			};
+			const editButton = this.render(`@controls>${actionType}`, {
+				scope: payload.scope ?? payload.parentElement,
+				parentElement: payload.scope ?? payload.parentElement,
+				input: payload.input,
+				action: editAction
+			});
+			if (!editButton) return;
+			currentButton.replaceWith(editButton);
+			this.bindButton(editButton, controls, actions);
+		}
+		emit(action, context) {
+			this.config.emit?.("elementChanged", {
+				builder: this.builderId,
+				type: `@controls>${action}`,
+				element: context.parentElement,
+				data: {
+					action,
+					value: context.value,
+					values: context.values,
+					input: context.input,
+					result: context.result
+				}
+			});
+		}
+		async copy(payload) {
+			try {
+				const text = typeof payload === "string" ? payload : JSON.stringify(payload);
+				await navigator.clipboard.writeText(text);
+			} catch (err) {
+				console.error("Gagal menyalin teks: ", err);
+			}
+		}
+		/**
+		* Clones the whole scope — a field or an entire group — under a fresh index.
+		*
+		* @param scope - Element to duplicate.
+		* @param actions - Action set the clone receives.
+		* @returns The clone.
+		*/
+		duplicate(scope, actions) {
+			const clone = scope.cloneNode(true);
+			const owner = scope.parentElement ?? scope;
+			const index = _assertClassBrand(_InputControlsBuilder_brand$1, this, _duplicateIndex$1).call(this, scope, owner);
+			const suffix = `-${index}`;
+			const labelSuffix = ` ${index}`;
+			if (clone.id) clone.id += suffix;
+			clone.querySelectorAll("[id]").forEach((element) => {
+				element.id += suffix;
+			});
+			clone.querySelectorAll("label").forEach((label) => {
+				if (label.textContent?.trim()) label.textContent += labelSuffix;
+			});
+			clone.querySelectorAll("input,select,textarea").forEach((element) => {
+				if (element.name) element.name += suffix;
+				if (element instanceof HTMLInputElement && (element.type === "checkbox" || element.type === "radio")) element.checked = false;
+				else element.value = "";
+			});
+			scope.after(clone);
+			const sourceControls = _assertClassBrand(_InputControlsBuilder_brand$1, this, _controls$1).call(this, scope);
+			_assertClassBrand(_InputControlsBuilder_brand$1, this, _controls$1).call(this, clone).forEach((control, index) => {
+				const state = _classPrivateFieldGet2(_editableState$1, this).get(sourceControls[index]);
+				const valueInput = _assertClassBrand(_InputControlsBuilder_brand$1, this, _dropdownValue$1).call(this, control);
+				if (state) {
+					control.disabled = state.disabled;
+					if (_assertClassBrand(_InputControlsBuilder_brand$1, this, _supportsReadOnly$1).call(this, control)) control.readOnly = state.readonly;
+					if (valueInput) valueInput.disabled = state.valueDisabled ?? false;
+				} else if (!_assertClassBrand(_InputControlsBuilder_brand$1, this, _isEditable$1).call(this, control)) {
+					control.disabled = false;
+					if (_assertClassBrand(_InputControlsBuilder_brand$1, this, _supportsReadOnly$1).call(this, control)) control.readOnly = false;
+					if (valueInput) valueInput.disabled = false;
+				}
+			});
+			clone.removeAttribute("data-locked");
+			clone.classList.remove("locked");
+			clone.querySelectorAll("[data-locked]").forEach((element) => element.removeAttribute("data-locked"));
+			clone.setAttribute("data-instance", "true");
+			const clonedControls = clone.querySelector(".controls");
+			const sourceButtons = scope.querySelectorAll(".controls button");
+			clonedControls?.querySelectorAll("button").forEach((button, index) => {
+				const sourcePayload = sourceButtons[index]?.__payload;
+				if (sourcePayload) button.__payload = {
+					...sourcePayload,
+					scope: clone,
+					parentElement: clone
+				};
+			});
+			if (clonedControls) {
+				clonedControls.__payload = {
+					actions,
+					scope: clone,
+					parentElement: clone,
+					input: sourceButtons[0]?.__payload?.input ?? null
+				};
+				this.initialize(clonedControls, { content: {
+					actions,
+					scope: clone
+				} });
+			}
+			clone.dispatchEvent(new CustomEvent("scopeAdded", {
+				bubbles: true,
+				detail: { scope: clone }
+			}));
+			return clone;
+		}
+		delete(scope) {
+			if (scope.tagName === "FORM") return false;
+			scope.remove();
+			return true;
+		}
+		/** Saving: every control returns to the lock state it had before `edit`, then reports. */
+		update(scope) {
+			this._lock(scope);
+			for (const control of _assertClassBrand(_InputControlsBuilder_brand$1, this, _controls$1).call(this, scope)) control.dispatchEvent(new Event("change", { bubbles: true }));
+			return true;
+		}
+		/**
+		* Collects the scope's values and tells everyone who listens.
+		*
+		* @param scope - Field or group the set belongs to.
+		* @returns The query, already handed to `onClick` as `context.result`.
+		*
+		* @summary `search` is a **read**, not a submit: it takes the same vocabulary a submit
+		* would (`collectFormValues`), dispatches a bubbling `search` CustomEvent on the scope
+		* so the owning page can react without knowing this builder, and leaves the payload in
+		* `context.result` for `onClick`. The scope is marked `searching` (and `aria-busy`) while
+		* `onClick`'s promise is pending, so an async query shows a state without this layer
+		* knowing what a request is.
+		*/
+		search(scope) {
+			const query = _assertClassBrand(_InputControlsBuilder_brand$1, this, _query$1).call(this, scope);
+			scope.dispatchEvent(new CustomEvent("search", {
+				detail: {
+					query,
+					scope
+				},
+				bubbles: true
+			}));
+			return query;
+		}
+		/** Locks every control in the scope, remembering what it looked like. */
+		_lock(scope) {
+			for (const control of _assertClassBrand(_InputControlsBuilder_brand$1, this, _controls$1).call(this, scope)) {
+				if (_assertClassBrand(_InputControlsBuilder_brand$1, this, _isEditable$1).call(this, control)) continue;
+				const dropdown = _assertClassBrand(_InputControlsBuilder_brand$1, this, _dropdownRoot$1).call(this, control);
+				const valueInput = dropdown ? _assertClassBrand(_InputControlsBuilder_brand$1, this, _dropdownValue$1).call(this, control) : null;
+				if (!_classPrivateFieldGet2(_editableState$1, this).has(control)) _classPrivateFieldGet2(_editableState$1, this).set(control, {
+					readonly: _assertClassBrand(_InputControlsBuilder_brand$1, this, _supportsReadOnly$1).call(this, control) ? control.readOnly : false,
+					disabled: control.disabled,
+					valueDisabled: valueInput?.disabled
+				});
+				if (dropdown) {
+					control.disabled = true;
+					if (valueInput) valueInput.disabled = true;
+					dropdown.setAttribute("data-locked", "true");
+				} else if (control instanceof HTMLSelectElement) control.disabled = true;
+				else if (_assertClassBrand(_InputControlsBuilder_brand$1, this, _supportsReadOnly$1).call(this, control)) control.readOnly = true;
+				else control.disabled = true;
+			}
+			scope.setAttribute("data-locked", "true");
+			scope.classList.add("locked");
+		}
+		/**
+		* Restores every control in the scope.
+		*
+		* @param scope - Field or group.
+		* @param force - Open controls that carry no snapshot. Used when the scope is known to
+		*   have been locked by this set (a duplicate, a re-render) — leaving them locked would
+		*   reproduce exactly the trap the policy exists to avoid.
+		*/
+		_unlock(scope, force = false) {
+			for (const control of _assertClassBrand(_InputControlsBuilder_brand$1, this, _controls$1).call(this, scope)) {
+				const state = _classPrivateFieldGet2(_editableState$1, this).get(control);
+				const dropdown = _assertClassBrand(_InputControlsBuilder_brand$1, this, _dropdownRoot$1).call(this, control);
+				const valueInput = dropdown ? _assertClassBrand(_InputControlsBuilder_brand$1, this, _dropdownValue$1).call(this, control) : null;
+				if (state) {
+					control.disabled = state.disabled;
+					if (_assertClassBrand(_InputControlsBuilder_brand$1, this, _supportsReadOnly$1).call(this, control)) control.readOnly = state.readonly;
+					if (valueInput) valueInput.disabled = state.valueDisabled ?? false;
+					_classPrivateFieldGet2(_editableState$1, this).delete(control);
+				} else if (force) {
+					control.disabled = false;
+					if (_assertClassBrand(_InputControlsBuilder_brand$1, this, _supportsReadOnly$1).call(this, control)) control.readOnly = false;
+					if (valueInput) valueInput.disabled = false;
+				}
+				dropdown?.removeAttribute("data-locked");
+			}
+			scope.removeAttribute("data-locked");
+			scope.classList.remove("locked");
+		}
+	};
+	/**
+	* Makes exactly one of `edit`/`save` available.
+	*
+	* @param controls - The controls node holding the pair.
+	* @param actionType - Which side to enable.
+	* @returns `true` when both buttons exist and the switch happened; `false` when the set
+	*   has only one side, so the caller must swap the button itself.
+	*/
+	function _togglePair$1(controls, actionType) {
+		const edit = controls.querySelector("button.edit");
+		const save = controls.querySelector("button.save");
+		if (!edit || !save) return false;
+		edit.disabled = actionType !== "edit";
+		save.disabled = actionType !== "save";
+		return true;
+	}
+	/**
+	* Applies the edit policy for a scope.
+	*
+	* @param scope - Field or group.
+	* @param actions - Declared action set.
+	*
+	* @summary Two sides of one rule: with an `edit` action the scope starts **locked**
+	* (a record viewer until the visitor asks to edit), and without one it must not be
+	* left locked — nothing could unlock it. "Locked by this set" is answered by the set's
+	* own bookkeeping (`data-locked` + the per-control snapshot), never by looking at
+	* `readonly`/`disabled`: those properties reflect to attributes, so an author's lock
+	* and one of ours look identical in the DOM.
+	*/
+	function _applyEditPolicy$1(scope, actions) {
+		if (actions.some((action) => action.type === "edit")) {
+			this._lock(scope);
+			return;
+		}
+		if (scope.getAttribute("data-locked") === "true" || _assertClassBrand(_InputControlsBuilder_brand$1, this, _controls$1).call(this, scope).some((control) => _classPrivateFieldGet2(_editableState$1, this).has(control))) this._unlock(scope, true);
+	}
+	/**
+	* The `div.dropdown` a control belongs to, when it is a custom dropdown.
+	*
+	* @param control - Control being locked or unlocked.
+	* @returns The dropdown container, or `null` for a plain control.
+	*
+	* @summary `closest()` matches the element itself and the visible box is itself
+	* `input.dropdown`, so the walk starts at the parent — otherwise the "container" would
+	* be the box and the hidden value would never be found.
+	*/
+	function _dropdownRoot$1(control) {
+		const root = control.parentElement?.closest(".dropdown") ?? null;
+		return root && root !== control ? root : null;
+	}
+	/** The hidden input of a dropdown: the value that actually submits. */
+	function _dropdownValue$1(control) {
+		return _assertClassBrand(_InputControlsBuilder_brand$1, this, _dropdownRoot$1).call(this, control)?.querySelector("input[type='hidden']") ?? null;
+	}
+	/**
+	* Whether the schema gave this control to the visitor permanently.
+	*
+	* @param control - Control being considered for a lock.
+	* @returns `true` when the field (or an ancestor scope) declares `editable`.
+	*
+	* @summary `editable: true` outranks the edit policy: a record viewer with an `edit`
+	* action may still expose one field that is always live (a comment box, a quantity).
+	* `InputBuilder` writes the marker on the field wrapper, so an ancestor lookup covers a
+	* group whose fields each decide for themselves.
+	*/
+	function _isEditable$1(control) {
+		return Boolean(control.closest("[data-editable='true']"));
+	}
+	/** Enter inside a text control of a searching set runs the search. */
+	function _bindEnterToSearch$1(scope, controls) {
+		if (_classPrivateFieldGet2(_searchBound$1, this).has(scope)) return;
+		_classPrivateFieldGet2(_searchBound$1, this).add(scope);
+		scope.addEventListener("keydown", (event) => {
+			if (event.key !== "Enter") return;
+			const target = event.target;
+			if (!(target instanceof HTMLElement) || target instanceof HTMLTextAreaElement) return;
+			if (!_assertClassBrand(_InputControlsBuilder_brand$1, this, _controls$1).call(this, scope).includes(target)) return;
+			const button = controls.querySelector("button.search");
+			if (!button) return;
+			event.preventDefault();
+			button.click();
+		});
+	}
+	function _setSearching$1(scope, searching) {
+		scope.classList.toggle("searching", searching);
+		if (searching) scope.setAttribute("aria-busy", "true");
+		else scope.removeAttribute("aria-busy");
+	}
+	/** Controls of a scope that carry data, in document order. */
+	function _controls$1(scope) {
+		return Array.from(scope.querySelectorAll(CONTROL_SELECTOR$1)).filter((control) => !(control instanceof HTMLInputElement && NOT_DATA_TYPES$1.has(control.type)));
+	}
+	/** One control's value, or every value of a group, for `context.value`. */
+	function _valueOf$1(scope, elements) {
+		if (elements.length === 1) return elements[0].value;
+		const query = _assertClassBrand(_InputControlsBuilder_brand$1, this, _query$1).call(this, scope);
+		return Object.entries(query).map(([key, value]) => `${key}=${Array.isArray(value) ? value.join(",") : String(value)}`).join("&");
+	}
+	/**
+	* The scope's values, in submit vocabulary.
+	*
+	* @param scope - Field, fieldset or form.
+	* @returns Payload keyed by control name.
+	*/
+	function _query$1(scope) {
+		if (scope instanceof HTMLFormElement || typeof HTMLFieldSetElement !== "undefined" && scope instanceof HTMLFieldSetElement) return collectFormValues$1(scope, { excludeEmpty: true });
+		const control = _assertClassBrand(_InputControlsBuilder_brand$1, this, _controls$1).call(this, scope)[0];
+		if (!control?.name) return {};
+		if (control instanceof HTMLInputElement && (control.type === "checkbox" || control.type === "radio")) return control.checked ? { [control.name]: true } : {};
+		return control.value === "" ? {} : { [control.name]: control.value };
+	}
+	/** Whether `readOnly` actually locks this control. */
+	function _supportsReadOnly$1(control) {
+		if (control instanceof HTMLSelectElement) return false;
+		if (control instanceof HTMLTextAreaElement) return true;
+		return READONLY_TYPES$1.has(control.type);
+	}
+	/**
+	* The next free `<base>-<n>` suffix for a clone of `scope`.
+	*
+	* @param scope - Element being duplicated.
+	* @param owner - Parent whose children share the naming space.
+	* @returns The first suffix not already used by a sibling clone.
+	*
+	* @summary Only ids that extend the same base are counted, so `rec-1` yields
+	* `rec-1-1` (not `rec-1-2`): the suffix belongs to the clone chain, not to whatever
+	* number the author put at the end of the original id.
+	*/
+	function _duplicateIndex$1(scope, owner) {
+		const base = scope.id || scope.tagName.toLowerCase();
+		const taken = /* @__PURE__ */ new Set();
+		Array.from(owner.children).forEach((child) => {
+			const id = child.id;
+			if (!id || !id.startsWith(`${base}-`)) return;
+			const suffix = Number(id.slice(base.length + 1));
+			if (Number.isInteger(suffix) && suffix >= 1) taken.add(suffix);
+		});
+		let index = 1;
+		while (taken.has(index)) index += 1;
+		return index;
+	}
+	var _context$7 = /* @__PURE__ */ new WeakMap();
+	/**
+	* Action controls module.
+	*
+	* A field that declares `config.actions` gets a button set beside it (add/remove/edit/
+	* save/…), and a group that declares `actions` gets the same set on its `<fieldset>`.
+	* The button markup and its click behaviour belong to `InputControlsBuilder`; this module
+	* is the only thing that knows that, so `InputBuilder` and `FormBuilder` stay renderers.
+	*/
+	var InputControlsInputModule$1 = class {
+		constructor(context) {
+			_classPrivateFieldInitSpec(this, _context$7, void 0);
+			_classPrivateFieldSet2(_context$7, this, context);
+		}
+		/**
+		* Appends the action set to a field that asked for one.
+		*
+		* @param wrapper - The `.field` element.
+		* @param _control - The rendered control (unused: actions attach to the wrapper).
+		* @param field - Resolved field payload.
+		*/
+		decorate(wrapper, _control, field) {
+			const cfg = field.config ?? {};
+			if (!cfg.actions) return;
+			const controls = this.renderActions(wrapper, {
+				actions: cfg.actions,
+				position: cfg.position || "right",
+				input: field
+			});
+			if (!controls) return;
+			wrapper.classList.add("actions");
+			wrapper.appendChild(controls);
+		}
+		/**
+		* Builds the button set for any scope: a single field wrapper or a whole group.
+		*
+		* @param scope - Element the set acts on (`.field` or `<fieldset>`).
+		* @param spec - Actions, position, and the field when there is one.
+		* @returns The controls node, or `null` when nothing was declared.
+		*/
+		renderActions(scope, spec) {
+			const actions = normaliseActions$1(spec.actions);
+			if (!actions.length) return null;
+			return new InputControlsBuilder$1(_classPrivateFieldGet2(_context$7, this).builderConfig).create({ content: {
+				scope,
+				parentElement: scope,
+				position: spec.position || "right",
+				actions,
+				input: spec.input ?? null
+			} });
+		}
+	};
+	/**
+	* Composite presets: one word for a pair of buttons.
+	*
+	* @summary `editor` is edit+save and `repeater` is add+delete — the two pairs a control set
+	* almost always needs together. Expanding them before rendering means the DOM, the pair
+	* toggle and every consumer only ever see the four real types.
+	*/
+	var ACTION_PRESETS$1 = {
+		editor: ["edit", "save"],
+		repeater: ["add", "delete"]
+	};
+	/** Human label for a button that was asked for by name only. */
+	var ACTION_LABELS$1 = {
+		add: "Add",
+		delete: "Delete",
+		remove: "Remove",
+		edit: "Edit",
+		save: "Save",
+		copy: "Copy",
+		search: "Search",
+		custom: "Custom"
+	};
+	/**
+	* Accepts both action shapes — an array (mixed names and objects) or `{ [type]: definition }`.
+	*
+	* @param configured - Declared actions.
+	* @returns Array form, with composite presets expanded and `type` filled in.
+	*
+	* @example
+	* normaliseActions(["editor", { type: "copy", label: "Copy", onClick }])
+	* // → edit, save, copy
+	*/
+	function normaliseActions$1(configured) {
+		if (!configured) return [];
+		const entries = Array.isArray(configured) ? configured.filter(Boolean) : Object.entries(configured).map(([type, action]) => ({
+			...action,
+			type
+		}));
+		const resolved = [];
+		for (const entry of entries) {
+			const preset = typeof entry === "string" ? (ACTION_PRESETS$1[entry] ?? [entry]).map((type) => ({
+				type,
+				label: ACTION_LABELS$1[type] ?? type,
+				onClick: () => {}
+			})) : (ACTION_PRESETS$1[entry.type] ?? [entry.type]).map((type) => ({
+				...entry,
+				type,
+				label: entry.label ?? ACTION_LABELS$1[type] ?? type
+			}));
+			resolved.push(...preset);
+		}
+		return resolved;
+	}
+	/**
+	* Action controls module definition.
+	*
+	* @example
+	* // registered by INPUT_MODULE_DEFINITIONS; drop it and `config.actions` silently renders nothing
+	*/
+	var inputControlsInputModule$1 = {
+		id: INPUT_MODULE_IDS$1.controls,
+		load: (context) => new InputControlsInputModule$1(context)
+	};
+	// packages/components/input/dist/InputPicker/InputPicker.js
+	/**
+	* InputPicker — a grid of choices behind one control (an icon picker, a swatch board,
+	* an image/media gallery).
+	*
+	* The field type is owned by `InputPicker.inputModules.ts`; this file is the builder
+	* the module instantiates. Two looks, one tree:
+	*
+	*   - `expanded: false` — trigger + a native `popover` panel, anchored to the trigger.
+	*     Used where the field sits in a cramped form.
+	*   - `expanded: true` — the grid is part of the page: the search box and the cells are
+	*     always visible, no popover, no trigger.
+	*
+	* `#selected` is the single source of truth; `#paint()` pushes it into the DOM. Every
+	* write goes through `#paint()` so a caller, a filter and a click can never disagree.
+	*/
+	/** Default shape per key; a theme overrides it through `config.selectors`. */
+	var PICKER_SELECTORS$1 = {
+		"@picker": {
+			tagName: "div",
+			className: "picker"
+		},
+		"@picker>trigger": {
+			tagName: "button",
+			className: "trigger",
+			attrs: { type: "button" }
+		},
+		"@picker>trigger>preview": {
+			tagName: "span",
+			className: "preview"
+		},
+		"@picker>trigger>label": {
+			tagName: "span",
+			className: "label"
+		},
+		"@picker>panel": {
+			tagName: "div",
+			className: "panel"
+		},
+		"@picker>panel>search": {
+			tagName: "input",
+			className: "search"
+		},
+		"@picker>panel>grid": {
+			tagName: "div",
+			className: "grid"
+		},
+		"@picker>panel>grid>option": {
+			tagName: "button",
+			className: "cell",
+			attrs: { type: "button" }
+		},
+		"@picker>panel>grid>option>preview": {
+			tagName: "span",
+			className: "preview"
+		},
+		"@picker>panel>grid>option>name": {
+			tagName: "span",
+			className: "name"
+		},
+		"@picker>panel>empty": {
+			tagName: "p",
+			className: "empty"
+		},
+		"@picker>value": {
+			tagName: "input",
+			className: "value",
+			attrs: { type: "hidden" }
+		},
+		"@picker>visual>icon": {
+			tagName: "i",
+			className: "icon"
+		},
+		"@picker>visual>image": {
+			tagName: "img",
+			className: "image"
+		},
+		"@picker>visual>swatch": {
+			tagName: "span",
+			className: "swatch"
+		}
+	};
+	/** Strings are shorthand for `{ value, label }`; everything else is copied as-is. */
+	function toOptions$1(list) {
+		return (list ?? []).map((entry) => typeof entry === "string" ? {
+			value: entry,
+			label: entry
+		} : {
+			...entry,
+			value: String(entry.value)
+		});
+	}
+	var _selected$1 = /* @__PURE__ */ new WeakMap();
+	var _cells$1 = /* @__PURE__ */ new WeakMap();
+	var _root$1 = /* @__PURE__ */ new WeakMap();
+	var _trigger$1 = /* @__PURE__ */ new WeakMap();
+	var _label$2 = /* @__PURE__ */ new WeakMap();
+	var _preview$2 = /* @__PURE__ */ new WeakMap();
+	var _panel$1 = /* @__PURE__ */ new WeakMap();
+	var _search$1 = /* @__PURE__ */ new WeakMap();
+	var _empty$1 = /* @__PURE__ */ new WeakMap();
+	var _value$1 = /* @__PURE__ */ new WeakMap();
+	var _options$1 = /* @__PURE__ */ new WeakMap();
+	var _placeholder$1 = /* @__PURE__ */ new WeakMap();
+	var _PickerBuilder_brand$1 = /* @__PURE__ */ new WeakSet();
+	var _outside$1 = /* @__PURE__ */ new WeakMap();
+	var PickerBuilder$1 = class extends Builder$1 {
+		constructor(config = {}) {
+			super();
+			_classPrivateMethodInitSpec(this, _PickerBuilder_brand$1);
+			_defineProperty(this, "builderId", "input-picker");
+			_defineProperty(this, "name", "input-picker");
+			_defineProperty(
+				this,
+				/** Short specifier the package maps to `InputPicker.css` — the file-uploader pattern. */
+				"stylesheet",
+				"./picker.css"
+			);
+			_defineProperty(this, "config", void 0);
+			_classPrivateFieldInitSpec(this, _selected$1, []);
+			_classPrivateFieldInitSpec(this, _cells$1, /* @__PURE__ */ new Map());
+			_classPrivateFieldInitSpec(this, _root$1, null);
+			_classPrivateFieldInitSpec(this, _trigger$1, null);
+			_classPrivateFieldInitSpec(this, _label$2, null);
+			_classPrivateFieldInitSpec(this, _preview$2, null);
+			_classPrivateFieldInitSpec(this, _panel$1, null);
+			_classPrivateFieldInitSpec(this, _search$1, null);
+			_classPrivateFieldInitSpec(this, _empty$1, null);
+			_classPrivateFieldInitSpec(this, _value$1, null);
+			_classPrivateFieldInitSpec(this, _options$1, []);
+			_classPrivateFieldInitSpec(this, _placeholder$1, "");
+			_classPrivateFieldInitSpec(this, _outside$1, (event) => {
+				if (!_assertClassBrand(_PickerBuilder_brand$1, this, _isOpen$1).call(this) || !_classPrivateFieldGet2(_root$1, this)) return;
+				if (_classPrivateFieldGet2(_root$1, this).contains(event.target)) return;
+				this.close();
+			});
+			this.config = this.resolveConfig({
+				themeId: "default",
+				namespace: null,
+				emit: () => {},
+				selectors: PICKER_SELECTORS$1,
+				kind: "icon",
+				expanded: false,
+				searchable: true,
+				columns: 6,
+				isMultiple: false,
+				placeholder: "Pilih…"
+			}, config);
+		}
+		/** The selection as plain strings — what the hidden input and the form see. */
+		get value() {
+			return [..._classPrivateFieldGet2(_selected$1, this)];
+		}
+		/** Adds (or replaces) a selection without a pointer: `multiple` decides which. */
+		select(value) {
+			const next = Array.isArray(value) ? value : [value];
+			_classPrivateFieldSet2(_selected$1, this, this.config.isMultiple ? [...new Set(next)] : next.slice(0, 1));
+			_assertClassBrand(_PickerBuilder_brand$1, this, _paint$1).call(this);
+		}
+		prepare(data = {}) {
+			_classPrivateFieldSet2(_options$1, this, toOptions$1(data.options));
+			_classPrivateFieldSet2(_placeholder$1, this, data.placeholder || this.config.placeholder);
+			_classPrivateFieldSet2(_selected$1, this, _assertClassBrand(_PickerBuilder_brand$1, this, _readValue$1).call(this, data.value));
+			_classPrivateFieldGet2(_cells$1, this).clear();
+			const root = this.render("@picker", data);
+			_classPrivateFieldSet2(_root$1, this, root);
+			if (!this.config.expanded) {
+				const trigger = this.render("@picker>trigger", data);
+				_classPrivateFieldSet2(_preview$2, this, this.render("@picker>trigger>preview", data));
+				_classPrivateFieldSet2(_label$2, this, this.render("@picker>trigger>label", data));
+				trigger.append(_classPrivateFieldGet2(_preview$2, this), _classPrivateFieldGet2(_label$2, this));
+				trigger.setAttribute("aria-haspopup", "listbox");
+				trigger.setAttribute("aria-expanded", "false");
+				_classPrivateFieldSet2(_trigger$1, this, trigger);
+				root.appendChild(trigger);
+			}
+			const panel = this.render("@picker>panel", data);
+			_classPrivateFieldSet2(_panel$1, this, panel);
+			if (!this.config.expanded && _classPrivateFieldGet2(_trigger$1, this)) {
+				panel.setAttribute("popover", "manual");
+				const anchor = `--picker-${Math.random().toString(36).slice(2, 8)}`;
+				_classPrivateFieldGet2(_trigger$1, this).style.setProperty("anchor-name", anchor);
+				panel.style.setProperty("position-anchor", anchor);
+			}
+			if (this.config.searchable) {
+				const search = this.render("@picker>panel>search", data);
+				search.type = "search";
+				search.placeholder = "Filter…";
+				search.setAttribute("aria-label", `${data.title ?? "Pilihan"}: filter`);
+				_classPrivateFieldSet2(_search$1, this, search);
+				panel.appendChild(search);
+			}
+			const grid = this.render("@picker>panel>grid", data);
+			for (const option of _classPrivateFieldGet2(_options$1, this)) {
+				const cell = this.render("@picker>panel>grid>option", option);
+				cell.dataset.value = option.value;
+				cell.setAttribute("role", "option");
+				const visual = this.render("@picker>panel>grid>option>preview", option);
+				const name = this.render("@picker>panel>grid>option>name", option);
+				visual.appendChild(_assertClassBrand(_PickerBuilder_brand$1, this, _visual$1).call(this, option));
+				cell.append(visual, name);
+				if (option.label || option.value) cell.title = option.label ?? option.value;
+				_classPrivateFieldGet2(_cells$1, this).set(option.value, cell);
+				grid.appendChild(cell);
+			}
+			const empty = this.render("@picker>panel>empty", data);
+			empty.textContent = "Tidak ada pilihan.";
+			empty.hidden = true;
+			_classPrivateFieldSet2(_empty$1, this, empty);
+			panel.append(grid, empty);
+			root.appendChild(panel);
+			const value = this.render("@picker>value", data);
+			value.name = data.name || data.id || this.config.namespace || "picker";
+			value.value = _classPrivateFieldGet2(_selected$1, this).join(",");
+			_classPrivateFieldSet2(_value$1, this, value);
+			root.appendChild(value);
+			_assertClassBrand(_PickerBuilder_brand$1, this, _paint$1).call(this);
+			return root;
+		}
+		template(typeKey, el, payload) {
+			switch (typeKey) {
+				case "@picker":
+					el.dataset.kind = this.config.kind;
+					el.dataset.expanded = String(this.config.expanded);
+					el.style.setProperty("--picker-columns", String(this.config.columns));
+					break;
+				case "@picker>panel>grid>option>name":
+					el.textContent = payload?.label ?? payload?.value ?? "";
+					break;
+				case "@picker>panel>grid>option>preview": {
+					const option = payload;
+					if (option?.label) el.setAttribute("aria-label", option.label);
+					el.setAttribute("aria-hidden", "true");
+					break;
+				}
+				case "@picker>visual>icon":
+					if (typeof payload === "string" && payload) {
+						const tokens = payload.split(/[.\s]+/).filter(Boolean);
+						if (tokens.length) el.classList.add(...tokens);
+					}
+					break;
+				case "@picker>visual>image":
+					if (payload?.src) {
+						el.src = payload.src;
+						el.alt = payload.label ?? payload.value ?? "";
+						el.loading = "lazy";
+					}
+					break;
+				case "@picker>visual>swatch":
+					if (payload?.color) el.style.setProperty("--picker-swatch", payload.color);
+					break;
+				case "@picker>value": el.setAttribute("type", "hidden");
+			}
+		}
+		initialize() {
+			const root = _classPrivateFieldGet2(_root$1, this);
+			if (!root) return;
+			_classPrivateFieldGet2(_trigger$1, this)?.addEventListener("click", () => {
+				if (this.config.expanded) return;
+				_assertClassBrand(_PickerBuilder_brand$1, this, _isOpen$1).call(this) ? this.close() : this.open();
+			});
+			_classPrivateFieldGet2(_panel$1, this)?.addEventListener("click", (event) => {
+				const cell = event.target?.closest("[role='option']");
+				if (cell?.dataset.value !== void 0) _assertClassBrand(_PickerBuilder_brand$1, this, _pick$1).call(this, cell.dataset.value);
+			});
+			_classPrivateFieldGet2(_search$1, this)?.addEventListener("input", () => _assertClassBrand(_PickerBuilder_brand$1, this, _filter$1).call(this, _classPrivateFieldGet2(_search$1, this)?.value ?? ""));
+			_classPrivateFieldGet2(_panel$1, this)?.addEventListener("keydown", (event) => {
+				if (event.key !== "Escape" || this.config.expanded) return;
+				event.preventDefault();
+				this.close();
+				_classPrivateFieldGet2(_trigger$1, this)?.focus();
+			});
+			document.addEventListener("pointerdown", _classPrivateFieldGet2(_outside$1, this));
+			root.addEventListener("picker:destroy", () => {
+				document.removeEventListener("pointerdown", _classPrivateFieldGet2(_outside$1, this));
+			}, { once: true });
+		}
+		/** Opens the popover panel. No-op in the expanded look. */
+		open() {
+			if (!_classPrivateFieldGet2(_panel$1, this) || this.config.expanded) return;
+			_classPrivateFieldGet2(_panel$1, this).dataset.open = "true";
+			_classPrivateFieldGet2(_trigger$1, this)?.setAttribute("aria-expanded", "true");
+			_assertClassBrand(_PickerBuilder_brand$1, this, _showPopover$1).call(this, true);
+			_classPrivateFieldGet2(_search$1, this)?.focus();
+		}
+		/** Closes the popover panel. No-op in the expanded look. */
+		close() {
+			if (!_classPrivateFieldGet2(_panel$1, this) || this.config.expanded) return;
+			delete _classPrivateFieldGet2(_panel$1, this).dataset.open;
+			_classPrivateFieldGet2(_trigger$1, this)?.setAttribute("aria-expanded", "false");
+			_assertClassBrand(_PickerBuilder_brand$1, this, _showPopover$1).call(this, false);
+		}
+	};
+	/** The panel opens only through native popover when the platform supports it. */
+	function _showPopover$1(show) {
+		const panel = _classPrivateFieldGet2(_panel$1, this);
+		if (!panel || typeof panel.showPopover !== "function") return;
+		try {
+			show ? panel.showPopover() : panel.hidePopover();
+		} catch {}
+	}
+	function _isOpen$1() {
+		return _classPrivateFieldGet2(_panel$1, this)?.dataset.open === "true";
+	}
+	function _pick$1(value) {
+		if (this.config.isMultiple) _classPrivateFieldSet2(_selected$1, this, _classPrivateFieldGet2(_selected$1, this).includes(value) ? _classPrivateFieldGet2(_selected$1, this).filter((entry) => entry !== value) : [..._classPrivateFieldGet2(_selected$1, this), value]);
+		else {
+			_classPrivateFieldSet2(_selected$1, this, [value]);
+			this.close();
+		}
+		_assertClassBrand(_PickerBuilder_brand$1, this, _paint$1).call(this);
+		_assertClassBrand(_PickerBuilder_brand$1, this, _notify$1).call(this);
+	}
+	/** Hidden cells disappear; the empty note speaks only when nothing matches. */
+	function _filter$1(query) {
+		const needle = query.trim().toLowerCase();
+		let visible = 0;
+		for (const option of _classPrivateFieldGet2(_options$1, this)) {
+			const cell = _classPrivateFieldGet2(_cells$1, this).get(option.value);
+			if (!cell) continue;
+			const haystack = `${option.label ?? ""} ${option.value}`.toLowerCase();
+			const match = !needle || haystack.includes(needle);
+			cell.hidden = !match;
+			if (match) visible += 1;
+		}
+		if (_classPrivateFieldGet2(_empty$1, this)) _classPrivateFieldGet2(_empty$1, this).hidden = visible > 0;
+	}
+	/** Pushes `#selected` into the DOM: cells, trigger preview and the hidden input. */
+	function _paint$1() {
+		for (const [value, cell] of _classPrivateFieldGet2(_cells$1, this)) cell.setAttribute("aria-selected", String(_classPrivateFieldGet2(_selected$1, this).includes(value)));
+		const chosen = _classPrivateFieldGet2(_options$1, this).find((option) => option.value === _classPrivateFieldGet2(_selected$1, this)[0]);
+		if (_classPrivateFieldGet2(_preview$2, this)) {
+			_classPrivateFieldGet2(_preview$2, this).replaceChildren();
+			if (chosen) _classPrivateFieldGet2(_preview$2, this).appendChild(_assertClassBrand(_PickerBuilder_brand$1, this, _visual$1).call(this, chosen));
+		}
+		if (_classPrivateFieldGet2(_label$2, this)) {
+			_classPrivateFieldGet2(_label$2, this).textContent = chosen ? _classPrivateFieldGet2(_selected$1, this).length > 1 ? `${chosen.label ?? chosen.value} +${_classPrivateFieldGet2(_selected$1, this).length - 1}` : chosen.label ?? chosen.value : _classPrivateFieldGet2(_placeholder$1, this);
+			_classPrivateFieldGet2(_label$2, this).classList.toggle("is-placeholder", !chosen);
+		}
+		if (_classPrivateFieldGet2(_value$1, this)) _classPrivateFieldGet2(_value$1, this).value = _classPrivateFieldGet2(_selected$1, this).join(",");
+		_classPrivateFieldGet2(_root$1, this)?.classList.toggle("is-empty", _classPrivateFieldGet2(_selected$1, this).length === 0);
+	}
+	/** The visual a kind draws. One function, so trigger and cells never drift. */
+	function _visual$1(option) {
+		const kind = this.config.kind;
+		if (kind === "swatch") return this.render("@picker>visual>swatch", option);
+		if (kind === "image" || kind === "media") {
+			const image = this.render("@picker>visual>image", option);
+			if (!option.src) {
+				const name = option.icon;
+				return name ? this.render("@picker>visual>icon", name) : _assertClassBrand(_PickerBuilder_brand$1, this, _letter$1).call(this, option);
+			}
+			return image;
+		}
+		const name = option.icon ?? option.value;
+		return name ? this.render("@picker>visual>icon", name) : _assertClassBrand(_PickerBuilder_brand$1, this, _letter$1).call(this, option);
+	}
+	/** Last resort preview: the option's initial, so a cell is never blank. */
+	function _letter$1(option) {
+		const span = document.createElement("span");
+		span.className = "letter";
+		span.textContent = (option.label ?? option.value).charAt(0).toUpperCase();
+		return span;
+	}
+	/** Value may arrive as an array, a comma string, or nothing. */
+	function _readValue$1(value) {
+		if (Array.isArray(value)) return value.map(String);
+		if (typeof value === "string" && value) return value.split(",").map((entry) => entry.trim()).filter(Boolean);
+		return [];
+	}
+	/** One event pair: `change` for forms, `picker:change` for a host that listens by name. */
+	function _notify$1() {
+		const detail = {
+			value: _classPrivateFieldGet2(_selected$1, this).join(","),
+			values: this.value,
+			name: _classPrivateFieldGet2(_value$1, this)?.name ?? ""
+		};
+		_classPrivateFieldGet2(_value$1, this)?.dispatchEvent(new Event("change", { bubbles: true }));
+		_classPrivateFieldGet2(_root$1, this)?.dispatchEvent(new CustomEvent("picker:change", {
+			detail,
+			bubbles: true
+		}));
+		this.config.emit?.("picker:change", detail);
+	}
+	/** Field-level settings and the builder key each one feeds. */
+	var SETTINGS$1 = [
+		["style", "kind"],
+		["column", "columns"],
+		["expanded", "expanded"],
+		["searchable", "searchable"],
+		["isMultiple", "isMultiple"],
+		["placeholder", "placeholder"]
+	];
+	var _context$6 = /* @__PURE__ */ new WeakMap();
+	/**
+	* Picker input module.
+	*
+	* `type: "picker"` is a grid of choices — icons, swatches, images — owned by
+	* `PickerBuilder`, not by an `@field>` selector. Keeping the builder out of `InputBuilder`
+	* means a project that never declares a picker never compiles it.
+	*
+	* Settings live flat on the field's `config`, next to `options`, using the same vocabulary
+	* the rest of the schema already speaks:
+	*
+	*   `style`     — `icon | image | media | swatch` (the cell visual)
+	*   `column`    — grid track count, like a row's `column`
+	*   `expanded`  — print the grid inline instead of behind the trigger's popover
+	*   `searchable`, `isMultiple`, `placeholder`
+	*/
+	var PickerInputModule$1 = class {
+		constructor(context) {
+			_classPrivateFieldInitSpec(this, _context$6, void 0);
+			_classPrivateFieldSet2(_context$6, this, context);
+		}
+		/**
+		* Builds the picker for a `picker` field.
+		*
+		* @param field - Resolved field payload.
+		* @returns The picker root, or `null` for any other type.
+		*/
+		renderControl(field) {
+			if (field.type !== "picker") return null;
+			const cfg = field.config ?? {};
+			const settings = {};
+			for (const [from, to] of SETTINGS$1) {
+				const value = cfg[from];
+				if (value !== void 0) settings[to] = value;
+			}
+			const payload = {
+				id: field.id,
+				title: field.label ?? field.title,
+				name: field.name || field.id,
+				placeholder: field.placeholder,
+				value: field.value,
+				options: cfg.options ?? []
+			};
+			return new PickerBuilder$1({
+				...settings,
+				themeId: _classPrivateFieldGet2(_context$6, this).builderConfig.themeId || "default",
+				namespace: _classPrivateFieldGet2(_context$6, this).builderConfig.namespace,
+				emit: _classPrivateFieldGet2(_context$6, this).builderConfig.emit
+			}).create({ content: payload });
+		}
+	};
+	SETTINGS$1.map(([from]) => from);
+	/**
+	* Picker module definition.
+	*
+	* @example
+	* // registered by INPUT_MODULE_DEFINITIONS; omit it from a custom preset and a
+	* // `picker` field degrades to a native select over the same options.
+	*/
+	var pickerInputModule$1 = {
+		id: INPUT_MODULE_IDS$1.picker,
+		load: (context) => new PickerInputModule$1(context)
 	};
 	// packages/modules/module-loader/dist/ModuleRegistry.js
 	var _definitions$1 = /* @__PURE__ */ new WeakMap();
@@ -10393,7 +13834,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 	};
 	// packages/modules/module-loader/dist/ModuleLoader.js
 	var _registry$1 = /* @__PURE__ */ new WeakMap();
-	var _instances$1 = /* @__PURE__ */ new WeakMap();
+	var _instances$3 = /* @__PURE__ */ new WeakMap();
 	var _ModuleLoader_brand$1 = /* @__PURE__ */ new WeakSet();
 	/**
 	* 🚚 MODULE LOADER — lifecycle for optional modules.
@@ -10418,7 +13859,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 		constructor(scope, definitions = [], options = {}) {
 			_classPrivateMethodInitSpec(this, _ModuleLoader_brand$1);
 			_classPrivateFieldInitSpec(this, _registry$1, void 0);
-			_classPrivateFieldInitSpec(this, _instances$1, /* @__PURE__ */ new Map());
+			_classPrivateFieldInitSpec(this, _instances$3, /* @__PURE__ */ new Map());
 			_classPrivateFieldSet2(_registry$1, this, new ModuleRegistry$1(scope, { duplicate: options.duplicate }));
 			for (const definition of definitions) _classPrivateFieldGet2(_registry$1, this).register(definition);
 		}
@@ -10462,7 +13903,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 		* @returns A new array in load order.
 		*/
 		loadedIds() {
-			return Array.from(_classPrivateFieldGet2(_instances$1, this).keys());
+			return Array.from(_classPrivateFieldGet2(_instances$3, this).keys());
 		}
 		/**
 		* Returns the instance already held by a module, without loading it.
@@ -10476,8 +13917,8 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 		* const feature = loader.loaded("validation");
 		*/
 		loaded(id) {
-			if (!_classPrivateFieldGet2(_instances$1, this).has(id)) return null;
-			return _classPrivateFieldGet2(_instances$1, this).get(id);
+			if (!_classPrivateFieldGet2(_instances$3, this).has(id)) return null;
+			return _classPrivateFieldGet2(_instances$3, this).get(id);
 		}
 		/**
 		* Checks whether a module currently holds a live instance.
@@ -10486,7 +13927,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 		* @returns `true` when loaded.
 		*/
 		isLoaded(id) {
-			return _classPrivateFieldGet2(_instances$1, this).has(id);
+			return _classPrivateFieldGet2(_instances$3, this).has(id);
 		}
 		/**
 		* Loads a module by id.
@@ -10517,7 +13958,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 		resolveAll(context) {
 			const loaded = [];
 			for (const id of _classPrivateFieldGet2(_registry$1, this).ids()) {
-				if (_classPrivateFieldGet2(_instances$1, this).has(id)) continue;
+				if (_classPrivateFieldGet2(_instances$3, this).has(id)) continue;
 				const instance = this.load(id, context);
 				if (instance !== null) loaded.push(instance);
 			}
@@ -10540,7 +13981,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 		* @returns Nothing.
 		*/
 		unloadAll() {
-			for (const id of Array.from(_classPrivateFieldGet2(_instances$1, this).keys()).reverse()) _assertClassBrand(_ModuleLoader_brand$1, this, _release$1).call(this, id);
+			for (const id of Array.from(_classPrivateFieldGet2(_instances$3, this).keys()).reverse()) _assertClassBrand(_ModuleLoader_brand$1, this, _release$1).call(this, id);
 		}
 	};
 	/**
@@ -10570,7 +14011,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 		visiting.delete(id);
 		_assertClassBrand(_ModuleLoader_brand$1, this, _release$1).call(this, id);
 		const instance = definition.load(context);
-		_classPrivateFieldGet2(_instances$1, this).set(id, instance);
+		_classPrivateFieldGet2(_instances$3, this).set(id, instance);
 		return instance;
 	}
 	/**
@@ -10580,93 +14021,337 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 	* @returns `true` when something was released.
 	*/
 	function _release$1(id) {
-		if (!_classPrivateFieldGet2(_instances$1, this).has(id)) return false;
-		const instance = _classPrivateFieldGet2(_instances$1, this).get(id);
-		_classPrivateFieldGet2(_instances$1, this).delete(id);
+		if (!_classPrivateFieldGet2(_instances$3, this).has(id)) return false;
+		const instance = _classPrivateFieldGet2(_instances$3, this).get(id);
+		_classPrivateFieldGet2(_instances$3, this).delete(id);
 		_classPrivateFieldGet2(_registry$1, this).resolve(id)?.destroy?.(instance);
 		return true;
 	}
-	// packages/modules/module-loader/dist/Resolve.js
+	// packages/components/input/dist/FieldTypes.js
 	/**
-	* 🧩 Turns manifest refs into module definitions a `ModuleLoader` accepts.
+	* Field types — one row per type.
 	*
-	* @summary Two shapes describe the same module and nothing used to say which was which:
-	* a **manifest ref** (`{ id, path, export }`, what an AST declares and `ComponentRegistry`
-	* resolves) and a **definition** (`{ id, load }`, what a `ModuleLoader` takes). This is the
-	* explicit bridge — async, called by the consumer **before** it builds anything, because a
-	* builder's render is synchronous and must never own module I/O.
+	* A field type answers three questions, and they are answered here once instead of
+	* three times in three places (the render `switch`, the attribute applier, and the
+	* schema validator in `Attribute.ts`):
 	*
-	* @param refs - Manifest refs, in the order the modules should load.
-	* @param options - Importer override.
-	* @returns One definition per ref, in the same order. Each `load()` returns the very symbol the
-	*   ref named, so a module is instantiated once and shared.
-	* @throws {RegistryError} `INVALID_DEFINITION` when a ref names no `export`, when the import
-	*   fails, or when the exported symbol is not a definition (no `load`) — a class or a live
-	*   instance cannot be registered without knowing how to construct it.
+	* 1. **which selector renders the control** — `@field>textarea`, `@field>checkbox`, …
+	* 2. **which DOM attributes the type accepts** — the matrix, so an attribute that means
+	*    nothing for a type is dropped instead of silently landing in the markup;
+	* 3. **which keys are structural** — consumed by the builder (`title` is the legacy label
+	*    alias, `group`/`condition` belong to the form engine), so they never become attributes.
 	*
-	* @example
-	* import { ModuleLoader, resolveModuleDefinitions } from "@aio-ui/module-loader";
-	* import { FORM_ADAPTER_MANIFEST } from "@aio-ui/form/FormRegistry";
-	*
-	* const definitions = await resolveModuleDefinitions(FORM_ADAPTER_MANIFEST);
-	* const form = new FormBuilder({ modules: new ModuleLoader("form", definitions) });
+	* Adding a field type is one row here plus, when it needs custom markup, one selector.
 	*/
-	async function resolveModuleDefinitions$1(refs, options = {}) {
-		const load = options.import ?? ((specifier) => import(specifier));
-		return (await Promise.all(refs.map(async (ref) => {
-			if (!ref.export) throw new RegistryError$1("INVALID_DEFINITION", `Module ref "${ref.id}" names no "export". A ref must say which symbol it wants (for example export: "validationFormAdapter") — this resolver does not guess.`, {
-				scope: "module-loader",
-				id: ref.id
-			});
-			if (!ref.path) throw new RegistryError$1("MISSING_ENTRY", `Module ref "${ref.id}" names no "path" — there is nothing to import.`, {
-				scope: "module-loader",
-				id: ref.id
-			});
-			let namespace;
-			try {
-				namespace = await load(ref.path);
-			} catch (error) {
-				throw new RegistryError$1("MISSING_ENTRY", `Module ref "${ref.id}" could not import "${ref.path}": ${error?.message ?? error}`, {
-					scope: "module-loader",
-					id: ref.id
-				});
-			}
-			const symbol = namespace?.[ref.export];
-			if (symbol === void 0 || symbol === null) throw new RegistryError$1("MISSING_ENTRY", `Module ref "${ref.id}" → "${ref.path}" has no exported object "${ref.export}".`, {
-				scope: "module-loader",
-				id: ref.id
-			});
-			return {
-				ref,
-				symbol
-			};
-		}))).map(({ ref, symbol }) => {
-			const definition = symbol;
-			if (typeof definition.load !== "function") throw new RegistryError$1("INVALID_DEFINITION", `Module ref "${ref.id}" → "${ref.path}" exports "${ref.export}", which is not a module definition (no load()). Export the definition itself — every adapter in this repo does, for example "validationFormAdapter".`, {
-				scope: "module-loader",
-				id: ref.id
-			});
-			return definition;
-		});
-	}
-	// packages/components/input/dist/InputModuleTypes.js
+	/** Attributes shared by every free-text control. */
+	var TEXTUAL$1 = [
+		"placeholder",
+		"name",
+		"required",
+		"disabled",
+		"readonly"
+	];
+	/** Attributes shared by every control that holds a scalar value. */
+	var SCALAR$1 = [
+		"name",
+		"value",
+		"required",
+		"disabled"
+	];
 	/**
-	* Input module contract — ids and types only.
+	* Keys the builder itself consumes and must never forward to the DOM.
 	*
-	* Kept in a leaf file on purpose: a module definition needs its own id, and importing
-	* that id from `InputRegistry.ts` (which imports the definitions) would close a cycle and
-	* leave `INPUT_MODULE_IDS` undefined while the definitions are being built. The Form family
-	* solves the same problem the same way (`FormModuleTypes.ts`).
+	* `title` is the important one: it is **not** the HTML `title` attribute. It is the legacy
+	* shorthand for `[id, name, label, placeholder]` and is read as label text
+	* (`input.label ?? input.title`). Renaming it would break every consumer schema, so it
+	* stays an alias and stays out of the attribute matrix.
 	*/
-	/** Stable ids for input sub-modules. */
-	var INPUT_MODULE_IDS$1 = {
-		dropdown: "dropdown",
-		file: "file",
-		controls: "controls",
-		popover: "popover",
-		picker: "picker"
+	var INPUT_STRUCTURAL_KEYS$1 = [
+		"type",
+		"id",
+		"name",
+		"title",
+		"label",
+		"value",
+		"config",
+		"info",
+		"input",
+		"group",
+		"row",
+		"column",
+		"wide",
+		"span",
+		"condition",
+		"then",
+		"table",
+		"legend",
+		"description",
+		"infos",
+		"class",
+		"className",
+		"position",
+		"useLabel",
+		"display",
+		"picker",
+		"editable",
+		"actions",
+		"popover",
+		"options",
+		"steps",
+		"step",
+		"isLast",
+		"formId",
+		"modules"
+	];
+	/** The matrix. Every `InputType` must appear, so a new type cannot be half-added. */
+	var INPUT_TYPE_REGISTRY$1 = {
+		text: {
+			control: "@field>input",
+			attributes: [
+				...TEXTUAL$1,
+				"maxlength",
+				"minlength",
+				"pattern",
+				"autocomplete",
+				"inputmode",
+				"value"
+			]
+		},
+		textarea: {
+			control: "@field>textarea",
+			attributes: [
+				...TEXTUAL$1,
+				"rows",
+				"cols",
+				"maxlength",
+				"minlength"
+			]
+		},
+		number: {
+			control: "@field>input",
+			attributes: [
+				...TEXTUAL$1,
+				"min",
+				"max",
+				"step",
+				"value"
+			]
+		},
+		select: {
+			control: "@field>select",
+			attributes: [
+				"name",
+				"required",
+				"disabled",
+				"multiple",
+				"value"
+			]
+		},
+		dropdown: {
+			control: null,
+			attributes: [
+				"name",
+				"required",
+				"disabled",
+				"value"
+			]
+		},
+		picker: {
+			control: null,
+			attributes: [
+				"name",
+				"required",
+				"disabled",
+				"value"
+			]
+		},
+		actions: {
+			control: "@field>input",
+			attributes: [...SCALAR$1]
+		},
+		checkbox: {
+			control: "@field>checkbox",
+			attributes: [...SCALAR$1, "checked"]
+		},
+		radio: {
+			control: "@field>radio",
+			attributes: [...SCALAR$1, "checked"]
+		},
+		range: {
+			control: "@field>input",
+			attributes: [
+				...SCALAR$1,
+				"min",
+				"max",
+				"step"
+			]
+		},
+		date: {
+			control: "@field>input",
+			attributes: [
+				...SCALAR$1,
+				"min",
+				"max"
+			]
+		},
+		time: {
+			control: "@field>input",
+			attributes: [
+				...SCALAR$1,
+				"min",
+				"max"
+			]
+		},
+		"datetime-local": {
+			control: "@field>input",
+			attributes: [
+				...SCALAR$1,
+				"min",
+				"max"
+			]
+		},
+		file: {
+			control: "@field>file",
+			attributes: [
+				"name",
+				"required",
+				"disabled",
+				"accept",
+				"multiple"
+			]
+		},
+		color: {
+			control: "@field>input",
+			attributes: [...SCALAR$1]
+		},
+		email: {
+			control: "@field>input",
+			attributes: [
+				...TEXTUAL$1,
+				"maxlength",
+				"minlength",
+				"pattern",
+				"value"
+			]
+		},
+		password: {
+			control: "@field>input",
+			attributes: [
+				...TEXTUAL$1,
+				"maxlength",
+				"minlength",
+				"pattern",
+				"value"
+			]
+		},
+		url: {
+			control: "@field>input",
+			attributes: [
+				...TEXTUAL$1,
+				"maxlength",
+				"pattern",
+				"value"
+			]
+		},
+		tel: {
+			control: "@field>input",
+			attributes: [
+				...TEXTUAL$1,
+				"maxlength",
+				"pattern",
+				"value"
+			]
+		},
+		hidden: {
+			control: "@field>input",
+			attributes: [
+				"name",
+				"value",
+				"required",
+				"disabled"
+			]
+		}
 	};
+	/** The `text` row: the fallback for an unknown or missing type. */
+	function inputTypeOf$1(type) {
+		return INPUT_TYPE_REGISTRY$1[type ?? "text"] ?? INPUT_TYPE_REGISTRY$1.text;
+	}
+	/**
+	* Splits a schema into the attributes a type accepts and the ones it does not.
+	*
+	* Used by `Attribute.ts` as the validator, and the reason the matrix lives in one place:
+	* the renderer and the validator can never disagree about what a type may carry.
+	*
+	* @param type - Field type (`"checkbox"`, `"number"`, …).
+	* @param schema - Keys to check; structural keys are ignored, not reported.
+	* @returns `accepted` and `rejected` attribute names, plus the structural keys found.
+	*/
+	function scanInputAttributes$1(type, schema) {
+		const definition = inputTypeOf$1(type);
+		const accepted = [];
+		const rejected = [];
+		const structural = [];
+		for (const key of Object.keys(schema)) {
+			if (INPUT_STRUCTURAL_KEYS$1.includes(key)) {
+				structural.push(key);
+				continue;
+			}
+			if (definition.attributes.includes(key)) accepted.push(key);
+			else rejected.push(key);
+		}
+		return {
+			accepted,
+			rejected,
+			structural
+		};
+	}
 	// packages/components/input/dist/InputRegistry.js
+	/**
+	* Input module registry — **data and helpers only, zero implementations.**
+	*
+	* The input layer has its own sub-modules — controls nobody should pay for unless the
+	* field asks for them: a dropdown (a whole builder), the uploader (~1.8k lines), the
+	* action button set, and popovers. This file declares them as **refs** (`InputModuleManifest`,
+	* strings) and offers the helpers that walk a preset; the live definitions
+	* (`INPUT_MODULE_DEFINITIONS`, `{ id, load }`) are re-exported from `./index`, which
+	* provides them from each component subpath.
+	*
+	* The root pulls the four modules (one door), but they are also published beside their own
+	* component subpaths, so a bundler that only imports a field keeps the other builders out.
+	* No helper here may name a default preset: a default parameter is an import edge, and the
+	* helpers must stay usable without one.
+	*
+	* The helpers therefore take an **optional** preset and do nothing without one. There is
+	* nothing to mount, read or offer when the host declared no modules — that is a capability,
+	* not an error.
+	*
+	* This is *not* the field-type matrix — that is `FieldTypes.ts`. This file decides who is
+	* allowed to touch a field while it is being built.
+	*/
+	/** Whether a preset item is a definition (needs loading) or a live adapter. */
+	function isDefinition$1(item) {
+		return typeof item.load === "function";
+	}
+	/**
+	* Turns any accepted preset into adapters, plus a disposer for the ones it created.
+	*
+	* @param preset - Definitions, live adapters, or a mix of both.
+	* @param context - Host configuration handed to freshly loaded modules.
+	* @returns The adapters to use and the matching cleanup.
+	*/
+	function adaptersOf$1(preset, context) {
+		const definitions = preset.filter(isDefinition$1);
+		const live = preset.filter((item) => !isDefinition$1(item));
+		if (!definitions.length) return {
+			adapters: live,
+			dispose: () => {}
+		};
+		const loader = new ModuleLoader$1("input", definitions);
+		return {
+			adapters: [...loader.resolveAll(context), ...live],
+			dispose: () => loader.unloadAll()
+		};
+	}
 	/**
 	* The stack as manifest refs, so a parent component can declare it without importing
 	* classes and the registry can resolve one entry at a time.
@@ -10678,37 +14363,995 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 	var INPUT_MODULE_MANIFEST$1 = [
 		{
 			id: "dropdown",
-			path: "@aio-ui/input/dropdown/module",
+			path: "@aio-ui/input/dropdown",
 			export: "dropdownInputModule"
 		},
 		{
 			id: "picker",
-			path: "@aio-ui/input/picker/module",
+			path: "@aio-ui/input/picker",
 			export: "pickerInputModule"
 		},
 		{
 			id: "file",
-			path: "@aio-ui/input/file-uploader/module",
+			path: "@aio-ui/input/file-uploader",
 			export: "fileUploaderInputModule"
 		},
 		{
 			id: "controls",
-			path: "@aio-ui/input/controls/module",
+			path: "@aio-ui/input/controls",
 			export: "inputControlsInputModule"
 		},
 		{
 			id: "popover",
-			path: "@aio-ui/input/popover/module",
+			path: "@aio-ui/input",
 			export: "popoverInputModule"
 		}
 	];
+	/**
+	* Offers a subtree to every module in the preset.
+	*
+	* This is the only entry point a host needs for "fields that were not built by
+	* `InputBuilder`" (raw HTML in a form, a multistep step that was just mounted): the
+	* registry walks its own set, so the caller never names `FileUploader` — or any other
+	* adapter — and a preset without the `file` module simply has nothing to mount.
+	*
+	* @param root - Subtree to scan.
+	* @param preset - Definitions to resolve. Omit it and nothing is mounted: without a
+	*   declared preset there is no module to run, and guessing one would undo the split.
+	*/
+	function mountInputModules$1(root, preset) {
+		if (!preset?.length) return;
+		const { adapters, dispose } = adaptersOf$1(preset, { builderConfig: { themeId: "default" } });
+		for (const module of adapters) module.mount?.(root);
+		dispose();
+	}
+	/**
+	* Builds a control set for a scope — a field wrapper or a whole group.
+	*
+	* @param scope - Element the set acts on.
+	* @param actions - Declared actions; the module normalises the shape.
+	* @param position - Where the buttons sit relative to the scope.
+	* @param preset - Definitions to resolve. Omit it and there is no controls module to ask.
+	* @returns The controls node, or `null` when the preset has no controls module.
+	*
+	* @summary The group-level entry point: `FormBuilder` offers a `<fieldset>` here and never
+	* learns that buttons exist, and a preset without the `controls` module simply has no
+	* capability rather than a dead button set.
+	*/
+	function mountControls$1(scope, actions, position = "right", preset) {
+		if (!preset?.length) return null;
+		const { adapters, dispose } = adaptersOf$1(preset, { builderConfig: { themeId: "default" } });
+		const node = adapters.find((m) => typeof m.renderActions === "function")?.renderActions?.(scope, {
+			actions,
+			position
+		}) ?? null;
+		dispose();
+		return node;
+	}
+	/**
+	* The files currently selected inside a form, keyed by input name.
+	*
+	* @param formId - Id of the form that owns the file inputs.
+	* @param preset - Definitions to resolve. Omit it and the answer is "no files", because
+	*   no module can read them.
+	* @returns Raw files; empty when the preset has no module that can read them.
+	*/
+	function inputFilesOf$1(formId, preset) {
+		if (!preset?.length) return {};
+		const { adapters, dispose } = adaptersOf$1(preset, { builderConfig: { themeId: "default" } });
+		const module = adapters.find((m) => typeof m.getFiles === "function");
+		const files = module?.getFiles ? module.getFiles(formId) : {};
+		dispose();
+		return files;
+	}
+	// packages/components/input/dist/Missing.js
+	/**
+	* Missing-capability reporting — one helper, four call sites, one vocabulary.
+	*
+	* The input layer **degrades** instead of breaking: without a sub-module a `dropdown` is a
+	* native `<select>`, an uploader is a plain `input[type=file]`, `config.popover` is
+	* ignored. That degradation is honest as *behaviour* and dishonest as *silence* — a
+	* consumer that asked for a dropdown and got a select never finds out, and a form that
+	* declared `config.files` hands its policy an empty map and drops the bytes without a word.
+	*
+	* So every degraded capability speaks here, at the moment it degrades:
+	*
+	* - **warn** — the field still works, just plainer (`dropdown`, `popover`, `file` on a
+	*   field). Printed **once per builder and capability**, because a forty-field schema must
+	*   not print forty lines, and emitted as `moduleMissing` so a host can surface the same
+	*   fact in its own UI instead of reading a console.
+	* - **error** — a warning is not enough because the result would be a *hole*: a declared
+	*   action set that renders no buttons, a `config.files` policy with no module to hand it
+	*   files. The message names the capability, the module id and the one subpath that fixes
+	*   it, so a consumer can act without the source.
+	*
+	* Deliberately **not exported from the `@aio-ui/input` root**: it is an internal mechanism,
+	* not an API. Hosts listen for the event (or read the console); they never call this.
+	*/
+	/**
+	* Reports one missing capability — once per builder, or not at all when it is fatal.
+	*
+	* @param report - Capability, module, fix, consequence and severity.
+	* @param options - Owner label, the builder's dedupe set, and the host emitter.
+	* @returns Nothing. Throws for `severity: "error"`.
+	* @throws {Error} With the capability, the module id and the fixing subpath in the message.
+	*
+	* @example
+	* // A field fell back to a native select, so say it once.
+	* reportMissing({ capability: "dropdown", module: "dropdown", fix: "@aio-ui/input/dropdown (dropdownInputModule)", consequence: "the field falls back to a native select with the same options", severity: "warn" }, { seen });
+	*/
+	function reportMissing$1(report, options = {}) {
+		const { owner = "InputBuilder", seen, emit = null } = options;
+		const detail = {
+			builder: owner,
+			capability: report.capability,
+			module: report.module,
+			fix: report.fix,
+			consequence: report.consequence,
+			severity: report.severity
+		};
+		if (report.severity === "error") {
+			emit?.("moduleMissing", detail);
+			throw new Error(`[${owner}] ${report.capability}: the "${report.module}" module is not in this builder's set, so ${report.consequence} Add it with ${report.fix}.`);
+		}
+		if (seen?.has(report.capability)) return;
+		seen?.add(report.capability);
+		console.warn(`[${owner}] ${report.capability}: the "${report.module}" module is not in this builder's set, so ${report.consequence} Add it with ${report.fix}.`);
+		emit?.("moduleMissing", detail);
+	}
+	// packages/components/input/dist/Input.js
+	/**
+	* Attributes `applyAttributes` knows how to map, in application order.
+	*
+	* A key not listed here is not applied by the builder (it can still be passed through
+	* `config.attributes`), and a key listed here is still dropped for a type whose registry
+	* row does not accept it.
+	*/
+	var ATTRIBUTE_ORDER$1 = [
+		"value",
+		"checked",
+		"placeholder",
+		"required",
+		"disabled",
+		"readonly",
+		"multiple",
+		"accept",
+		"min",
+		"max",
+		"minlength",
+		"maxlength",
+		"step",
+		"pattern",
+		"rows",
+		"cols",
+		"autocomplete",
+		"inputmode"
+	];
+	/** Attributes whose presence is the value: `required`, `disabled`, `multiple`, … */
+	var BOOLEAN_ATTRIBUTES$1 = /* @__PURE__ */ new Set([
+		"required",
+		"disabled",
+		"readonly",
+		"multiple"
+	]);
+	var _input$1 = /* @__PURE__ */ new WeakMap();
+	var _loader$3 = /* @__PURE__ */ new WeakMap();
+	var _live$1 = /* @__PURE__ */ new WeakMap();
+	var _declared$1 = /* @__PURE__ */ new WeakMap();
+	var _warned$2 = /* @__PURE__ */ new WeakMap();
+	var _modules$1 = /* @__PURE__ */ new WeakMap();
+	var _InputBuilder_brand$1 = /* @__PURE__ */ new WeakSet();
+	var InputBuilder$1 = class extends Builder$1 {
+		/**
+		* 🪶 LOADING MOCKUP — one label and one control box, drawn with the mandatory
+		* `@aio-ui/skeleton` primitive. The control type (select, textarea, switch) changes the
+		* skin, never the box: a field reserves one line plus one control.
+		*/
+		loading() {
+			return Skeleton$1.create({
+				shape: "stack",
+				children: [{
+					shape: "line",
+					width: "25%"
+				}, {
+					shape: "bone",
+					height: "2.75rem"
+				}]
+			});
+		}
+		constructor(config = {}) {
+			super();
+			_classPrivateMethodInitSpec(this, _InputBuilder_brand$1);
+			_defineProperty(this, "builderId", "input");
+			_defineProperty(this, "name", "input");
+			_defineProperty(this, "stylesheet", "./input.css");
+			_classPrivateFieldInitSpec(this, _input$1, {});
+			_classPrivateFieldInitSpec(this, _loader$3, void 0);
+			_classPrivateFieldInitSpec(this, _live$1, void 0);
+			_classPrivateFieldInitSpec(this, _declared$1, void 0);
+			_classPrivateFieldInitSpec(this, _warned$2, /* @__PURE__ */ new Set());
+			_classPrivateFieldInitSpec(this, _modules$1, []);
+			const defaultConfig = {
+				themeId: "default",
+				selectors: {
+					"@field": {
+						tagName: "div",
+						className: "field"
+					},
+					"@field>label": { tagName: "label" },
+					"@field>input": { tagName: "input" },
+					"@field>textarea": { tagName: "textarea" },
+					"@field>select": { tagName: "select" },
+					"@field>select>option": { tagName: "option" },
+					"@field>checkbox": {
+						tagName: "input",
+						type: "checkbox",
+						wrapper: ".switch.control"
+					},
+					"@field>radio": {
+						tagName: "input",
+						type: "radio"
+					},
+					"@field>toggle": {
+						tagName: "input",
+						wrapper: ".switch.control"
+					},
+					"@field>file": {
+						tagName: "input",
+						type: "file"
+					},
+					"@field>info": {
+						tagName: "small",
+						className: "info"
+					}
+				},
+				namespace: null,
+				emit: () => {},
+				modules: null
+			};
+			this.config = this.resolveConfig(defaultConfig, config);
+			if (Array.isArray(this.config.modules)) {
+				const preset = this.config.modules;
+				const definitions = preset.filter((item) => typeof item.load === "function");
+				_classPrivateFieldSet2(_live$1, this, preset.filter((item) => typeof item.load !== "function"));
+				_classPrivateFieldSet2(_loader$3, this, definitions.length ? new ModuleLoader$1("input", definitions) : null);
+			} else {
+				_classPrivateFieldSet2(_live$1, this, []);
+				_classPrivateFieldSet2(_loader$3, this, this.config.modules ?? new ModuleLoader$1("input", []));
+			}
+			_classPrivateFieldSet2(_declared$1, this, new Set(_classPrivateFieldGet2(_loader$3, this)?.ids() ?? []));
+		}
+		resolvePayload(inputObj) {
+			const defaultPayload = {
+				type: "text",
+				id: this._sanitizeId(inputObj.id || inputObj.title || `input-${Math.random().toString(36).slice(2, 10)}`),
+				title: "",
+				placeholder: "",
+				rows: 3,
+				multiple: false,
+				disabled: false,
+				readonly: false,
+				required: false,
+				checked: false,
+				config: {
+					attributes: [],
+					style: "",
+					className: "",
+					options: [],
+					useLabel: true,
+					display: void 0,
+					createEventListener: false,
+					popover: void 0,
+					actions: void 0
+				}
+			};
+			const inputPayload = {
+				...defaultPayload,
+				...inputObj,
+				config: {
+					...defaultPayload.config,
+					...inputObj.config
+				}
+			};
+			if (!inputPayload.placeholder && inputPayload.title) inputPayload.placeholder = inputPayload.type === "select" || inputPayload.type === "textarea" ? `Pilih ${inputPayload.title}` : `Isi ${inputPayload.title}`;
+			const rawOptions = inputObj.config?.options ?? inputObj.options;
+			if (Array.isArray(rawOptions)) inputPayload.config.options = rawOptions.map((option) => typeof option === "string" ? {
+				value: option,
+				label: option
+			} : option);
+			return inputPayload;
+		}
+		prepare(inputObj, _config) {
+			_classPrivateFieldSet2(_input$1, this, this.resolvePayload(inputObj));
+			const cfg = _classPrivateFieldGet2(_input$1, this).config;
+			const definition = inputTypeOf$1(_classPrivateFieldGet2(_input$1, this).type);
+			_classPrivateFieldSet2(_modules$1, this, [..._classPrivateFieldGet2(_loader$3, this)?.resolveAll(_get_moduleContext$1.call(_assertClassBrand(_InputBuilder_brand$1, this))) ?? [], ..._classPrivateFieldGet2(_live$1, this)]);
+			if (cfg?.actions && !_assertClassBrand(_InputBuilder_brand$1, this, _offers$1).call(this, "renderActions")) _assertClassBrand(_InputBuilder_brand$1, this, _missing$1).call(this, "actions", INPUT_MODULE_IDS$1.controls, "@aio-ui/input/controls (inputControlsInputModule)", "the declared action buttons would never render.", "error");
+			const wrapper = this.render("@field", _classPrivateFieldGet2(_input$1, this));
+			const labelText = _classPrivateFieldGet2(_input$1, this).label ?? _classPrivateFieldGet2(_input$1, this).title;
+			const isToggle = _classPrivateFieldGet2(_input$1, this).type === "checkbox" || _classPrivateFieldGet2(_input$1, this).type === "radio";
+			const labelPosition = _classPrivateFieldGet2(_input$1, this).config?.position ?? _classPrivateFieldGet2(_input$1, this).position ?? (isToggle ? "right" : void 0);
+			const label = labelText && _classPrivateFieldGet2(_input$1, this).config?.useLabel !== false ? this.render("@field>label", {
+				text: labelText,
+				position: labelPosition,
+				id: _classPrivateFieldGet2(_input$1, this).id
+			}) : null;
+			if (label) wrapper.appendChild(label);
+			let inputEl = null;
+			for (const module of _classPrivateFieldGet2(_modules$1, this)) {
+				const rendered = module.renderControl?.(_classPrivateFieldGet2(_input$1, this), _get_moduleContext$1.call(_assertClassBrand(_InputBuilder_brand$1, this)));
+				if (rendered) {
+					inputEl = rendered;
+					break;
+				}
+			}
+			const controlKey = _classPrivateFieldGet2(_input$1, this).type === "radio" && _assertClassBrand(_InputBuilder_brand$1, this, _isToggleStyle$1).call(this) ? "@field>toggle" : definition.control;
+			if (!inputEl && controlKey) inputEl = this.render(controlKey, _classPrivateFieldGet2(_input$1, this));
+			if (!inputEl) {
+				inputEl = controlKey ? this.render("@field>input", _classPrivateFieldGet2(_input$1, this)) : this.render("@field>select", _classPrivateFieldGet2(_input$1, this));
+				if (!controlKey) {
+					const type = String(_classPrivateFieldGet2(_input$1, this).type ?? "");
+					const module = INPUT_MODULE_IDS$1[type] ?? type;
+					_assertClassBrand(_InputBuilder_brand$1, this, _missing$1).call(this, type, module, `@aio-ui/input/${module} (${module}InputModule)`, "the field falls back to a native select over the same options.");
+				}
+				if ((_classPrivateFieldGet2(_input$1, this).type === "text" || _classPrivateFieldGet2(_input$1, this).type === "number") && cfg?.className === "loading") inputEl.classList.add("loading");
+			}
+			if (_classPrivateFieldGet2(_input$1, this).type === "file" && !_assertClassBrand(_InputBuilder_brand$1, this, _offers$1).call(this, "getFiles")) _assertClassBrand(_InputBuilder_brand$1, this, _missing$1).call(this, "file", INPUT_MODULE_IDS$1.file, "@aio-ui/input/file-uploader (fileUploaderInputModule)", "the field is a plain file input: no preview, and onFileSelected never fires.");
+			if (inputEl) this.applyAttributes(inputEl, _classPrivateFieldGet2(_input$1, this));
+			if (_classPrivateFieldGet2(_input$1, this).editable === true || cfg?.editable === true) wrapper.setAttribute("data-editable", "true");
+			if (_classPrivateFieldGet2(_input$1, this).info) {
+				const info = this.render("@field>info", _classPrivateFieldGet2(_input$1, this).info);
+				wrapper.appendChild(info);
+			}
+			if (inputEl) inputEl.__outer ? wrapper.appendChild(inputEl.__outer) : wrapper.appendChild(inputEl);
+			if (inputEl) {
+				for (const module of _classPrivateFieldGet2(_modules$1, this)) module.decorate?.(wrapper, inputEl, _classPrivateFieldGet2(_input$1, this), _get_moduleContext$1.call(_assertClassBrand(_InputBuilder_brand$1, this)));
+				if (cfg?.popover && _get_popoverMissing$1.call(_assertClassBrand(_InputBuilder_brand$1, this))) _assertClassBrand(_InputBuilder_brand$1, this, _missing$1).call(this, "popover", INPUT_MODULE_IDS$1.popover, "@aio-ui/input (popoverInputModule)", "config.popover is ignored and no anchor attaches to the control.");
+			}
+			return wrapper;
+		}
+		template(typeKey, el, payload) {
+			if (!payload) return;
+			const cfg = payload.config;
+			switch (typeKey) {
+				case "@field":
+					if (payload?.className && payload?.className !== "loading") el.classList.add(...payload.className.split(" ").filter(Boolean));
+					if (payload?.display) el.setAttribute("data-display", payload.display ?? cfg.display);
+					break;
+				case "@field>label":
+					el.setAttribute("for", payload.id);
+					el.textContent = payload.text;
+					if (payload.position) el.setAttribute("data-position", payload.position);
+					break;
+				case "@field>checkbox":
+					el.type = "checkbox";
+					const slider = document.createElement("div");
+					slider.className = "slider";
+					slider.setAttribute("data-shape", "round");
+					el.__outer.appendChild(slider);
+					break;
+				case "@field>input":
+					el.type = payload.type || "text";
+					el.autocomplete = "off";
+					break;
+				case "@field>textarea":
+					el.rows = payload.rows;
+					break;
+				case "@field>select":
+					if (cfg?.className === "loading") el.classList.add("loading");
+					const placeholderOpt = document.createElement("option");
+					placeholderOpt.value = "";
+					placeholderOpt.textContent = payload.placeholder || "Pilih Opsi...";
+					placeholderOpt.disabled = true;
+					placeholderOpt.selected = true;
+					el.appendChild(placeholderOpt);
+					const options = cfg?.options || [];
+					for (const option of options) {
+						const optionEl = this.render("@field>select>option", {
+							option,
+							parentValue: payload.value
+						});
+						el.appendChild(optionEl);
+						if (placeholderOpt.selected && optionEl.hasAttribute("selected")) placeholderOpt.selected = false;
+					}
+					break;
+				case "@field>radio":
+					el.type = payload.type;
+					el.checked = payload.checked === true;
+					break;
+				case "@field>toggle": {
+					const toggle = el;
+					toggle.type = payload.type === "radio" ? "radio" : "checkbox";
+					toggle.checked = payload.checked === true;
+					const slider = document.createElement("div");
+					slider.className = "slider";
+					slider.setAttribute("data-shape", payload.config?.shape ?? "round");
+					el.__outer.appendChild(slider);
+					break;
+				}
+				case "@field>file":
+					el.type = "file";
+					el.setAttribute("data-uploader", "");
+					el.setAttribute("data-view", `${cfg?.view || "list"}`);
+					el.setAttribute("data-render-thumbnail", `${cfg?.thumbnail ?? "true"}`);
+					if (cfg?.csv === true) el.setAttribute("data-uploader-csv", "");
+					break;
+				case "@field>select>option":
+					const option = el;
+					option.value = payload.option.value;
+					option.textContent = payload.option.label;
+					if (payload.parentValue !== void 0 && String(payload.option.value) === String(payload.parentValue)) option.setAttribute("selected", "selected");
+					break;
+				case "@field>info": el.textContent = payload;
+			}
+		}
+		initialize(_el, _payload, _context) {
+			if (_classPrivateFieldGet2(_input$1, this).config?.popover) {
+				if (_classPrivateFieldGet2(_input$1, this).config?.popover instanceof HTMLElement) _el?.appendChild(_classPrivateFieldGet2(_input$1, this).config?.popover);
+				else if (typeof _classPrivateFieldGet2(_input$1, this).config?.popover === "string") _el?.insertAdjacentHTML("beforeend", _classPrivateFieldGet2(_input$1, this).config?.popover);
+			}
+		}
+		/**
+		* Applies a schema to a live control.
+		*
+		* The registry decides what a type may carry: an attribute that means nothing for the
+		* type is dropped instead of landing in the markup (`maxlength` on a `checkbox`, a
+		* `min` on a `file`). `id` and `name` are structural and always set; `config.attributes`
+		* is applied last, so an escape hatch still wins.
+		*/
+		applyAttributes(el, payload) {
+			const cfg = payload.config ?? {};
+			const allowed = inputTypeOf$1(payload.type).attributes;
+			el.id = payload.id;
+			el.name = payload.name ? String(payload.name) : payload.id;
+			const read = (key) => payload[key] !== void 0 ? payload[key] : cfg[key];
+			for (const key of ATTRIBUTE_ORDER$1) {
+				if (!allowed.includes(key)) continue;
+				const value = read(key);
+				if (key === "value") {
+					if (value !== void 0 && value !== null && "value" in el) el.value = String(value);
+					continue;
+				}
+				if (key === "checked") {
+					if (el instanceof HTMLInputElement) el.checked = Boolean(value);
+					continue;
+				}
+				if (BOOLEAN_ATTRIBUTES$1.has(key)) {
+					if (!value) continue;
+					el.setAttribute(key, "");
+					if (key in el) el[key] = true;
+					continue;
+				}
+				if (value === void 0 || value === null || value === "") continue;
+				el.setAttribute(key, String(value));
+			}
+			if (el instanceof HTMLInputElement && el.type === "number" && !el.getAttribute("step")) el.step = "any";
+			if (cfg?.attributes && Array.isArray(cfg.attributes)) cfg.attributes.forEach((attr) => {
+				if (attr?.name) {
+					if (typeof attr.value === "function" && attr.name.startsWith("on")) el[attr.name] = attr.value;
+					else el.setAttribute(attr.name, attr.value);
+				}
+			});
+		}
+		_sanitizeId(value) {
+			return value.toLowerCase().trim().replace(/[^a-z0-9_-]+/g, "-").replace(/^-+|-+$/g, "");
+		}
+	};
+	/** Host data a module may read: the builder's own configuration. */
+	function _get_moduleContext$1() {
+		return { builderConfig: this.config };
+	}
+	/**
+	* Whether any resolved adapter implements a hook.
+	*
+	* Method sniffing, never id matching: a project may ship its own uploader under another
+	* id, and "can this set read files" is the question — not "is the built-in one here".
+	*
+	* @param hook - Adapter method that *is* the capability.
+	* @returns `true` when at least one module offers it.
+	*/
+	function _offers$1(hook) {
+		return _classPrivateFieldGet2(_modules$1, this).some((module) => typeof module[hook] === "function");
+	}
+	/**
+	* Whether the popover module is provably absent.
+	*
+	* The popover is the one capability with no hook to sniff — it only *decorates*. So the
+	* answer comes from the ids the preset declared: nothing declared and nothing live means
+	* there is nothing to attach a popover with. A host that hands live adapters is not
+	* second-guessed; the builder cannot see inside an instance.
+	*/
+	function _get_popoverMissing$1() {
+		if (_classPrivateFieldGet2(_declared$1, this).size > 0) return !_classPrivateFieldGet2(_declared$1, this).has(INPUT_MODULE_IDS$1.popover);
+		return _classPrivateFieldGet2(_modules$1, this).length === 0;
+	}
+	/**
+	* Reports one degraded capability through `Missing.ts`.
+	*
+	* @param capability - Schema vocabulary (`dropdown`, `file`, `actions`, `popover`).
+	* @param module - Module id that would have provided it.
+	* @param fix - Subpath and export that fix it.
+	* @param consequence - What the visitor gets instead, in one clause.
+	* @param severity - `warn` (default) keeps the field, `error` throws.
+	* @throws {Error} For `severity: "error"`, with the module id and the fix in the message.
+	*/
+	function _missing$1(capability, module, fix, consequence, severity = "warn") {
+		reportMissing$1({
+			capability,
+			module,
+			fix,
+			consequence,
+			severity
+		}, {
+			owner: "InputBuilder",
+			seen: _classPrivateFieldGet2(_warned$2, this),
+			emit: this.config.emit
+		});
+	}
+	/** Whether this field asked for the switch shell (`config.style: "toggle"`). */
+	function _isToggleStyle$1() {
+		return String(_classPrivateFieldGet2(_input$1, this).config?.style ?? "").toLowerCase() === "toggle";
+	}
+	_defineProperty(InputBuilder$1, "contract", {
+		schema: {
+			t: "record",
+			open: true,
+			of: {
+				type: { t: "string" },
+				id: { t: "string" },
+				name: { t: "string" },
+				title: { t: "string" },
+				label: { t: "string" },
+				placeholder: { t: "string" },
+				required: { t: "boolean" }
+			}
+		},
+		example: {
+			type: "text",
+			id: "email",
+			title: "Email address",
+			placeholder: "you@example.com"
+		}
+	});
+	var _PopoverInputModule_brand$1 = /* @__PURE__ */ new WeakSet();
+	/**
+	* Popover module.
+	*
+	* `config.popover` may be an HTML string or a ready element (a date picker, a search
+	* panel). The focus/blur plumbing and the value sync-back live here, not in
+	* `InputBuilder`, so the field renderer never learns about popovers.
+	*/
+	var PopoverInputModule$1 = class {
+		constructor() {
+			_classPrivateMethodInitSpec(this, _PopoverInputModule_brand$1);
+		}
+		/**
+		* Attaches the configured popover to the control.
+		*
+		* @param _wrapper - The `.field` element.
+		* @param control - The rendered control, used as the anchor.
+		* @param field - Resolved field payload.
+		*/
+		decorate(_wrapper, control, field) {
+			const target = field.config?.popover;
+			if (!target) return;
+			const popover = typeof target === "string" ? _assertClassBrand(_PopoverInputModule_brand$1, this, _parse$1).call(this, target) : target;
+			if (!popover) return;
+			if (!popover.hasAttribute("popover")) popover.setAttribute("popover", "manual");
+			const anchor = control.id ? `--anchor-${control.id}` : null;
+			if (anchor) {
+				control.style.setProperty("anchor-name", anchor);
+				popover.style.setProperty("position-anchor", anchor);
+			}
+			control.insertAdjacentElement("afterend", popover);
+			control.addEventListener("focus", () => {
+				if (typeof HTMLElement.prototype.showPopover === "function") popover.showPopover();
+			});
+			control.addEventListener("blur", (event) => {
+				const related = event.relatedTarget;
+				if (related && popover.contains(related)) {
+					popover.addEventListener("blur", (inner) => {
+						const next = inner.relatedTarget;
+						if (popover.contains(next) || next === control) return;
+						const innerField = popover.querySelector("textarea, input, select");
+						if (innerField && "value" in control) {
+							control.value = innerField.value;
+							control.dispatchEvent(new Event("input", { bubbles: true }));
+							control.dispatchEvent(new Event("change", { bubbles: true }));
+						}
+						if (typeof HTMLElement.prototype.hidePopover === "function") popover.hidePopover();
+					}, {
+						capture: true,
+						once: true
+					});
+					return;
+				}
+				if (typeof HTMLElement.prototype.hidePopover === "function") popover.hidePopover();
+			});
+		}
+	};
+	/** Parses an HTML string into a single element. */
+	function _parse$1(html) {
+		const holder = document.createElement("div");
+		holder.innerHTML = html.trim();
+		return holder.firstElementChild;
+	}
+	/**
+	* Popover module definition.
+	*
+	* @example
+	* // registered by INPUT_MODULE_DEFINITIONS; drop it and `config.popover` is ignored
+	*/
+	var popoverInputModule$1 = {
+		id: INPUT_MODULE_IDS$1.popover,
+		load: () => new PopoverInputModule$1()
+	};
+	// packages/components/input/dist/Attribute.js
+	var baseInputConfig$1 = {
+		label: "",
+		name: "",
+		value: "",
+		required: false,
+		disabled: false
+	};
+	var InputAttributeBuilder$1 = class {
+		static resolveMinMaxType(inputType, key) {
+			if (!["min", "max"].includes(key)) return null;
+			switch (inputType) {
+				case "date": return "date";
+				case "time": return "time";
+				case "datetime-local": return "datetime-local";
+				default: return "number";
+			}
+		}
+		static buildSchemaForType(inputType, header = {}) {
+			const merged = {
+				...baseInputConfig$1,
+				...this.inputs[inputType],
+				...header,
+				type: inputType
+			};
+			const schema = {
+				...merged,
+				template: ""
+			};
+			for (const attrKey in this.attributes) {
+				const key = attrKey;
+				const schemaDef = this.attributes[key];
+				if (!schemaDef) continue;
+				if (!(key in merged)) continue;
+				let value = merged[key];
+				let attrType = schemaDef.type;
+				if (["min", "max"].includes(key)) {
+					const resolved = this.resolveMinMaxType(inputType, key);
+					if (resolved) attrType = resolved;
+				}
+				if (inputType === "checkbox" || inputType === "radio") {
+					if (typeof value === "boolean") {
+						schema.checked = value;
+						value = value;
+					}
+				}
+				if (inputType === "file") delete schema.value;
+				const elementId = `${header.id ? header.id.toLowerCase().replace(/[\s_]+/g, "-") : header.title ? header.title.toLowerCase().replace(/[\s_]+/g, "-") : inputType}-${schemaDef.name}`;
+				let attrConfig = {
+					type: attrType,
+					title: schemaDef.name,
+					label: schemaDef.label,
+					id: elementId,
+					value,
+					...schemaDef.config ? { config: schemaDef.config } : {}
+				};
+				schema[key] = {
+					input: attrType,
+					value,
+					...schemaDef.config ? { config: schemaDef.config } : {},
+					template: new InputBuilder$1().create({ content: attrConfig })
+				};
+			}
+			return schema;
+		}
+		/**
+		* Checks a field schema against the registry matrix for its type.
+		*
+		* One source of truth: the same rows `InputBuilder` renders with decide what may be
+		* accepted, so the editor and the renderer can never disagree. The previous version
+		* kept its own copy of the matrix and returned `true` as soon as *any* key was
+		* allowed — one bad key next to one good key passed silently.
+		*
+		* @param type - Field type the schema claims.
+		* @param schema - Field schema (`{ type, id, title, placeholder, config, … }`).
+		* @param customAllowed - Extra keys this project allows beyond the matrix.
+		* @returns Accepted/rejected/structural keys; `ok` is true when nothing was rejected.
+		*/
+		static scan(type, schema, customAllowed = []) {
+			const result = scanInputAttributes$1(type, schema);
+			const extra = result.rejected.filter((key) => customAllowed.includes(key));
+			const rejected = result.rejected.filter((key) => !customAllowed.includes(key));
+			return {
+				type,
+				accepted: [...result.accepted, ...extra],
+				rejected,
+				structural: result.structural,
+				ok: rejected.length === 0
+			};
+		}
+		/**
+		* Boolean form of {@link scan}, kept for callers that only need a pass/fail.
+		*
+		* @param type - Field type.
+		* @param config - Field schema.
+		* @param customAllowed - Extra keys this project allows.
+		* @returns `true` when every non-structural key is valid for the type.
+		*/
+		static scanUnallowedAttrs(type, config, customAllowed = []) {
+			return this.scan(type, config, customAllowed).ok;
+		}
+		static create(headers) {
+			return headers.map((header) => {
+				const type = header.type || "text";
+				return this.buildSchemaForType(type, header);
+			});
+		}
+	};
+	_defineProperty(InputAttributeBuilder$1, "inputs", {
+		text: {
+			placeholder: "Enter text",
+			maxlength: 255
+		},
+		textarea: {
+			placeholder: "Enter your message",
+			rows: 3,
+			cols: 30
+		},
+		number: {
+			placeholder: "Enter a number",
+			value: 50,
+			min: 0,
+			max: 100,
+			step: 1
+		},
+		select: {
+			placeholder: "Select an option",
+			range: "sheet_range",
+			form: "form_id",
+			multiple: false
+		},
+		dropdown: {
+			placeholder: "Select an option",
+			range: "sheet_range",
+			form: "form_id",
+			multiple: false
+		},
+		picker: {
+			placeholder: "Select an option",
+			multiple: false
+		},
+		checkbox: {
+			value: "default_value",
+			checked: false
+		},
+		radio: {
+			value: "default_value",
+			range: "sheet_range"
+		},
+		range: {
+			value: 50,
+			min: 0,
+			max: 100,
+			step: 1,
+			orient: "horizontal"
+		},
+		actions: { config: { actions: ["editor"] } },
+		date: {
+			min: "yyyy-MM-dd",
+			max: "yyyy-MM-dd"
+		},
+		time: {},
+		"datetime-local": {
+			min: "YYYY-MM-DDTHH:mm",
+			max: "YYYY-MM-DDTHH:mm"
+		},
+		file: {
+			accept: "image/*,.pdf",
+			multiple: false,
+			"data-max-upload": 10,
+			"data-max-file-size": 5,
+			"data-group-unallowed": true,
+			"data-thumbnail": true,
+			"data-view": "thumbnails"
+		},
+		color: { value: "#000000" },
+		email: { placeholder: "Enter email" },
+		password: {
+			placeholder: "Enter password",
+			minlength: 8,
+			maxlength: 255
+		},
+		url: {
+			placeholder: "Enter URL",
+			pattern: "https://.*"
+		},
+		tel: {
+			placeholder: "Enter phone number",
+			pattern: ""
+		},
+		hidden: { value: "hidden_value" }
+	});
+	_defineProperty(InputAttributeBuilder$1, "attributes", {
+		value: {
+			name: "value",
+			type: "text",
+			value: ""
+		},
+		placeholder: {
+			name: "placeholder",
+			type: "text",
+			value: ""
+		},
+		required: {
+			name: "required",
+			type: "checkbox",
+			config: {
+				style: "toggle",
+				position: "left"
+			},
+			value: false
+		},
+		disabled: {
+			name: "disabled",
+			type: "checkbox",
+			config: {
+				style: "toggle",
+				position: "left"
+			},
+			value: false
+		},
+		min: {
+			name: "min",
+			type: "number",
+			value: ""
+		},
+		max: {
+			name: "max",
+			type: "number",
+			value: ""
+		},
+		minlength: {
+			name: "minlength",
+			type: "number",
+			value: ""
+		},
+		maxlength: {
+			name: "maxlength",
+			type: "number",
+			value: ""
+		},
+		step: {
+			name: "step",
+			type: "number",
+			value: 1
+		},
+		rows: {
+			name: "rows",
+			type: "number",
+			value: 3
+		},
+		cols: {
+			name: "cols",
+			type: "number",
+			value: 30
+		},
+		accept: {
+			name: "accept",
+			type: "text",
+			value: ""
+		},
+		multiple: {
+			name: "multiple",
+			type: "checkbox",
+			config: {
+				style: "toggle",
+				position: "left"
+			},
+			value: false
+		},
+		checked: {
+			name: "checked",
+			type: "checkbox",
+			config: {
+				style: "toggle",
+				position: "left"
+			},
+			value: false
+		},
+		orient: {
+			name: "orient",
+			type: "text",
+			value: "horizontal"
+		},
+		pattern: {
+			name: "pattern",
+			type: "text",
+			value: ""
+		},
+		["data-max-upload"]: {
+			name: "data-max-upload",
+			label: "max upload",
+			type: "number",
+			value: 10
+		},
+		["data-max-file-size"]: {
+			name: "data-max-file-size",
+			label: "max file size",
+			type: "number",
+			value: 5
+		},
+		["data-view"]: {
+			name: "data-view",
+			type: "select",
+			value: "thumbnails",
+			config: { options: ["thumbnails", "list"] }
+		},
+		["data-group-unallowed"]: {
+			name: "data-group-unallowed",
+			label: "group unallowed",
+			type: "checkbox",
+			config: {
+				style: "toggle",
+				position: "left"
+			},
+			value: false
+		},
+		["data-thumbnail"]: {
+			name: "data-thumbnail",
+			label: "display thumbnail",
+			type: "checkbox",
+			config: {
+				style: "toggle",
+				position: "left"
+			},
+			value: false
+		}
+	});
+	// packages/components/input/dist/index.js
+	/**
+	* Public surface of `@aio-ui/input` — curated, never `export *`.
+	*
+	* One door: the builder, the field-type matrix, the module stack and the helpers all come
+	* from the root. The module *implementations* ship beside their own component subpath
+	* (`@aio-ui/input/dropdown`, `@aio-ui/input/picker`, …) as well, so a tree-shaking
+	* bundler can still drop the dropdown builder for a text-only form — but a host never
+	* needs a second specifier to register one.
+	*/
+	/**
+	* The input layer's default sub-module stack, as data a `ModuleLoader` takes.
+	*
+	* Registration order is decorate order, so `controls` (the action set) runs before
+	* `popover`, which anchors to a wrapper the controls may have changed. Nothing is
+	* instantiated until a field, a form or a helper asks for it, so a host that omits the
+	* stack still renders plain labelled controls.
+	*
+	* ```ts
+	* import { InputBuilder, INPUT_MODULE_DEFINITIONS } from "@aio-ui/input";
+	* new InputBuilder({ modules: INPUT_MODULE_DEFINITIONS, type: "dropdown", options });
+	* ```
+	*/
+	var INPUT_MODULE_DEFINITIONS$1 = [
+		dropdownInputModule$1,
+		pickerInputModule$1,
+		fileUploaderInputModule$1,
+		inputControlsInputModule$1,
+		popoverInputModule$1
+	];
+	INPUT_MODULE_DEFINITIONS$1.map((definition) => String(definition.id));
 	/**
 	* Clamps the column count into a usable range.
 	*
 	* @param value - `column` from the schema; anything non-numeric falls back to the default.
 	* @returns Integer between 1 and {@link MAX_ROW_COLUMNS}.
 	*/
-	function columnsOf(value) {
+	function columnsOf$1(value) {
 		if (value === void 0 || value === null || value === "") return 2;
 		const numeric = typeof value === "number" ? value : Number(value);
 		if (!Number.isFinite(numeric)) return 2;
@@ -10728,7 +15371,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 	* @param columns - Column count of the row this child lives in.
 	* @returns Span between 1 and `columns`.
 	*/
-	function spanOf(wide, columns) {
+	function spanOf$1(wide, columns) {
 		const total = Math.max(1, Math.round(columns));
 		if (wide === "auto" || wide === "full") return total;
 		const numeric = typeof wide === "number" ? wide : Number(wide);
@@ -10745,7 +15388,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 	* @param element - Child element of a row container.
 	* @param span - Column span, already clamped by {@link spanOf}.
 	*/
-	function applyRowSpan(element, span) {
+	function applyRowSpan$1(element, span) {
 		element.dataset.span = String(span);
 		element.style.setProperty("--span", String(span));
 	}
@@ -10755,7 +15398,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 	* @param element - Row container.
 	* @param columns - Column count, already clamped by {@link columnsOf}.
 	*/
-	function applyRowColumns(element, columns) {
+	function applyRowColumns$1(element, columns) {
 		element.dataset.column = String(columns);
 		element.style.setProperty("--items", String(columns));
 	}
@@ -10766,146 +15409,11 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 	* @param columns - Column count of the parent row.
 	* @returns Span between 1 and `columns`.
 	*/
-	function childSpanOf(child, columns) {
+	function childSpanOf$1(child, columns) {
 		if (!child || typeof child !== "object") return 1;
 		const node = child;
 		if (node.span !== void 0) return Math.min(columns, Math.max(1, Math.round(Number(node.span) || 1)));
-		return spanOf(node.config?.wide ?? node.wide, columns);
-	}
-	// packages/components/input/dist/FormValues.js
-	/**
-	* Submit values — what a form actually contains.
-	*
-	* `Object.fromEntries(new FormData(form))` is not enough for a form builder: it drops every
-	* unchecked checkbox, collapses a group of checkboxes that share a name to the last value,
-	* and keeps only the last selected option of a multi-select. A payload that lies is worse
-	* than no payload, because the consumer cannot tell the difference.
-	*
-	* The rules are deliberately explicit:
-	*
-	* | Control                  | Value                                             |
-	* | ------------------------ | ------------------------------------------------- |
-	* | text / number / date / … | the string in the field                           |
-	* | `select`                 | the selected value                                |
-	* | `select[multiple]`       | array of selected values                          |
-	* | `checkbox` (lone)        | `true` / `false` — "not ticked" is information    |
-	* | `checkbox` (shared name) | array of the ticked values                        |
-	* | `radio` group            | value of the checked option, or omitted           |
-	* | `file`                   | never — uploads are a decision (`config.files`)   |
-	*
-	* Disabled controls and buttons are skipped, exactly like a real submission would.
-	*/
-	/** Controls that never contribute a value to the payload. */
-	var SKIPPED_TYPES = /* @__PURE__ */ new Set([
-		"file",
-		"submit",
-		"button",
-		"reset",
-		"image"
-	]);
-	/**
-	* Reads every successful control of a form — or of any container holding controls.
-	*
-	* @param form - Live form element, a `<fieldset>` group, or any wrapper (a `.field`).
-	* @param options - Collection options; see {@link iCollectValuesOptions}.
-	* @returns Payload keyed by control name.
-	*
-	* @summary A `<fieldset>` and a `.field` wrapper are scopes a control set can own, and
-	* `search` has to read them with the same vocabulary a submit uses — one definition of
-	* "what this form holds", not two that drift apart. `elements` is used when the root has
-	* it (it skips nothing and keeps document order); a plain wrapper falls back to a query.
-	*/
-	function collectFormValues(form, options = {}) {
-		const controls = Array.from(typeof HTMLFieldSetElement !== "undefined" && form instanceof HTMLFieldSetElement || form instanceof HTMLFormElement ? form.elements : form.querySelectorAll("input, select, textarea"));
-		const entries = [];
-		for (const control of controls) {
-			if (!control || !control.name) continue;
-			if (SKIPPED_TYPES.has(control.type)) continue;
-			if (control.disabled) continue;
-			if (control instanceof HTMLInputElement && (control.type === "checkbox" || control.type === "radio")) {
-				entries.push({
-					name: control.name,
-					kind: "toggle",
-					toggle: control.type,
-					value: control.value,
-					checked: control.checked
-				});
-				continue;
-			}
-			if (control instanceof HTMLSelectElement && control.multiple) {
-				entries.push({
-					name: control.name,
-					kind: "field",
-					toggle: null,
-					value: Array.from(control.selectedOptions).map((option) => option.value),
-					checked: true
-				});
-				continue;
-			}
-			entries.push({
-				name: control.name,
-				kind: "field",
-				toggle: null,
-				value: control.value,
-				checked: true
-			});
-		}
-		return options.excludeEmpty ? stripEmpty(assemble(entries)) : assemble(entries);
-	}
-	/**
-	* Removes values a consumer would treat as "nothing".
-	*
-	* @param data - Assembled payload.
-	* @returns Payload without `""`, `false` and empty arrays.
-	*/
-	function stripEmpty(data) {
-		const kept = {};
-		for (const [name, value] of Object.entries(data)) {
-			if (value === "" || value === false) continue;
-			if (Array.isArray(value) && value.length === 0) continue;
-			kept[name] = value;
-		}
-		return kept;
-	}
-	/** A toggle's contribution: `true` when it was left at the browser's default value. */
-	function toggleValue(entry) {
-		return entry.value === "on" ? true : entry.value;
-	}
-	/**
-	* Collapses per-control entries into one value per name.
-	*
-	* @param entries - Raw contributions, in document order.
-	* @returns Payload.
-	*/
-	function assemble(entries) {
-		const grouped = /* @__PURE__ */ new Map();
-		for (const entry of entries) {
-			const bucket = grouped.get(entry.name);
-			if (bucket) bucket.push(entry);
-			else grouped.set(entry.name, [entry]);
-		}
-		const data = {};
-		for (const [name, bucket] of grouped) {
-			const fields = bucket.filter((entry) => entry.kind === "field");
-			const toggles = bucket.filter((entry) => entry.kind === "toggle");
-			if (fields.length) {
-				data[name] = fields[fields.length - 1].value;
-				continue;
-			}
-			const radios = toggles.filter((entry) => entry.toggle === "radio");
-			const boxes = toggles.filter((entry) => entry.toggle === "checkbox");
-			const ticked = toggles.filter((entry) => entry.checked);
-			if (radios.length) {
-				if (ticked.length) data[name] = toggleValue(ticked[0]);
-				continue;
-			}
-			if (boxes.length === 1) {
-				data[name] = boxes[0].checked ? toggleValue(boxes[0]) : false;
-				continue;
-			}
-			data[name] = ticked.map(toggleValue);
-		}
-		return data;
+		return spanOf$1(node.config?.wide ?? node.wide, columns);
 	}
 	// packages/components/form/FormMessages.ts
 	/**
@@ -10914,7 +15422,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 	* These are the exact strings the form used to hard-code, moved here so that
 	* *not configuring* `messages` behaves identically to before.
 	*/
-	var DEFAULT_FORM_MESSAGES = {
+	var DEFAULT_FORM_MESSAGES$1 = {
 		validation: {
 			title: "Periksa Kembali",
 			type: "error",
@@ -10965,7 +15473,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 		}
 	};
 	/** Reads one slot (sentence) out of a group without tripping over style keys. */
-	function readSlot(group, slot) {
+	function readSlot$1(group, slot) {
 		if (!group || typeof group !== "object") return void 0;
 		const value = group[slot];
 		return typeof value === "string" || typeof value === "function" ? value : void 0;
@@ -10976,7 +15484,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 	* Deliberately dumb: unknown tokens collapse to empty text instead of being
 	* left visible, so a typo cannot leak `{maxx}` into the interface.
 	*/
-	function fillTemplate(template, compose) {
+	function fillTemplate$1(template, compose) {
 		const tokens = {
 			...compose.params,
 			label: compose.field?.label,
@@ -10995,9 +15503,9 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 		});
 	}
 	/** Renders one message value against a draft. */
-	function renderMessage(value, compose) {
+	function renderMessage$1(value, compose) {
 		if (typeof value === "function") return value(compose);
-		if (typeof value === "string") return fillTemplate(value, compose);
+		if (typeof value === "string") return fillTemplate$1(value, compose);
 		return compose.fallback;
 	}
 	/**
@@ -11007,10 +15515,10 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 	* built-in slot, then `compose.fallback`. A composer's return value is used
 	* as-is — it replaces the sentence rather than being appended to it.
 	*/
-	function composeMessage(messages, compose) {
+	function composeMessage$1(messages, compose) {
 		const group = messages?.[compose.category];
-		const fallbackGroup = DEFAULT_FORM_MESSAGES[compose.category];
-		return renderMessage(group?.codes?.[compose.code] ?? readSlot(group, compose.slot) ?? readSlot(fallbackGroup, compose.slot), compose) || compose.fallback;
+		const fallbackGroup = DEFAULT_FORM_MESSAGES$1[compose.category];
+		return renderMessage$1(group?.codes?.[compose.code] ?? readSlot$1(group, compose.slot) ?? readSlot$1(fallbackGroup, compose.slot), compose) || compose.fallback;
 	}
 	/**
 	* Resolves title/type/icon/duration for a draft.
@@ -11019,40 +15527,40 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 	* override → default group value. Missing values resolve to empty strings so a
 	* caller can fall back without guessing.
 	*/
-	function resolveStyle(messages, compose) {
+	function resolveStyle$1(messages, compose) {
 		const group = messages?.[compose.category] ?? {};
-		const fallbackGroup = DEFAULT_FORM_MESSAGES[compose.category];
+		const fallbackGroup = DEFAULT_FORM_MESSAGES$1[compose.category];
 		const title = group.titles?.[compose.slot] ?? group.title ?? fallbackGroup.titles?.[compose.slot] ?? fallbackGroup.title;
 		const type = group.types?.[compose.slot] ?? group.type ?? fallbackGroup.types?.[compose.slot] ?? fallbackGroup.type;
 		const icon = group.icons?.[compose.slot] ?? group.icon ?? fallbackGroup.icons?.[compose.slot] ?? fallbackGroup.icon;
 		const duration = group.durations?.[compose.slot] ?? group.duration ?? fallbackGroup.durations?.[compose.slot] ?? fallbackGroup.duration;
 		return {
-			title: renderMessage(title, compose),
+			title: renderMessage$1(title, compose),
 			type: typeof type === "string" ? type : "",
 			icon: typeof icon === "string" ? icon : "",
 			duration: typeof duration === "number" ? duration : void 0
 		};
 	}
 	/** Builds a draft without repeating every field at each call site. */
-	function messageDraft(init) {
+	function messageDraft$1(init) {
 		return {
 			...init,
 			params: init.params ?? {}
 		};
 	}
 	// packages/components/form/Form.ts
-	var _inputs = /* @__PURE__ */ new WeakMap();
-	var _cascade = /* @__PURE__ */ new WeakMap();
-	var _multistep = /* @__PURE__ */ new WeakMap();
-	var _validation = /* @__PURE__ */ new WeakMap();
-	var _onStepMounted = /* @__PURE__ */ new WeakMap();
-	var _loader$1 = /* @__PURE__ */ new WeakMap();
-	var _features = /* @__PURE__ */ new WeakMap();
-	var _inputModules = /* @__PURE__ */ new WeakMap();
-	var _providedLoader = /* @__PURE__ */ new WeakMap();
-	var _providedLive = /* @__PURE__ */ new WeakMap();
-	var _FormBuilder_brand = /* @__PURE__ */ new WeakSet();
-	var FormBuilder = class extends Builder$1 {
+	var _inputs$1 = /* @__PURE__ */ new WeakMap();
+	var _cascade$1 = /* @__PURE__ */ new WeakMap();
+	var _multistep$1 = /* @__PURE__ */ new WeakMap();
+	var _validation$1 = /* @__PURE__ */ new WeakMap();
+	var _onStepMounted$1 = /* @__PURE__ */ new WeakMap();
+	var _loader$2 = /* @__PURE__ */ new WeakMap();
+	var _features$1 = /* @__PURE__ */ new WeakMap();
+	var _inputModules$1 = /* @__PURE__ */ new WeakMap();
+	var _providedLoader$1 = /* @__PURE__ */ new WeakMap();
+	var _providedLive$1 = /* @__PURE__ */ new WeakMap();
+	var _FormBuilder_brand$1 = /* @__PURE__ */ new WeakSet();
+	var FormBuilder$1 = class extends Builder$1 {
 		/**
 		* Memisahkan modul yang diserahkan registry menurut lapisannya.
 		*
@@ -11067,18 +15575,18 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 			super.provideModules(modules);
 			const inputIds = new Set(Object.values(INPUT_MODULE_IDS$1));
 			const definitions = [];
-			_classPrivateFieldSet2(_inputModules, this, []);
-			_classPrivateFieldGet2(_providedLive, this).clear();
-			_classPrivateFieldSet2(_providedLoader, this, null);
+			_classPrivateFieldSet2(_inputModules$1, this, []);
+			_classPrivateFieldGet2(_providedLive$1, this).clear();
+			_classPrivateFieldSet2(_providedLoader$1, this, null);
 			for (const [id, module] of Object.entries(modules)) {
 				if (inputIds.has(id)) {
-					_classPrivateFieldGet2(_inputModules, this).push(module);
+					_classPrivateFieldGet2(_inputModules$1, this).push(module);
 					continue;
 				}
 				if (typeof module?.load === "function") definitions.push(module);
-				else _classPrivateFieldGet2(_providedLive, this).set(id, module);
+				else _classPrivateFieldGet2(_providedLive$1, this).set(id, module);
 			}
-			if (definitions.length) _classPrivateFieldSet2(_providedLoader, this, new ModuleLoader$1("form", definitions));
+			if (definitions.length) _classPrivateFieldSet2(_providedLoader$1, this, new ModuleLoader$1("form", definitions));
 		}
 		/**
 		* 🪶 LOADING MOCKUP — a title, three labelled fields and the action row, drawn with the
@@ -11114,21 +15622,21 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 		}
 		constructor(config = {}) {
 			super();
-			_classPrivateMethodInitSpec(this, _FormBuilder_brand);
+			_classPrivateMethodInitSpec(this, _FormBuilder_brand$1);
 			_defineProperty(this, "builderId", "form");
 			_defineProperty(this, "name", "form");
 			_defineProperty(this, "stylesheet", "./Form.css");
 			_defineProperty(this, "submitButtonId", void 0);
-			_classPrivateFieldInitSpec(this, _inputs, []);
-			_classPrivateFieldInitSpec(this, _cascade, null);
-			_classPrivateFieldInitSpec(this, _multistep, null);
-			_classPrivateFieldInitSpec(this, _validation, null);
-			_classPrivateFieldInitSpec(this, _onStepMounted, null);
-			_classPrivateFieldInitSpec(this, _loader$1, void 0);
-			_classPrivateFieldInitSpec(this, _features, []);
-			_classPrivateFieldInitSpec(this, _inputModules, []);
-			_classPrivateFieldInitSpec(this, _providedLoader, null);
-			_classPrivateFieldInitSpec(this, _providedLive, /* @__PURE__ */ new Map());
+			_classPrivateFieldInitSpec(this, _inputs$1, []);
+			_classPrivateFieldInitSpec(this, _cascade$1, null);
+			_classPrivateFieldInitSpec(this, _multistep$1, null);
+			_classPrivateFieldInitSpec(this, _validation$1, null);
+			_classPrivateFieldInitSpec(this, _onStepMounted$1, null);
+			_classPrivateFieldInitSpec(this, _loader$2, void 0);
+			_classPrivateFieldInitSpec(this, _features$1, []);
+			_classPrivateFieldInitSpec(this, _inputModules$1, []);
+			_classPrivateFieldInitSpec(this, _providedLoader$1, null);
+			_classPrivateFieldInitSpec(this, _providedLive$1, /* @__PURE__ */ new Map());
 			const defaultConfig = {
 				id: "",
 				name: "",
@@ -11223,33 +15731,33 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 				messages: {}
 			};
 			this.config = this.resolveConfig(defaultConfig, config);
-			_classPrivateFieldSet2(_loader$1, this, this.config.modules ?? new ModuleLoader$1("form", []));
-			_classPrivateFieldSet2(_inputModules, this, [...this.config.inputModules ?? []]);
+			_classPrivateFieldSet2(_loader$2, this, this.config.modules ?? new ModuleLoader$1("form", []));
+			_classPrivateFieldSet2(_inputModules$1, this, [...this.config.inputModules ?? []]);
 		}
 		/**
 		* REFACTOR TOTAL: Merakit Form menggunakan struktur iBasicNode[] murni
 		*/
 		prepare(inputs, _config = {}) {
-			if (!_get_activeLoader.call(_assertClassBrand(_FormBuilder_brand, this)).ids().length && !_classPrivateFieldGet2(_providedLive, this).size) throw new Error("[FormBuilder] No modules configured, so not one field can be rendered. Pass the stack: new ModuleLoader(\"form\", FORM_ADAPTER_DEFINITIONS) — those definitions are exported by @aio-ui/form/adapters — or, at minimum, [inputFormAdapter], exported by @aio-ui/form/Input.FormAdapter.");
-			_classPrivateFieldSet2(_inputs, this, Array.isArray(inputs) ? inputs : [inputs]);
-			_assertClassBrand(_FormBuilder_brand, this, _routeInputModules).call(this);
-			_get_activeLoader.call(_assertClassBrand(_FormBuilder_brand, this)).unloadAll();
-			_classPrivateFieldSet2(_features, this, []);
-			_classPrivateFieldSet2(_cascade, this, null);
-			_classPrivateFieldSet2(_multistep, this, null);
-			_classPrivateFieldSet2(_validation, this, null);
-			_classPrivateFieldSet2(_onStepMounted, this, null);
+			if (!_get_activeLoader$1.call(_assertClassBrand(_FormBuilder_brand$1, this)).ids().length && !_classPrivateFieldGet2(_providedLive$1, this).size) throw new Error("[FormBuilder] No modules configured, so not one field can be rendered. Pass the stack: new ModuleLoader(\"form\", FORM_ADAPTER_DEFINITIONS) — those definitions are exported by @aio-ui/form — or, at minimum, [inputFormAdapter], exported by @aio-ui/form.");
+			_classPrivateFieldSet2(_inputs$1, this, Array.isArray(inputs) ? inputs : [inputs]);
+			_assertClassBrand(_FormBuilder_brand$1, this, _routeInputModules$1).call(this);
+			_get_activeLoader$1.call(_assertClassBrand(_FormBuilder_brand$1, this)).unloadAll();
+			_classPrivateFieldSet2(_features$1, this, []);
+			_classPrivateFieldSet2(_cascade$1, this, null);
+			_classPrivateFieldSet2(_multistep$1, this, null);
+			_classPrivateFieldSet2(_validation$1, this, null);
+			_classPrivateFieldSet2(_onStepMounted$1, this, null);
 			const form = this.render("@form", inputs);
 			const formId = form.id;
 			const isCascading = this.config.cascading === true;
 			if (this.config.title) form.appendChild(this.render("@form>title", this.config.title));
 			if (this.config.description) form.appendChild(this.render("@form>desc", this.config.description));
 			const moduleContext = this._buildModuleContext(form, "prepare");
-			_classPrivateFieldSet2(_features, this, _assertClassBrand(_FormBuilder_brand, this, _resolved).call(this, moduleContext));
-			_classPrivateFieldSet2(_validation, this, _assertClassBrand(_FormBuilder_brand, this, _loaded).call(this, FORM_MODULE_IDS.validation));
-			_classPrivateFieldSet2(_cascade, this, _assertClassBrand(_FormBuilder_brand, this, _loaded).call(this, FORM_MODULE_IDS.cascade));
-			_classPrivateFieldSet2(_multistep, this, _assertClassBrand(_FormBuilder_brand, this, _loaded).call(this, FORM_MODULE_IDS.multistep));
-			for (const [index, input] of Object.entries(_classPrivateFieldGet2(_inputs, this))) if (input instanceof HTMLElement) {
+			_classPrivateFieldSet2(_features$1, this, _assertClassBrand(_FormBuilder_brand$1, this, _resolved$1).call(this, moduleContext));
+			_classPrivateFieldSet2(_validation$1, this, _assertClassBrand(_FormBuilder_brand$1, this, _loaded$1).call(this, FORM_MODULE_IDS$1.validation));
+			_classPrivateFieldSet2(_cascade$1, this, _assertClassBrand(_FormBuilder_brand$1, this, _loaded$1).call(this, FORM_MODULE_IDS$1.cascade));
+			_classPrivateFieldSet2(_multistep$1, this, _assertClassBrand(_FormBuilder_brand$1, this, _loaded$1).call(this, FORM_MODULE_IDS$1.multistep));
+			for (const [index, input] of Object.entries(_classPrivateFieldGet2(_inputs$1, this))) if (input instanceof HTMLElement) {
 				const btn = this.scanForSubmitButton(input, formId);
 				if (btn) {
 					this.submitButtonId = btn.id || this.submitButtonId;
@@ -11262,12 +15770,12 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 					form.appendChild(btn);
 				} else form.insertAdjacentHTML("beforeend", input);
 			} else if (input && typeof input === "object" && "group" in input) {
-				if (isCascading && _classPrivateFieldGet2(_cascade, this)?.isCascadeItem(input)) {
-					_classPrivateFieldGet2(_cascade, this)?.hold(form, String(index), input);
+				if (isCascading && _classPrivateFieldGet2(_cascade$1, this)?.isCascadeItem(input)) {
+					_classPrivateFieldGet2(_cascade$1, this)?.hold(form, String(index), input);
 					continue;
 				}
 				if (this.config.multistep) {
-					_classPrivateFieldGet2(_multistep, this)?.hold(form, Number(index), input);
+					_classPrivateFieldGet2(_multistep$1, this)?.hold(form, Number(index), input);
 					continue;
 				}
 				const fieldset = this.renderGroup(input, formId, isCascading ? String(index) : void 0);
@@ -11275,20 +15783,20 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 				if (input.className) fieldset.classList.add(...String(input.className).split(/\s+/).filter(Boolean));
 				form.appendChild(fieldset);
 			} else if (input && typeof input === "object" && "row" in input) {
-				if (isCascading && _classPrivateFieldGet2(_cascade, this)?.isCascadeItem(input)) {
-					_classPrivateFieldGet2(_cascade, this)?.hold(form, String(index), input);
+				if (isCascading && _classPrivateFieldGet2(_cascade$1, this)?.isCascadeItem(input)) {
+					_classPrivateFieldGet2(_cascade$1, this)?.hold(form, String(index), input);
 					continue;
 				}
 				form.appendChild(this.renderRow(input, formId, isCascading ? String(index) : void 0));
 			} else {
-				if (isCascading && _classPrivateFieldGet2(_cascade, this)?.isCascadeItem(input)) {
-					_classPrivateFieldGet2(_cascade, this)?.hold(form, String(index), input);
+				if (isCascading && _classPrivateFieldGet2(_cascade$1, this)?.isCascadeItem(input)) {
+					_classPrivateFieldGet2(_cascade$1, this)?.hold(form, String(index), input);
 					continue;
 				}
 				const inputEl = this._renderField(input, formId);
 				form.append(inputEl);
 			}
-			if (isCascading || this.config.autoDisableNextStep === true) _classPrivateFieldGet2(_cascade, this)?.attach(form);
+			if (isCascading || this.config.autoDisableNextStep === true) _classPrivateFieldGet2(_cascade$1, this)?.attach(form);
 			if (!this.submitButtonId && this.config.submitButton && !this.config.multistep) {
 				const defaultSubmitBtn = this.render("@form>actions>submit", {
 					isGroupBtn: false,
@@ -11315,8 +15823,8 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 			const fieldset = this.render("@form>group", groupInput);
 			const cascadeActive = this.config.cascading === true && cascadePath !== void 0;
 			if (groupInput.group && Array.isArray(groupInput.group)) groupInput.group.forEach((innerInput, _index) => {
-				if (cascadeActive && _classPrivateFieldGet2(_cascade, this)?.isCascadeItem(innerInput)) {
-					_classPrivateFieldGet2(_cascade, this)?.hold(fieldset, `${cascadePath}.group.${_index}`, innerInput);
+				if (cascadeActive && _classPrivateFieldGet2(_cascade$1, this)?.isCascadeItem(innerInput)) {
+					_classPrivateFieldGet2(_cascade$1, this)?.hold(fieldset, `${cascadePath}.group.${_index}`, innerInput);
 					return;
 				}
 				if (typeof innerInput === "string") {
@@ -11337,7 +15845,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 							isGroupBtn: false,
 							groupId: innerInput.id
 						});
-						for (const feature of _classPrivateFieldGet2(_features, this)) {
+						for (const feature of _classPrivateFieldGet2(_features$1, this)) {
 							const nodes = feature.renderTable?.(innerInput.table, {
 								fieldset: nestedFieldset,
 								submitButton: groupSubmitBtn,
@@ -11365,7 +15873,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 				this.submitButtonId = submitBtn.id;
 				fieldset.appendChild(submitBtn);
 			}
-			_assertClassBrand(_FormBuilder_brand, this, _appendActions).call(this, fieldset, groupInput);
+			_assertClassBrand(_FormBuilder_brand$1, this, _appendActions$1).call(this, fieldset, groupInput);
 			return fieldset;
 		}
 		/**
@@ -11387,8 +15895,8 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 		*/
 		renderRow(rowInput, formId, cascadePath) {
 			const container = this.render("@form>row", rowInput);
-			const columns = columnsOf(rowInput.column);
-			applyRowColumns(container, columns);
+			const columns = columnsOf$1(rowInput.column);
+			applyRowColumns$1(container, columns);
 			if (rowInput.id) container.id = rowInput.id;
 			if (rowInput.className) container.classList.add(...String(rowInput.className).split(" ").filter(Boolean));
 			if (rowInput.label) container.appendChild(this.render("@form>row>title", rowInput.label));
@@ -11396,8 +15904,8 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 			const cascadeActive = this.config.cascading === true && cascadePath !== void 0;
 			(Array.isArray(rowInput.row) ? rowInput.row : []).forEach((child, index) => {
 				const childPath = `${cascadePath}.row.${index}`;
-				if (cascadeActive && _classPrivateFieldGet2(_cascade, this)?.isCascadeItem(child)) {
-					_classPrivateFieldGet2(_cascade, this)?.hold(container, childPath, child);
+				if (cascadeActive && _classPrivateFieldGet2(_cascade$1, this)?.isCascadeItem(child)) {
+					_classPrivateFieldGet2(_cascade$1, this)?.hold(container, childPath, child);
 					return;
 				}
 				let element = null;
@@ -11411,10 +15919,10 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 				if (!element) return;
 				const submitBtn = this.scanForSubmitButton(element, formId);
 				if (submitBtn) this.submitButtonId = submitBtn.id;
-				applyRowSpan(element, childSpanOf(child, columns));
+				applyRowSpan$1(element, childSpanOf$1(child, columns));
 				container.appendChild(element);
 			});
-			_assertClassBrand(_FormBuilder_brand, this, _appendActions).call(this, container, rowInput);
+			_assertClassBrand(_FormBuilder_brand$1, this, _appendActions$1).call(this, container, rowInput);
 			return container;
 		}
 		/**
@@ -11429,7 +15937,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 		*   module is missing from the presets.
 		*/
 		_renderField(input, formId) {
-			for (const feature of _classPrivateFieldGet2(_features, this)) {
+			for (const feature of _classPrivateFieldGet2(_features$1, this)) {
 				const element = feature.renderField?.(input, formId);
 				if (element) return element;
 			}
@@ -11439,7 +15947,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 			return {
 				builder: String(this.builderId),
 				form,
-				inputs: _classPrivateFieldGet2(_inputs, this),
+				inputs: _classPrivateFieldGet2(_inputs$1, this),
 				phase,
 				emit: typeof this.config.emit === "function" ? this.config.emit : null,
 				builderConfig: {
@@ -11447,7 +15955,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 					namespace: this.config.namespace,
 					emit: typeof this.config.emit === "function" ? this.config.emit : null
 				},
-				inputModules: _classPrivateFieldGet2(_inputModules, this),
+				inputModules: _classPrivateFieldGet2(_inputModules$1, this),
 				showMessage: (content) => this._notify(form, false, content),
 				config: this.config,
 				cascadeHost: () => this._buildCascadeHost(),
@@ -11457,7 +15965,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 		_buildCascadeHost() {
 			return {
 				builder: this.builderId,
-				inputs: _classPrivateFieldGet2(_inputs, this),
+				inputs: _classPrivateFieldGet2(_inputs$1, this),
 				multistep: this.config.multistep === true,
 				cascadeMode: this.config.cascadeMode ?? "template",
 				autoDisableNextStep: this.config.autoDisableNextStep ?? (this.config.cascading === true && this.config.multistep === true),
@@ -11467,26 +15975,26 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 				renderRow: (row, formId, path) => this.renderRow(row, formId, path),
 				renderField: (item, formId) => this._renderField(item, formId),
 				mountInputs: (root) => {
-					for (const feature of _classPrivateFieldGet2(_features, this)) feature.mount?.(root);
+					for (const feature of _classPrivateFieldGet2(_features$1, this)) feature.mount?.(root);
 				},
-				refreshSteps: (form) => _classPrivateFieldGet2(_multistep, this)?.refresh(form),
-				reportCascadeBlocked: (info) => _classPrivateFieldGet2(_validation, this)?.reportCascadeBlocked(info)
+				refreshSteps: (form) => _classPrivateFieldGet2(_multistep$1, this)?.refresh(form),
+				reportCascadeBlocked: (info) => _classPrivateFieldGet2(_validation$1, this)?.reportCascadeBlocked(info)
 			};
 		}
 		_buildMultistepHost() {
 			return {
 				builder: this.builderId,
-				inputs: _classPrivateFieldGet2(_inputs, this),
+				inputs: _classPrivateFieldGet2(_inputs$1, this),
 				renderGroup: (group, formId, path) => this.renderGroup(group, formId, path),
 				renderButtonsSet: (payload) => this.render("@form>buttons-set", payload),
-				onStepMount: (fieldset) => _classPrivateFieldGet2(_onStepMounted, this)?.call(this, fieldset),
-				onStepChange: () => _classPrivateFieldGet2(_cascade, this)?.gate(),
-				reportNativeInvalid: (form, step) => _classPrivateFieldGet2(_validation, this)?.reportNative(form, step)
+				onStepMount: (fieldset) => _classPrivateFieldGet2(_onStepMounted$1, this)?.call(this, fieldset),
+				onStepChange: () => _classPrivateFieldGet2(_cascade$1, this)?.gate(),
+				reportNativeInvalid: (form, step) => _classPrivateFieldGet2(_validation$1, this)?.reportNative(form, step)
 			};
 		}
 		/** Set nilai field secara programatik — engine memantik evaluasi via event change */
 		setCascadeValue(field, value) {
-			_classPrivateFieldGet2(_cascade, this)?.setValue(field, value);
+			_classPrivateFieldGet2(_cascade$1, this)?.setValue(field, value);
 		}
 		/**
 		* 🪜 Multistep: posisi langkah aktif, gerbang validasi, dan pelahirkan
@@ -11495,7 +16003,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 		*/
 		initialize(formElement) {
 			if (formElement && this.config.createEventListener) this.attachFormListener(formElement);
-			_classPrivateFieldGet2(_features, this).push(..._assertClassBrand(_FormBuilder_brand, this, _loadFeatures).call(this, this._buildModuleContext(formElement, "initialize")));
+			_classPrivateFieldGet2(_features$1, this).push(..._assertClassBrand(_FormBuilder_brand$1, this, _loadFeatures$1).call(this, this._buildModuleContext(formElement, "initialize")));
 		}
 		template(typeKey, el, payload) {
 			switch (typeKey) {
@@ -11589,12 +16097,12 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 			}
 		}
 		unmount() {
-			_get_activeLoader.call(_assertClassBrand(_FormBuilder_brand, this)).unloadAll();
-			_classPrivateFieldSet2(_features, this, []);
-			_classPrivateFieldSet2(_validation, this, null);
-			_classPrivateFieldSet2(_cascade, this, null);
-			_classPrivateFieldSet2(_multistep, this, null);
-			_classPrivateFieldSet2(_onStepMounted, this, null);
+			_get_activeLoader$1.call(_assertClassBrand(_FormBuilder_brand$1, this)).unloadAll();
+			_classPrivateFieldSet2(_features$1, this, []);
+			_classPrivateFieldSet2(_validation$1, this, null);
+			_classPrivateFieldSet2(_cascade$1, this, null);
+			_classPrivateFieldSet2(_multistep$1, this, null);
+			_classPrivateFieldSet2(_onStepMounted$1, this, null);
 			this.destroy();
 		}
 		/**
@@ -11607,25 +16115,25 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 				if (!success) form.querySelectorAll(".field").forEach((f) => f.classList.add("error"));
 			};
 			form.addEventListener("scopeAdded", () => {
-				_classPrivateFieldGet2(_cascade, this)?.sync();
-				_classPrivateFieldGet2(_multistep, this)?.refresh(form);
+				_classPrivateFieldGet2(_cascade$1, this)?.sync();
+				_classPrivateFieldGet2(_multistep$1, this)?.refresh(form);
 			});
-			_classPrivateFieldSet2(_onStepMounted, this, (fieldset) => {
-				for (const feature of _classPrivateFieldGet2(_features, this)) feature.mount?.(fieldset);
-				_classPrivateFieldGet2(_cascade, this)?.sync();
+			_classPrivateFieldSet2(_onStepMounted$1, this, (fieldset) => {
+				for (const feature of _classPrivateFieldGet2(_features$1, this)) feature.mount?.(fieldset);
+				_classPrivateFieldGet2(_cascade$1, this)?.sync();
 			});
-			_classPrivateFieldGet2(_multistep, this)?.attach(form);
-			for (const feature of _classPrivateFieldGet2(_features, this)) feature.mount?.(form);
+			_classPrivateFieldGet2(_multistep$1, this)?.attach(form);
+			for (const feature of _classPrivateFieldGet2(_features$1, this)) feature.mount?.(form);
 			form.addEventListener("submit", async (e) => {
 				e.preventDefault();
 				if (!form.checkValidity()) {
-					_classPrivateFieldGet2(_validation, this)?.reportNative(form);
+					_classPrivateFieldGet2(_validation$1, this)?.reportNative(form);
 					return;
 				}
 				form.classList.add("loading");
-				const data = collectFormValues(form, { excludeEmpty: this.config.excludeEmpty });
-				for (const feature of _classPrivateFieldGet2(_features, this)) await feature.beforeSubmit?.(data);
-				if (this.config.resetOnSubmit) _assertClassBrand(_FormBuilder_brand, this, _resetForm).call(this, form);
+				const data = collectFormValues$1(form, { excludeEmpty: this.config.excludeEmpty });
+				for (const feature of _classPrivateFieldGet2(_features$1, this)) await feature.beforeSubmit?.(data);
+				if (this.config.resetOnSubmit) _assertClassBrand(_FormBuilder_brand$1, this, _resetForm$1).call(this, form);
 				if (typeof this.config.onSubmit === "function") try {
 					this.config.onSubmit(data);
 				} catch (error) {
@@ -11639,9 +16147,9 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 						complete: (success, messageConfig, resetForm) => {
 							toggleLoadingState(success);
 							this._notify(form, success, messageConfig);
-							if (resetForm || this.config.resetOnComplete) _assertClassBrand(_FormBuilder_brand, this, _resetForm).call(this, form);
+							if (resetForm || this.config.resetOnComplete) _assertClassBrand(_FormBuilder_brand$1, this, _resetForm$1).call(this, form);
 						},
-						reset: () => _assertClassBrand(_FormBuilder_brand, this, _resetForm).call(this, form)
+						reset: () => _assertClassBrand(_FormBuilder_brand$1, this, _resetForm$1).call(this, form)
 					}
 				}));
 			});
@@ -11651,7 +16159,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 				if (!form.contains(button) && button.getAttribute("form") !== form.id) return;
 				event.preventDefault();
 				if (!form.checkValidity()) {
-					_classPrivateFieldGet2(_validation, this)?.reportNative(form);
+					_classPrivateFieldGet2(_validation$1, this)?.reportNative(form);
 					return;
 				}
 				form.requestSubmit(button);
@@ -11670,7 +16178,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 		*/
 		_notify(form, success, content) {
 			if (!content) return;
-			for (const feature of _classPrivateFieldGet2(_features, this)) {
+			for (const feature of _classPrivateFieldGet2(_features$1, this)) {
 				if (!feature.notify) continue;
 				feature.notify(content, {
 					form,
@@ -11705,8 +16213,8 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 	* Loader yang benar-benar dipakai: bawaan form, dari `config.modules`, atau dari
 	* definisi yang diserahkan registry.
 	*/
-	function _get_activeLoader() {
-		return _classPrivateFieldGet2(_providedLoader, this) ?? _classPrivateFieldGet2(_loader$1, this);
+	function _get_activeLoader$1() {
+		return _classPrivateFieldGet2(_providedLoader$1, this) ?? _classPrivateFieldGet2(_loader$2, this);
 	}
 	/**
 	* Modul form untuk satu fase: definisi yang diserahkan registry dimenangkan.
@@ -11718,10 +16226,10 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 	* dimuat — kecuali satu hal: id milik `INPUT_MODULE_IDS` dilewati. Id itu bukan
 	* perilaku form, melainkan preset sebuah field, dan `#routeInputModules()` yang
 	* menyerahkannya ke lapisan input. Tanpa aturan ini
-	* `@aio-ui/form/adapters` (stack penuh) akan memuat dropdown sebagai fitur form.
+	* `@aio-ui/form` (stack penuh) akan memuat dropdown sebagai fitur form.
 	*/
-	function _resolved(context) {
-		return [..._assertClassBrand(_FormBuilder_brand, this, _loadFeatures).call(this, context), ..._classPrivateFieldGet2(_providedLive, this).values()];
+	function _resolved$1(context) {
+		return [..._assertClassBrand(_FormBuilder_brand$1, this, _loadFeatures$1).call(this, context), ..._classPrivateFieldGet2(_providedLive$1, this).values()];
 	}
 	/**
 	* Memuat modul form yang baru hidup pada satu fase.
@@ -11734,13 +16242,13 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 	* `INPUT_MODULE_IDS` dilewati. Id itu bukan perilaku form, melainkan preset sebuah
 	* field, dan `#routeInputModules()` yang menyerahkannya ke lapisan input.
 	*/
-	function _loadFeatures(context) {
+	function _loadFeatures$1(context) {
 		const inputIds = new Set(Object.values(INPUT_MODULE_IDS$1));
 		const features = [];
-		for (const id of _get_activeLoader.call(_assertClassBrand(_FormBuilder_brand, this)).ids()) {
+		for (const id of _get_activeLoader$1.call(_assertClassBrand(_FormBuilder_brand$1, this)).ids()) {
 			if (inputIds.has(id)) continue;
-			if (_get_activeLoader.call(_assertClassBrand(_FormBuilder_brand, this)).isLoaded(id)) continue;
-			const instance = _get_activeLoader.call(_assertClassBrand(_FormBuilder_brand, this)).load(id, context);
+			if (_get_activeLoader$1.call(_assertClassBrand(_FormBuilder_brand$1, this)).isLoaded(id)) continue;
+			const instance = _get_activeLoader$1.call(_assertClassBrand(_FormBuilder_brand$1, this)).load(id, context);
 			if (instance) features.push(instance);
 		}
 		return features;
@@ -11757,16 +16265,16 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 	* Id yang sudah diserahkan manifest (`provideModules()`) menang: host sudah menyatakan
 	* setnya, dan stack bawaan tidak boleh menimpanya.
 	*/
-	function _routeInputModules() {
+	function _routeInputModules$1() {
 		const inputIds = new Set(Object.values(INPUT_MODULE_IDS$1));
 		const routed = [];
-		for (const id of _get_activeLoader.call(_assertClassBrand(_FormBuilder_brand, this)).ids()) {
+		for (const id of _get_activeLoader$1.call(_assertClassBrand(_FormBuilder_brand$1, this)).ids()) {
 			if (!inputIds.has(id)) continue;
-			if (_classPrivateFieldGet2(_inputModules, this).some((item) => String(item.id) === id)) continue;
-			const definition = _get_activeLoader.call(_assertClassBrand(_FormBuilder_brand, this)).resolve(id);
+			if (_classPrivateFieldGet2(_inputModules$1, this).some((item) => String(item.id) === id)) continue;
+			const definition = _get_activeLoader$1.call(_assertClassBrand(_FormBuilder_brand$1, this)).resolve(id);
 			if (definition) routed.push(definition);
 		}
-		if (routed.length) _classPrivateFieldSet2(_inputModules, this, [..._classPrivateFieldGet2(_inputModules, this), ...routed]);
+		if (routed.length) _classPrivateFieldSet2(_inputModules$1, this, [..._classPrivateFieldGet2(_inputModules$1, this), ...routed]);
 	}
 	/**
 	* Satu adapter form menurut id-nya.
@@ -11774,9 +16282,9 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 	* @param id - Id sub-modul (`FORM_MODULE_IDS`).
 	* @returns Modulnya, atau `null` bila tidak tersedia.
 	*/
-	function _loaded(id) {
-		if (_classPrivateFieldGet2(_providedLive, this).has(id)) return _classPrivateFieldGet2(_providedLive, this).get(id);
-		return _get_activeLoader.call(_assertClassBrand(_FormBuilder_brand, this)).loaded(id) ?? null;
+	function _loaded$1(id) {
+		if (_classPrivateFieldGet2(_providedLive$1, this).has(id)) return _classPrivateFieldGet2(_providedLive$1, this).get(id);
+		return _get_activeLoader$1.call(_assertClassBrand(_FormBuilder_brand$1, this)).loaded(id) ?? null;
 	}
 	/**
 	* Offers a group/row container to the loaded modules for a control set.
@@ -11787,10 +16295,10 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 	* @summary The first module that answers wins, exactly like `renderTable`: the form never
 	* imports the controls builder, and a preset without it simply renders no buttons.
 	*/
-	function _appendActions(container, node) {
+	function _appendActions$1(container, node) {
 		const actions = node.actions ?? node.config?.actions;
 		if (!actions) return;
-		for (const feature of _classPrivateFieldGet2(_features, this)) {
+		for (const feature of _classPrivateFieldGet2(_features$1, this)) {
 			const nodes = feature.renderActions?.(container, {
 				actions,
 				position: node.actionsPosition ?? node.config?.position
@@ -11809,15 +16317,15 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 	* module is told. The shell owns the controls, the modules own the rest.
 	* @param form - Form to reset.
 	*/
-	function _resetForm(form) {
+	function _resetForm$1(form) {
 		form.reset();
-		for (const feature of _classPrivateFieldGet2(_features, this)) try {
+		for (const feature of _classPrivateFieldGet2(_features$1, this)) try {
 			feature.reset?.(form);
 		} catch (error) {
 			console.warn("[FormBuilder] module reset failed:", error);
 		}
 	}
-	_defineProperty(FormBuilder, "contract", {
+	_defineProperty(FormBuilder$1, "contract", {
 		schema: {
 			t: "list",
 			single: true,
@@ -11850,7 +16358,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 	* everything else stays with the form. Adapters owned by yet other packages (`table`,
 	* `message`, `id-address`) are deliberately absent: the host composes those.
 	*/
-	var FORM_ADAPTER_MANIFEST = [
+	var FORM_ADAPTER_MANIFEST$1 = [
 		{
 			id: "validation",
 			path: "@aio-ui/form/validation-adapter",
@@ -11877,7 +16385,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 		},
 		{
 			id: "input",
-			path: "@aio-ui/form/Input.FormAdapter",
+			path: "@aio-ui/form",
 			export: "inputFormAdapter",
 			scope: "form"
 		},
@@ -11886,15 +16394,1480 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 			scope: "input"
 		}))
 	];
+	// packages/components/form/adapters/Calculation.ts
+	/**
+	* Form-owned calculation engine. Formula callbacks are ordinary typed
+	* functions; no string evaluation or `eval` is used.
+	*/
+	var FormCalculationHandler$1 = class {
+		constructor(form, config) {
+			_defineProperty(this, "form", void 0);
+			_defineProperty(this, "config", void 0);
+			_defineProperty(this, "summary", []);
+			_defineProperty(this, "values", {});
+			_defineProperty(this, "onChange", null);
+			_defineProperty(this, "started", false);
+			_defineProperty(
+				this,
+				/**
+				* Identity of the last reported failure set (`"a|b"`), empty when everything
+				* worked. `recalculate()` runs on every keystroke, so without this a single
+				* broken formula would emit a toast per input event.
+				*/
+				"lastFailureKey",
+				""
+			);
+			this.form = form;
+			this.config = config;
+		}
+		/** Attach delegated listeners and calculate the initial result. */
+		create() {
+			if (this.started) return this;
+			this.started = true;
+			this.onChange = () => this.recalculate();
+			this.form.addEventListener("input", this.onChange);
+			this.form.addEventListener("change", this.onChange);
+			this.form.addEventListener("formCascade", this.onChange);
+			this.recalculate();
+			return this;
+		}
+		/** Read one current form value by control id or name. */
+		get(inputId) {
+			const escaped = CSS.escape(inputId);
+			const control = this.form.querySelector(`#${escaped}, [name="${escaped}"]`);
+			if (!control) return null;
+			if (control instanceof HTMLInputElement) {
+				if (control.type === "checkbox") return control.checked;
+				if (control.type === "radio") return this.form.querySelector(`input[type="radio"][name="${CSS.escape(control.name)}"]:checked`)?.value ?? null;
+				if (control.type === "number" || control.type === "range") return control.value === "" ? null : control.valueAsNumber;
+			}
+			if (control instanceof HTMLSelectElement && control.multiple) return control.selectedOptions.length ? Array.from(control.selectedOptions, (option) => option.value).join(",") : null;
+			return control.value === "" ? null : control.value;
+		}
+		getNumber(inputId) {
+			const value = this.get(inputId);
+			if (typeof value === "number") return Number.isFinite(value) ? value : 0;
+			if (typeof value === "boolean" || value === null) return 0;
+			const parsed = Number(value);
+			return Number.isFinite(parsed) ? parsed : 0;
+		}
+		/**
+		* Reports broken formulas through the host message sink.
+		*
+		* @param failures - Formulas that threw during this pass, in schema order.
+		*
+		* @summary Deduplicated by formula id: the same broken set never reports twice,
+		* but a recovered-then-broken formula reports again. Recovery itself is silent —
+		* a working total is its own feedback.
+		*/
+		reportFailures(failures) {
+			const key = failures.map((failure) => failure.id).sort().join("|");
+			if (key === this.lastFailureKey) return;
+			this.lastFailureKey = key;
+			if (failures.length === 0) return;
+			for (const failure of failures) console.warn(`[Form Calculation] Formula "${failure.id}" failed:`, failure.error);
+			if (typeof this.config.notify !== "function") return;
+			const compose = messageDraft$1({
+				category: "calculation",
+				slot: "failed",
+				code: "FORMULA_FAILED",
+				formId: this.form.id,
+				fallback: `Perhitungan ${failures[0].id} tidak dapat dijalankan.`,
+				params: { formula: failures[0].id }
+			});
+			const style = resolveStyle$1(this.config.messages, compose);
+			this.config.notify({
+				header: style.title || void 0,
+				message: composeMessage$1(this.config.messages, compose),
+				type: style.type || void 0,
+				icon: style.icon || void 0
+			});
+		}
+		/** Current form snapshot, keyed by id/name. */
+		getValues() {
+			return { ...this.values };
+		}
+		/** Current calculated total; optionally restrict to one schema group. */
+		getTotal(groupId) {
+			return this.getSummary(groupId).reduce((total, item) => total + item.total, 0);
+		}
+		/** Current normalized summary rows; optionally restrict to one schema group. */
+		getSummary(groupId) {
+			return (groupId ? this.summary.filter((item) => item.groupId === groupId) : this.summary).map((item) => ({
+				...item,
+				details: item.details ? { ...item.details } : void 0
+			}));
+		}
+		/** Re-run formulas and notify callback + form event listeners. */
+		recalculate() {
+			this.values = this.collectValues();
+			const summary = [];
+			const failures = [];
+			for (const strategy of this.config.strategies.formula ?? []) {
+				if (strategy.groupId && !this.isGroupMounted(strategy.groupId)) {
+					this.writeOutput(strategy.outputId, "");
+					continue;
+				}
+				const context = this.createContext(strategy);
+				try {
+					if (strategy.when && !strategy.when(context)) {
+						this.writeOutput(strategy.outputId, "");
+						continue;
+					}
+					const result = strategy.formula(context);
+					if (!result || !Number.isFinite(Number(result.total))) {
+						this.writeOutput(strategy.outputId, "");
+						continue;
+					}
+					const total = Number(result.total);
+					this.writeOutput(strategy.outputId, String(total));
+					summary.push({
+						...result,
+						id: result.id || strategy.id,
+						groupId: result.groupId ?? strategy.groupId,
+						quantity: Number(result.quantity) || 0,
+						unitPrice: Number(result.unitPrice) || 0,
+						total
+					});
+				} catch (error) {
+					this.writeOutput(strategy.outputId, "");
+					failures.push({
+						id: strategy.id,
+						error
+					});
+				}
+			}
+			this.reportFailures(failures);
+			this.summary = summary;
+			const update = {
+				form: this.form,
+				total: this.getTotal(),
+				summary: this.getSummary(),
+				values: this.getValues()
+			};
+			try {
+				this.config.onUpdate?.(update);
+			} catch (error) {
+				console.warn("[Form Calculation] onUpdate callback failed:", error);
+			}
+			this.form.dispatchEvent(new CustomEvent("formCalculation", {
+				bubbles: true,
+				detail: update
+			}));
+			return update;
+		}
+		/** Remove listeners and drop computed state. */
+		destroy() {
+			if (this.onChange) {
+				this.form.removeEventListener("input", this.onChange);
+				this.form.removeEventListener("change", this.onChange);
+				this.form.removeEventListener("formCascade", this.onChange);
+			}
+			this.onChange = null;
+			this.started = false;
+			this.summary = [];
+			this.values = {};
+			if (this.form.calculator === this) delete this.form.calculator;
+		}
+		createContext(strategy) {
+			const get = (inputId) => this.get(inputId);
+			return {
+				form: this.form,
+				groupId: strategy.groupId,
+				data: strategy.data,
+				values: this.getValues(),
+				get,
+				getNumber: (inputId) => {
+					const value = get(inputId);
+					if (typeof value === "number") return Number.isFinite(value) ? value : 0;
+					const parsed = Number(value);
+					return Number.isFinite(parsed) ? parsed : 0;
+				}
+			};
+		}
+		collectValues() {
+			const values = {};
+			this.form.querySelectorAll("input[id], input[name], select[id], select[name], textarea[id], textarea[name]").forEach((control) => {
+				const key = control.id || control.name;
+				if (key) values[key] = this.get(key);
+			});
+			return values;
+		}
+		isGroupMounted(groupId) {
+			const group = this.form.querySelector(`#${CSS.escape(groupId)}`);
+			return Boolean(group && this.form.contains(group));
+		}
+		writeOutput(inputId, value) {
+			if (!inputId) return;
+			const output = this.form.querySelector(`#${CSS.escape(inputId)}`);
+			if (output && output.value !== value) output.value = value;
+		}
+	};
+	/**
+	* Collects per-input calculation strategies, inferring the nearest group id.
+	*
+	* @summary Walks the raw schema tree and turns every `config.calculator` entry
+	* into a typed formula.
+	* @param inputs - Raw input schema passed to `prepare()`.
+	* @returns Formula definitions in schema order.
+	*/
+	function collectFormulas$1(inputs) {
+		const formulas = [];
+		const visit = (items, parentGroupId) => {
+			for (const item of items ?? []) {
+				if (!item || typeof item !== "object" || item instanceof Node) continue;
+				const formula = item.config?.calculator;
+				if (formula && typeof formula.formula === "function") formulas.push({
+					...formula,
+					groupId: formula.groupId ?? parentGroupId,
+					outputId: formula.outputId ?? item.id
+				});
+				if (Array.isArray(item.group)) visit(item.group, item.id ?? parentGroupId);
+			}
+		};
+		visit(inputs);
+		return formulas;
+	}
+	/**
+	* Form module definition for the calculation engine.
+	*
+	* @summary Active when the form declares `calculation`, and only in the
+	* initialize phase, because it reads DOM that exists after submit listeners are
+	* attached.
+	*
+	* @example
+	* // registered by FORM_ADAPTER_DEFINITIONS; no manual wiring needed
+	*/
+	var calculationFormAdapter$1 = {
+		id: FORM_MODULE_IDS$1.calculation,
+		/**
+		* Calculation only runs when the form opts in, in the initialize phase.
+		*
+		* @param context - Host context.
+		* @returns `true` when the calculation engine should load.
+		*/
+		matches: (context) => context.config.calculation === true && context.phase === "initialize",
+		/**
+		* Attaches the calculation engine to the live form and exposes it on the element.
+		*
+		* @param context - Host context.
+		* @returns The running calculation engine.
+		*/
+		load: (context) => {
+			const handler = new FormCalculationHandler$1(context.form, {
+				strategies: { formula: collectFormulas$1(context.inputs) },
+				messages: context.config?.messages,
+				notify: (content) => context.showMessage(content)
+			}).create();
+			context.form.calculator = handler;
+			return handler;
+		},
+		/**
+		* Removes calculation listeners and computed state.
+		*
+		* @param handler - The engine returned by `load()`.
+		* @returns Nothing.
+		*/
+		destroy: (handler) => handler.destroy()
+	};
+	// packages/components/form/adapters/Cascade.ts
+	/**
+	* Cascade engine.
+	*
+	* @summary Owns every rule about when a conditional input or group may exist: hold,
+	* evaluate, mount/unmount, the multistep gate, and the delegated listeners. It is a
+	* `adapters/cascade-adapter` entry of the form package. It knows nothing about
+	* `InputBuilder` or the input registry: the form offers what it needs through
+	* {@link FormCascadeHost}.
+	*/
+	var FormCascadeHandler$1 = class {
+		/** Objek skema pembawa .condition (bukan elemen DOM / string) */
+		static isCascadeItem(item) {
+			return Boolean(item && typeof item === "object" && !(item instanceof Node) && item.condition != null);
+		}
+		/** Telusuri pohon skema; visit mengembalikan false untuk memangkas turunannya */
+		static walkInputs(items, prefix, visit) {
+			items?.forEach((item, i) => {
+				if (!item || typeof item !== "object" || item instanceof Node) return;
+				const path = `${prefix}${i}`;
+				if (visit(item, path) === false) return;
+				if (Array.isArray(item.group)) this.walkInputs(item.group, `${path}.group.`, visit);
+				if (Array.isArray(item.row)) this.walkInputs(item.row, `${path}.row.`, visit);
+			});
+		}
+		/** Peta nama/id field → index langkah multistep di skema (aturan gerbang masuk) */
+		static collectFieldSteps(inputs) {
+			const map = /* @__PURE__ */ new Map();
+			const visit = (item, step) => {
+				if (!item || typeof item !== "object" || item instanceof Node) return;
+				const key = item.name ?? item.id;
+				if (key) map.set(String(key), step);
+				if (Array.isArray(item.group)) item.group.forEach((child) => visit(child, step));
+				if (Array.isArray(item.row)) item.row.forEach((child) => visit(child, step));
+			};
+			inputs.forEach((item, step) => visit(item, step));
+			return map;
+		}
+		static normalizeCondition(raw) {
+			if (typeof raw === "function") return { when: raw };
+			return raw && typeof raw === "object" ? raw : {};
+		}
+		static isEmptyValue(value) {
+			return value === null || value === void 0 || value === "" || Array.isArray(value) && value.length === 0;
+		}
+		/** Nilai kontrol DOM selalu string — samakan boolean/angka dengan koersi terkendali */
+		static looseEqual(a, b) {
+			if (a === b) return true;
+			const truthy = (v) => v === true || v === "true" || v === 1 || v === "1" || v === "on";
+			if (truthy(a) && truthy(b)) return true;
+			return a != null && b != null && String(a) === String(b);
+		}
+		static matchRule(condition, value) {
+			if (condition.filled) return !this.isEmptyValue(value);
+			if (condition.in !== void 0) return [].concat(condition.in).some((v) => this.looseEqual(v, value));
+			if (condition.notIn !== void 0) return ![].concat(condition.notIn).some((v) => this.looseEqual(v, value));
+			if (condition.notEquals !== void 0) return !this.looseEqual(condition.notEquals, value);
+			if (condition.equals !== void 0) return this.looseEqual(condition.equals, value);
+			return !this.isEmptyValue(value);
+		}
+		static conditionMet(condition, resolve, values) {
+			try {
+				if (typeof condition.when === "function") {
+					const fields = condition.field ? [].concat(condition.field) : [];
+					return Boolean(condition.when(fields.length ? resolve(String(fields[0])) : void 0, values));
+				}
+				const fields = condition.field ? [].concat(condition.field).map(String) : [];
+				if (!fields.length) return false;
+				return fields.every((field) => this.matchRule(condition, resolve(field)));
+			} catch (error) {
+				console.warn("[Form Cascade] condition evaluation failed:", error);
+				return false;
+			}
+		}
+		/** Kumpulkan snapshot nilai semua kontrol DOM di dalam form */
+		static collectValues(form) {
+			const values = {};
+			form?.querySelectorAll("input[name], select[name], textarea[name]").forEach((el) => {
+				values[el.name || el.id] = this.readControlValue(form, el);
+			});
+			return values;
+		}
+		/** Baca nilai terkini sebuah kontrol (checkbox/radio/select-multiple/file disesuaikan) */
+		static readControlValue(form, el) {
+			if (el instanceof HTMLInputElement) {
+				if (el.type === "checkbox") return el.checked ? el.value && el.value !== "on" ? el.value : true : null;
+				if (el.type === "radio") {
+					const checked = form?.querySelector(`input[type="radio"][name="${CSS.escape(el.name)}"]:checked`);
+					return checked ? checked.value : null;
+				}
+				if (el.type === "file") return el.files?.length || null;
+				return el.value;
+			}
+			if (el instanceof HTMLSelectElement) return el.multiple ? Array.from(el.selectedOptions).map((option) => option.value) : el.value;
+			return el.value;
+		}
+		/** Fallback terakhir: nilai preset dari descriptor skema */
+		static findSchemaValue(items, field) {
+			for (const item of items || []) {
+				if (!item || typeof item !== "object" || item instanceof Node) continue;
+				if ((item.name || item.id) === field) {
+					if (item.type === "checkbox" || item.type === "radio") return item.checked ? item.value ?? true : null;
+					return item.value;
+				}
+				const nested = this.findSchemaValue(item.group, field);
+				if (nested !== void 0) return nested;
+			}
+		}
+		/**
+		* Urutan lookup nilai: kontrol di dalam instance → kontrol form → descriptor skema.
+		*
+		* @param state - Form, schema inputs.
+		* @param field - Field name the condition refers to.
+		* @param scope - Element the condition lives in. A repeated group is its own instance,
+		*   and its controls are suffixed (`sku` → `sku-1`), so the lookup starts there.
+		*/
+		static resolveFieldValue(state, field, scope) {
+			const control = this.findControl(scope, field) ?? this.findControl(state.form, field);
+			if (control) return this.readControlValue(state.form, control);
+			return this.findSchemaValue(state.inputs, field);
+		}
+		/**
+		* Finds the control that stands for a schema field under a root.
+		*
+		* @param root - Element to search (instance first, then the form).
+		* @param field - Field name or id.
+		* @returns The control, or `null`.
+		*
+		* @summary Exact name/id first; then the clone form `field-<n>` that a repeated group
+		* writes, so one copy's conditional field follows that copy's own value.
+		*/
+		static findControl(root, field) {
+			if (!root) return null;
+			const exact = root.querySelector(`[name="${CSS.escape(field)}"], #${CSS.escape(field)}`);
+			if (exact) return exact;
+			const clonePattern = new RegExp(`^${field.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}-\\d+$`);
+			const candidates = root.querySelectorAll("[name], [id]");
+			for (const candidate of Array.from(candidates)) if (clonePattern.test(candidate.getAttribute("name") ?? "") || clonePattern.test(candidate.id)) return candidate;
+			return null;
+		}
+	};
+	var _mode$1 = /* @__PURE__ */ new WeakMap();
+	var _FormCascade_brand$1 = /* @__PURE__ */ new WeakSet();
+	var FormCascade$1 = class {
+		constructor(host) {
+			_classPrivateMethodInitSpec(this, _FormCascade_brand$1);
+			_defineProperty(this, "host", void 0);
+			_defineProperty(this, "form", null);
+			_defineProperty(this, "placeholders", /* @__PURE__ */ new Map());
+			_defineProperty(this, "onChange", null);
+			_defineProperty(this, "onPress", null);
+			_defineProperty(this, "lastBlockedInfo", null);
+			_classPrivateFieldInitSpec(this, _mode$1, void 0);
+			_defineProperty(
+				this,
+				/** Elements held by the `hidden` mode: path → live element. */
+				"hiddenItems",
+				/* @__PURE__ */ new Map()
+			);
+			this.host = host;
+			_classPrivateFieldSet2(_mode$1, this, host.cascadeMode === "hidden" ? "hidden" : "template");
+		}
+		/**
+		* Tells whether a schema item carries a cascade condition.
+		*
+		* @summary Delegates to {@link FormCascadeHandler.isCascadeItem} so hosts can
+		* ask the loaded engine instead of importing the handler class themselves.
+		* @param item - Schema item to inspect.
+		* @returns `true` when the item carries a `condition`.
+		*/
+		isCascadeItem(item) {
+			return FormCascadeHandler$1.isCascadeItem(item);
+		}
+		/**
+		* Keeps a not-yet-met conditional item in place (called by prepare/renderGroup).
+		*
+		* In `template` mode this plants a `<template>` placeholder and the real element is
+		* built when the condition passes. In `hidden` mode the element is built **now** and
+		* toggled with the `hidden` attribute, so a module that needs to inject data into it
+		* (an address picker filling the next select) has a live element to work with.
+		*
+		* @param parent - Container the item belongs to.
+		* @param path - Cascade path key for this item.
+		* @param item - Schema item; required by `hidden` mode to build it immediately.
+		*/
+		hold(parent, path, item) {
+			if (_classPrivateFieldGet2(_mode$1, this) === "hidden" && item) {
+				const formId = parent.closest("form")?.id ?? "";
+				const element = _assertClassBrand(_FormCascade_brand$1, this, _build$1).call(this, item, formId, path);
+				element.dataset.cascade = path;
+				element.hidden = true;
+				element.setAttribute("data-cascade-hidden", "");
+				parent.appendChild(element);
+				this.hiddenItems.set(path, element);
+				return;
+			}
+			const placeholder = document.createElement("template");
+			placeholder.dataset.cascade = path;
+			this.placeholders.set(path, placeholder);
+			parent.appendChild(placeholder);
+		}
+		/** Aktifkan engine: delegasi input/change + sync + gate awal */
+		attach(form) {
+			this.form = form;
+			this.onChange = () => this.sync();
+			form.addEventListener("input", this.onChange);
+			form.addEventListener("change", this.onChange);
+			this.onPress = (event) => {
+				const button = event.target?.closest?.("button.next");
+				if (!button || !button.disabled) return;
+				this.reportBlocked(form);
+			};
+			form.addEventListener("pointerdown", this.onPress);
+			this.sync();
+		}
+		/** Laporkan gerbang terkunci SEKARANG (dipicu penekanan tombol disabled). */
+		reportBlocked(form) {
+			const target = form ?? this.form;
+			if (!target || !this.lastBlockedInfo) return;
+			this.lastBlockedInfo = {
+				...this.lastBlockedInfo,
+				form: target
+			};
+			try {
+				this.host.reportCascadeBlocked?.(this.lastBlockedInfo);
+			} catch (error) {
+				console.warn("[Form Cascade] reportCascadeBlocked failed:", error);
+			}
+		}
+		/** Set nilai programatik lalu picu evaluasi via event change */
+		setValue(field, value) {
+			const form = this.form;
+			if (!form) return;
+			const control = form.querySelector(`[name="${CSS.escape(field)}"], #${CSS.escape(field)}`);
+			if (!control) return;
+			control.value = String(value);
+			control.dispatchEvent(new Event("change", { bubbles: true }));
+		}
+		/**
+		* Evaluates every condition, transitions the items it owns, then refreshes the gate.
+		*
+		* Two modes, one rule: `hidden` toggles visibility of elements that already exist,
+		* `template` swaps a placeholder for a freshly built element (and back).
+		*/
+		sync() {
+			const form = this.form;
+			if (!form) return;
+			const values = FormCascadeHandler$1.collectValues(form);
+			const resolveIn = (scope, field) => FormCascadeHandler$1.resolveFieldValue({
+				form,
+				inputs: this.host.inputs
+			}, field, scope);
+			if (_classPrivateFieldGet2(_mode$1, this) === "hidden") {
+				let pass = 0;
+				let toggled = 0;
+				do {
+					toggled = 0;
+					FormCascadeHandler$1.walkInputs(this.host.inputs, "", (item, path) => {
+						if (!FormCascadeHandler$1.isCascadeItem(item)) return;
+						const elements = _assertClassBrand(_FormCascade_brand$1, this, _instances$2).call(this, form, path);
+						if (!elements.length) return false;
+						const condition = FormCascadeHandler$1.normalizeCondition(item.condition);
+						for (const element of elements) {
+							const scope = element.closest("[data-instance]") ?? element.parentElement;
+							const met = FormCascadeHandler$1.conditionMet(condition, (field) => resolveIn(scope, field), values);
+							if (met === !element.hidden) continue;
+							element.hidden = !met;
+							element.toggleAttribute("data-cascade-hidden", !met);
+							toggled++;
+							this.emit(form, met ? "mount" : "unmount", element, item, path);
+						}
+						return true;
+					});
+					pass++;
+				} while (toggled && pass < 10);
+				if (this.host.multistep) this.host.refreshSteps?.(form);
+				this.gate(form);
+				return;
+			}
+			let changed = false;
+			let pass = 0;
+			do {
+				changed = false;
+				FormCascadeHandler$1.walkInputs(this.host.inputs, "", (item, path) => {
+					if (!FormCascadeHandler$1.isCascadeItem(item)) return;
+					const nodes = _assertClassBrand(_FormCascade_brand$1, this, _cascadeNodes$1).call(this, form, path);
+					if (!nodes.length) return false;
+					const placeholders = nodes.filter((node) => node instanceof HTMLTemplateElement);
+					const mounted = nodes.filter((node) => !(node instanceof HTMLTemplateElement));
+					const condition = FormCascadeHandler$1.normalizeCondition(item.condition);
+					for (const placeholder of placeholders) {
+						const instance = placeholder.closest("[data-instance]");
+						if (!FormCascadeHandler$1.conditionMet(condition, (field) => resolveIn(instance ?? placeholder.parentElement, field), values)) continue;
+						const el = _assertClassBrand(_FormCascade_brand$1, this, _buildForInstance$1).call(this, item, form.id, path, instance);
+						placeholder.replaceWith(el);
+						changed = true;
+						this.emit(form, "mount", el, item, path);
+					}
+					for (const element of mounted) {
+						const scope = element.parentElement;
+						if (FormCascadeHandler$1.conditionMet(condition, (field) => resolveIn(scope, field), values)) continue;
+						element.replaceWith(_assertClassBrand(_FormCascade_brand$1, this, _placeholderFor$1).call(this, path));
+						changed = true;
+						this.emit(form, "unmount", element, item, path);
+					}
+					return mounted.length > 0;
+				});
+				pass++;
+			} while (changed && pass < 10);
+			if (this.host.multistep && changed) this.host.refreshSteps?.(form);
+			this.gate(form);
+		}
+		/**
+		* Gerbang kaskade (multistep) — dikendalikan `autoDisableNextStep`:
+		* tombol "next" sebuah langkah dinonaktifkan selama masih ada kondisi kaskade
+		* yang belum terpenuhi — baik kondisi manual pada group langkah itu sendiri,
+		* maupun kondisi anak input di dalamnya (rantai fill-in).
+		*
+		* Aturan gerbang masuk: sebuah kondisi HANYA mengunci tombol next bila
+		* field sumbernya berada di langkah ini ATAU sebelumnya (≤ langkah tempat
+		* tombol itu berada). Kondisi yang seluruh field sumbernya masih di langkah
+		* berikutnya BUKAN gerbang masuk — isian itu justru dikerjakan SETELAH
+		* masuk ke langkah tersebut; ia akan mengunci tombol next langkah itu
+		* sendiri nanti (sesuai aturan yang sama).
+		*/
+		gate(form) {
+			const target = form ?? this.form;
+			if (!target || !this.host.multistep) return;
+			const nextButton = target.querySelector(":scope > .buttons.set > button.next");
+			if (!nextButton) return;
+			const apply = (disabled, guidance) => {
+				nextButton.disabled = disabled;
+				if (disabled) nextButton.title = guidance;
+				else nextButton.removeAttribute("title");
+			};
+			if (!this.host.autoDisableNextStep) {
+				apply(false, "");
+				return;
+			}
+			const activeFieldset = target.querySelector("fieldset[data-index].active");
+			if (!activeFieldset) return;
+			const currentIndex = Number(activeFieldset.dataset.index);
+			const values = FormCascadeHandler$1.collectValues(target);
+			const resolve = (field) => FormCascadeHandler$1.resolveFieldValue({
+				form: target,
+				inputs: this.host.inputs
+			}, field);
+			const fieldSteps = FormCascadeHandler$1.collectFieldSteps(this.host.inputs);
+			const branchChosen = !!target.querySelector("[data-cascade]:not(template)");
+			let blocked = false;
+			let guidance = "";
+			let blockedCondition = null;
+			let blockedPath = "";
+			FormCascadeHandler$1.walkInputs(this.host.inputs.slice(0, currentIndex + 2), "", (item, path) => {
+				if (!FormCascadeHandler$1.isCascadeItem(item)) return;
+				if (blocked) return false;
+				const sourceSteps = [].concat(item.condition?.field ?? []).map((f) => fieldSteps.get(String(f)) ?? -1);
+				if (sourceSteps.length > 0 && sourceSteps.every((s) => s > currentIndex)) return;
+				if (FormCascadeHandler$1.conditionMet(FormCascadeHandler$1.normalizeCondition(item.condition), resolve, values)) return;
+				if (Array.isArray(item.group) && branchChosen) return;
+				blocked = true;
+				blockedCondition = FormCascadeHandler$1.normalizeCondition(item.condition);
+				blockedPath = path;
+				guidance = typeof item.condition?.message === "string" ? item.condition.message : "Lengkapi isian sebelumnya untuk membuka langkah berikutnya.";
+				return false;
+			});
+			apply(blocked, guidance);
+			if (blocked) this.lastBlockedInfo = {
+				form: target,
+				guidance,
+				condition: blockedCondition,
+				step: currentIndex,
+				path: blockedPath
+			};
+			else this.lastBlockedInfo = null;
+		}
+		emit(form, action, element, item, path) {
+			const detail = {
+				action,
+				key: path,
+				element,
+				descriptor: item ?? null,
+				condition: FormCascadeHandler$1.normalizeCondition(item?.condition ?? {}),
+				state: FormCascadeHandler$1.collectValues(form)
+			};
+			if (typeof this.host.onCascade === "function") try {
+				this.host.onCascade(detail);
+			} catch (error) {
+				console.warn("[Form Cascade] onCascade listener error:", error);
+			}
+			if (typeof this.host.emit === "function") try {
+				this.host.emit("elementChanged", {
+					builder: this.host.builder,
+					type: "@form",
+					element,
+					data: detail
+				});
+			} catch {}
+			form.dispatchEvent(new CustomEvent("formCascade", {
+				bubbles: true,
+				detail
+			}));
+		}
+		/** Lepas semua jejak: listener delegasi + placeholder */
+		dispose() {
+			if (this.form) {
+				if (this.onChange) {
+					this.form.removeEventListener("input", this.onChange);
+					this.form.removeEventListener("change", this.onChange);
+				}
+				if (this.onPress) this.form.removeEventListener("pointerdown", this.onPress);
+			}
+			this.form = null;
+			this.onChange = null;
+			this.onPress = null;
+			this.lastBlockedInfo = null;
+			this.placeholders.clear();
+		}
+	};
+	/**
+	* Every live, non-template node stamped with a cascade path.
+	*
+	* @param form - Form the engine is attached to.
+	* @param path - Cascade path key.
+	* @returns The instances, in document order (a repeated group has more than one).
+	*/
+	function _instances$2(form, path) {
+		return _assertClassBrand(_FormCascade_brand$1, this, _cascadeNodes$1).call(this, form, path).filter((node) => !(node instanceof HTMLTemplateElement));
+	}
+	/** Every node — placeholders included — stamped with a cascade path. */
+	function _cascadeNodes$1(form, path) {
+		return Array.from(form.querySelectorAll(`[data-cascade="${CSS.escape(path)}"]`));
+	}
+	/** A fresh placeholder for an item that is being held again. */
+	function _placeholderFor$1(path) {
+		const placeholder = document.createElement("template");
+		placeholder.dataset.cascade = path;
+		this.placeholders.set(path, placeholder);
+		return placeholder;
+	}
+	/**
+	* Builds a conditional item for the copy of a repeated group.
+	*
+	* @param item - Schema item to build.
+	* @param formId - Owning form id.
+	* @param path - Cascade path key.
+	* @param instance - Repeated scope the item belongs to, when there is one.
+	* @returns The built element, with the copy's id/name suffix applied.
+	*
+	* @summary `#build` renders from the schema, so a field built inside a copy would get
+	* the original's id (`note`) and collide with it. The copy's own suffix (`-1`) is
+	* applied the same way duplication does it.
+	*/
+	function _buildForInstance$1(item, formId, path, instance) {
+		const element = _assertClassBrand(_FormCascade_brand$1, this, _build$1).call(this, item, formId, path);
+		const suffix = instance ? /(-\d+)$/.exec(instance.id)?.[1] ?? "" : "";
+		if (!suffix) return element;
+		if (element.id) element.id += suffix;
+		element.querySelectorAll("[id]").forEach((child) => {
+			child.id += suffix;
+		});
+		element.querySelectorAll("input, select, textarea").forEach((control) => {
+			if (control.name) control.name += suffix;
+		});
+		return element;
+	}
+	/**
+	* Builds the real element for a conditional item.
+	*
+	* @param item - Schema item (group or field).
+	* @param formId - Owning form id.
+	* @param path - Cascade path key.
+	* @returns The built element, already stamped with `data-cascade`.
+	*/
+	function _build$1(item, formId, path) {
+		let el = null;
+		if (item && typeof item === "object" && "group" in item) {
+			el = this.host.renderGroup(item, formId, path);
+			if (el) {
+				if (item.id) el.id = item.id;
+				if (item.className) el.classList.add(...String(item.className).split(/\s+/).filter(Boolean));
+				if (this.host.multistep && !path.includes(".")) el.dataset.index = path;
+				this.host.mountInputs?.(el);
+			}
+		} else if (item && typeof item === "object" && "row" in item) el = _assertClassBrand(_FormCascade_brand$1, this, _buildRow$1).call(this, item, formId, path);
+		else el = this.host.renderField(item, formId);
+		if (!el) {
+			const label = item && (item.id || item.name || item.type);
+			throw new Error(`[Form Cascade] Gagal membangun elemen kaskade pada path "${path}"` + (label ? ` untuk "${label}"` : "") + ". Pastikan selektor '@form>group' terkonfigurasi & host.renderField mengembalikan elemen yang valid.");
+		}
+		el.dataset.cascade = path;
+		return el;
+	}
+	/**
+	* Builds a layout row through the host, so a conditional row keeps its grid.
+	*
+	* @param item - Row node.
+	* @param formId - Owning form id.
+	* @param path - Cascade path key.
+	* @returns The row container.
+	*/
+	function _buildRow$1(item, formId, path) {
+		return this.host.renderRow(item, formId, path);
+	}
+	/**
+	* Form module definition for the cascade engine.
+	*
+	* @summary Active when the form declares `cascading` or pins the next button with
+	* `autoDisableNextStep`. Requires `validation`, because the cascade host reports a
+	* blocked next step through the validation feature.
+	*
+	* @example
+	* // registered by FORM_ADAPTER_DEFINITIONS; no manual wiring needed
+	*/
+	var cascadeFormAdapter$1 = {
+		id: FORM_MODULE_IDS$1.cascade,
+		requires: [FORM_MODULE_IDS$1.validation],
+		/**
+		* Cascade only runs when the schema uses conditions or the next button is gated.
+		*
+		* @param context - Host context.
+		* @returns `true` when the cascade engine should load.
+		*/
+		matches: (context) => context.config.cascading === true || context.config.autoDisableNextStep === true,
+		/**
+		* Builds the cascade engine around the host contract.
+		*
+		* @param context - Host context.
+		* @returns The live cascade engine.
+		*/
+		load: (context) => new FormCascade$1(context.cascadeHost()),
+		/**
+		* Detaches cascade listeners and drops held placeholders.
+		*
+		* @param cascade - The engine returned by `load()`.
+		* @returns Nothing.
+		*/
+		destroy: (cascade) => cascade.dispose()
+	};
+	// packages/components/form/adapters/Multistep.ts
+	var _FormMultistepHandler_brand$1 = /* @__PURE__ */ new WeakSet();
+	var FormMultistepHandler$1 = class {
+		constructor(host) {
+			_classPrivateMethodInitSpec(this, _FormMultistepHandler_brand$1);
+			_defineProperty(this, "host", void 0);
+			_defineProperty(this, "form", null);
+			_defineProperty(this, "currentStep", 0);
+			_defineProperty(
+				this,
+				/** Step yang masih tertahan sebagai <template data-step> — belum lahir ke DOM */
+				"pending",
+				/* @__PURE__ */ new Map()
+			);
+			_defineProperty(this, "onClick", null);
+			_defineProperty(
+				this,
+				/** Set tombol navigasi bersama yang saat ini menempel di level form */
+				"navBar",
+				null
+			);
+			this.host = host;
+		}
+		/** Tanam placeholder <template data-step> di posisi skema (dipanggil prepare) */
+		hold(parent, index, item) {
+			const placeholder = document.createElement("template");
+			placeholder.dataset.step = String(index);
+			this.pending.set(index, {
+				index,
+				item,
+				placeholder
+			});
+			parent.appendChild(placeholder);
+		}
+		/** Aktifkan engine: lahirkan langkah awal + delegasi klik next/back di level form */
+		attach(form) {
+			this.form = form;
+			this.onClick = (event) => this._handleClick(event);
+			form.addEventListener("click", this.onClick);
+			this.goTo(0);
+		}
+		_handleClick(event) {
+			const button = event.target?.closest?.("button");
+			if (!button || !button.closest(".buttons.set")) return;
+			const isNext = button.classList.contains("next");
+			const isBack = button.classList.contains("back");
+			if (!isNext && !isBack) return;
+			const form = this.form;
+			if (!form) return;
+			event.preventDefault();
+			if (isNext) {
+				const currentFieldset = this._mountedFieldset(form, this.currentStep);
+				if (currentFieldset && !_assertClassBrand(_FormMultistepHandler_brand$1, this, _stepIsValid$1).call(this, currentFieldset)) {
+					try {
+						this.host.reportNativeInvalid?.(form, this.currentStep);
+					} catch (error) {
+						console.warn("[Form Multistep] reportNativeInvalid failed:", error);
+					}
+					return;
+				}
+				const nextIndex = this._candidateIndexes(form).find((index) => index > this.currentStep);
+				if (nextIndex !== void 0) this.goTo(nextIndex);
+			} else if (this.currentStep > 0) {
+				const previousIndex = this._candidateIndexes(form).filter((index) => index < this.currentStep).pop();
+				if (previousIndex !== void 0) this.goTo(previousIndex);
+			}
+		}
+		/**
+		* Kandidat langkah = fieldset yang sudah terpasang di DOM + langkah yang
+		* masih tertahan sebagai placeholder. Langkah kaskade yang sedang ditahan
+		* syaratnya (belum terpasang) otomatis bukan kandidat — persis paritas
+		* dengan perilaku lama yang hanya melihat fieldset di DOM.
+		*/
+		_candidateIndexes(form) {
+			const mounted = this._mountedSteps(form).map((fieldset) => Number(fieldset.dataset.index));
+			return [.../* @__PURE__ */ new Set([...mounted, ...this.pending.keys()])].sort((a, b) => a - b);
+		}
+		/**
+		* Lahirkan fieldset langkah dari placeholder — SEKALI saja, lalu tetap
+		* tinggal di DOM (class .active yang dipindah-pindah). Bila langkah sudah
+		* terpasang (atau dipasang kaskade lebih dulu), kembalikan yang ada.
+		*/
+		_mount(form, index) {
+			const existing = this._mountedFieldset(form, index);
+			if (existing) return existing;
+			const entry = this.pending.get(index);
+			if (!entry) throw new Error(`[Form Multistep] Langkah ke-${index} tidak dikenal: tidak ada placeholder tertahan dan belum terpasang di DOM. Pastikan setiap langkah group diteruskan lewat hold() pada skema form.`);
+			const group = entry.item;
+			const fieldset = this.host.renderGroup(group, form.id, String(index));
+			if (!fieldset) {
+				const label = group && (group.id || group.title || group.legend);
+				throw new Error(`[Form Multistep] Gagal membangun fieldset langkah ke-${index}` + (label ? ` untuk "${label}"` : "") + ". Pastikan selektor '@form>group' terkonfigurasi & renderGroup mengembalikan elemen (render() mengembalikan undefined bila selektor tidak dikenal).");
+			}
+			if (group?.id) fieldset.id = group.id;
+			if (group?.className) fieldset.className = `${fieldset.className} ${group.className}`.trim();
+			fieldset.dataset.index = String(index);
+			entry.placeholder.replaceWith(fieldset);
+			this.pending.delete(index);
+			this.host.onStepMount?.(fieldset);
+			return fieldset;
+		}
+		/** Aktifkan satu langkah: bangun bila masih placeholder, lalu set status aktif */
+		goTo(index) {
+			const form = this.form;
+			if (!form) return;
+			this._mount(form, index);
+			const direction = index === this.currentStep ? null : index > this.currentStep ? "next" : "back";
+			this.currentStep = index;
+			this._syncButtons(form, index, direction);
+			this._syncActive(form);
+			this.host.onStepChange?.(index);
+		}
+		/**
+		* Tukar set tombol navigasi bersama yang HIDUP DI LEVEL FORM — dipanggil di
+		* setiap perpindahan langkah (goTo/refresh), bukan hanya saat fieldset baru
+		* lahir, agar arah navigasi (next/back/submit) selalu cocok dengan langkah.
+		* Set membawa attribute paritas dengan fieldset langkah terkait (data-index
+		* + animate) supaya bisa dianimasikan sinkron lewat CSS.
+		*/
+		_syncButtons(form, index, direction) {
+			const isLast = index === this.host.inputs.length - 1;
+			const buttons = this.host.renderButtonsSet?.({
+				index,
+				isLast,
+				formId: form.id
+			});
+			if (!buttons) return;
+			buttons.dataset.index = String(index);
+			if (direction) buttons.setAttribute("animate", direction);
+			if (this.navBar && this.navBar.isConnected) this.navBar.replaceWith(buttons);
+			else form.appendChild(buttons);
+			this.navBar = buttons;
+		}
+		/**
+		* Selaraskan class .active + arah animasi antar langkah yang terpasang.
+		* Bila langkah aktif sedang di-unmount kaskade, gandol ke langkah terdekat
+		* yang masih ada di DOM (dipanggil via host.refreshSteps dari Cascade).
+		*/
+		refresh(form) {
+			const target = form ?? this.form;
+			if (!target) return;
+			const mounted = this._mountedSteps(target);
+			if (!mounted.length) return;
+			let direction = null;
+			if (!mounted.some((fieldset) => Number(fieldset.dataset.index) === this.currentStep)) {
+				const fallback = mounted.filter((fieldset) => Number(fieldset.dataset.index) < this.currentStep).pop() ?? mounted[0];
+				this.currentStep = Number(fallback.dataset.index);
+				direction = "back";
+				fallback.setAttribute("animate", "back");
+			}
+			this._syncButtons(target, this.currentStep, direction);
+			this._syncActive(target);
+		}
+		_syncActive(form) {
+			const steps = this._mountedSteps(form);
+			steps.forEach((fieldset, position) => {
+				if (Number(fieldset.dataset.index) === this.currentStep) {
+					fieldset.classList.add("active");
+					if (position < steps.length - 1) steps[position + 1].setAttribute("animate", "next");
+					if (position > 0) steps[position - 1].setAttribute("animate", "back");
+				} else fieldset.classList.remove("active");
+			});
+		}
+		/** Fieldset langkah utama yang terpasang, terurut berdasarkan nomor langkah */
+		_mountedSteps(form) {
+			return Array.from(form.querySelectorAll("fieldset[data-index]")).sort((a, b) => Number(a.dataset.index) - Number(b.dataset.index));
+		}
+		_mountedFieldset(form, index) {
+			return form.querySelector(`fieldset[data-index="${index}"]`);
+		}
+		/** Lepas semua jejak: listener delegasi + daftar langkah tertahan */
+		dispose() {
+			if (this.form && this.onClick) this.form.removeEventListener("click", this.onClick);
+			this.form = null;
+			this.onClick = null;
+			this.navBar = null;
+			this.pending.clear();
+		}
+	};
+	/**
+	* Validates one step.
+	*
+	* `fieldset.checkValidity()` is **not** enough: a fieldset does not validate its
+	* descendants (a synthetic fieldset holding a required, empty input still reports
+	* `true`), so the Next gate silently let every step through. Each mounted control is
+	* checked instead, and the first invalid one is reported to the visitor.
+	*
+	* @param fieldset - The mounted step.
+	* @returns `true` when every control in the step is valid.
+	*/
+	function _stepIsValid$1(fieldset) {
+		const invalid = Array.from(fieldset.querySelectorAll("input, select, textarea")).filter((control) => !control.disabled && control.willValidate).filter((control) => !control.checkValidity());
+		if (invalid.length === 0) return true;
+		invalid[0].reportValidity();
+		return false;
+	}
+	/**
+	* Form module definition for the multistep engine.
+	*
+	* @summary Active when the form declares `multistep`. Steps are held as
+	* `<template data-step>` placeholders and mounted on demand.
+	*
+	* @example
+	* // registered by FORM_ADAPTER_DEFINITIONS; no manual wiring needed
+	*/
+	var multistepFormAdapter$1 = {
+		id: FORM_MODULE_IDS$1.multistep,
+		/**
+		* Multistep only runs when the form is a wizard.
+		*
+		* @param context - Host context.
+		* @returns `true` when the multistep engine should load.
+		*/
+		matches: (context) => context.config.multistep === true,
+		/**
+		* Builds the multistep engine around the host contract.
+		*
+		* @param context - Host context.
+		* @returns The live multistep engine.
+		*/
+		load: (context) => new FormMultistepHandler$1(context.multistepHost()),
+		/**
+		* Detaches navigation listeners and discards held steps.
+		*
+		* @param multistep - The engine returned by `load()`.
+		* @returns Nothing.
+		*/
+		destroy: (multistep) => multistep.dispose()
+	};
+	// packages/components/form/adapters/Validation.ts
+	/**
+	* Reason codes, in priority order.
+	*
+	* The browser already computes every one of these flags through
+	* `checkValidity()`, so the form never re-implements constraint logic: it only
+	* gives each flag a stable, translatable name for the message composer.
+	* Order matters when several flags are true at once.
+	*/
+	var VALIDITY_CODES$1 = [
+		["valueMissing", "VALUE_MISSING"],
+		["typeMismatch", "TYPE_MISMATCH"],
+		["patternMismatch", "PATTERN_MISMATCH"],
+		["tooLong", "TOO_LONG"],
+		["tooShort", "TOO_SHORT"],
+		["rangeOverflow", "RANGE_OVERFLOW"],
+		["rangeUnderflow", "RANGE_UNDERFLOW"],
+		["stepMismatch", "STEP_MISMATCH"],
+		["badInput", "BAD_INPUT"],
+		["customError", "CUSTOM_ERROR"]
+	];
+	/** Maps a control's `ValidityState` to one stable code. */
+	function validityCode$1(el) {
+		for (const [flag, code] of VALIDITY_CODES$1) if (el.validity[flag]) return code;
+		return "INVALID";
+	}
+	/**
+	* Reads constraint metadata off the element.
+	*
+	* Only attributes are read — never `el.value` — so a message can explain the
+	* limit without echoing what the user typed.
+	*/
+	function validityParams$1(el) {
+		const num = (name) => {
+			const parsed = parseFloat(el.getAttribute(name) ?? "");
+			return Number.isFinite(parsed) ? parsed : void 0;
+		};
+		return {
+			min: num("min"),
+			max: num("max"),
+			minLength: num("minlength"),
+			maxLength: num("maxlength"),
+			step: num("step"),
+			pattern: el.getAttribute("pattern") ?? void 0
+		};
+	}
+	var FormValidationHandler$1 = class FormValidationHandler$1 {
+		constructor(options = {}) {
+			_defineProperty(this, "options", void 0);
+			this.options = options;
+		}
+		/**
+		* Releases host references so the handler does not outlive its form.
+		*
+		* @summary Drops the emit and message callbacks. Safe to call more than once.
+		* @returns Nothing.
+		*/
+		dispose() {
+			this.options = {};
+		}
+		/** Ambil label ramah-manusia dari sebuah kontrol (label[for] → .field label → id/name/type). */
+		static resolveLabel(scope, el) {
+			const name = el.name || "";
+			if (name) {
+				const text = scope.querySelector(`label[for="${CSS.escape(name)}"]`)?.textContent?.trim();
+				if (text) return text;
+			}
+			const wrapLabel = (el.closest?.(".field, .ui-action-field"))?.querySelector("label")?.textContent?.trim();
+			if (wrapLabel) return wrapLabel;
+			return el.id || name || el.type || "field";
+		}
+		/**
+		* Kumpulkan field yang gagal validasi native. Bila `step` diberikan,
+		* pemindaian dibatasi ke fieldset langkah itu saja (multistep) — langkah
+		* lain yang tersembunyi/tidak aktif tidak ikut dipertimbangkan.
+		*/
+		static collectInvalidFields(form, step) {
+			const scope = step !== void 0 ? form.querySelector(`fieldset[data-index="${step}"]`) ?? form : form;
+			const fields = [];
+			scope.querySelectorAll("input[name], select[name], textarea[name], input:not([name])").forEach((el) => {
+				if (el.disabled || el.validity.valid) return;
+				fields.push({
+					name: el.name || void 0,
+					id: el.id || void 0,
+					type: el.type || el.tagName.toLowerCase(),
+					label: this.resolveLabel(scope, el),
+					message: el.validationMessage || "Isian ini belum diisi / tidak valid.",
+					code: validityCode$1(el),
+					params: validityParams$1(el)
+				});
+			});
+			return fields;
+		}
+		/** Bangun detail untuk validasi NATIVE (submit / next). */
+		buildNativeDetail(form, step) {
+			const fields = FormValidationHandler$1.collectInvalidFields(form, step);
+			const first = fields[0];
+			const compose = first ? messageDraft$1({
+				category: "validation",
+				slot: "field",
+				code: first.code ?? "INVALID",
+				formId: form.id,
+				fallback: first.message || "Isian belum valid.",
+				field: {
+					id: first.id,
+					name: first.name,
+					label: first.label,
+					type: first.type
+				},
+				params: first.params ?? {}
+			}) : messageDraft$1({
+				category: "validation",
+				slot: "form",
+				code: "FORM_INVALID",
+				formId: form.id,
+				fallback: "Pastikan seluruh isian wajib telah diisi dengan benar.",
+				params: { count: fields.length }
+			});
+			return {
+				formId: form.id,
+				builder: this.options.builder,
+				reason: "native",
+				valid: fields.length === 0,
+				step,
+				message: composeMessage$1(this.options.messages, compose),
+				fields,
+				compose
+			};
+		}
+		/** Bangun detail untuk gerbang KASKADE (tombol next terkunci kondisi). */
+		buildCascadeDetail(info) {
+			const compose = messageDraft$1({
+				category: "cascade",
+				slot: "gate",
+				code: "GATE_BLOCKED",
+				formId: info.form.id,
+				fallback: info.guidance || "Lengkapi isian sebelumnya untuk membuka langkah berikutnya.",
+				params: { stepIndex: info.step }
+			});
+			return {
+				formId: info.form.id,
+				builder: this.options.builder,
+				reason: "cascade",
+				valid: false,
+				step: info.step,
+				message: composeMessage$1(this.options.messages, compose),
+				condition: info.condition,
+				path: info.path,
+				compose
+			};
+		}
+		/** Jalur terpusat tunggal: emit + CustomEvent di form + tampilkan toast. */
+		report(detail, form) {
+			if (typeof this.options.emit === "function") try {
+				this.options.emit("formValidation", detail);
+			} catch (error) {
+				console.warn("[Form Validation] emit failed:", error);
+			}
+			if (form) try {
+				form.dispatchEvent(new CustomEvent("formValidation", {
+					bubbles: true,
+					detail
+				}));
+			} catch (error) {
+				console.warn("[Form Validation] dispatch failed:", error);
+			}
+			if (typeof this.options.showMessage === "function") try {
+				const compose = detail.compose ?? messageDraft$1({
+					category: detail.reason === "cascade" ? "cascade" : "validation",
+					slot: detail.reason === "cascade" ? "gate" : detail.fields?.length ? "field" : "form",
+					code: detail.reason === "cascade" ? "GATE_BLOCKED" : "INVALID",
+					formId: detail.formId,
+					fallback: detail.message
+				});
+				const style = resolveStyle$1(this.options.messages, compose);
+				this.options.showMessage({
+					header: style.title || void 0,
+					message: detail.message,
+					type: style.type || void 0,
+					icon: style.icon || void 0
+				});
+			} catch (error) {
+				console.warn("[Form Validation] showMessage failed:", error);
+			}
+			return detail;
+		}
+		/** Lapor validasi NATIVE: kumpulkan field tak valid & pusatkan ke report(). */
+		reportNative(form, step) {
+			return this.report(this.buildNativeDetail(form, step), form);
+		}
+		/** Lapor gerbang KASKADE: tombol next terkunci karena sebuah condition belum terpenuhi. */
+		reportCascadeBlocked(info) {
+			return this.report(this.buildCascadeDetail(info), info.form);
+		}
+	};
+	/**
+	* Form module definition for the validation handler.
+	*
+	* @summary Loads the centralized validation handler from the host context. The
+	* handler keeps its own single `report()` path, so native and cascade failures
+	* still emit, dispatch a `CustomEvent`, and show a message.
+	*
+	* @example
+	* // registered by FORM_ADAPTER_DEFINITIONS; no manual wiring needed
+	*/
+	var validationFormAdapter$1 = {
+		id: FORM_MODULE_IDS$1.validation,
+		/**
+		* Builds the validation handler for the supplied host.
+		*
+		* @param context - Host context carrying the form, emitter, and message host.
+		* @returns The live validation handler.
+		*/
+		load: (context) => new FormValidationHandler$1({
+			builder: context.builder,
+			emit: context.emit ?? void 0,
+			showMessage: context.showMessage,
+			messages: context.config?.messages
+		}),
+		/**
+		* Releases the handler by dropping its host callbacks.
+		*
+		* @param handler - The handler returned by `load()`.
+		* @returns Nothing.
+		*/
+		destroy: (handler) => handler.dispose()
+	};
+	// packages/components/form/Input.FormAdapter.ts
+	var _context$5 = /* @__PURE__ */ new WeakMap();
+	var _InputFormAdapter_brand$1 = /* @__PURE__ */ new WeakSet();
+	/**
+	* Field rendering adapter.
+	*
+	* @summary Owns `InputBuilder`: it creates every field the form renders, offers subtrees
+	* to the input modules (the file adapter for raw HTML fields), and — only when the form
+	* asks for it — contributes the selected files to the submit payload.
+	*
+	* Nothing here parses or serializes a file: the form config decides, because that is a
+	* policy, not a mechanism.
+	*/
+	var InputFormAdapter$1 = class {
+		/**
+		* @param context - Host context.
+		*/
+		constructor(context) {
+			_classPrivateMethodInitSpec(this, _InputFormAdapter_brand$1);
+			_classPrivateFieldInitSpec(this, _context$5, void 0);
+			_classPrivateFieldSet2(_context$5, this, context);
+		}
+		/**
+		* Builds one field from the input schema.
+		*
+		* @param input - Basic input node or raw descriptor.
+		* @param formId - Id of the owning form, forwarded to the field markup.
+		* @returns The rendered field element.
+		*
+		* @summary The host's builder config comes along, so the field inherits `themeId`,
+		* `namespace` and `emit` instead of starting blank — and so does its adapter set.
+		*/
+		renderField(input, formId) {
+			return new InputBuilder$1({
+				..._classPrivateFieldGet2(_context$5, this).builderConfig,
+				formId,
+				modules: _get_preset$1.call(_assertClassBrand(_InputFormAdapter_brand$1, this))
+			}).create({ content: input });
+		}
+		/**
+		* Covers file inputs that bypass `InputBuilder` (raw HTML fields).
+		*
+		* @param root - Form element or freshly mounted fieldset.
+		* @returns Nothing.
+		*/
+		mount(root) {
+			mountInputModules$1(root, _get_preset$1.call(_assertClassBrand(_InputFormAdapter_brand$1, this)));
+		}
+		/**
+		* Gives a group the same control set a field can have.
+		*
+		* @param fieldset - Group the set acts on.
+		* @param spec - `{ actions, position? }` declared by the group schema.
+		* @returns The controls node, or `null` when nothing was declared.
+		* @throws {Error} When the group declared a button and no module can render one.
+		*
+		* @summary Delegated to the input module registry, so this adapter does not know how a
+		* button works. A group that declared no buttons simply gets none; a group that declared
+		* buttons and got none is a hole, and it says so instead of rendering a fieldset that
+		* quietly lost its actions.
+		*/
+		renderActions(fieldset, spec) {
+			const controls = mountControls$1(fieldset, spec.actions, spec.position ?? "right", _get_preset$1.call(_assertClassBrand(_InputFormAdapter_brand$1, this)));
+			if (!controls && declaredAny$1(spec.actions)) reportMissing$1({
+				capability: "actions",
+				module: INPUT_MODULE_IDS$1.controls,
+				fix: "@aio-ui/input/controls (inputControlsInputModule)",
+				consequence: "the declared action buttons would never render.",
+				severity: "error"
+			}, {
+				owner: "FormBuilder",
+				emit: _classPrivateFieldGet2(_context$5, this).builderConfig?.emit
+			});
+			return controls ? [controls] : null;
+		}
+		/**
+		* Contributes the selected files when — and only when — the form asks for them.
+		*
+		* @summary `config.files` is `"ignore"` by default: a form submit carries form data,
+		* not an implied file payload. A callback receives the raw `File` map and decides what
+		* to add (a Drive serialization, a signed URL, nothing at all).
+		* @param payload - Mutable submit payload.
+		* @throws {Error} When a `files` policy is declared and no module can read the selected
+		*   files — the policy would receive an empty map and drop the bytes without a word.
+		*/
+		async beforeSubmit(payload) {
+			const policy = _classPrivateFieldGet2(_context$5, this).config.files;
+			if (typeof policy !== "function") return;
+			if (!_get_canReadFiles$1.call(_assertClassBrand(_InputFormAdapter_brand$1, this))) reportMissing$1({
+				capability: "file",
+				module: INPUT_MODULE_IDS$1.file,
+				fix: "@aio-ui/input/file-uploader (fileUploaderInputModule) — @aio-ui/form already includes it",
+				consequence: "config.files receives no files and the selected bytes are dropped.",
+				severity: "error"
+			}, {
+				owner: "FormBuilder",
+				emit: _classPrivateFieldGet2(_context$5, this).builderConfig?.emit
+			});
+			const files = inputFilesOf$1(_classPrivateFieldGet2(_context$5, this).form.id, _get_preset$1.call(_assertClassBrand(_InputFormAdapter_brand$1, this)));
+			Object.assign(payload, await policy(files, _classPrivateFieldGet2(_context$5, this).form));
+		}
+	};
+	/**
+	* The input adapter set this form runs on, or `undefined` for a plain field.
+	*
+	* @summary The host may declare the input modules (`inputModules`, or a manifest with
+	* `scope: "input"`); when it does, fields must use *that* set. When it does not, the
+	* field gets no input sub-modules at all: since `0.2.2` there is no default to fall back
+	* to, because a default would be a static import edge and the whole point of the split
+	* is that an app which never imports `@aio-ui/input/modules` never compiles them.
+	*/
+	function _get_preset$1() {
+		return _classPrivateFieldGet2(_context$5, this).inputModules?.length ? _classPrivateFieldGet2(_context$5, this).inputModules : void 0;
+	}
+	/**
+	* Whether this form's field set can hand over the selected files.
+	*
+	* @summary Method sniffing for live adapters, id matching for definitions — the two
+	* shapes a preset can hold. A definition is not instantiated here on purpose: asking
+	* "can you read files" must never cost a load.
+	*/
+	function _get_canReadFiles$1() {
+		return (_get_preset$1.call(_assertClassBrand(_InputFormAdapter_brand$1, this)) ?? []).some((item) => typeof item.getFiles === "function" || String(item.id) === INPUT_MODULE_IDS$1.file);
+	}
+	/**
+	* Whether a declared action set asks for at least one button.
+	*
+	* @param actions - Whatever the group schema declared.
+	* @returns `false` for nothing at all, and for an empty array or object.
+	*
+	* @summary `actions: []` and `actions: {}` declare nothing, so they must not be read as
+	* "buttons were asked for and lost". Everything else — an array with entries, or a map
+	* keyed by action type — counts.
+	*/
+	function declaredAny$1(actions) {
+		if (!actions) return false;
+		if (Array.isArray(actions)) return actions.filter(Boolean).length > 0;
+		return Object.keys(actions).length > 0;
+	}
+	/**
+	* Input module definition.
+	*
+	* @summary Required for rendering: without it the builder cannot create fields
+	* and fails loudly instead of rendering an empty form.
+	*
+	* @example
+	* // registered by FORM_ADAPTER_DEFINITIONS (the form's default set)
+	*/
+	var inputFormAdapter$1 = {
+		id: FORM_MODULE_IDS$1.input,
+		/**
+		* Builds the input adapter for the host form.
+		*
+		* @param context - Host context.
+		* @returns The live adapter.
+		*/
+		load: (context) => new InputFormAdapter$1(context)
+	};
+	// packages/components/form/FormAdapters.ts
+	/**
+	* Every adapter a form needs — the form's own five, then the field layer's four.
+	*
+	* @summary This is what makes `new FormBuilder({ modules, schema })` render anything at
+	* all: `input` is required for a field to exist, the four engines are the form's own
+	* behaviour (they degrade to no-ops when absent — `Form` loads them by id and calls
+	* through `?.`), and the four input modules are what make those fields *whole* (a
+	dropdown, an uploader, an action set, a popover) instead of merely present.
+	*
+	* A form is one import; a bare `InputBuilder` is still opt-in. That asymmetry is
+	* deliberate: `@aio-ui/form` is the composition root for a schema, so its entry should
+	* mean "everything a form can do", while a single text field should not pay for a
+	* dropdown builder it will never open.
+	*
+	* The four input ids are routed, not loaded as features: `Form.prepare()` splits the
+	* loader's ids against `INPUT_MODULE_IDS` and hands the matches to the field layer, the
+	* same id rule `provideModules()` has always used. `FORM_ADAPTER_MANIFEST` keeps the form
+	* scope at five and re-declares the input four with `scope: "input"`.
+	*
+	* Registration order is also mount order for adapters, matching the previous hardcoded
+	* sequence. `requires` drives dependency order.
+	*/
+	var FORM_ADAPTER_DEFINITIONS$1 = [
+		validationFormAdapter$1,
+		cascadeFormAdapter$1,
+		multistepFormAdapter$1,
+		calculationFormAdapter$1,
+		inputFormAdapter$1,
+		...INPUT_MODULE_DEFINITIONS$1
+	];
+	/** Ids of the definitions above, so a test can pin the two shapes together. */
+	var FORM_ADAPTER_IDS$1 = FORM_ADAPTER_DEFINITIONS$1.map((definition) => String(definition.id));
 	// packages/components/form/index.ts
 	var form_exports = /* @__PURE__ */ __exportAll({
-		DEFAULT_FORM_MESSAGES: () => DEFAULT_FORM_MESSAGES,
-		FORM_ADAPTER_MANIFEST: () => FORM_ADAPTER_MANIFEST,
-		FORM_MODULE_IDS: () => FORM_MODULE_IDS,
-		FormBuilder: () => FormBuilder,
-		composeMessage: () => composeMessage,
-		messageDraft: () => messageDraft,
-		resolveStyle: () => resolveStyle
+		DEFAULT_FORM_MESSAGES: () => DEFAULT_FORM_MESSAGES$1,
+		FORM_ADAPTER_DEFINITIONS: () => FORM_ADAPTER_DEFINITIONS$1,
+		FORM_ADAPTER_IDS: () => FORM_ADAPTER_IDS$1,
+		FORM_ADAPTER_MANIFEST: () => FORM_ADAPTER_MANIFEST$1,
+		FORM_MODULE_IDS: () => FORM_MODULE_IDS$1,
+		FormBuilder: () => FormBuilder$1,
+		composeMessage: () => composeMessage$1,
+		inputFormAdapter: () => inputFormAdapter$1,
+		messageDraft: () => messageDraft$1,
+		resolveStyle: () => resolveStyle$1
 	});
 	// packages/modules/http-service/HttpService.ts
 	var HttpService$1 = class {
@@ -14288,8 +20261,5799 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 		}
 		return _classPrivateFieldGet2(_http, this);
 	}
+	// packages/components/form/dist/FormModuleTypes.js
+	/**
+	* Stable ids for Form sub-modules.
+	*
+	* Kept in a leaf file so module definitions can import an id without importing
+	* the runtime composition module, which would create a circular import.
+	*/
+	var FORM_MODULE_IDS = {
+		validation: "validation",
+		cascade: "cascade",
+		multistep: "multistep",
+		calculation: "calculation",
+		input: "input",
+		idAddress: "idAddress",
+		table: "table",
+		message: "message"
+	};
+	/**
+	* Clamps the column count into a usable range.
+	*
+	* @param value - `column` from the schema; anything non-numeric falls back to the default.
+	* @returns Integer between 1 and {@link MAX_ROW_COLUMNS}.
+	*/
+	function columnsOf(value) {
+		if (value === void 0 || value === null || value === "") return 2;
+		const numeric = typeof value === "number" ? value : Number(value);
+		if (!Number.isFinite(numeric)) return 2;
+		return Math.min(16, Math.max(1, Math.round(numeric)));
+	}
+	/**
+	* Turns a `wide` hint into a column span.
+	*
+	* Three spellings are accepted, because a schema read from a sheet writes whatever the
+	* author typed:
+	*
+	* - `"auto"` → the whole row (a textarea or an address line wants the full width);
+	* - `0 < n ≤ 1` → fraction of the row (`0.5` = half);
+	* - anything else numeric → percentage (`50` = half, `33` = a third).
+	*
+	* @param wide - Width hint from `config.wide` (or the node's own `wide`).
+	* @param columns - Column count of the row this child lives in.
+	* @returns Span between 1 and `columns`.
+	*/
+	function spanOf(wide, columns) {
+		const total = Math.max(1, Math.round(columns));
+		if (wide === "auto" || wide === "full") return total;
+		const numeric = typeof wide === "number" ? wide : Number(wide);
+		if (!Number.isFinite(numeric) || numeric <= 0) return 1;
+		const ratio = numeric <= 1 ? numeric : numeric / 100;
+		return Math.min(total, Math.max(1, Math.round(ratio * total)));
+	}
+	/**
+	* Applies a span to a child element.
+	*
+	* `data-span` is the human/debug marker; `--span` carries the number, because CSS cannot
+	* read an attribute inside `grid-column: span …`.
+	*
+	* @param element - Child element of a row container.
+	* @param span - Column span, already clamped by {@link spanOf}.
+	*/
+	function applyRowSpan(element, span) {
+		element.dataset.span = String(span);
+		element.style.setProperty("--span", String(span));
+	}
+	/**
+	* Declares the grid of a row container.
+	*
+	* @param element - Row container.
+	* @param columns - Column count, already clamped by {@link columnsOf}.
+	*/
+	function applyRowColumns(element, columns) {
+		element.dataset.column = String(columns);
+		element.style.setProperty("--items", String(columns));
+	}
+	/**
+	* Resolves the span a row child asked for, explicit `span` first, then `wide`.
+	*
+	* @param child - Row child node.
+	* @param columns - Column count of the parent row.
+	* @returns Span between 1 and `columns`.
+	*/
+	function childSpanOf(child, columns) {
+		if (!child || typeof child !== "object") return 1;
+		const node = child;
+		if (node.span !== void 0) return Math.min(columns, Math.max(1, Math.round(Number(node.span) || 1)));
+		return spanOf(node.config?.wide ?? node.wide, columns);
+	}
+	// packages/components/form/dist/FormMessages.js
+	/**
+	* FORM MESSAGES — one place for every sentence the form says back to the user.
+	*
+	* The form produces feedback from five different features (validation, cascade,
+	* multistep, calculation, submit). Before this module each feature carried its
+	* own hard-coded Indonesian string — some inside adapters, some inside the
+	* message adapter — so changing a sentence meant editing three packages.
+	*
+	* Model: two axes plus a reason code.
+	*
+	* - `category` — which feature spoke: validation, cascade, multistep,
+	*   calculation, submit. Matches `FORM_MODULE_IDS` so the vocabulary lines up.
+	* - `slot`     — which sentence of that feature: `field`, `form`, `gate`,
+	*   `success`, `error`, … This is also the exact key read from the config.
+	* - `code`     — *why* it spoke: `VALUE_MISSING`, `RANGE_OVERFLOW`, …
+	*   The composer can `switch` on it, or a JSON/CMS config can map it through
+	*   `codes` without needing a function.
+	*
+	* A message value is either a template string (`"{label}" — {fallback}`) or a
+	* function receiving the full {@link iFormMessageCompose}. Templates exist so a
+	* config loaded from a spreadsheet stays serialisable; functions exist for the
+	* cases a template cannot express.
+	*
+	* SECURITY: resolvers only ever read field *metadata* (id, name, label, type)
+	* and constraint metadata (min, max, …). User input values are deliberately not
+	* part of the draft, and the toast renders through `textContent`, so a message
+	* can never become an HTML injection path.
+	*/
+	/**
+	* Built-in sentences.
+	*
+	* These are the exact strings the form used to hard-code, moved here so that
+	* *not configuring* `messages` behaves identically to before.
+	*/
+	var DEFAULT_FORM_MESSAGES = {
+		validation: {
+			title: "Periksa Kembali",
+			type: "error",
+			icon: "icon error",
+			invalidField: "{label} belum diisi / tidak valid.",
+			field: "\"{label}\" — {fallback}",
+			form: "Pastikan seluruh isian wajib telah diisi dengan benar."
+		},
+		cascade: {
+			title: "Selangkah Lagi",
+			type: "warning",
+			icon: "notification icon",
+			gate: "Lengkapi isian sebelumnya untuk membuka langkah berikutnya.",
+			branch: "Pilihan ini tidak tersedia untuk cabang yang sedang aktif."
+		},
+		multistep: {
+			title: "Langkah Belum Lengkap",
+			type: "warning",
+			icon: "notification icon",
+			incomplete: "Lengkapi langkah {stepIndex} sebelum melanjutkan.",
+			lastStep: "Ini langkah terakhir — gunakan tombol kirim."
+		},
+		calculation: {
+			title: "Perhitungan Gagal",
+			type: "warning",
+			icon: "notification icon",
+			failed: "Perhitungan {formula} tidak dapat dijalankan."
+		},
+		submit: {
+			titles: {
+				success: "Operasi Sukses!",
+				error: "Terjadi Kendala"
+			},
+			types: {
+				success: "success",
+				error: "error"
+			},
+			icons: {
+				success: "checkmark circle icon",
+				error: "icon error"
+			},
+			durations: {
+				success: 4e3,
+				error: 6e3
+			},
+			success: "Data Anda telah diproses.",
+			error: "Data Anda gagal diproses. Silakan coba lagi."
+		}
+	};
+	/** Reads one slot (sentence) out of a group without tripping over style keys. */
+	function readSlot(group, slot) {
+		if (!group || typeof group !== "object") return void 0;
+		const value = group[slot];
+		return typeof value === "string" || typeof value === "function" ? value : void 0;
+	}
+	/**
+	* Fills `{token}` placeholders.
+	*
+	* Deliberately dumb: unknown tokens collapse to empty text instead of being
+	* left visible, so a typo cannot leak `{maxx}` into the interface.
+	*/
+	function fillTemplate(template, compose) {
+		const tokens = {
+			...compose.params,
+			label: compose.field?.label,
+			name: compose.field?.name,
+			id: compose.field?.id,
+			type: compose.field?.type,
+			formId: compose.formId,
+			code: compose.code,
+			slot: compose.slot,
+			category: compose.category,
+			fallback: compose.fallback
+		};
+		return template.replace(/\{(\w+)\}/g, (_match, key) => {
+			const value = tokens[key];
+			return value === void 0 || value === null ? "" : String(value);
+		});
+	}
+	/** Renders one message value against a draft. */
+	function renderMessage(value, compose) {
+		if (typeof value === "function") return value(compose);
+		if (typeof value === "string") return fillTemplate(value, compose);
+		return compose.fallback;
+	}
+	/**
+	* Resolves the final sentence for a draft.
+	*
+	* Order: the configured `codes[code]` entry, then the configured slot, then the
+	* built-in slot, then `compose.fallback`. A composer's return value is used
+	* as-is — it replaces the sentence rather than being appended to it.
+	*/
+	function composeMessage(messages, compose) {
+		const group = messages?.[compose.category];
+		const fallbackGroup = DEFAULT_FORM_MESSAGES[compose.category];
+		return renderMessage(group?.codes?.[compose.code] ?? readSlot(group, compose.slot) ?? readSlot(fallbackGroup, compose.slot), compose) || compose.fallback;
+	}
+	/**
+	* Resolves title/type/icon/duration for a draft.
+	*
+	* Order per property: user slot override → user group value → default slot
+	* override → default group value. Missing values resolve to empty strings so a
+	* caller can fall back without guessing.
+	*/
+	function resolveStyle(messages, compose) {
+		const group = messages?.[compose.category] ?? {};
+		const fallbackGroup = DEFAULT_FORM_MESSAGES[compose.category];
+		const title = group.titles?.[compose.slot] ?? group.title ?? fallbackGroup.titles?.[compose.slot] ?? fallbackGroup.title;
+		const type = group.types?.[compose.slot] ?? group.type ?? fallbackGroup.types?.[compose.slot] ?? fallbackGroup.type;
+		const icon = group.icons?.[compose.slot] ?? group.icon ?? fallbackGroup.icons?.[compose.slot] ?? fallbackGroup.icon;
+		const duration = group.durations?.[compose.slot] ?? group.duration ?? fallbackGroup.durations?.[compose.slot] ?? fallbackGroup.duration;
+		return {
+			title: renderMessage(title, compose),
+			type: typeof type === "string" ? type : "",
+			icon: typeof icon === "string" ? icon : "",
+			duration: typeof duration === "number" ? duration : void 0
+		};
+	}
+	/** Builds a draft without repeating every field at each call site. */
+	function messageDraft(init) {
+		return {
+			...init,
+			params: init.params ?? {}
+		};
+	}
+	// packages/components/form/dist/Form.js
+	var _inputs = /* @__PURE__ */ new WeakMap();
+	var _cascade = /* @__PURE__ */ new WeakMap();
+	var _multistep = /* @__PURE__ */ new WeakMap();
+	var _validation = /* @__PURE__ */ new WeakMap();
+	var _onStepMounted = /* @__PURE__ */ new WeakMap();
+	var _loader$1 = /* @__PURE__ */ new WeakMap();
+	var _features = /* @__PURE__ */ new WeakMap();
+	var _inputModules = /* @__PURE__ */ new WeakMap();
+	var _providedLoader = /* @__PURE__ */ new WeakMap();
+	var _providedLive = /* @__PURE__ */ new WeakMap();
+	var _FormBuilder_brand = /* @__PURE__ */ new WeakSet();
+	var FormBuilder = class extends Builder$1 {
+		/**
+		* Memisahkan modul yang diserahkan registry menurut lapisannya.
+		*
+		* @param modules - Id modul → modul hasil resolve.
+		*
+		* @summary `Form` menaungi builder lain (`input`), jadi satu manifest memuat dua
+		* lapisan: id milik `INPUT_MODULE_IDS` menjadi preset field, sisanya milik form.
+		* Id tetap yang menentukan — `scope` di manifest hanya menyatakan niat, dan
+		* mencocokkan lewat id membuat manifest lama tanpa `scope` tetap benar.
+		*/
+		provideModules(modules) {
+			super.provideModules(modules);
+			const inputIds = new Set(Object.values(INPUT_MODULE_IDS$1));
+			const definitions = [];
+			_classPrivateFieldSet2(_inputModules, this, []);
+			_classPrivateFieldGet2(_providedLive, this).clear();
+			_classPrivateFieldSet2(_providedLoader, this, null);
+			for (const [id, module] of Object.entries(modules)) {
+				if (inputIds.has(id)) {
+					_classPrivateFieldGet2(_inputModules, this).push(module);
+					continue;
+				}
+				if (typeof module?.load === "function") definitions.push(module);
+				else _classPrivateFieldGet2(_providedLive, this).set(id, module);
+			}
+			if (definitions.length) _classPrivateFieldSet2(_providedLoader, this, new ModuleLoader$1("form", definitions));
+		}
+		/**
+		* 🪶 LOADING MOCKUP — a title, three labelled fields and the action row, drawn with the
+		* mandatory `@aio-ui/skeleton` primitive. Field count and types are payload detail; the
+		* mockup only promises the column the sheet will take over.
+		*/
+		loading() {
+			return Skeleton$1.create({
+				shape: "stack",
+				children: [
+					{
+						shape: "line",
+						width: "40%"
+					},
+					{
+						shape: "stack",
+						count: 3,
+						children: [{
+							shape: "line",
+							width: "25%"
+						}, {
+							shape: "bone",
+							height: "2.75rem"
+						}]
+					},
+					{
+						shape: "bone",
+						width: "30%",
+						height: "2.75rem"
+					}
+				]
+			});
+		}
+		constructor(config = {}) {
+			super();
+			_classPrivateMethodInitSpec(this, _FormBuilder_brand);
+			_defineProperty(this, "builderId", "form");
+			_defineProperty(this, "name", "form");
+			_defineProperty(this, "stylesheet", "./Form.css");
+			_defineProperty(this, "submitButtonId", void 0);
+			_classPrivateFieldInitSpec(this, _inputs, []);
+			_classPrivateFieldInitSpec(this, _cascade, null);
+			_classPrivateFieldInitSpec(this, _multistep, null);
+			_classPrivateFieldInitSpec(this, _validation, null);
+			_classPrivateFieldInitSpec(this, _onStepMounted, null);
+			_classPrivateFieldInitSpec(this, _loader$1, void 0);
+			_classPrivateFieldInitSpec(this, _features, []);
+			_classPrivateFieldInitSpec(this, _inputModules, []);
+			_classPrivateFieldInitSpec(this, _providedLoader, null);
+			_classPrivateFieldInitSpec(this, _providedLive, /* @__PURE__ */ new Map());
+			const defaultConfig = {
+				id: "",
+				name: "",
+				title: "",
+				description: "",
+				method: "post",
+				action: "submit",
+				className: "",
+				submitButton: true,
+				buttonText: "Submit",
+				buttonClass: "",
+				resetOnSubmit: false,
+				resetOnComplete: true,
+				createEventListener: true,
+				minHeight: "400px",
+				footer: null,
+				themeId: "default",
+				selectors: {
+					"@container": {
+						tagName: "div",
+						className: "form-widget-wrapper"
+					},
+					"@form": {
+						tagName: "form",
+						className: "native form"
+					},
+					"@form>group": {
+						tagName: "fieldset",
+						className: "form-group"
+					},
+					"@form>group>legend": {
+						tagName: "legend",
+						className: "title"
+					},
+					"@form>group>desc": {
+						tagName: "p",
+						className: "desc"
+					},
+					"@form>title": {
+						tagName: "h2",
+						className: "title"
+					},
+					"@form>desc": {
+						tagName: "p",
+						className: "desc"
+					},
+					"@form>row": {
+						tagName: "div",
+						className: "field group"
+					},
+					"@form>row>title": {
+						tagName: "p",
+						className: "title"
+					},
+					"@form>actions": {
+						tagName: "div",
+						className: "form-actions"
+					},
+					"@form>actions>submit": {
+						tagName: "button",
+						className: "submit",
+						type: "submit"
+					},
+					"@form>actions>submit-group": {
+						tagName: "button",
+						className: "submit",
+						type: "button"
+					},
+					"@form>footer": {
+						tagName: "div",
+						className: "form-footer"
+					},
+					"@form>buttons-set": {
+						tagName: "div",
+						className: "buttons set"
+					}
+				},
+				multistep: false,
+				cascading: false,
+				cascadeMode: "template",
+				autoDisableNextStep: false,
+				onCascade: null,
+				calculation: false,
+				namespace: null,
+				emit: null,
+				onSubmit: (_data) => {},
+				files: "ignore",
+				excludeEmpty: false,
+				address: null,
+				modules: null,
+				inputModules: null,
+				messages: {}
+			};
+			this.config = this.resolveConfig(defaultConfig, config);
+			_classPrivateFieldSet2(_loader$1, this, this.config.modules ?? new ModuleLoader$1("form", []));
+			_classPrivateFieldSet2(_inputModules, this, [...this.config.inputModules ?? []]);
+		}
+		/**
+		* REFACTOR TOTAL: Merakit Form menggunakan struktur iBasicNode[] murni
+		*/
+		prepare(inputs, _config = {}) {
+			if (!_get_activeLoader.call(_assertClassBrand(_FormBuilder_brand, this)).ids().length && !_classPrivateFieldGet2(_providedLive, this).size) throw new Error("[FormBuilder] No modules configured, so not one field can be rendered. Pass the stack: new ModuleLoader(\"form\", FORM_ADAPTER_DEFINITIONS) — those definitions are exported by @aio-ui/form — or, at minimum, [inputFormAdapter], exported by @aio-ui/form.");
+			_classPrivateFieldSet2(_inputs, this, Array.isArray(inputs) ? inputs : [inputs]);
+			_assertClassBrand(_FormBuilder_brand, this, _routeInputModules).call(this);
+			_get_activeLoader.call(_assertClassBrand(_FormBuilder_brand, this)).unloadAll();
+			_classPrivateFieldSet2(_features, this, []);
+			_classPrivateFieldSet2(_cascade, this, null);
+			_classPrivateFieldSet2(_multistep, this, null);
+			_classPrivateFieldSet2(_validation, this, null);
+			_classPrivateFieldSet2(_onStepMounted, this, null);
+			const form = this.render("@form", inputs);
+			const formId = form.id;
+			const isCascading = this.config.cascading === true;
+			if (this.config.title) form.appendChild(this.render("@form>title", this.config.title));
+			if (this.config.description) form.appendChild(this.render("@form>desc", this.config.description));
+			const moduleContext = this._buildModuleContext(form, "prepare");
+			_classPrivateFieldSet2(_features, this, _assertClassBrand(_FormBuilder_brand, this, _resolved).call(this, moduleContext));
+			_classPrivateFieldSet2(_validation, this, _assertClassBrand(_FormBuilder_brand, this, _loaded).call(this, FORM_MODULE_IDS.validation));
+			_classPrivateFieldSet2(_cascade, this, _assertClassBrand(_FormBuilder_brand, this, _loaded).call(this, FORM_MODULE_IDS.cascade));
+			_classPrivateFieldSet2(_multistep, this, _assertClassBrand(_FormBuilder_brand, this, _loaded).call(this, FORM_MODULE_IDS.multistep));
+			for (const [index, input] of Object.entries(_classPrivateFieldGet2(_inputs, this))) if (input instanceof HTMLElement) {
+				const btn = this.scanForSubmitButton(input, formId);
+				if (btn) {
+					this.submitButtonId = btn.id || this.submitButtonId;
+					form.append(btn);
+				} else form.append(input);
+			} else if (typeof input === "string") {
+				const btn = this.scanForSubmitButton(input, formId);
+				if (btn) {
+					this.submitButtonId = btn.id;
+					form.appendChild(btn);
+				} else form.insertAdjacentHTML("beforeend", input);
+			} else if (input && typeof input === "object" && "group" in input) {
+				if (isCascading && _classPrivateFieldGet2(_cascade, this)?.isCascadeItem(input)) {
+					_classPrivateFieldGet2(_cascade, this)?.hold(form, String(index), input);
+					continue;
+				}
+				if (this.config.multistep) {
+					_classPrivateFieldGet2(_multistep, this)?.hold(form, Number(index), input);
+					continue;
+				}
+				const fieldset = this.renderGroup(input, formId, isCascading ? String(index) : void 0);
+				if (input.id) fieldset.id = input.id;
+				if (input.className) fieldset.classList.add(...String(input.className).split(/\s+/).filter(Boolean));
+				form.appendChild(fieldset);
+			} else if (input && typeof input === "object" && "row" in input) {
+				if (isCascading && _classPrivateFieldGet2(_cascade, this)?.isCascadeItem(input)) {
+					_classPrivateFieldGet2(_cascade, this)?.hold(form, String(index), input);
+					continue;
+				}
+				form.appendChild(this.renderRow(input, formId, isCascading ? String(index) : void 0));
+			} else {
+				if (isCascading && _classPrivateFieldGet2(_cascade, this)?.isCascadeItem(input)) {
+					_classPrivateFieldGet2(_cascade, this)?.hold(form, String(index), input);
+					continue;
+				}
+				const inputEl = this._renderField(input, formId);
+				form.append(inputEl);
+			}
+			if (isCascading || this.config.autoDisableNextStep === true) _classPrivateFieldGet2(_cascade, this)?.attach(form);
+			if (!this.submitButtonId && this.config.submitButton && !this.config.multistep) {
+				const defaultSubmitBtn = this.render("@form>actions>submit", {
+					isGroupBtn: false,
+					formId
+				});
+				this.submitButtonId = defaultSubmitBtn.id;
+				form.append(defaultSubmitBtn);
+			}
+			if (this.config.footer) {
+				if (this.config.footer instanceof HTMLElement) form.appendChild(this.config.footer);
+				else {
+					const footerEl = this.render("@form>footer", this.config.footer);
+					form.appendChild(footerEl);
+				}
+			}
+			return form;
+		}
+		/**
+		* Recursively renders a group (fieldset) and its child inputs or sub-groups.
+		* Param `cascade` opsional: saat aktif, anak-anak group yang membawa `.condition`
+		* ditahan ke registry kaskade alih-alih langsung dirender.
+		*/
+		renderGroup(groupInput, formId, cascadePath) {
+			const fieldset = this.render("@form>group", groupInput);
+			const cascadeActive = this.config.cascading === true && cascadePath !== void 0;
+			if (groupInput.group && Array.isArray(groupInput.group)) groupInput.group.forEach((innerInput, _index) => {
+				if (cascadeActive && _classPrivateFieldGet2(_cascade, this)?.isCascadeItem(innerInput)) {
+					_classPrivateFieldGet2(_cascade, this)?.hold(fieldset, `${cascadePath}.group.${_index}`, innerInput);
+					return;
+				}
+				if (typeof innerInput === "string") {
+					const btn = this.scanForSubmitButton(innerInput, formId);
+					if (btn) this.submitButtonId = btn.id;
+					fieldset.insertAdjacentHTML("beforeend", innerInput);
+					const s = fieldset.querySelector("[type='submit']");
+					if (s) s.id = this.submitButtonId;
+				} else if (innerInput && typeof innerInput === "object" && "row" in innerInput) {
+					const nestedRow = this.renderRow(innerInput, formId, cascadeActive ? `${cascadePath}.group.${_index}` : void 0);
+					if (innerInput.id) nestedRow.id = innerInput.id;
+					fieldset.appendChild(nestedRow);
+				} else if (innerInput && typeof innerInput === "object" && "group" in innerInput) {
+					const nestedFieldset = this.renderGroup(innerInput, formId, cascadeActive ? `${cascadePath}.group.${_index}` : void 0);
+					if (innerInput.id) nestedFieldset.id = innerInput.id;
+					if (innerInput.table !== void 0) {
+						const groupSubmitBtn = this.render("@form>actions>submit", {
+							isGroupBtn: false,
+							groupId: innerInput.id
+						});
+						for (const feature of _classPrivateFieldGet2(_features, this)) {
+							const nodes = feature.renderTable?.(innerInput.table, {
+								fieldset: nestedFieldset,
+								submitButton: groupSubmitBtn,
+								groupId: innerInput.id
+							});
+							if (nodes && nodes.length) {
+								nestedFieldset.append(groupSubmitBtn, ...nodes);
+								break;
+							}
+						}
+					}
+					fieldset.appendChild(nestedFieldset);
+				} else {
+					const inputEl = innerInput instanceof HTMLElement ? innerInput : this._renderField(innerInput, formId);
+					const btn = this.scanForSubmitButton(inputEl, formId);
+					if (btn) this.submitButtonId = btn.id;
+					fieldset.append(inputEl);
+				}
+			});
+			if (groupInput.submitButton) {
+				const submitBtn = this.render("@form>actions>submit", {
+					isGroupBtn: true,
+					formId
+				});
+				this.submitButtonId = submitBtn.id;
+				fieldset.appendChild(submitBtn);
+			}
+			_assertClassBrand(_FormBuilder_brand, this, _appendActions).call(this, fieldset, groupInput);
+			return fieldset;
+		}
+		/**
+		* Renders a row: fields side by side in a CSS grid.
+		*
+		* A row is **layout only** — it produces no legend, no fieldset and no field data, which
+		* is why `group` (fieldset + legend) stays a separate word in the schema. Children wrap
+		* on their own once the declared column count is exhausted; a child's width comes from
+		* its `wide` hint (`50` → half, `"auto"` → full row) or an explicit `span`.
+		*
+		* Nesting works: a row inside a row is just another grid cell, so a stacked column is
+		* `{ column: 1, wide: 50, row: [...] }`.
+		*
+		* @param rowInput - Row node (`{ label, column, row: [...] }`).
+		* @param formId - Id of the owning form.
+		* @param cascadePath - Path segment when cascade is active, so a conditional child can
+		*   be held and mounted later with the same key the engine walks.
+		* @returns The row container element.
+		*/
+		renderRow(rowInput, formId, cascadePath) {
+			const container = this.render("@form>row", rowInput);
+			const columns = columnsOf(rowInput.column);
+			applyRowColumns(container, columns);
+			if (rowInput.id) container.id = rowInput.id;
+			if (rowInput.className) container.classList.add(...String(rowInput.className).split(" ").filter(Boolean));
+			if (rowInput.label) container.appendChild(this.render("@form>row>title", rowInput.label));
+			if (rowInput.description) container.appendChild(this.render("@form>group>desc", rowInput.description));
+			const cascadeActive = this.config.cascading === true && cascadePath !== void 0;
+			(Array.isArray(rowInput.row) ? rowInput.row : []).forEach((child, index) => {
+				const childPath = `${cascadePath}.row.${index}`;
+				if (cascadeActive && _classPrivateFieldGet2(_cascade, this)?.isCascadeItem(child)) {
+					_classPrivateFieldGet2(_cascade, this)?.hold(container, childPath, child);
+					return;
+				}
+				let element = null;
+				if (typeof child === "string") {
+					container.insertAdjacentHTML("beforeend", child);
+					element = container.lastElementChild;
+				} else if (child instanceof HTMLElement) element = child;
+				else if (child && typeof child === "object" && "row" in child) element = this.renderRow(child, formId, cascadeActive ? childPath : void 0);
+				else if (child && typeof child === "object" && "group" in child) element = this.renderGroup(child, formId, cascadeActive ? childPath : void 0);
+				else element = this._renderField(child, formId);
+				if (!element) return;
+				const submitBtn = this.scanForSubmitButton(element, formId);
+				if (submitBtn) this.submitButtonId = submitBtn.id;
+				applyRowSpan(element, childSpanOf(child, columns));
+				container.appendChild(element);
+			});
+			_assertClassBrand(_FormBuilder_brand, this, _appendActions).call(this, container, rowInput);
+			return container;
+		}
+		/**
+		* Renders one field through the loaded input module.
+		*
+		* @summary Keeps `InputBuilder` out of the builder: the module owns field
+		* creation, the form only asks for an element.
+		* @param input - Input schema or raw descriptor.
+		* @param formId - Id of the owning form.
+		* @returns The rendered field element.
+		* @throws {Error} When no loaded module can render fields, meaning the `input`
+		*   module is missing from the presets.
+		*/
+		_renderField(input, formId) {
+			for (const feature of _classPrivateFieldGet2(_features, this)) {
+				const element = feature.renderField?.(input, formId);
+				if (element) return element;
+			}
+			throw new Error("[FormBuilder] No module rendered the field. Register the input module in the loader preset.");
+		}
+		_buildModuleContext(form, phase) {
+			return {
+				builder: String(this.builderId),
+				form,
+				inputs: _classPrivateFieldGet2(_inputs, this),
+				phase,
+				emit: typeof this.config.emit === "function" ? this.config.emit : null,
+				builderConfig: {
+					themeId: this.config.themeId,
+					namespace: this.config.namespace,
+					emit: typeof this.config.emit === "function" ? this.config.emit : null
+				},
+				inputModules: _classPrivateFieldGet2(_inputModules, this),
+				showMessage: (content) => this._notify(form, false, content),
+				config: this.config,
+				cascadeHost: () => this._buildCascadeHost(),
+				multistepHost: () => this._buildMultistepHost()
+			};
+		}
+		_buildCascadeHost() {
+			return {
+				builder: this.builderId,
+				inputs: _classPrivateFieldGet2(_inputs, this),
+				multistep: this.config.multistep === true,
+				cascadeMode: this.config.cascadeMode ?? "template",
+				autoDisableNextStep: this.config.autoDisableNextStep ?? (this.config.cascading === true && this.config.multistep === true),
+				onCascade: typeof this.config.onCascade === "function" ? this.config.onCascade : null,
+				emit: typeof this.config.emit === "function" ? this.config.emit : null,
+				renderGroup: (group, formId, path) => this.renderGroup(group, formId, path),
+				renderRow: (row, formId, path) => this.renderRow(row, formId, path),
+				renderField: (item, formId) => this._renderField(item, formId),
+				mountInputs: (root) => {
+					for (const feature of _classPrivateFieldGet2(_features, this)) feature.mount?.(root);
+				},
+				refreshSteps: (form) => _classPrivateFieldGet2(_multistep, this)?.refresh(form),
+				reportCascadeBlocked: (info) => _classPrivateFieldGet2(_validation, this)?.reportCascadeBlocked(info)
+			};
+		}
+		_buildMultistepHost() {
+			return {
+				builder: this.builderId,
+				inputs: _classPrivateFieldGet2(_inputs, this),
+				renderGroup: (group, formId, path) => this.renderGroup(group, formId, path),
+				renderButtonsSet: (payload) => this.render("@form>buttons-set", payload),
+				onStepMount: (fieldset) => _classPrivateFieldGet2(_onStepMounted, this)?.call(this, fieldset),
+				onStepChange: () => _classPrivateFieldGet2(_cascade, this)?.gate(),
+				reportNativeInvalid: (form, step) => _classPrivateFieldGet2(_validation, this)?.reportNative(form, step)
+			};
+		}
+		/** Set nilai field secara programatik — engine memantik evaluasi via event change */
+		setCascadeValue(field, value) {
+			_classPrivateFieldGet2(_cascade, this)?.setValue(field, value);
+		}
+		/**
+		* 🪜 Multistep: posisi langkah aktif, gerbang validasi, dan pelahirkan
+		* fieldset langkah kini sepenuhnya dikelola engine FormMultistepHandler
+		* (Handlers/Multistep.ts) — lihat _buildMultistepHost().
+		*/
+		initialize(formElement) {
+			if (formElement && this.config.createEventListener) this.attachFormListener(formElement);
+			_classPrivateFieldGet2(_features, this).push(..._assertClassBrand(_FormBuilder_brand, this, _loadFeatures).call(this, this._buildModuleContext(formElement, "initialize")));
+		}
+		template(typeKey, el, payload) {
+			switch (typeKey) {
+				case "@container":
+					el.style.minHeight = this.config.minHeight;
+					break;
+				case "@form": {
+					const form = el;
+					const randomSuffix = Math.random().toString(36).substring(7);
+					form.id = this.config.id ? `form-${this.config.id}`.replace(/\s+/g, "-") : `form-${randomSuffix}`;
+					if (this.config.className) form.classList.add(...String(this.config.className).split(/\s+/).filter(Boolean));
+					if (this.config.multistep) form.classList.add("multistep");
+					form.method = this.config.method;
+					if (this.config.action) form.action = this.config.action;
+					if (this.config.name) form.name = String(this.config.name);
+					break;
+				}
+				case "@form>group": {
+					if (payload?.class) el.className = `${el.className} ${payload.class}`.trim();
+					const legendText = payload?.legend || payload?.title;
+					if (legendText) {
+						const legend = document.createElement("legend");
+						legend.className = "title";
+						legend.textContent = String(legendText);
+						el.appendChild(legend);
+					}
+					if (payload?.description) {
+						const desc = document.createElement("p");
+						desc.className = "desc";
+						desc.textContent = String(payload.description);
+						el.appendChild(desc);
+					}
+					if (payload?.infos) {
+						const list = document.createElement("ul");
+						list.className = "group-infos";
+						if (Array.isArray(payload.infos)) for (const i of payload.infos) {
+							const item = document.createElement("li");
+							item.className = "item";
+							item.textContent = String(i);
+							list.appendChild(item);
+						}
+						el.appendChild(list);
+					}
+					break;
+				}
+				case "@form>row>title":
+					el.textContent = typeof payload === "string" ? payload : String(payload?.label ?? "");
+					break;
+				case "@form>title":
+				case "@form>desc":
+					el.textContent = typeof payload === "string" ? payload : String(payload?.label ?? payload?.description ?? "");
+					break;
+				case "@form>group>desc":
+					el.textContent = typeof payload === "string" ? payload : String(payload?.description ?? "");
+					break;
+				case "@form>actions>submit": {
+					const btn = el;
+					btn.className = `${this.config.buttonClass} ${btn.className || ""}`.trim();
+					btn.type = "submit";
+					btn.textContent = this.config.buttonText;
+					const sIcon = document.createElement("i");
+					sIcon.className = "icon checkmark";
+					btn.appendChild(sIcon);
+					if (payload?.isGroupBtn) btn.id = payload.formId ? `btn-${payload.formId}` : `btn-group-${Math.random().toString(36).substring(7)}`;
+					else btn.id = `btn-${payload?.formId || "default"}`;
+					break;
+				}
+				case "@form>buttons-set": {
+					const next = document.createElement("button");
+					next.className = "next";
+					next.type = "button";
+					const nIcon = document.createElement("i");
+					nIcon.className = "icon arrow right";
+					next.textContent = "next";
+					next.appendChild(nIcon);
+					const back = document.createElement("button");
+					back.className = "back";
+					back.type = "button";
+					const bIcon = document.createElement("i");
+					bIcon.className = "icon arrow left";
+					back.textContent = "back";
+					back.prepend(bIcon);
+					if (Number(payload.index) === 0) el.append(next);
+					else if (payload.isLast) {
+						const submit = this.render("@form>actions>submit");
+						el.append(back, submit);
+					} else el.append(back, next);
+					break;
+				}
+				case "@form>footer": el.textContent = typeof payload === "string" ? payload : payload?.text || "";
+			}
+		}
+		unmount() {
+			_get_activeLoader.call(_assertClassBrand(_FormBuilder_brand, this)).unloadAll();
+			_classPrivateFieldSet2(_features, this, []);
+			_classPrivateFieldSet2(_validation, this, null);
+			_classPrivateFieldSet2(_cascade, this, null);
+			_classPrivateFieldSet2(_multistep, this, null);
+			_classPrivateFieldSet2(_onStepMounted, this, null);
+			this.destroy();
+		}
+		/**
+		* Listener submit/klik + orkestrasi hook kolaborator (mount, beforeSubmit).
+		*/
+		attachFormListener(form) {
+			const toggleLoadingState = (success) => {
+				form.classList.remove("loading");
+				form.querySelectorAll(".field").forEach((f) => f.classList.remove("error"));
+				if (!success) form.querySelectorAll(".field").forEach((f) => f.classList.add("error"));
+			};
+			form.addEventListener("scopeAdded", () => {
+				_classPrivateFieldGet2(_cascade, this)?.sync();
+				_classPrivateFieldGet2(_multistep, this)?.refresh(form);
+			});
+			_classPrivateFieldSet2(_onStepMounted, this, (fieldset) => {
+				for (const feature of _classPrivateFieldGet2(_features, this)) feature.mount?.(fieldset);
+				_classPrivateFieldGet2(_cascade, this)?.sync();
+			});
+			_classPrivateFieldGet2(_multistep, this)?.attach(form);
+			for (const feature of _classPrivateFieldGet2(_features, this)) feature.mount?.(form);
+			form.addEventListener("submit", async (e) => {
+				e.preventDefault();
+				if (!form.checkValidity()) {
+					_classPrivateFieldGet2(_validation, this)?.reportNative(form);
+					return;
+				}
+				form.classList.add("loading");
+				const data = collectFormValues$1(form, { excludeEmpty: this.config.excludeEmpty });
+				for (const feature of _classPrivateFieldGet2(_features, this)) await feature.beforeSubmit?.(data);
+				if (this.config.resetOnSubmit) _assertClassBrand(_FormBuilder_brand, this, _resetForm).call(this, form);
+				if (typeof this.config.onSubmit === "function") try {
+					this.config.onSubmit(data);
+				} catch (error) {
+					console.error("[FormBuilder] onSubmit failed:", error);
+				}
+				form.dispatchEvent(new CustomEvent("formSubmit", {
+					bubbles: true,
+					detail: {
+						formId: form.id,
+						data,
+						complete: (success, messageConfig, resetForm) => {
+							toggleLoadingState(success);
+							this._notify(form, success, messageConfig);
+							if (resetForm || this.config.resetOnComplete) _assertClassBrand(_FormBuilder_brand, this, _resetForm).call(this, form);
+						},
+						reset: () => _assertClassBrand(_FormBuilder_brand, this, _resetForm).call(this, form)
+					}
+				}));
+			});
+			form.addEventListener("click", (event) => {
+				const button = event.target?.closest?.("button[type=submit], input[type=submit]");
+				if (!button) return;
+				if (!form.contains(button) && button.getAttribute("form") !== form.id) return;
+				event.preventDefault();
+				if (!form.checkValidity()) {
+					_classPrivateFieldGet2(_validation, this)?.reportNative(form);
+					return;
+				}
+				form.requestSubmit(button);
+			});
+		}
+		/**
+		* Presents a status message through the loaded message module.
+		*
+		* @summary `FormBuilder` owns no message renderer: the module that implements
+		* `notify` decides how the message appears. Without such a module the builder
+		* warns instead of failing, so plugging the module out never breaks rendering.
+		* @param form - Form the message belongs to.
+		* @param success - Whether the action that produced the message succeeded.
+		* @param content - Message content, possibly already filled by the caller.
+		* @returns Nothing.
+		*/
+		_notify(form, success, content) {
+			if (!content) return;
+			for (const feature of _classPrivateFieldGet2(_features, this)) {
+				if (!feature.notify) continue;
+				feature.notify(content, {
+					form,
+					success
+				});
+				return;
+			}
+			console.warn("[FormBuilder] No module handles messages. Register the message module in the loader preset.");
+		}
+		/**
+		* Helper internal untuk memindai string HTML mentah atau element hidup
+		* guna mencari tombol submit yang sudah ada (untuk link ID)
+		*/
+		scanForSubmitButton(input, formId) {
+			if (!input) return null;
+			let btn = null;
+			if (input instanceof HTMLButtonElement) btn = input.type === "submit" ? input : input.querySelector("button[type=submit], input[type=submit]");
+			else if (typeof input === "string") {
+				const wrapper = document.createElement("div");
+				wrapper.insertAdjacentHTML("beforeend", input.trim());
+				btn = wrapper.querySelector("button[type=submit], input[type=submit]");
+			}
+			if (btn) {
+				if (!btn.id) btn.id = `btn-${formId}`;
+				btn.setAttribute("form", formId);
+				return btn;
+			}
+			return null;
+		}
+	};
+	/**
+	* Loader yang benar-benar dipakai: bawaan form, dari `config.modules`, atau dari
+	* definisi yang diserahkan registry.
+	*/
+	function _get_activeLoader() {
+		return _classPrivateFieldGet2(_providedLoader, this) ?? _classPrivateFieldGet2(_loader$1, this);
+	}
+	/**
+	* Modul form untuk satu fase: definisi yang diserahkan registry dimenangkan.
+	*
+	* @param context - Konteks host yang dioper ke definisi.
+	* @returns Hasil modul, satu per adapter.
+	*
+	* @summary Sama persis dengan `resolveAll()` — hanya modul yang belum hidup yang
+	* dimuat — kecuali satu hal: id milik `INPUT_MODULE_IDS` dilewati. Id itu bukan
+	* perilaku form, melainkan preset sebuah field, dan `#routeInputModules()` yang
+	* menyerahkannya ke lapisan input. Tanpa aturan ini
+	* `@aio-ui/form` (stack penuh) akan memuat dropdown sebagai fitur form.
+	*/
+	function _resolved(context) {
+		return [..._assertClassBrand(_FormBuilder_brand, this, _loadFeatures).call(this, context), ..._classPrivateFieldGet2(_providedLive, this).values()];
+	}
+	/**
+	* Memuat modul form yang baru hidup pada satu fase.
+	*
+	* @param context - Konteks host yang dioper ke definisi.
+	* @returns Instance yang lahir pada pemanggilan ini saja.
+	*
+	* @summary Sama persis dengan `resolveAll()` — hanya modul yang belum hidup yang
+	* dimuat, urutan registrasi dipertahankan — kecuali satu hal: id milik
+	* `INPUT_MODULE_IDS` dilewati. Id itu bukan perilaku form, melainkan preset sebuah
+	* field, dan `#routeInputModules()` yang menyerahkannya ke lapisan input.
+	*/
+	function _loadFeatures(context) {
+		const inputIds = new Set(Object.values(INPUT_MODULE_IDS$1));
+		const features = [];
+		for (const id of _get_activeLoader.call(_assertClassBrand(_FormBuilder_brand, this)).ids()) {
+			if (inputIds.has(id)) continue;
+			if (_get_activeLoader.call(_assertClassBrand(_FormBuilder_brand, this)).isLoaded(id)) continue;
+			const instance = _get_activeLoader.call(_assertClassBrand(_FormBuilder_brand, this)).load(id, context);
+			if (instance) features.push(instance);
+		}
+		return features;
+	}
+	/**
+	* Memindahkan id lapisan field dari loader ke preset field.
+	*
+	* @summary `FORM_ADAPTER_DEFINITIONS` adalah stack **penuh**, jadi loader form juga
+	* membawa empat definisi input. Keempatnya bukan perilaku form: mereka preset yang
+	* dipakai saat sebuah field dibangun. Definisi diserahkan apa adanya (bukan instance)
+	* karena `InputBuilder` yang memiliki siklus hidupnya — satu instance per render field,
+	* dilepas oleh builder yang membuatnya.
+	*
+	* Id yang sudah diserahkan manifest (`provideModules()`) menang: host sudah menyatakan
+	* setnya, dan stack bawaan tidak boleh menimpanya.
+	*/
+	function _routeInputModules() {
+		const inputIds = new Set(Object.values(INPUT_MODULE_IDS$1));
+		const routed = [];
+		for (const id of _get_activeLoader.call(_assertClassBrand(_FormBuilder_brand, this)).ids()) {
+			if (!inputIds.has(id)) continue;
+			if (_classPrivateFieldGet2(_inputModules, this).some((item) => String(item.id) === id)) continue;
+			const definition = _get_activeLoader.call(_assertClassBrand(_FormBuilder_brand, this)).resolve(id);
+			if (definition) routed.push(definition);
+		}
+		if (routed.length) _classPrivateFieldSet2(_inputModules, this, [..._classPrivateFieldGet2(_inputModules, this), ...routed]);
+	}
+	/**
+	* Satu adapter form menurut id-nya.
+	*
+	* @param id - Id sub-modul (`FORM_MODULE_IDS`).
+	* @returns Modulnya, atau `null` bila tidak tersedia.
+	*/
+	function _loaded(id) {
+		if (_classPrivateFieldGet2(_providedLive, this).has(id)) return _classPrivateFieldGet2(_providedLive, this).get(id);
+		return _get_activeLoader.call(_assertClassBrand(_FormBuilder_brand, this)).loaded(id) ?? null;
+	}
+	/**
+	* Offers a group/row container to the loaded modules for a control set.
+	*
+	* @param container - `<fieldset>` or row `<div>` that declares `actions`.
+	* @param node - Group/row schema node.
+	*
+	* @summary The first module that answers wins, exactly like `renderTable`: the form never
+	* imports the controls builder, and a preset without it simply renders no buttons.
+	*/
+	function _appendActions(container, node) {
+		const actions = node.actions ?? node.config?.actions;
+		if (!actions) return;
+		for (const feature of _classPrivateFieldGet2(_features, this)) {
+			const nodes = feature.renderActions?.(container, {
+				actions,
+				position: node.actionsPosition ?? node.config?.position
+			});
+			if (nodes && nodes.length) {
+				container.append(...nodes);
+				return;
+			}
+		}
+	}
+	/**
+	* Resets the form and tells every adapter to drop its own state.
+	*
+	* @summary `form.reset()` restores controls the browser knows about; a preview table, an
+	* uploader's file list or an address picker keep showing the old values unless their
+	* module is told. The shell owns the controls, the modules own the rest.
+	* @param form - Form to reset.
+	*/
+	function _resetForm(form) {
+		form.reset();
+		for (const feature of _classPrivateFieldGet2(_features, this)) try {
+			feature.reset?.(form);
+		} catch (error) {
+			console.warn("[FormBuilder] module reset failed:", error);
+		}
+	}
+	_defineProperty(FormBuilder, "contract", {
+		schema: {
+			t: "list",
+			single: true,
+			of: {
+				t: "record",
+				open: true,
+				of: { group: {
+					t: "list",
+					of: { t: "any" }
+				} }
+			}
+		},
+		example: [{
+			id: "group-1",
+			title: "Shipping",
+			group: [{
+				type: "text",
+				id: "name",
+				title: "Name"
+			}]
+		}]
+	});
+	[...INPUT_MODULE_MANIFEST$1.map((ref) => ({
+		...ref,
+		scope: "input"
+	}))];
+	// packages/components/form/dist/adapters/Calculation.js
+	/**
+	* Form-owned calculation engine. Formula callbacks are ordinary typed
+	* functions; no string evaluation or `eval` is used.
+	*/
+	var FormCalculationHandler = class {
+		constructor(form, config) {
+			_defineProperty(this, "form", void 0);
+			_defineProperty(this, "config", void 0);
+			_defineProperty(this, "summary", []);
+			_defineProperty(this, "values", {});
+			_defineProperty(this, "onChange", null);
+			_defineProperty(this, "started", false);
+			_defineProperty(
+				this,
+				/**
+				* Identity of the last reported failure set (`"a|b"`), empty when everything
+				* worked. `recalculate()` runs on every keystroke, so without this a single
+				* broken formula would emit a toast per input event.
+				*/
+				"lastFailureKey",
+				""
+			);
+			this.form = form;
+			this.config = config;
+		}
+		/** Attach delegated listeners and calculate the initial result. */
+		create() {
+			if (this.started) return this;
+			this.started = true;
+			this.onChange = () => this.recalculate();
+			this.form.addEventListener("input", this.onChange);
+			this.form.addEventListener("change", this.onChange);
+			this.form.addEventListener("formCascade", this.onChange);
+			this.recalculate();
+			return this;
+		}
+		/** Read one current form value by control id or name. */
+		get(inputId) {
+			const escaped = CSS.escape(inputId);
+			const control = this.form.querySelector(`#${escaped}, [name="${escaped}"]`);
+			if (!control) return null;
+			if (control instanceof HTMLInputElement) {
+				if (control.type === "checkbox") return control.checked;
+				if (control.type === "radio") return this.form.querySelector(`input[type="radio"][name="${CSS.escape(control.name)}"]:checked`)?.value ?? null;
+				if (control.type === "number" || control.type === "range") return control.value === "" ? null : control.valueAsNumber;
+			}
+			if (control instanceof HTMLSelectElement && control.multiple) return control.selectedOptions.length ? Array.from(control.selectedOptions, (option) => option.value).join(",") : null;
+			return control.value === "" ? null : control.value;
+		}
+		getNumber(inputId) {
+			const value = this.get(inputId);
+			if (typeof value === "number") return Number.isFinite(value) ? value : 0;
+			if (typeof value === "boolean" || value === null) return 0;
+			const parsed = Number(value);
+			return Number.isFinite(parsed) ? parsed : 0;
+		}
+		/**
+		* Reports broken formulas through the host message sink.
+		*
+		* @param failures - Formulas that threw during this pass, in schema order.
+		*
+		* @summary Deduplicated by formula id: the same broken set never reports twice,
+		* but a recovered-then-broken formula reports again. Recovery itself is silent —
+		* a working total is its own feedback.
+		*/
+		reportFailures(failures) {
+			const key = failures.map((failure) => failure.id).sort().join("|");
+			if (key === this.lastFailureKey) return;
+			this.lastFailureKey = key;
+			if (failures.length === 0) return;
+			for (const failure of failures) console.warn(`[Form Calculation] Formula "${failure.id}" failed:`, failure.error);
+			if (typeof this.config.notify !== "function") return;
+			const compose = messageDraft({
+				category: "calculation",
+				slot: "failed",
+				code: "FORMULA_FAILED",
+				formId: this.form.id,
+				fallback: `Perhitungan ${failures[0].id} tidak dapat dijalankan.`,
+				params: { formula: failures[0].id }
+			});
+			const style = resolveStyle(this.config.messages, compose);
+			this.config.notify({
+				header: style.title || void 0,
+				message: composeMessage(this.config.messages, compose),
+				type: style.type || void 0,
+				icon: style.icon || void 0
+			});
+		}
+		/** Current form snapshot, keyed by id/name. */
+		getValues() {
+			return { ...this.values };
+		}
+		/** Current calculated total; optionally restrict to one schema group. */
+		getTotal(groupId) {
+			return this.getSummary(groupId).reduce((total, item) => total + item.total, 0);
+		}
+		/** Current normalized summary rows; optionally restrict to one schema group. */
+		getSummary(groupId) {
+			return (groupId ? this.summary.filter((item) => item.groupId === groupId) : this.summary).map((item) => ({
+				...item,
+				details: item.details ? { ...item.details } : void 0
+			}));
+		}
+		/** Re-run formulas and notify callback + form event listeners. */
+		recalculate() {
+			this.values = this.collectValues();
+			const summary = [];
+			const failures = [];
+			for (const strategy of this.config.strategies.formula ?? []) {
+				if (strategy.groupId && !this.isGroupMounted(strategy.groupId)) {
+					this.writeOutput(strategy.outputId, "");
+					continue;
+				}
+				const context = this.createContext(strategy);
+				try {
+					if (strategy.when && !strategy.when(context)) {
+						this.writeOutput(strategy.outputId, "");
+						continue;
+					}
+					const result = strategy.formula(context);
+					if (!result || !Number.isFinite(Number(result.total))) {
+						this.writeOutput(strategy.outputId, "");
+						continue;
+					}
+					const total = Number(result.total);
+					this.writeOutput(strategy.outputId, String(total));
+					summary.push({
+						...result,
+						id: result.id || strategy.id,
+						groupId: result.groupId ?? strategy.groupId,
+						quantity: Number(result.quantity) || 0,
+						unitPrice: Number(result.unitPrice) || 0,
+						total
+					});
+				} catch (error) {
+					this.writeOutput(strategy.outputId, "");
+					failures.push({
+						id: strategy.id,
+						error
+					});
+				}
+			}
+			this.reportFailures(failures);
+			this.summary = summary;
+			const update = {
+				form: this.form,
+				total: this.getTotal(),
+				summary: this.getSummary(),
+				values: this.getValues()
+			};
+			try {
+				this.config.onUpdate?.(update);
+			} catch (error) {
+				console.warn("[Form Calculation] onUpdate callback failed:", error);
+			}
+			this.form.dispatchEvent(new CustomEvent("formCalculation", {
+				bubbles: true,
+				detail: update
+			}));
+			return update;
+		}
+		/** Remove listeners and drop computed state. */
+		destroy() {
+			if (this.onChange) {
+				this.form.removeEventListener("input", this.onChange);
+				this.form.removeEventListener("change", this.onChange);
+				this.form.removeEventListener("formCascade", this.onChange);
+			}
+			this.onChange = null;
+			this.started = false;
+			this.summary = [];
+			this.values = {};
+			if (this.form.calculator === this) delete this.form.calculator;
+		}
+		createContext(strategy) {
+			const get = (inputId) => this.get(inputId);
+			return {
+				form: this.form,
+				groupId: strategy.groupId,
+				data: strategy.data,
+				values: this.getValues(),
+				get,
+				getNumber: (inputId) => {
+					const value = get(inputId);
+					if (typeof value === "number") return Number.isFinite(value) ? value : 0;
+					const parsed = Number(value);
+					return Number.isFinite(parsed) ? parsed : 0;
+				}
+			};
+		}
+		collectValues() {
+			const values = {};
+			this.form.querySelectorAll("input[id], input[name], select[id], select[name], textarea[id], textarea[name]").forEach((control) => {
+				const key = control.id || control.name;
+				if (key) values[key] = this.get(key);
+			});
+			return values;
+		}
+		isGroupMounted(groupId) {
+			const group = this.form.querySelector(`#${CSS.escape(groupId)}`);
+			return Boolean(group && this.form.contains(group));
+		}
+		writeOutput(inputId, value) {
+			if (!inputId) return;
+			const output = this.form.querySelector(`#${CSS.escape(inputId)}`);
+			if (output && output.value !== value) output.value = value;
+		}
+	};
+	/**
+	* Collects per-input calculation strategies, inferring the nearest group id.
+	*
+	* @summary Walks the raw schema tree and turns every `config.calculator` entry
+	* into a typed formula.
+	* @param inputs - Raw input schema passed to `prepare()`.
+	* @returns Formula definitions in schema order.
+	*/
+	function collectFormulas(inputs) {
+		const formulas = [];
+		const visit = (items, parentGroupId) => {
+			for (const item of items ?? []) {
+				if (!item || typeof item !== "object" || item instanceof Node) continue;
+				const formula = item.config?.calculator;
+				if (formula && typeof formula.formula === "function") formulas.push({
+					...formula,
+					groupId: formula.groupId ?? parentGroupId,
+					outputId: formula.outputId ?? item.id
+				});
+				if (Array.isArray(item.group)) visit(item.group, item.id ?? parentGroupId);
+			}
+		};
+		visit(inputs);
+		return formulas;
+	}
+	/**
+	* Form module definition for the calculation engine.
+	*
+	* @summary Active when the form declares `calculation`, and only in the
+	* initialize phase, because it reads DOM that exists after submit listeners are
+	* attached.
+	*
+	* @example
+	* // registered by FORM_ADAPTER_DEFINITIONS; no manual wiring needed
+	*/
+	var calculationFormAdapter = {
+		id: FORM_MODULE_IDS.calculation,
+		/**
+		* Calculation only runs when the form opts in, in the initialize phase.
+		*
+		* @param context - Host context.
+		* @returns `true` when the calculation engine should load.
+		*/
+		matches: (context) => context.config.calculation === true && context.phase === "initialize",
+		/**
+		* Attaches the calculation engine to the live form and exposes it on the element.
+		*
+		* @param context - Host context.
+		* @returns The running calculation engine.
+		*/
+		load: (context) => {
+			const handler = new FormCalculationHandler(context.form, {
+				strategies: { formula: collectFormulas(context.inputs) },
+				messages: context.config?.messages,
+				notify: (content) => context.showMessage(content)
+			}).create();
+			context.form.calculator = handler;
+			return handler;
+		},
+		/**
+		* Removes calculation listeners and computed state.
+		*
+		* @param handler - The engine returned by `load()`.
+		* @returns Nothing.
+		*/
+		destroy: (handler) => handler.destroy()
+	};
+	// packages/components/form/dist/adapters/Cascade.js
+	/**
+	* Cascade engine.
+	*
+	* @summary Owns every rule about when a conditional input or group may exist: hold,
+	* evaluate, mount/unmount, the multistep gate, and the delegated listeners. It is a
+	* `adapters/cascade-adapter` entry of the form package. It knows nothing about
+	* `InputBuilder` or the input registry: the form offers what it needs through
+	* {@link FormCascadeHost}.
+	*/
+	var FormCascadeHandler = class {
+		/** Objek skema pembawa .condition (bukan elemen DOM / string) */
+		static isCascadeItem(item) {
+			return Boolean(item && typeof item === "object" && !(item instanceof Node) && item.condition != null);
+		}
+		/** Telusuri pohon skema; visit mengembalikan false untuk memangkas turunannya */
+		static walkInputs(items, prefix, visit) {
+			items?.forEach((item, i) => {
+				if (!item || typeof item !== "object" || item instanceof Node) return;
+				const path = `${prefix}${i}`;
+				if (visit(item, path) === false) return;
+				if (Array.isArray(item.group)) this.walkInputs(item.group, `${path}.group.`, visit);
+				if (Array.isArray(item.row)) this.walkInputs(item.row, `${path}.row.`, visit);
+			});
+		}
+		/** Peta nama/id field → index langkah multistep di skema (aturan gerbang masuk) */
+		static collectFieldSteps(inputs) {
+			const map = /* @__PURE__ */ new Map();
+			const visit = (item, step) => {
+				if (!item || typeof item !== "object" || item instanceof Node) return;
+				const key = item.name ?? item.id;
+				if (key) map.set(String(key), step);
+				if (Array.isArray(item.group)) item.group.forEach((child) => visit(child, step));
+				if (Array.isArray(item.row)) item.row.forEach((child) => visit(child, step));
+			};
+			inputs.forEach((item, step) => visit(item, step));
+			return map;
+		}
+		static normalizeCondition(raw) {
+			if (typeof raw === "function") return { when: raw };
+			return raw && typeof raw === "object" ? raw : {};
+		}
+		static isEmptyValue(value) {
+			return value === null || value === void 0 || value === "" || Array.isArray(value) && value.length === 0;
+		}
+		/** Nilai kontrol DOM selalu string — samakan boolean/angka dengan koersi terkendali */
+		static looseEqual(a, b) {
+			if (a === b) return true;
+			const truthy = (v) => v === true || v === "true" || v === 1 || v === "1" || v === "on";
+			if (truthy(a) && truthy(b)) return true;
+			return a != null && b != null && String(a) === String(b);
+		}
+		static matchRule(condition, value) {
+			if (condition.filled) return !this.isEmptyValue(value);
+			if (condition.in !== void 0) return [].concat(condition.in).some((v) => this.looseEqual(v, value));
+			if (condition.notIn !== void 0) return ![].concat(condition.notIn).some((v) => this.looseEqual(v, value));
+			if (condition.notEquals !== void 0) return !this.looseEqual(condition.notEquals, value);
+			if (condition.equals !== void 0) return this.looseEqual(condition.equals, value);
+			return !this.isEmptyValue(value);
+		}
+		static conditionMet(condition, resolve, values) {
+			try {
+				if (typeof condition.when === "function") {
+					const fields = condition.field ? [].concat(condition.field) : [];
+					return Boolean(condition.when(fields.length ? resolve(String(fields[0])) : void 0, values));
+				}
+				const fields = condition.field ? [].concat(condition.field).map(String) : [];
+				if (!fields.length) return false;
+				return fields.every((field) => this.matchRule(condition, resolve(field)));
+			} catch (error) {
+				console.warn("[Form Cascade] condition evaluation failed:", error);
+				return false;
+			}
+		}
+		/** Kumpulkan snapshot nilai semua kontrol DOM di dalam form */
+		static collectValues(form) {
+			const values = {};
+			form?.querySelectorAll("input[name], select[name], textarea[name]").forEach((el) => {
+				values[el.name || el.id] = this.readControlValue(form, el);
+			});
+			return values;
+		}
+		/** Baca nilai terkini sebuah kontrol (checkbox/radio/select-multiple/file disesuaikan) */
+		static readControlValue(form, el) {
+			if (el instanceof HTMLInputElement) {
+				if (el.type === "checkbox") return el.checked ? el.value && el.value !== "on" ? el.value : true : null;
+				if (el.type === "radio") {
+					const checked = form?.querySelector(`input[type="radio"][name="${CSS.escape(el.name)}"]:checked`);
+					return checked ? checked.value : null;
+				}
+				if (el.type === "file") return el.files?.length || null;
+				return el.value;
+			}
+			if (el instanceof HTMLSelectElement) return el.multiple ? Array.from(el.selectedOptions).map((option) => option.value) : el.value;
+			return el.value;
+		}
+		/** Fallback terakhir: nilai preset dari descriptor skema */
+		static findSchemaValue(items, field) {
+			for (const item of items || []) {
+				if (!item || typeof item !== "object" || item instanceof Node) continue;
+				if ((item.name || item.id) === field) {
+					if (item.type === "checkbox" || item.type === "radio") return item.checked ? item.value ?? true : null;
+					return item.value;
+				}
+				const nested = this.findSchemaValue(item.group, field);
+				if (nested !== void 0) return nested;
+			}
+		}
+		/**
+		* Urutan lookup nilai: kontrol di dalam instance → kontrol form → descriptor skema.
+		*
+		* @param state - Form, schema inputs.
+		* @param field - Field name the condition refers to.
+		* @param scope - Element the condition lives in. A repeated group is its own instance,
+		*   and its controls are suffixed (`sku` → `sku-1`), so the lookup starts there.
+		*/
+		static resolveFieldValue(state, field, scope) {
+			const control = this.findControl(scope, field) ?? this.findControl(state.form, field);
+			if (control) return this.readControlValue(state.form, control);
+			return this.findSchemaValue(state.inputs, field);
+		}
+		/**
+		* Finds the control that stands for a schema field under a root.
+		*
+		* @param root - Element to search (instance first, then the form).
+		* @param field - Field name or id.
+		* @returns The control, or `null`.
+		*
+		* @summary Exact name/id first; then the clone form `field-<n>` that a repeated group
+		* writes, so one copy's conditional field follows that copy's own value.
+		*/
+		static findControl(root, field) {
+			if (!root) return null;
+			const exact = root.querySelector(`[name="${CSS.escape(field)}"], #${CSS.escape(field)}`);
+			if (exact) return exact;
+			const clonePattern = new RegExp(`^${field.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}-\\d+$`);
+			const candidates = root.querySelectorAll("[name], [id]");
+			for (const candidate of Array.from(candidates)) if (clonePattern.test(candidate.getAttribute("name") ?? "") || clonePattern.test(candidate.id)) return candidate;
+			return null;
+		}
+	};
+	var _mode = /* @__PURE__ */ new WeakMap();
+	var _FormCascade_brand = /* @__PURE__ */ new WeakSet();
+	var FormCascade = class {
+		constructor(host) {
+			_classPrivateMethodInitSpec(this, _FormCascade_brand);
+			_defineProperty(this, "host", void 0);
+			_defineProperty(this, "form", null);
+			_defineProperty(this, "placeholders", /* @__PURE__ */ new Map());
+			_defineProperty(this, "onChange", null);
+			_defineProperty(this, "onPress", null);
+			_defineProperty(this, "lastBlockedInfo", null);
+			_classPrivateFieldInitSpec(this, _mode, void 0);
+			_defineProperty(
+				this,
+				/** Elements held by the `hidden` mode: path → live element. */
+				"hiddenItems",
+				/* @__PURE__ */ new Map()
+			);
+			this.host = host;
+			_classPrivateFieldSet2(_mode, this, host.cascadeMode === "hidden" ? "hidden" : "template");
+		}
+		/**
+		* Tells whether a schema item carries a cascade condition.
+		*
+		* @summary Delegates to {@link FormCascadeHandler.isCascadeItem} so hosts can
+		* ask the loaded engine instead of importing the handler class themselves.
+		* @param item - Schema item to inspect.
+		* @returns `true` when the item carries a `condition`.
+		*/
+		isCascadeItem(item) {
+			return FormCascadeHandler.isCascadeItem(item);
+		}
+		/**
+		* Keeps a not-yet-met conditional item in place (called by prepare/renderGroup).
+		*
+		* In `template` mode this plants a `<template>` placeholder and the real element is
+		* built when the condition passes. In `hidden` mode the element is built **now** and
+		* toggled with the `hidden` attribute, so a module that needs to inject data into it
+		* (an address picker filling the next select) has a live element to work with.
+		*
+		* @param parent - Container the item belongs to.
+		* @param path - Cascade path key for this item.
+		* @param item - Schema item; required by `hidden` mode to build it immediately.
+		*/
+		hold(parent, path, item) {
+			if (_classPrivateFieldGet2(_mode, this) === "hidden" && item) {
+				const formId = parent.closest("form")?.id ?? "";
+				const element = _assertClassBrand(_FormCascade_brand, this, _build).call(this, item, formId, path);
+				element.dataset.cascade = path;
+				element.hidden = true;
+				element.setAttribute("data-cascade-hidden", "");
+				parent.appendChild(element);
+				this.hiddenItems.set(path, element);
+				return;
+			}
+			const placeholder = document.createElement("template");
+			placeholder.dataset.cascade = path;
+			this.placeholders.set(path, placeholder);
+			parent.appendChild(placeholder);
+		}
+		/** Aktifkan engine: delegasi input/change + sync + gate awal */
+		attach(form) {
+			this.form = form;
+			this.onChange = () => this.sync();
+			form.addEventListener("input", this.onChange);
+			form.addEventListener("change", this.onChange);
+			this.onPress = (event) => {
+				const button = event.target?.closest?.("button.next");
+				if (!button || !button.disabled) return;
+				this.reportBlocked(form);
+			};
+			form.addEventListener("pointerdown", this.onPress);
+			this.sync();
+		}
+		/** Laporkan gerbang terkunci SEKARANG (dipicu penekanan tombol disabled). */
+		reportBlocked(form) {
+			const target = form ?? this.form;
+			if (!target || !this.lastBlockedInfo) return;
+			this.lastBlockedInfo = {
+				...this.lastBlockedInfo,
+				form: target
+			};
+			try {
+				this.host.reportCascadeBlocked?.(this.lastBlockedInfo);
+			} catch (error) {
+				console.warn("[Form Cascade] reportCascadeBlocked failed:", error);
+			}
+		}
+		/** Set nilai programatik lalu picu evaluasi via event change */
+		setValue(field, value) {
+			const form = this.form;
+			if (!form) return;
+			const control = form.querySelector(`[name="${CSS.escape(field)}"], #${CSS.escape(field)}`);
+			if (!control) return;
+			control.value = String(value);
+			control.dispatchEvent(new Event("change", { bubbles: true }));
+		}
+		/**
+		* Evaluates every condition, transitions the items it owns, then refreshes the gate.
+		*
+		* Two modes, one rule: `hidden` toggles visibility of elements that already exist,
+		* `template` swaps a placeholder for a freshly built element (and back).
+		*/
+		sync() {
+			const form = this.form;
+			if (!form) return;
+			const values = FormCascadeHandler.collectValues(form);
+			const resolveIn = (scope, field) => FormCascadeHandler.resolveFieldValue({
+				form,
+				inputs: this.host.inputs
+			}, field, scope);
+			if (_classPrivateFieldGet2(_mode, this) === "hidden") {
+				let pass = 0;
+				let toggled = 0;
+				do {
+					toggled = 0;
+					FormCascadeHandler.walkInputs(this.host.inputs, "", (item, path) => {
+						if (!FormCascadeHandler.isCascadeItem(item)) return;
+						const elements = _assertClassBrand(_FormCascade_brand, this, _instances$1).call(this, form, path);
+						if (!elements.length) return false;
+						const condition = FormCascadeHandler.normalizeCondition(item.condition);
+						for (const element of elements) {
+							const scope = element.closest("[data-instance]") ?? element.parentElement;
+							const met = FormCascadeHandler.conditionMet(condition, (field) => resolveIn(scope, field), values);
+							if (met === !element.hidden) continue;
+							element.hidden = !met;
+							element.toggleAttribute("data-cascade-hidden", !met);
+							toggled++;
+							this.emit(form, met ? "mount" : "unmount", element, item, path);
+						}
+						return true;
+					});
+					pass++;
+				} while (toggled && pass < 10);
+				if (this.host.multistep) this.host.refreshSteps?.(form);
+				this.gate(form);
+				return;
+			}
+			let changed = false;
+			let pass = 0;
+			do {
+				changed = false;
+				FormCascadeHandler.walkInputs(this.host.inputs, "", (item, path) => {
+					if (!FormCascadeHandler.isCascadeItem(item)) return;
+					const nodes = _assertClassBrand(_FormCascade_brand, this, _cascadeNodes).call(this, form, path);
+					if (!nodes.length) return false;
+					const placeholders = nodes.filter((node) => node instanceof HTMLTemplateElement);
+					const mounted = nodes.filter((node) => !(node instanceof HTMLTemplateElement));
+					const condition = FormCascadeHandler.normalizeCondition(item.condition);
+					for (const placeholder of placeholders) {
+						const instance = placeholder.closest("[data-instance]");
+						if (!FormCascadeHandler.conditionMet(condition, (field) => resolveIn(instance ?? placeholder.parentElement, field), values)) continue;
+						const el = _assertClassBrand(_FormCascade_brand, this, _buildForInstance).call(this, item, form.id, path, instance);
+						placeholder.replaceWith(el);
+						changed = true;
+						this.emit(form, "mount", el, item, path);
+					}
+					for (const element of mounted) {
+						const scope = element.parentElement;
+						if (FormCascadeHandler.conditionMet(condition, (field) => resolveIn(scope, field), values)) continue;
+						element.replaceWith(_assertClassBrand(_FormCascade_brand, this, _placeholderFor).call(this, path));
+						changed = true;
+						this.emit(form, "unmount", element, item, path);
+					}
+					return mounted.length > 0;
+				});
+				pass++;
+			} while (changed && pass < 10);
+			if (this.host.multistep && changed) this.host.refreshSteps?.(form);
+			this.gate(form);
+		}
+		/**
+		* Gerbang kaskade (multistep) — dikendalikan `autoDisableNextStep`:
+		* tombol "next" sebuah langkah dinonaktifkan selama masih ada kondisi kaskade
+		* yang belum terpenuhi — baik kondisi manual pada group langkah itu sendiri,
+		* maupun kondisi anak input di dalamnya (rantai fill-in).
+		*
+		* Aturan gerbang masuk: sebuah kondisi HANYA mengunci tombol next bila
+		* field sumbernya berada di langkah ini ATAU sebelumnya (≤ langkah tempat
+		* tombol itu berada). Kondisi yang seluruh field sumbernya masih di langkah
+		* berikutnya BUKAN gerbang masuk — isian itu justru dikerjakan SETELAH
+		* masuk ke langkah tersebut; ia akan mengunci tombol next langkah itu
+		* sendiri nanti (sesuai aturan yang sama).
+		*/
+		gate(form) {
+			const target = form ?? this.form;
+			if (!target || !this.host.multistep) return;
+			const nextButton = target.querySelector(":scope > .buttons.set > button.next");
+			if (!nextButton) return;
+			const apply = (disabled, guidance) => {
+				nextButton.disabled = disabled;
+				if (disabled) nextButton.title = guidance;
+				else nextButton.removeAttribute("title");
+			};
+			if (!this.host.autoDisableNextStep) {
+				apply(false, "");
+				return;
+			}
+			const activeFieldset = target.querySelector("fieldset[data-index].active");
+			if (!activeFieldset) return;
+			const currentIndex = Number(activeFieldset.dataset.index);
+			const values = FormCascadeHandler.collectValues(target);
+			const resolve = (field) => FormCascadeHandler.resolveFieldValue({
+				form: target,
+				inputs: this.host.inputs
+			}, field);
+			const fieldSteps = FormCascadeHandler.collectFieldSteps(this.host.inputs);
+			const branchChosen = !!target.querySelector("[data-cascade]:not(template)");
+			let blocked = false;
+			let guidance = "";
+			let blockedCondition = null;
+			let blockedPath = "";
+			FormCascadeHandler.walkInputs(this.host.inputs.slice(0, currentIndex + 2), "", (item, path) => {
+				if (!FormCascadeHandler.isCascadeItem(item)) return;
+				if (blocked) return false;
+				const sourceSteps = [].concat(item.condition?.field ?? []).map((f) => fieldSteps.get(String(f)) ?? -1);
+				if (sourceSteps.length > 0 && sourceSteps.every((s) => s > currentIndex)) return;
+				if (FormCascadeHandler.conditionMet(FormCascadeHandler.normalizeCondition(item.condition), resolve, values)) return;
+				if (Array.isArray(item.group) && branchChosen) return;
+				blocked = true;
+				blockedCondition = FormCascadeHandler.normalizeCondition(item.condition);
+				blockedPath = path;
+				guidance = typeof item.condition?.message === "string" ? item.condition.message : "Lengkapi isian sebelumnya untuk membuka langkah berikutnya.";
+				return false;
+			});
+			apply(blocked, guidance);
+			if (blocked) this.lastBlockedInfo = {
+				form: target,
+				guidance,
+				condition: blockedCondition,
+				step: currentIndex,
+				path: blockedPath
+			};
+			else this.lastBlockedInfo = null;
+		}
+		emit(form, action, element, item, path) {
+			const detail = {
+				action,
+				key: path,
+				element,
+				descriptor: item ?? null,
+				condition: FormCascadeHandler.normalizeCondition(item?.condition ?? {}),
+				state: FormCascadeHandler.collectValues(form)
+			};
+			if (typeof this.host.onCascade === "function") try {
+				this.host.onCascade(detail);
+			} catch (error) {
+				console.warn("[Form Cascade] onCascade listener error:", error);
+			}
+			if (typeof this.host.emit === "function") try {
+				this.host.emit("elementChanged", {
+					builder: this.host.builder,
+					type: "@form",
+					element,
+					data: detail
+				});
+			} catch {}
+			form.dispatchEvent(new CustomEvent("formCascade", {
+				bubbles: true,
+				detail
+			}));
+		}
+		/** Lepas semua jejak: listener delegasi + placeholder */
+		dispose() {
+			if (this.form) {
+				if (this.onChange) {
+					this.form.removeEventListener("input", this.onChange);
+					this.form.removeEventListener("change", this.onChange);
+				}
+				if (this.onPress) this.form.removeEventListener("pointerdown", this.onPress);
+			}
+			this.form = null;
+			this.onChange = null;
+			this.onPress = null;
+			this.lastBlockedInfo = null;
+			this.placeholders.clear();
+		}
+	};
+	/**
+	* Every live, non-template node stamped with a cascade path.
+	*
+	* @param form - Form the engine is attached to.
+	* @param path - Cascade path key.
+	* @returns The instances, in document order (a repeated group has more than one).
+	*/
+	function _instances$1(form, path) {
+		return _assertClassBrand(_FormCascade_brand, this, _cascadeNodes).call(this, form, path).filter((node) => !(node instanceof HTMLTemplateElement));
+	}
+	/** Every node — placeholders included — stamped with a cascade path. */
+	function _cascadeNodes(form, path) {
+		return Array.from(form.querySelectorAll(`[data-cascade="${CSS.escape(path)}"]`));
+	}
+	/** A fresh placeholder for an item that is being held again. */
+	function _placeholderFor(path) {
+		const placeholder = document.createElement("template");
+		placeholder.dataset.cascade = path;
+		this.placeholders.set(path, placeholder);
+		return placeholder;
+	}
+	/**
+	* Builds a conditional item for the copy of a repeated group.
+	*
+	* @param item - Schema item to build.
+	* @param formId - Owning form id.
+	* @param path - Cascade path key.
+	* @param instance - Repeated scope the item belongs to, when there is one.
+	* @returns The built element, with the copy's id/name suffix applied.
+	*
+	* @summary `#build` renders from the schema, so a field built inside a copy would get
+	* the original's id (`note`) and collide with it. The copy's own suffix (`-1`) is
+	* applied the same way duplication does it.
+	*/
+	function _buildForInstance(item, formId, path, instance) {
+		const element = _assertClassBrand(_FormCascade_brand, this, _build).call(this, item, formId, path);
+		const suffix = instance ? /(-\d+)$/.exec(instance.id)?.[1] ?? "" : "";
+		if (!suffix) return element;
+		if (element.id) element.id += suffix;
+		element.querySelectorAll("[id]").forEach((child) => {
+			child.id += suffix;
+		});
+		element.querySelectorAll("input, select, textarea").forEach((control) => {
+			if (control.name) control.name += suffix;
+		});
+		return element;
+	}
+	/**
+	* Builds the real element for a conditional item.
+	*
+	* @param item - Schema item (group or field).
+	* @param formId - Owning form id.
+	* @param path - Cascade path key.
+	* @returns The built element, already stamped with `data-cascade`.
+	*/
+	function _build(item, formId, path) {
+		let el = null;
+		if (item && typeof item === "object" && "group" in item) {
+			el = this.host.renderGroup(item, formId, path);
+			if (el) {
+				if (item.id) el.id = item.id;
+				if (item.className) el.classList.add(...String(item.className).split(/\s+/).filter(Boolean));
+				if (this.host.multistep && !path.includes(".")) el.dataset.index = path;
+				this.host.mountInputs?.(el);
+			}
+		} else if (item && typeof item === "object" && "row" in item) el = _assertClassBrand(_FormCascade_brand, this, _buildRow).call(this, item, formId, path);
+		else el = this.host.renderField(item, formId);
+		if (!el) {
+			const label = item && (item.id || item.name || item.type);
+			throw new Error(`[Form Cascade] Gagal membangun elemen kaskade pada path "${path}"` + (label ? ` untuk "${label}"` : "") + ". Pastikan selektor '@form>group' terkonfigurasi & host.renderField mengembalikan elemen yang valid.");
+		}
+		el.dataset.cascade = path;
+		return el;
+	}
+	/**
+	* Builds a layout row through the host, so a conditional row keeps its grid.
+	*
+	* @param item - Row node.
+	* @param formId - Owning form id.
+	* @param path - Cascade path key.
+	* @returns The row container.
+	*/
+	function _buildRow(item, formId, path) {
+		return this.host.renderRow(item, formId, path);
+	}
+	/**
+	* Form module definition for the cascade engine.
+	*
+	* @summary Active when the form declares `cascading` or pins the next button with
+	* `autoDisableNextStep`. Requires `validation`, because the cascade host reports a
+	* blocked next step through the validation feature.
+	*
+	* @example
+	* // registered by FORM_ADAPTER_DEFINITIONS; no manual wiring needed
+	*/
+	var cascadeFormAdapter = {
+		id: FORM_MODULE_IDS.cascade,
+		requires: [FORM_MODULE_IDS.validation],
+		/**
+		* Cascade only runs when the schema uses conditions or the next button is gated.
+		*
+		* @param context - Host context.
+		* @returns `true` when the cascade engine should load.
+		*/
+		matches: (context) => context.config.cascading === true || context.config.autoDisableNextStep === true,
+		/**
+		* Builds the cascade engine around the host contract.
+		*
+		* @param context - Host context.
+		* @returns The live cascade engine.
+		*/
+		load: (context) => new FormCascade(context.cascadeHost()),
+		/**
+		* Detaches cascade listeners and drops held placeholders.
+		*
+		* @param cascade - The engine returned by `load()`.
+		* @returns Nothing.
+		*/
+		destroy: (cascade) => cascade.dispose()
+	};
+	// packages/components/form/dist/adapters/Multistep.js
+	var _FormMultistepHandler_brand = /* @__PURE__ */ new WeakSet();
+	var FormMultistepHandler = class {
+		constructor(host) {
+			_classPrivateMethodInitSpec(this, _FormMultistepHandler_brand);
+			_defineProperty(this, "host", void 0);
+			_defineProperty(this, "form", null);
+			_defineProperty(this, "currentStep", 0);
+			_defineProperty(
+				this,
+				/** Step yang masih tertahan sebagai <template data-step> — belum lahir ke DOM */
+				"pending",
+				/* @__PURE__ */ new Map()
+			);
+			_defineProperty(this, "onClick", null);
+			_defineProperty(
+				this,
+				/** Set tombol navigasi bersama yang saat ini menempel di level form */
+				"navBar",
+				null
+			);
+			this.host = host;
+		}
+		/** Tanam placeholder <template data-step> di posisi skema (dipanggil prepare) */
+		hold(parent, index, item) {
+			const placeholder = document.createElement("template");
+			placeholder.dataset.step = String(index);
+			this.pending.set(index, {
+				index,
+				item,
+				placeholder
+			});
+			parent.appendChild(placeholder);
+		}
+		/** Aktifkan engine: lahirkan langkah awal + delegasi klik next/back di level form */
+		attach(form) {
+			this.form = form;
+			this.onClick = (event) => this._handleClick(event);
+			form.addEventListener("click", this.onClick);
+			this.goTo(0);
+		}
+		_handleClick(event) {
+			const button = event.target?.closest?.("button");
+			if (!button || !button.closest(".buttons.set")) return;
+			const isNext = button.classList.contains("next");
+			const isBack = button.classList.contains("back");
+			if (!isNext && !isBack) return;
+			const form = this.form;
+			if (!form) return;
+			event.preventDefault();
+			if (isNext) {
+				const currentFieldset = this._mountedFieldset(form, this.currentStep);
+				if (currentFieldset && !_assertClassBrand(_FormMultistepHandler_brand, this, _stepIsValid).call(this, currentFieldset)) {
+					try {
+						this.host.reportNativeInvalid?.(form, this.currentStep);
+					} catch (error) {
+						console.warn("[Form Multistep] reportNativeInvalid failed:", error);
+					}
+					return;
+				}
+				const nextIndex = this._candidateIndexes(form).find((index) => index > this.currentStep);
+				if (nextIndex !== void 0) this.goTo(nextIndex);
+			} else if (this.currentStep > 0) {
+				const previousIndex = this._candidateIndexes(form).filter((index) => index < this.currentStep).pop();
+				if (previousIndex !== void 0) this.goTo(previousIndex);
+			}
+		}
+		/**
+		* Kandidat langkah = fieldset yang sudah terpasang di DOM + langkah yang
+		* masih tertahan sebagai placeholder. Langkah kaskade yang sedang ditahan
+		* syaratnya (belum terpasang) otomatis bukan kandidat — persis paritas
+		* dengan perilaku lama yang hanya melihat fieldset di DOM.
+		*/
+		_candidateIndexes(form) {
+			const mounted = this._mountedSteps(form).map((fieldset) => Number(fieldset.dataset.index));
+			return [.../* @__PURE__ */ new Set([...mounted, ...this.pending.keys()])].sort((a, b) => a - b);
+		}
+		/**
+		* Lahirkan fieldset langkah dari placeholder — SEKALI saja, lalu tetap
+		* tinggal di DOM (class .active yang dipindah-pindah). Bila langkah sudah
+		* terpasang (atau dipasang kaskade lebih dulu), kembalikan yang ada.
+		*/
+		_mount(form, index) {
+			const existing = this._mountedFieldset(form, index);
+			if (existing) return existing;
+			const entry = this.pending.get(index);
+			if (!entry) throw new Error(`[Form Multistep] Langkah ke-${index} tidak dikenal: tidak ada placeholder tertahan dan belum terpasang di DOM. Pastikan setiap langkah group diteruskan lewat hold() pada skema form.`);
+			const group = entry.item;
+			const fieldset = this.host.renderGroup(group, form.id, String(index));
+			if (!fieldset) {
+				const label = group && (group.id || group.title || group.legend);
+				throw new Error(`[Form Multistep] Gagal membangun fieldset langkah ke-${index}` + (label ? ` untuk "${label}"` : "") + ". Pastikan selektor '@form>group' terkonfigurasi & renderGroup mengembalikan elemen (render() mengembalikan undefined bila selektor tidak dikenal).");
+			}
+			if (group?.id) fieldset.id = group.id;
+			if (group?.className) fieldset.className = `${fieldset.className} ${group.className}`.trim();
+			fieldset.dataset.index = String(index);
+			entry.placeholder.replaceWith(fieldset);
+			this.pending.delete(index);
+			this.host.onStepMount?.(fieldset);
+			return fieldset;
+		}
+		/** Aktifkan satu langkah: bangun bila masih placeholder, lalu set status aktif */
+		goTo(index) {
+			const form = this.form;
+			if (!form) return;
+			this._mount(form, index);
+			const direction = index === this.currentStep ? null : index > this.currentStep ? "next" : "back";
+			this.currentStep = index;
+			this._syncButtons(form, index, direction);
+			this._syncActive(form);
+			this.host.onStepChange?.(index);
+		}
+		/**
+		* Tukar set tombol navigasi bersama yang HIDUP DI LEVEL FORM — dipanggil di
+		* setiap perpindahan langkah (goTo/refresh), bukan hanya saat fieldset baru
+		* lahir, agar arah navigasi (next/back/submit) selalu cocok dengan langkah.
+		* Set membawa attribute paritas dengan fieldset langkah terkait (data-index
+		* + animate) supaya bisa dianimasikan sinkron lewat CSS.
+		*/
+		_syncButtons(form, index, direction) {
+			const isLast = index === this.host.inputs.length - 1;
+			const buttons = this.host.renderButtonsSet?.({
+				index,
+				isLast,
+				formId: form.id
+			});
+			if (!buttons) return;
+			buttons.dataset.index = String(index);
+			if (direction) buttons.setAttribute("animate", direction);
+			if (this.navBar && this.navBar.isConnected) this.navBar.replaceWith(buttons);
+			else form.appendChild(buttons);
+			this.navBar = buttons;
+		}
+		/**
+		* Selaraskan class .active + arah animasi antar langkah yang terpasang.
+		* Bila langkah aktif sedang di-unmount kaskade, gandol ke langkah terdekat
+		* yang masih ada di DOM (dipanggil via host.refreshSteps dari Cascade).
+		*/
+		refresh(form) {
+			const target = form ?? this.form;
+			if (!target) return;
+			const mounted = this._mountedSteps(target);
+			if (!mounted.length) return;
+			let direction = null;
+			if (!mounted.some((fieldset) => Number(fieldset.dataset.index) === this.currentStep)) {
+				const fallback = mounted.filter((fieldset) => Number(fieldset.dataset.index) < this.currentStep).pop() ?? mounted[0];
+				this.currentStep = Number(fallback.dataset.index);
+				direction = "back";
+				fallback.setAttribute("animate", "back");
+			}
+			this._syncButtons(target, this.currentStep, direction);
+			this._syncActive(target);
+		}
+		_syncActive(form) {
+			const steps = this._mountedSteps(form);
+			steps.forEach((fieldset, position) => {
+				if (Number(fieldset.dataset.index) === this.currentStep) {
+					fieldset.classList.add("active");
+					if (position < steps.length - 1) steps[position + 1].setAttribute("animate", "next");
+					if (position > 0) steps[position - 1].setAttribute("animate", "back");
+				} else fieldset.classList.remove("active");
+			});
+		}
+		/** Fieldset langkah utama yang terpasang, terurut berdasarkan nomor langkah */
+		_mountedSteps(form) {
+			return Array.from(form.querySelectorAll("fieldset[data-index]")).sort((a, b) => Number(a.dataset.index) - Number(b.dataset.index));
+		}
+		_mountedFieldset(form, index) {
+			return form.querySelector(`fieldset[data-index="${index}"]`);
+		}
+		/** Lepas semua jejak: listener delegasi + daftar langkah tertahan */
+		dispose() {
+			if (this.form && this.onClick) this.form.removeEventListener("click", this.onClick);
+			this.form = null;
+			this.onClick = null;
+			this.navBar = null;
+			this.pending.clear();
+		}
+	};
+	/**
+	* Validates one step.
+	*
+	* `fieldset.checkValidity()` is **not** enough: a fieldset does not validate its
+	* descendants (a synthetic fieldset holding a required, empty input still reports
+	* `true`), so the Next gate silently let every step through. Each mounted control is
+	* checked instead, and the first invalid one is reported to the visitor.
+	*
+	* @param fieldset - The mounted step.
+	* @returns `true` when every control in the step is valid.
+	*/
+	function _stepIsValid(fieldset) {
+		const invalid = Array.from(fieldset.querySelectorAll("input, select, textarea")).filter((control) => !control.disabled && control.willValidate).filter((control) => !control.checkValidity());
+		if (invalid.length === 0) return true;
+		invalid[0].reportValidity();
+		return false;
+	}
+	/**
+	* Form module definition for the multistep engine.
+	*
+	* @summary Active when the form declares `multistep`. Steps are held as
+	* `<template data-step>` placeholders and mounted on demand.
+	*
+	* @example
+	* // registered by FORM_ADAPTER_DEFINITIONS; no manual wiring needed
+	*/
+	var multistepFormAdapter = {
+		id: FORM_MODULE_IDS.multistep,
+		/**
+		* Multistep only runs when the form is a wizard.
+		*
+		* @param context - Host context.
+		* @returns `true` when the multistep engine should load.
+		*/
+		matches: (context) => context.config.multistep === true,
+		/**
+		* Builds the multistep engine around the host contract.
+		*
+		* @param context - Host context.
+		* @returns The live multistep engine.
+		*/
+		load: (context) => new FormMultistepHandler(context.multistepHost()),
+		/**
+		* Detaches navigation listeners and discards held steps.
+		*
+		* @param multistep - The engine returned by `load()`.
+		* @returns Nothing.
+		*/
+		destroy: (multistep) => multistep.dispose()
+	};
+	// packages/components/form/dist/adapters/Validation.js
+	/**
+	* Reason codes, in priority order.
+	*
+	* The browser already computes every one of these flags through
+	* `checkValidity()`, so the form never re-implements constraint logic: it only
+	* gives each flag a stable, translatable name for the message composer.
+	* Order matters when several flags are true at once.
+	*/
+	var VALIDITY_CODES = [
+		["valueMissing", "VALUE_MISSING"],
+		["typeMismatch", "TYPE_MISMATCH"],
+		["patternMismatch", "PATTERN_MISMATCH"],
+		["tooLong", "TOO_LONG"],
+		["tooShort", "TOO_SHORT"],
+		["rangeOverflow", "RANGE_OVERFLOW"],
+		["rangeUnderflow", "RANGE_UNDERFLOW"],
+		["stepMismatch", "STEP_MISMATCH"],
+		["badInput", "BAD_INPUT"],
+		["customError", "CUSTOM_ERROR"]
+	];
+	/** Maps a control's `ValidityState` to one stable code. */
+	function validityCode(el) {
+		for (const [flag, code] of VALIDITY_CODES) if (el.validity[flag]) return code;
+		return "INVALID";
+	}
+	/**
+	* Reads constraint metadata off the element.
+	*
+	* Only attributes are read — never `el.value` — so a message can explain the
+	* limit without echoing what the user typed.
+	*/
+	function validityParams(el) {
+		const num = (name) => {
+			const parsed = parseFloat(el.getAttribute(name) ?? "");
+			return Number.isFinite(parsed) ? parsed : void 0;
+		};
+		return {
+			min: num("min"),
+			max: num("max"),
+			minLength: num("minlength"),
+			maxLength: num("maxlength"),
+			step: num("step"),
+			pattern: el.getAttribute("pattern") ?? void 0
+		};
+	}
+	var FormValidationHandler = class FormValidationHandler {
+		constructor(options = {}) {
+			_defineProperty(this, "options", void 0);
+			this.options = options;
+		}
+		/**
+		* Releases host references so the handler does not outlive its form.
+		*
+		* @summary Drops the emit and message callbacks. Safe to call more than once.
+		* @returns Nothing.
+		*/
+		dispose() {
+			this.options = {};
+		}
+		/** Ambil label ramah-manusia dari sebuah kontrol (label[for] → .field label → id/name/type). */
+		static resolveLabel(scope, el) {
+			const name = el.name || "";
+			if (name) {
+				const text = scope.querySelector(`label[for="${CSS.escape(name)}"]`)?.textContent?.trim();
+				if (text) return text;
+			}
+			const wrapLabel = (el.closest?.(".field, .ui-action-field"))?.querySelector("label")?.textContent?.trim();
+			if (wrapLabel) return wrapLabel;
+			return el.id || name || el.type || "field";
+		}
+		/**
+		* Kumpulkan field yang gagal validasi native. Bila `step` diberikan,
+		* pemindaian dibatasi ke fieldset langkah itu saja (multistep) — langkah
+		* lain yang tersembunyi/tidak aktif tidak ikut dipertimbangkan.
+		*/
+		static collectInvalidFields(form, step) {
+			const scope = step !== void 0 ? form.querySelector(`fieldset[data-index="${step}"]`) ?? form : form;
+			const fields = [];
+			scope.querySelectorAll("input[name], select[name], textarea[name], input:not([name])").forEach((el) => {
+				if (el.disabled || el.validity.valid) return;
+				fields.push({
+					name: el.name || void 0,
+					id: el.id || void 0,
+					type: el.type || el.tagName.toLowerCase(),
+					label: this.resolveLabel(scope, el),
+					message: el.validationMessage || "Isian ini belum diisi / tidak valid.",
+					code: validityCode(el),
+					params: validityParams(el)
+				});
+			});
+			return fields;
+		}
+		/** Bangun detail untuk validasi NATIVE (submit / next). */
+		buildNativeDetail(form, step) {
+			const fields = FormValidationHandler.collectInvalidFields(form, step);
+			const first = fields[0];
+			const compose = first ? messageDraft({
+				category: "validation",
+				slot: "field",
+				code: first.code ?? "INVALID",
+				formId: form.id,
+				fallback: first.message || "Isian belum valid.",
+				field: {
+					id: first.id,
+					name: first.name,
+					label: first.label,
+					type: first.type
+				},
+				params: first.params ?? {}
+			}) : messageDraft({
+				category: "validation",
+				slot: "form",
+				code: "FORM_INVALID",
+				formId: form.id,
+				fallback: "Pastikan seluruh isian wajib telah diisi dengan benar.",
+				params: { count: fields.length }
+			});
+			return {
+				formId: form.id,
+				builder: this.options.builder,
+				reason: "native",
+				valid: fields.length === 0,
+				step,
+				message: composeMessage(this.options.messages, compose),
+				fields,
+				compose
+			};
+		}
+		/** Bangun detail untuk gerbang KASKADE (tombol next terkunci kondisi). */
+		buildCascadeDetail(info) {
+			const compose = messageDraft({
+				category: "cascade",
+				slot: "gate",
+				code: "GATE_BLOCKED",
+				formId: info.form.id,
+				fallback: info.guidance || "Lengkapi isian sebelumnya untuk membuka langkah berikutnya.",
+				params: { stepIndex: info.step }
+			});
+			return {
+				formId: info.form.id,
+				builder: this.options.builder,
+				reason: "cascade",
+				valid: false,
+				step: info.step,
+				message: composeMessage(this.options.messages, compose),
+				condition: info.condition,
+				path: info.path,
+				compose
+			};
+		}
+		/** Jalur terpusat tunggal: emit + CustomEvent di form + tampilkan toast. */
+		report(detail, form) {
+			if (typeof this.options.emit === "function") try {
+				this.options.emit("formValidation", detail);
+			} catch (error) {
+				console.warn("[Form Validation] emit failed:", error);
+			}
+			if (form) try {
+				form.dispatchEvent(new CustomEvent("formValidation", {
+					bubbles: true,
+					detail
+				}));
+			} catch (error) {
+				console.warn("[Form Validation] dispatch failed:", error);
+			}
+			if (typeof this.options.showMessage === "function") try {
+				const compose = detail.compose ?? messageDraft({
+					category: detail.reason === "cascade" ? "cascade" : "validation",
+					slot: detail.reason === "cascade" ? "gate" : detail.fields?.length ? "field" : "form",
+					code: detail.reason === "cascade" ? "GATE_BLOCKED" : "INVALID",
+					formId: detail.formId,
+					fallback: detail.message
+				});
+				const style = resolveStyle(this.options.messages, compose);
+				this.options.showMessage({
+					header: style.title || void 0,
+					message: detail.message,
+					type: style.type || void 0,
+					icon: style.icon || void 0
+				});
+			} catch (error) {
+				console.warn("[Form Validation] showMessage failed:", error);
+			}
+			return detail;
+		}
+		/** Lapor validasi NATIVE: kumpulkan field tak valid & pusatkan ke report(). */
+		reportNative(form, step) {
+			return this.report(this.buildNativeDetail(form, step), form);
+		}
+		/** Lapor gerbang KASKADE: tombol next terkunci karena sebuah condition belum terpenuhi. */
+		reportCascadeBlocked(info) {
+			return this.report(this.buildCascadeDetail(info), info.form);
+		}
+	};
+	/**
+	* Form module definition for the validation handler.
+	*
+	* @summary Loads the centralized validation handler from the host context. The
+	* handler keeps its own single `report()` path, so native and cascade failures
+	* still emit, dispatch a `CustomEvent`, and show a message.
+	*
+	* @example
+	* // registered by FORM_ADAPTER_DEFINITIONS; no manual wiring needed
+	*/
+	var validationFormAdapter = {
+		id: FORM_MODULE_IDS.validation,
+		/**
+		* Builds the validation handler for the supplied host.
+		*
+		* @param context - Host context carrying the form, emitter, and message host.
+		* @returns The live validation handler.
+		*/
+		load: (context) => new FormValidationHandler({
+			builder: context.builder,
+			emit: context.emit ?? void 0,
+			showMessage: context.showMessage,
+			messages: context.config?.messages
+		}),
+		/**
+		* Releases the handler by dropping its host callbacks.
+		*
+		* @param handler - The handler returned by `load()`.
+		* @returns Nothing.
+		*/
+		destroy: (handler) => handler.dispose()
+	};
+	// packages/components/form/dist/Input.FormAdapter.js
+	var _context$4 = /* @__PURE__ */ new WeakMap();
+	var _InputFormAdapter_brand = /* @__PURE__ */ new WeakSet();
+	/**
+	* Field rendering adapter.
+	*
+	* @summary Owns `InputBuilder`: it creates every field the form renders, offers subtrees
+	* to the input modules (the file adapter for raw HTML fields), and — only when the form
+	* asks for it — contributes the selected files to the submit payload.
+	*
+	* Nothing here parses or serializes a file: the form config decides, because that is a
+	* policy, not a mechanism.
+	*/
+	var InputFormAdapter = class {
+		/**
+		* @param context - Host context.
+		*/
+		constructor(context) {
+			_classPrivateMethodInitSpec(this, _InputFormAdapter_brand);
+			_classPrivateFieldInitSpec(this, _context$4, void 0);
+			_classPrivateFieldSet2(_context$4, this, context);
+		}
+		/**
+		* Builds one field from the input schema.
+		*
+		* @param input - Basic input node or raw descriptor.
+		* @param formId - Id of the owning form, forwarded to the field markup.
+		* @returns The rendered field element.
+		*
+		* @summary The host's builder config comes along, so the field inherits `themeId`,
+		* `namespace` and `emit` instead of starting blank — and so does its adapter set.
+		*/
+		renderField(input, formId) {
+			return new InputBuilder$1({
+				..._classPrivateFieldGet2(_context$4, this).builderConfig,
+				formId,
+				modules: _get_preset.call(_assertClassBrand(_InputFormAdapter_brand, this))
+			}).create({ content: input });
+		}
+		/**
+		* Covers file inputs that bypass `InputBuilder` (raw HTML fields).
+		*
+		* @param root - Form element or freshly mounted fieldset.
+		* @returns Nothing.
+		*/
+		mount(root) {
+			mountInputModules$1(root, _get_preset.call(_assertClassBrand(_InputFormAdapter_brand, this)));
+		}
+		/**
+		* Gives a group the same control set a field can have.
+		*
+		* @param fieldset - Group the set acts on.
+		* @param spec - `{ actions, position? }` declared by the group schema.
+		* @returns The controls node, or `null` when nothing was declared.
+		* @throws {Error} When the group declared a button and no module can render one.
+		*
+		* @summary Delegated to the input module registry, so this adapter does not know how a
+		* button works. A group that declared no buttons simply gets none; a group that declared
+		* buttons and got none is a hole, and it says so instead of rendering a fieldset that
+		* quietly lost its actions.
+		*/
+		renderActions(fieldset, spec) {
+			const controls = mountControls$1(fieldset, spec.actions, spec.position ?? "right", _get_preset.call(_assertClassBrand(_InputFormAdapter_brand, this)));
+			if (!controls && declaredAny(spec.actions)) reportMissing$1({
+				capability: "actions",
+				module: INPUT_MODULE_IDS$1.controls,
+				fix: "@aio-ui/input/controls (inputControlsInputModule)",
+				consequence: "the declared action buttons would never render.",
+				severity: "error"
+			}, {
+				owner: "FormBuilder",
+				emit: _classPrivateFieldGet2(_context$4, this).builderConfig?.emit
+			});
+			return controls ? [controls] : null;
+		}
+		/**
+		* Contributes the selected files when — and only when — the form asks for them.
+		*
+		* @summary `config.files` is `"ignore"` by default: a form submit carries form data,
+		* not an implied file payload. A callback receives the raw `File` map and decides what
+		* to add (a Drive serialization, a signed URL, nothing at all).
+		* @param payload - Mutable submit payload.
+		* @throws {Error} When a `files` policy is declared and no module can read the selected
+		*   files — the policy would receive an empty map and drop the bytes without a word.
+		*/
+		async beforeSubmit(payload) {
+			const policy = _classPrivateFieldGet2(_context$4, this).config.files;
+			if (typeof policy !== "function") return;
+			if (!_get_canReadFiles.call(_assertClassBrand(_InputFormAdapter_brand, this))) reportMissing$1({
+				capability: "file",
+				module: INPUT_MODULE_IDS$1.file,
+				fix: "@aio-ui/input/file-uploader (fileUploaderInputModule) — @aio-ui/form already includes it",
+				consequence: "config.files receives no files and the selected bytes are dropped.",
+				severity: "error"
+			}, {
+				owner: "FormBuilder",
+				emit: _classPrivateFieldGet2(_context$4, this).builderConfig?.emit
+			});
+			const files = inputFilesOf$1(_classPrivateFieldGet2(_context$4, this).form.id, _get_preset.call(_assertClassBrand(_InputFormAdapter_brand, this)));
+			Object.assign(payload, await policy(files, _classPrivateFieldGet2(_context$4, this).form));
+		}
+	};
+	/**
+	* The input adapter set this form runs on, or `undefined` for a plain field.
+	*
+	* @summary The host may declare the input modules (`inputModules`, or a manifest with
+	* `scope: "input"`); when it does, fields must use *that* set. When it does not, the
+	* field gets no input sub-modules at all: since `0.2.2` there is no default to fall back
+	* to, because a default would be a static import edge and the whole point of the split
+	* is that an app which never imports `@aio-ui/input/modules` never compiles them.
+	*/
+	function _get_preset() {
+		return _classPrivateFieldGet2(_context$4, this).inputModules?.length ? _classPrivateFieldGet2(_context$4, this).inputModules : void 0;
+	}
+	/**
+	* Whether this form's field set can hand over the selected files.
+	*
+	* @summary Method sniffing for live adapters, id matching for definitions — the two
+	* shapes a preset can hold. A definition is not instantiated here on purpose: asking
+	* "can you read files" must never cost a load.
+	*/
+	function _get_canReadFiles() {
+		return (_get_preset.call(_assertClassBrand(_InputFormAdapter_brand, this)) ?? []).some((item) => typeof item.getFiles === "function" || String(item.id) === INPUT_MODULE_IDS$1.file);
+	}
+	/**
+	* Whether a declared action set asks for at least one button.
+	*
+	* @param actions - Whatever the group schema declared.
+	* @returns `false` for nothing at all, and for an empty array or object.
+	*
+	* @summary `actions: []` and `actions: {}` declare nothing, so they must not be read as
+	* "buttons were asked for and lost". Everything else — an array with entries, or a map
+	* keyed by action type — counts.
+	*/
+	function declaredAny(actions) {
+		if (!actions) return false;
+		if (Array.isArray(actions)) return actions.filter(Boolean).length > 0;
+		return Object.keys(actions).length > 0;
+	}
+	[
+		validationFormAdapter,
+		cascadeFormAdapter,
+		multistepFormAdapter,
+		calculationFormAdapter,
+		{
+			id: FORM_MODULE_IDS.input,
+			/**
+			* Builds the input adapter for the host form.
+			*
+			* @param context - Host context.
+			* @returns The live adapter.
+			*/
+			load: (context) => new InputFormAdapter(context)
+		},
+		...INPUT_MODULE_DEFINITIONS$1
+	].map((definition) => String(definition.id));
+	// packages/components/id-address/IdAddress.FormAdapter.ts
+	var _context$3 = /* @__PURE__ */ new WeakMap();
+	var _picker = /* @__PURE__ */ new WeakMap();
+	var _warned$1 = /* @__PURE__ */ new WeakMap();
+	/**
+	* Address picker adapter.
+	*
+	* @summary Owns `IdAddressBuilder`: builds the picker lazily once the form shows
+	* enough `[data-level]` controls, and contributes resolved address names to the
+	* submit payload.
+	*/
+	var IdAddressFormAdapter = class {
+		/**
+		* @param context - Host context.
+		*/
+		constructor(context) {
+			_classPrivateFieldInitSpec(this, _context$3, void 0);
+			_classPrivateFieldInitSpec(this, _picker, null);
+			_classPrivateFieldInitSpec(this, _warned$1, false);
+			_classPrivateFieldSet2(_context$3, this, context);
+		}
+		/**
+		* Builds the picker the first time the form exposes address levels.
+		*
+		* @summary Re-checked on every mount because multistep steps that carry
+		* `[data-level]` controls are born lazily, after the form-level mount.
+		* @param _root - Form element or freshly mounted fieldset; the picker always
+		*   binds to the whole form, so the argument is unused.
+		* @returns Nothing.
+		*/
+		mount(_root) {
+			if (_classPrivateFieldGet2(_picker, this)) return;
+			if (_classPrivateFieldGet2(_context$3, this).form.querySelectorAll("[data-level]").length <= 1) return;
+			const address = _classPrivateFieldGet2(_context$3, this).config.address;
+			if (!Boolean(address?.loader || address?.url || address?.service)) {
+				if (!_classPrivateFieldGet2(_warned$1, this)) {
+					_classPrivateFieldSet2(_warned$1, this, true);
+					console.warn("[FormBuilder] Address fields found, but no address source is configured. Set config.address.loader(query) (preferred) or config.address.url.");
+				}
+				return;
+			}
+			_classPrivateFieldSet2(_picker, this, new IdAddressBuilder({
+				container: _classPrivateFieldGet2(_context$3, this).form,
+				url: address?.url ?? null,
+				loader: address?.loader ?? null,
+				service: address?.service ?? null,
+				geocode: address?.geocode ?? false,
+				useAdapter: address?.useAdapter ?? null
+			}));
+			_classPrivateFieldGet2(_picker, this).init();
+		}
+		/**
+		* Copies resolved address names into the submit payload.
+		*
+		* @param payload - Mutable submit payload.
+		* @returns Nothing.
+		*/
+		beforeSubmit(payload) {
+			const detail = _classPrivateFieldGet2(_picker, this)?.detail;
+			if (!detail) return;
+			for (const key of Object.keys(detail)) {
+				if (!key.endsWith("_name")) continue;
+				const outputKey = key.replace("_name", "");
+				if (outputKey in payload) payload[outputKey] = String(detail[key]).toLowerCase();
+			}
+		}
+		/** Removes picker listeners and cached state. */
+		destroy() {
+			_classPrivateFieldGet2(_picker, this)?.destroy();
+			_classPrivateFieldSet2(_picker, this, null);
+		}
+	};
+	/**
+	* Address picker module definition.
+	*
+	* @summary Always loaded: applicability depends on rendered DOM, which does not
+	* exist yet when modules are loaded.
+	*
+	* @example
+	* // registered by FORM_ADAPTER_DEFINITIONS; no manual wiring needed
+	*/
+	var idAddressFormAdapter = {
+		id: FORM_MODULE_IDS.idAddress,
+		/**
+		* Builds the address adapter for the host form.
+		*
+		* @param context - Host context.
+		* @returns The live adapter.
+		*/
+		load: (context) => new IdAddressFormAdapter(context),
+		/**
+		* Destroys the address picker.
+		*
+		* @param adapter - The adapter returned by `load()`.
+		* @returns Nothing.
+		*/
+		destroy: (adapter) => adapter.destroy()
+	};
 	// packages/components/id-address/index.ts
-	var id_address_exports = /* @__PURE__ */ __exportAll({ IdAddressBuilder: () => IdAddressBuilder });
+	var id_address_exports = /* @__PURE__ */ __exportAll({
+		IdAddressAdapterAio: () => IdAddressAdapterAio,
+		IdAddressAdapterBase: () => IdAddressAdapterBase,
+		IdAddressAdapterNative: () => IdAddressAdapterNative,
+		IdAddressBuilder: () => IdAddressBuilder,
+		idAddressFormAdapter: () => idAddressFormAdapter
+	});
+	// packages/components/input/InputModuleTypes.ts
+	/** Stable ids for input sub-modules. */
+	var INPUT_MODULE_IDS = {
+		dropdown: "dropdown",
+		file: "file",
+		controls: "controls",
+		popover: "popover",
+		picker: "picker"
+	};
+	// packages/components/input/Dropdown/Dropdown.ts
+	var _state = /* @__PURE__ */ new WeakMap();
+	var DropdownBuilder = class extends Builder$1 {
+		constructor(config) {
+			super();
+			_defineProperty(this, "builderId", "dropdown");
+			_defineProperty(this, "name", "dropdown");
+			_defineProperty(this, "stylesheet", "./Dropdown.css");
+			_defineProperty(this, "listId", void 0);
+			_defineProperty(this, "debounceTimeout", null);
+			_defineProperty(this, "abortController", new AbortController());
+			_classPrivateFieldInitSpec(this, _state, void 0);
+			this.listId = `dl-${Math.random().toString(36).substr(2, 9)}`;
+			const defaultConfig = {
+				themeId: "default",
+				namespace: null,
+				selectors: {
+					"@dropdown": {
+						tagName: "div",
+						className: "dropdown"
+					},
+					"@dropdown>label": {
+						tagName: "label",
+						className: "label"
+					},
+					"@dropdown>input": {
+						tagName: "input",
+						attrs: {
+							type: "text",
+							list: this.listId,
+							autocomplete: "off"
+						}
+					},
+					"@dropdown>hidden": {
+						tagName: "input",
+						attrs: { type: "hidden" }
+					},
+					"@dropdown>list": {
+						tagName: "datalist",
+						attrs: { id: this.listId },
+						className: "list"
+					},
+					"@dropdown>list>option": {
+						tagName: "option",
+						className: "item"
+					},
+					"@dropdown>menu": {
+						tagName: "div",
+						className: "menu"
+					},
+					"@dropdown>menu>item": {
+						tagName: "div",
+						className: "item"
+					},
+					"@dropdown>menu>empty": {
+						tagName: "div",
+						className: "no-results"
+					},
+					"@dropdown>tags": {
+						tagName: "div",
+						className: "tags"
+					},
+					"@dropdown>tags>item": {
+						tagName: "span",
+						className: "badge"
+					}
+				},
+				emit: null,
+				attributes: [],
+				apiUrl: null,
+				debounceDelay: 400,
+				style: "select",
+				min: 3,
+				max: 10,
+				isMultiple: false,
+				onMultiChange: (_a) => {},
+				onSelect: () => {}
+			};
+			this.config = this.resolveConfig(defaultConfig, config);
+		}
+		template(typeKey, el, payload) {
+			switch (typeKey) {
+				case "@dropdown":
+					el.dataset.style = this.config.style || "select";
+					const hidden = this.render("@dropdown>hidden", payload);
+					const input = this.render("@dropdown>input", payload);
+					const options = this.config.style === "datalist" ? this.render("@dropdown>list", payload?.options || []) : this.render("@dropdown>menu", payload?.options || []);
+					const tags = this.render("@dropdown>tags", payload?.selectedMultiItems || []);
+					el.append(...[
+						tags,
+						input,
+						hidden,
+						options
+					].filter(Boolean));
+					break;
+				case "@dropdown>input":
+					if (payload?.id) el.id = String(payload.id);
+					if (payload?.placeholder) el.setAttribute("placeholder", String(payload.placeholder));
+					if (payload?.value != null) el.value = String(payload.value);
+					el.ariaReadOnly = "true";
+					if (this.config.style !== "datalist") el.removeAttribute("list");
+					break;
+				case "@dropdown>label":
+					el.setAttribute("for", String(payload.id));
+					el.textContent = payload.title || "";
+					break;
+				case "@dropdown>hidden":
+					if (payload?.name) el.setAttribute("name", payload.name);
+					if (payload?.id) el.id = `${payload.id}-value`;
+					if (payload?.value != null) el.value = String(payload.value);
+					this.applyAttributes(el, payload?.attributes || this.config.attributes);
+					break;
+				case "@dropdown>list":
+					const limit = this.config.max || 10;
+					const limitedPayload = payload.slice(0, limit);
+					if (Array.isArray(payload)) for (const itemData of limitedPayload) {
+						const item = this.render("@dropdown>list>option", itemData);
+						if (item) el.appendChild(item);
+					}
+					break;
+				case "@dropdown>list>option":
+					if (payload) {
+						el.setAttribute("value", payload.label);
+						el.setAttribute("data-id", String(payload.id));
+					}
+					break;
+				case "@dropdown>menu":
+					if (this.config.style !== "datalist") {
+						el.setAttribute("popover", "manual");
+						el.setAttribute("role", "listbox");
+					}
+					if (Array.isArray(payload)) {
+						const items = payload.slice(0, this.config.max || 10);
+						for (const itemData of items) {
+							const item = this.render("@dropdown>menu>item", itemData);
+							if (item) el.appendChild(item);
+						}
+						if (items.length === 0) {
+							el.classList.add("empty");
+							const empty = this.render("@dropdown>menu>empty", null);
+							if (empty) el.appendChild(empty);
+						} else el.classList.remove("empty");
+					}
+					break;
+				case "@dropdown>menu>empty":
+					el.setAttribute("role", "option");
+					el.setAttribute("aria-disabled", "true");
+					el.textContent = "Tidak ada hasil yang cocok";
+					break;
+				case "@dropdown>menu>item":
+					if (payload) {
+						el.setAttribute("role", "option");
+						el.setAttribute("data-id", String(payload.id));
+						el.setAttribute("data-label", String(payload.label));
+						el.textContent = payload.label;
+					}
+					break;
+				case "@dropdown>tags":
+					if (Array.isArray(payload)) for (const item of payload) {
+						const tag = this.render("@dropdown>tags>item", item);
+						if (tag) el.appendChild(tag);
+					}
+					break;
+				case "@dropdown>tags>item": el.innerHTML = `${payload.label} <button type="button" class="remove" data-id="${payload.id}">&times;</button>`;
+			}
+		}
+		prepare(content, _config) {
+			_classPrivateFieldSet2(_state, this, {
+				options: Array.isArray(content?.options) ? content.options : [],
+				selectedMultiItems: [],
+				keyword: "",
+				isLoading: false,
+				value: content?.value
+			});
+			return this.render("@dropdown", {
+				...content,
+				..._classPrivateFieldGet2(_state, this)
+			});
+		}
+		initialize(el, _payload, _context) {
+			if (!el) return;
+			const style = el.dataset.style || "select";
+			const input = el.querySelector("input[type='text']");
+			const tagsContainer = el.querySelector(".tags");
+			if (!input || !tagsContainer) return;
+			const hidden = el.querySelector("input[type='hidden']");
+			if (style === "datalist") this.initDatalistMode(el, input, tagsContainer, hidden);
+			else this.initSelectMode(el, input, tagsContainer, hidden);
+		}
+		initDatalistMode(el, input, tagsContainer, hidden) {
+			const datalist = el.querySelector("datalist");
+			if (!datalist) return;
+			if (_classPrivateFieldGet2(_state, this).options.length > 0) datalist.dataset.options = JSON.stringify(_classPrivateFieldGet2(_state, this).options);
+			input.addEventListener("input", (_e) => {
+				_classPrivateFieldGet2(_state, this).keyword = input.value;
+				this.handleSearch(input, datalist, hidden);
+			}, { signal: this.abortController.signal });
+			input.addEventListener("blur", () => {
+				if (this.config.isMultiple) return;
+				const prevValue = _classPrivateFieldGet2(_state, this).value;
+				const currentText = input.value;
+				if (currentText === "") {
+					_classPrivateFieldGet2(_state, this).value = "";
+					const hid = input.closest(".dropdown")?.querySelector("input[type='hidden']");
+					if (hid) hid.value = "";
+					if (this.config.onSelect) this.config.onSelect("", null);
+					this.emitChange(hid ?? input, prevValue);
+					return;
+				}
+				if (!datalist.querySelector(`option[value="${CSS.escape(currentText)}"]`)) {
+					input.value = "";
+					_classPrivateFieldGet2(_state, this).keyword = "";
+					_classPrivateFieldGet2(_state, this).value = "";
+					const hid = input.closest(".dropdown")?.querySelector("input[type='hidden']");
+					if (hid) hid.value = "";
+					if (this.config.onSelect) this.config.onSelect("", null);
+					this.emitChange(hid ?? input, prevValue);
+					this.renderOptions(datalist);
+				}
+			}, { signal: this.abortController.signal });
+			tagsContainer.addEventListener("click", (e) => {
+				const target = e.target;
+				if (target.classList.contains("remove")) {
+					const idToRemove = target.getAttribute("data-id");
+					this.removeTag(idToRemove, tagsContainer);
+					this.renderTags(tagsContainer);
+				}
+			}, { signal: this.abortController.signal });
+		}
+		initSelectMode(el, input, tagsContainer, hidden) {
+			const menu = el.querySelector(".menu");
+			if (!menu) return;
+			if (_classPrivateFieldGet2(_state, this).options.length > 0) menu.dataset.options = JSON.stringify(_classPrivateFieldGet2(_state, this).options);
+			const box = () => menu.parentElement;
+			input.setAttribute("aria-haspopup", "listbox");
+			input.setAttribute("aria-expanded", "false");
+			const anchorName = `--anchor-${input.id || this.listId}`;
+			(input.closest(".dropdown") || input).style.setProperty("anchor-name", anchorName);
+			menu.style.setProperty("position-anchor", anchorName);
+			let hideTimer = null;
+			let outsideBound = false;
+			const onOutsideDown = (e) => {
+				const boxEl = box();
+				if (boxEl && !boxEl.contains(e.target)) close();
+			};
+			const unbindOutside = () => {
+				if (!outsideBound) return;
+				document.removeEventListener("mousedown", onOutsideDown);
+				outsideBound = false;
+			};
+			const bindOutside = () => {
+				if (outsideBound) return;
+				document.addEventListener("mousedown", onOutsideDown, { signal: this.abortController.signal });
+				outsideBound = true;
+			};
+			const open = () => {
+				if (hideTimer) {
+					window.clearTimeout(hideTimer);
+					hideTimer = null;
+				}
+				bindBoxClick();
+				bindOutside();
+				if (!menu.matches(":popover-open")) menu.showPopover();
+				requestAnimationFrame(() => menu.classList.add("visible"));
+				input.setAttribute("aria-expanded", "true");
+			};
+			const close = () => {
+				unbindOutside();
+				menu.classList.remove("visible");
+				input.setAttribute("aria-expanded", "false");
+				if (hideTimer) window.clearTimeout(hideTimer);
+				hideTimer = window.setTimeout(() => {
+					if (!menu.classList.contains("visible") && menu.matches(":popover-open")) try {
+						menu.hidePopover();
+					} catch {}
+				}, 160);
+			};
+			const toggle = () => menu.matches(":popover-open") ? close() : open();
+			let clickBoundTo = null;
+			const onBoxClick = (e) => {
+				const boxEl = box();
+				if (!boxEl || !boxEl.contains(e.target)) return;
+				const t = e.target;
+				if (t.closest(".item") || t === input) return;
+				if (!t.closest(".remove")) {
+					toggle();
+					input.focus();
+				}
+			};
+			const bindBoxClick = () => {
+				const boxEl = box();
+				if (!boxEl || boxEl === clickBoundTo) return;
+				clickBoundTo?.removeEventListener("click", onBoxClick);
+				boxEl.addEventListener("click", onBoxClick, { signal: this.abortController.signal });
+				clickBoundTo = boxEl;
+			};
+			bindBoxClick();
+			menu.addEventListener("mousedown", (e) => e.preventDefault(), { signal: this.abortController.signal });
+			input.addEventListener("click", toggle, { signal: this.abortController.signal });
+			input.addEventListener("input", () => {
+				_classPrivateFieldGet2(_state, this).keyword = input.value;
+				open();
+				this.handleSelectSearch(menu, input);
+			}, { signal: this.abortController.signal });
+			menu.addEventListener("click", (e) => {
+				const item = e.target.closest(".item");
+				if (!item) return;
+				const id = String(item.getAttribute("data-id") ?? "");
+				const label = item.getAttribute("data-label") || item.textContent || "";
+				menu.querySelectorAll(".item").forEach((opt) => {
+					if (this.config.isMultiple) {
+						const optId = String(opt.getAttribute("data-id") ?? "");
+						const isSelected = _classPrivateFieldGet2(_state, this).selectedMultiItems.some((i) => String(i.id) === optId) || opt === item;
+						opt.classList.toggle("selected", isSelected);
+					} else opt.classList.toggle("selected", opt === item);
+				});
+				const prevValue = _classPrivateFieldGet2(_state, this).value;
+				if (this.config.isMultiple) {
+					if (!_classPrivateFieldGet2(_state, this).selectedMultiItems.some((i) => String(i.id) === id)) _classPrivateFieldGet2(_state, this).selectedMultiItems.push({
+						id,
+						label
+					});
+					_classPrivateFieldGet2(_state, this).value = _classPrivateFieldGet2(_state, this).selectedMultiItems.map((i) => i.id).join(",");
+					if (hidden) hidden.value = _classPrivateFieldGet2(_state, this).value;
+					if (this.config.onMultiChange) this.config.onMultiChange(_classPrivateFieldGet2(_state, this).selectedMultiItems);
+					input.value = "";
+					_classPrivateFieldGet2(_state, this).keyword = "";
+					this.renderTags(tagsContainer);
+					this.filterMenu(menu, "");
+					input.focus();
+				} else {
+					_classPrivateFieldGet2(_state, this).value = id;
+					if (hidden) hidden.value = id;
+					input.value = label;
+					_classPrivateFieldGet2(_state, this).keyword = "";
+					if (this.config.onSelect) this.config.onSelect(label, id);
+					close();
+				}
+				this.emitChange(hidden ?? input, prevValue);
+			}, { signal: this.abortController.signal });
+			tagsContainer.addEventListener("click", (e) => {
+				const target = e.target;
+				if (target.classList.contains("remove")) {
+					const idToRemove = target.getAttribute("data-id");
+					this.removeTag(idToRemove, tagsContainer);
+					this.renderTags(tagsContainer);
+					if (hidden) hidden.value = _classPrivateFieldGet2(_state, this).value;
+				}
+			}, { signal: this.abortController.signal });
+			input.addEventListener("keydown", (e) => {
+				if (e.key === "Escape") {
+					e.preventDefault();
+					close();
+				}
+				if (e.key === "Enter") {
+					e.preventDefault();
+					const first = menu.querySelector(".item");
+					if (first) first.click();
+				}
+			}, { signal: this.abortController.signal });
+		}
+		handleSelectSearch(menu, input) {
+			const value = input.value;
+			if (!this.config.apiUrl) {
+				this.filterMenu(menu, value);
+				return;
+			}
+			_classPrivateFieldGet2(_state, this).isLoading = true;
+			this.renderInputState(input);
+			clearTimeout(this.debounceTimeout);
+			this.debounceTimeout = setTimeout(async () => {
+				try {
+					const data = await (await fetch(`${this.config.apiUrl}?search=${encodeURIComponent(value)}`)).json();
+					const unselectedData = this.config.isMultiple ? data.filter((p) => !_classPrivateFieldGet2(_state, this).selectedMultiItems.some((item) => String(item.id) === String(p.id))) : data;
+					_classPrivateFieldGet2(_state, this).options = unselectedData.slice(0, this.config.max || 10);
+					this.renderOptions(menu);
+				} catch (error) {
+					console.error("DropdownBuilder Fetch Error:", error);
+				} finally {
+					_classPrivateFieldGet2(_state, this).isLoading = false;
+					this.renderInputState(input);
+				}
+			}, this.config.debounceDelay);
+		}
+		filterMenu(menu, keyword) {
+			const serialized = menu.dataset.options;
+			const source = serialized ? JSON.parse(serialized) : _classPrivateFieldGet2(_state, this).options;
+			const norm = keyword.trim().toLocaleLowerCase();
+			_classPrivateFieldGet2(_state, this).options = source.filter((option) => option.label.toLocaleLowerCase().includes(norm)).slice(0, this.config.max || 10);
+			this.renderOptions(menu);
+		}
+		handleSearch(input, datalist, hidden) {
+			const value = _classPrivateFieldGet2(_state, this).keyword;
+			const prevValue = _classPrivateFieldGet2(_state, this).value;
+			const minLength = this.config.min ?? 2;
+			const matchedOption = datalist.querySelector(`option[value="${CSS.escape(value)}"]`);
+			if (matchedOption) {
+				const selectedId = matchedOption.getAttribute("data-id") || "";
+				if (this.config.isMultiple) {
+					if (!_classPrivateFieldGet2(_state, this).selectedMultiItems.some((item) => String(item.id) === String(selectedId))) {
+						_classPrivateFieldGet2(_state, this).selectedMultiItems.push({
+							id: selectedId,
+							label: value
+						});
+						_classPrivateFieldGet2(_state, this).value = _classPrivateFieldGet2(_state, this).selectedMultiItems.map((item) => item.id).join(",");
+						const hidden = input.closest(".dropdown")?.querySelector("input[type='hidden']");
+						if (hidden) hidden.value = _classPrivateFieldGet2(_state, this).value;
+						if (this.config.onMultiChange) this.config.onMultiChange(_classPrivateFieldGet2(_state, this).selectedMultiItems);
+					}
+					input.value = "";
+					_classPrivateFieldGet2(_state, this).keyword = "";
+					_classPrivateFieldGet2(_state, this).options = [];
+				} else {
+					_classPrivateFieldGet2(_state, this).value = selectedId;
+					const hidden = input.closest(".dropdown")?.querySelector("input[type='hidden']");
+					if (hidden) hidden.value = selectedId;
+					if (this.config.onSelect) this.config.onSelect(value, selectedId);
+				}
+				if (this.config.isMultiple) this.renderOptions(datalist);
+				const tagsContainer = datalist.parentElement?.querySelector(".tags");
+				if (tagsContainer) this.renderTags(tagsContainer);
+				this.emitChange(hidden ?? input, prevValue);
+				return;
+			}
+			if (value.length < minLength) {
+				if (!this.config.apiUrl) this.renderLocalOptions(datalist, value);
+				else {
+					_classPrivateFieldGet2(_state, this).options = [];
+					this.renderOptions(datalist);
+				}
+				return;
+			}
+			if (!this.config.apiUrl) {
+				this.renderLocalOptions(datalist, value);
+				return;
+			}
+			_classPrivateFieldGet2(_state, this).isLoading = true;
+			this.renderInputState(input);
+			clearTimeout(this.debounceTimeout);
+			this.debounceTimeout = setTimeout(async () => {
+				try {
+					const unselectedData = (await (await fetch(`${this.config.apiUrl}?search=${encodeURIComponent(value)}`)).json()).filter((p) => !_classPrivateFieldGet2(_state, this).selectedMultiItems.some((item) => String(item.id) === String(p.id)));
+					const maxLimit = this.config.max || 10;
+					_classPrivateFieldGet2(_state, this).options = unselectedData.slice(0, maxLimit);
+					this.renderOptions(datalist);
+				} catch (error) {
+					console.error("DropdownBuilder Fetch Error:", error);
+				} finally {
+					_classPrivateFieldGet2(_state, this).isLoading = false;
+					this.renderInputState(input);
+				}
+			}, this.config.debounceDelay);
+		}
+		renderOptions(listEl) {
+			listEl.innerHTML = "";
+			const typeKey = listEl.tagName === "DATALIST" ? "@dropdown>list" : "@dropdown>menu";
+			this.template(typeKey, listEl, _classPrivateFieldGet2(_state, this).options);
+		}
+		renderLocalOptions(datalist, keyword) {
+			const serializedOptions = datalist.dataset.options;
+			const sourceOptions = serializedOptions ? JSON.parse(serializedOptions) : _classPrivateFieldGet2(_state, this).options;
+			const normalizedKeyword = keyword.trim().toLocaleLowerCase();
+			_classPrivateFieldGet2(_state, this).options = sourceOptions.filter((option) => option.label.toLocaleLowerCase().includes(normalizedKeyword)).slice(0, this.config.max || 10);
+			this.renderOptions(datalist);
+		}
+		renderTags(tagsContainerEl) {
+			tagsContainerEl.innerHTML = "";
+			this.template("@dropdown>tags", tagsContainerEl, _classPrivateFieldGet2(_state, this).selectedMultiItems);
+		}
+		renderInputState(inputEl) {
+			inputEl.classList.toggle("loading", _classPrivateFieldGet2(_state, this).isLoading);
+		}
+		/**
+		* 🔔 Event `change` BAWAAN (default) — meniru semantik <select>/<input> native:
+		* 1. Ditembak pada input tersembunyi (pembawa atribut `name`), BUKAN input teks:
+		*    - BuilderProxy.bind() menempelkan listener `change` LANGSUNG di elemen [name].
+		*    - Delegasi form (Cascade.attach) menangkap event yang menggelembung dari sana.
+		* 2. Hanya ditembak jika `#state.value` benar-benar berbeda dari `prevValue`
+		*    (klik item yang sama / hapus tag yang tidak ada TIDAK memicu change — persis native).
+		* 3. `bubbles: true` mengikuti konvensi codebase (InputControls/Cascade/FileUploader).
+		*/
+		emitChange(target, prevValue) {
+			if (!target || prevValue === _classPrivateFieldGet2(_state, this).value) return;
+			target.dispatchEvent(new Event("change", { bubbles: true }));
+		}
+		removeTag(id, tagsContainer) {
+			if (!id) return;
+			const prevValue = _classPrivateFieldGet2(_state, this).value;
+			_classPrivateFieldGet2(_state, this).selectedMultiItems = _classPrivateFieldGet2(_state, this).selectedMultiItems.filter((item) => String(item.id) !== String(id));
+			_classPrivateFieldGet2(_state, this).value = _classPrivateFieldGet2(_state, this).selectedMultiItems.map((item) => item.id).join(",");
+			const hidden = tagsContainer.closest(".dropdown")?.querySelector("input[type='hidden']");
+			if (hidden) hidden.value = _classPrivateFieldGet2(_state, this).value;
+			if (this.config.onMultiChange) this.config.onMultiChange(_classPrivateFieldGet2(_state, this).selectedMultiItems);
+			this.emitChange(hidden, prevValue);
+		}
+		/**
+		* Lifecycle: batalkan semua listener (via AbortController), bersihkan debounce,
+		* lalu serahkan pembersihan DOM/registry ke induk Builder.
+		*/
+		destroy(typeKey) {
+			this.abortController.abort();
+			if (this.debounceTimeout) {
+				clearTimeout(this.debounceTimeout);
+				this.debounceTimeout = null;
+			}
+			super.destroy(typeKey);
+		}
+		applyAttributes(el, attributes) {
+			for (const attribute of attributes) {
+				if (!attribute?.name) continue;
+				el.setAttribute(attribute.name, String(attribute.value ?? ""));
+			}
+		}
+	};
+	var _context2 = /* @__PURE__ */ new WeakMap();
+	/**
+	* Dropdown input module.
+	*
+	* `type: "dropdown"` is the one field type whose markup a sibling builder owns: the
+	* dropdown has its own open/close state, filtering and keyboard handling. Owning it here
+	* keeps `InputBuilder` free of a direct import, so a project that never uses a dropdown
+	* never pays for it.
+	*/
+	var DropdownInputModule = class {
+		constructor(context) {
+			_classPrivateFieldInitSpec(this, _context2, void 0);
+			_classPrivateFieldSet2(_context2, this, context);
+		}
+		/**
+		* Builds the dropdown for a `dropdown` field.
+		*
+		* @param field - Resolved field payload.
+		* @returns The dropdown root, or `null` for any other type.
+		*/
+		renderControl(field) {
+			if (field.type !== "dropdown") return null;
+			const cfg = field.config ?? {};
+			const options = (cfg.options || []).map((option) => typeof option === "string" ? {
+				id: option,
+				label: option
+			} : {
+				id: option.value,
+				label: option.label
+			});
+			const payload = {
+				id: field.id,
+				title: field.title,
+				placeholder: field.placeholder,
+				value: field.value,
+				options,
+				name: field.name || field.id,
+				attributes: cfg.attributes || []
+			};
+			const element = new DropdownBuilder({
+				...cfg.dropdown,
+				themeId: _classPrivateFieldGet2(_context2, this).builderConfig.themeId || "default",
+				namespace: _classPrivateFieldGet2(_context2, this).builderConfig.namespace,
+				emit: _classPrivateFieldGet2(_context2, this).builderConfig.emit
+			}).create({
+				content: payload,
+				config: {
+					apiUrl: cfg.apiUrl || null,
+					debounceDelay: cfg.debounceDelay,
+					style: cfg.style || "select",
+					min: cfg.min,
+					max: cfg.max,
+					isMultiple: cfg.isMultiple,
+					onSelect: cfg.onSelect,
+					onMultiChange: cfg.onMultiChange
+				}
+			});
+			const hidden = element.querySelector("input[type='hidden']");
+			if (hidden && field.id) hidden.setAttribute("name", field.name || field.id);
+			return element;
+		}
+	};
+	/**
+	* Dropdown module definition.
+	*
+	* @example
+	* // registered by INPUT_MODULE_DEFINITIONS; omit it from a custom preset to drop the builder
+	*/
+	var dropdownInputModule = {
+		id: INPUT_MODULE_IDS.dropdown,
+		load: (context) => new DropdownInputModule(context)
+	};
+	// packages/components/input/FileUploader/FileUploader.ts
+	/**
+	* 🧩 INPUT ADAPTER — file uploader for `InputBuilder`.
+	*
+	* Owned by the input layer, not by `FormBuilder`: `InputBuilder` mounts one
+	* instance per `type: "file"` element it creates and exposes the helpers other
+	* layers need through `InputBuilder` statics.
+	*/
+	/**
+	* Where this sheet is fetched from, spelled as the host keys it.
+	*
+	* Resolution falls back to the file name, so this must end in the same name the host
+	* uses (`@aio-ui/input/file-uploader.css`) — `"./FileUploader.css"` matched nothing and
+	* the uploader rendered unstyled without an error.
+	*/
+	var FILE_UPLOADER_STYLESHEET = "./file-uploader.css";
+	/**
+	* @class
+	* @classdesc
+	*  A robust file upload manager that handles file selection, validation, and UI rendering.
+	*
+	* This class provides a comprehensive solution for managing file inputs, including:
+	* - Drag-and-drop support.
+	* - Real-time validation (file size, MIME types, upload limits).
+	* - Customizable UI views (thumbnails or list).
+	* - Automatic integration with Google Apps Script (via binary byte-stream conversion).
+	* - Support for multiple instances on a single page.
+	*/
+	var FileUploader = class FileUploader {
+		/**
+		* @typedef {Object} FileUploaderConfigMessages
+		* @property {function(number): string} selectedFiles - Message for selected files count.
+		* @property {function(number): string} readyFiles - Message for files ready to upload count.
+		* @property {function(number): string} unAllowedFiles - Message for unallowed files count.
+		* @property {function(number): string} tooMany - Message when too many files are selected.
+		* @property {function(string): string} tooLarge - Message when a file exceeds max size.
+		* @property {function(string): string} nearLimit - Message when a file is near max size.
+		* @property {function(string): string} notAccepted - Message when a file type is not accepted.
+		*/
+		/**
+		* @typedef {Object} FileUploaderConfig
+		* @property {string[]} [accept=["image/*", ".pdf"]] - Accepted file types/extensions.
+		* @property {string} [input='input[type="file"][data-uploader]'] - Selector for file input elements.
+		* @property {string} [closeButton=".close.icon"] - Selector for close button.
+		* @property {number} [maxFileSize=5242880] - Maximum file size in bytes (default 5MB).
+		* @property {number} [maxUpload=10] - Maximum number of files allowed to upload.
+		* @property {number} [warnFileSize=2097152] - File size in bytes to trigger a warning (default 2MB).
+		* @property {"thumbnails"|"list"|string} [view="thumbnails"] - Display mode for selected files.
+		* @property {boolean} [renderThumbnail=true] - Whether to render image thumbnails.
+		* @property {string|boolean} [groupUnallowed=true] - Whether to group unallowed files in the display.
+		* @property {FileUploaderConfigMessages} [messages] - Custom messages for various scenarios.
+		*/
+		/**
+		*
+		* @description
+		* Initializes a new FileUploader instance for a given file input element.
+		* It prevents multiple instances on the same input and sets up drag-and-drop functionality,
+		* file selection change listeners, and configuration based on defaults, provided config,
+		* and data attributes on the input element.
+		*
+		* @example
+		* // Initialize a file uploader on an input with data-uploader attribute
+		* const inputElement = document.querySelector('input[type="file"][data-uploader]');
+		* const uploader = new FileUploader(inputElement, {
+		*   maxUpload: 5,
+		*   accept: ["image/png", ".jpg"],
+		*   view: "list"
+		* });
+		*
+		* @example
+		* // Access static methods
+		* FileUploader.initAll(); // Initializes all uploaders on the page
+		* const files = FileUploader.getFiles("myFormId"); // Get files from a form
+		*
+		* @param {HTMLInputElement} input - The file input element to attach the uploader to.
+		* @param {FileUploaderConfig} [config={}] - Configuration options for the uploader.
+		* @throws {Error} (Implicit) If `input` is not a valid HTMLInputElement or its `closest('.field')` fails.
+		*
+		* @summary
+		* 1. **Instance Check**: Prevents re-initialization if an instance already exists on the input.
+		* 2. **DOM References**: Stores references to the input and its closest field container.
+		* 3. **Config Merging**: Merges default, provided, and data-attribute configurations.
+		* 4. **UI Setup**: Creates a `viewContainer` for displaying file previews.
+		* 5. **State Initialization**: Sets up arrays for `filesToUpload`, `_selectedFiles`, and `unAllowedFiles`.
+		* 6. **Event Listeners**: Attaches `change` and drag-and-drop listeners.
+		* 7. **Form Reset Listener**: Adds a global reset listener to the parent form if not already bound.
+		* 8. **Instance Storage**: Stores the instance on the input element for future reference.
+		*/
+		constructor(input, config = {}) {
+			_defineProperty(this, "input", null);
+			_defineProperty(this, "container", null);
+			_defineProperty(this, "viewContainer", null);
+			_defineProperty(this, "uploadInfo", null);
+			_defineProperty(this, "filesToUpload", []);
+			_defineProperty(this, "_selectedFiles", []);
+			_defineProperty(this, "unAllowedFiles", []);
+			_defineProperty(this, "_config", {});
+			ensureStylesheet$1(FILE_UPLOADER_STYLESHEET).catch(() => null);
+			if (input._uploaderInstance) return input._uploaderInstance;
+			this.input = input;
+			this.input.title = "You can select or drop the files here to upload.";
+			this.container = input.closest(".field");
+			const domAccept = (input.getAttribute("accept") || "").split(",").map((s) => s.trim()).filter(Boolean);
+			const configAccept = Array.isArray(config.accept) && config.accept.length > 0 ? config.accept.map((s) => s.trim()).filter(Boolean) : void 0;
+			const defaultAccept = Array.isArray(this.config.accept) && this.config.accept.length > 0 ? this.config.accept.map((s) => s.trim()).filter(Boolean) : void 0;
+			const resolvedMaxUpload = Number(input.dataset.maxUpload) || config.maxUpload || this.config.maxUpload;
+			const resolvedAccept = configAccept ?? (domAccept.length > 0 ? domAccept : defaultAccept ?? ["image/*", ".pdf"]);
+			this._config = {
+				...this.config,
+				...config,
+				maxUpload: resolvedMaxUpload,
+				maxFileSize: Number(input.dataset.maxFileSize) * 1024 * 1024 || config.maxFileSize || this.config.maxFileSize,
+				warnFileSize: Number(input.dataset.warnFileSize) * 1024 * 1024 || config.warnFileSize || this.config.warnFileSize,
+				groupUnallowed: input.dataset.groupUnallowed ?? config.groupUnallowed ?? this.config.groupUnallowed,
+				view: input.dataset.view || config.view || this.config.view,
+				accept: resolvedAccept,
+				renderThumbnail: input.dataset.thumbnail !== void 0 ? input.dataset.thumbnail !== "false" : config.renderThumbnail ?? this.config.renderThumbnail ?? true
+			};
+			this._syncInputAttributes();
+			this.viewContainer = document.createElement("div");
+			this.viewContainer.className = "file hidden";
+			if (this.container && this.viewContainer) this.container.append(this.viewContainer);
+			this.uploadInfo = null;
+			this.filesToUpload = [];
+			this._selectedFiles = [];
+			this.unAllowedFiles = [];
+			this._onSelectionChange();
+			this._onDragNdrop();
+			const form = this.input.closest("form");
+			if (form && !form.dataset.uploaderResetBound && form instanceof HTMLFormElement) {
+				form.addEventListener("reset", () => FileUploader.reset(form));
+				form.dataset.uploaderResetBound = "true";
+			}
+			input._uploaderInstance = this;
+		}
+		/**
+		* @private
+		*
+		* @description
+		* Attaches an event listener to the file input element to handle file selections.
+		* When files are selected (or changed), it converts the FileList to an array and
+		* passes them to the `handleFiles` method for processing.
+		*
+		* @returns {void}
+		*
+		* @example
+		* // This method is called internally by the constructor.
+		* // It listens for the 'change' event on `this.input`.
+		*
+		* @summary
+		* 1. **Event Listener**: Adds a 'change' event listener to `this.input`.
+		* 2. **File Extraction**: When the event fires, it extracts the selected files from `e.target.files`.
+		* 3. **File Handling**: Converts the `FileList` to an array and calls `this.handleFiles` with the new files.
+		*/
+		_onSelectionChange() {
+			if (!this.input) return;
+			this.input.addEventListener("change", (e) => {
+				const target = e.target;
+				const files = Array.from(target?.files ?? []);
+				this.handleFiles(files, false);
+			});
+		}
+		/**
+		* @private
+		*
+		* @description
+		* Attaches event listeners for drag-and-drop functionality to the file input's container.
+		* It handles `dragover`, `dragleave`, and `drop` events to allow users to drag files
+		* onto the input area, visually indicating the drag state and processing the dropped files.
+		*
+		* @returns {void}
+		*
+		* @summary
+		* 1. **Drag Over**: Adds a `dragover` event listener to prevent default to allow dropping,
+		*    and adds a `dragover` class to the container for visual feedback.
+		* 2. **Drag Leave**: Removes the `dragover` class when a file is dragged out of the container.
+		* 3. **Drop**: Prevents default on `drop`, removes the `dragover` class,
+		*    extracts files from the `dataTransfer` object, and calls `this.handleFiles` to process them.
+		*/
+		_onDragNdrop() {
+			if (!this.container) return;
+			this.container.addEventListener("dragover", (e) => {
+				e.preventDefault();
+				this.container?.classList.add("dragover");
+			});
+			this.container.addEventListener("dragleave", (_e) => {
+				this.container?.classList.remove("dragover");
+			});
+			this.container.addEventListener("drop", (e) => {
+				e.preventDefault();
+				this.container?.classList.remove("dragover");
+				const files = Array.from(e.dataTransfer?.files ?? []);
+				if (!files.length || !this.input) return;
+				this.handleFiles(files);
+			});
+		}
+		/**
+		* @private
+		*
+		*
+		* @description
+		* Attaches a click event listener to a close icon associated with a file item in the UI.
+		* When clicked, it removes the visual representation of the file, updates the internal
+		* `_selectedFiles` array, and re-processes the remaining files to ensure the UI and
+		* internal state are consistent. If no files remain, it clears the entire view.
+		*
+		* @param {File} file - The File object corresponding to the item being removed.
+		* @param {HTMLElement} closeIcon - The DOM element (e.g., an icon or button) that triggers the removal.
+		* @param {HTMLElement} wrapper - The DOM element that visually represents the file item (e.g., a div containing the thumbnail and info).
+		* @returns {void}
+		*
+		* @example
+		* // This method is called internally when rendering file items.
+		* // `this._onCloseRemoveItem(fileObject, closeButtonElement, fileItemWrapperElement);`
+		*
+		* @summary
+		* 1. **Event Listener**: Attaches a 'click' listener to the `closeIcon`.
+		* 2. **UI Removal**: Removes the `wrapper` element from the DOM.
+		* 3. **State Update**: Filters `_selectedFiles` to remove the specified `file`.
+		* 4. **Conditional Clear/Re-process**: If no files remain, calls `clearView(true)`. Otherwise, calls `handleFiles([])` to re-evaluate and re-render the current `_selectedFiles`.
+		*/
+		_onCloseRemoveItem(file, closeIcon, wrapper) {
+			closeIcon.addEventListener("click", () => {
+				wrapper.remove();
+				this._selectedFiles = this._selectedFiles.filter((f) => f.name !== file.name);
+				if (this._selectedFiles.length === 0) {
+					this.clearView(true, true);
+					return;
+				}
+				this.handleFiles([], true);
+			});
+		}
+		/**
+		*
+		* @param {File[]} newFiles - An array of new File objects to be added and processed.
+		*
+		* @description
+		* Processes a new set of files, merging them with already selected files,
+		* validating them against configured rules (max size, accepted types, max upload count),
+		* and then updating the UI to reflect the current state of allowed and unallowed files.
+		* It ensures that the native file input's `files` property is updated to only contain
+		* the files that are deemed "allowed" for upload.
+		*
+		* @example
+		* // Called when files are selected via input change or drag-and-drop.
+		* // `uploader.handleFiles(e.target.files);`
+		*
+		* @returns {void}
+		*
+		* @summary
+		* 1. **File Key Generation**: Defines a unique key for each file based on name, size, and last modified date.
+		* 2. **Merge New Files**: If `newFiles` are provided, it merges them into `_selectedFiles`, avoiding duplicates.
+		* 3. **Reset Partitions**: Clears `filesToUpload` and `unAllowedFiles` for a fresh evaluation.
+		* 4. **Initial Validation**: Runs `runValidation` on all `_selectedFiles` to get base validation results, without considering `maxUpload` yet.
+		* 5. **Select Allowed Files (up to maxUpload)**: Filters for initially allowed files and selects a subset based on `maxUpload` limit.
+		* 6. **Final Validation Pass**: Re-evaluates all `_selectedFiles` against the `maxUpload` limit, demoting files that were initially allowed but exceed the limit.
+		* 7. **Sort Files**: Sorts the files based on their validation status (allowed first, then warnings, then hard failures).
+		* 8. **Update Partitions**: Populates `filesToUpload` and `unAllowedFiles` based on the final sorted validations.
+		* 9. **Update Native FileList**: Attempts to update the native `input.files` property with only the `filesToUpload`.
+		* 10. **Render View**: Calls `renderView` to update the UI with the processed files.
+		*/
+		handleFiles(newFiles, emitChange = true) {
+			const fileKey = (file) => `${file.name}|${file.size}|${file.lastModified || 0}`;
+			const allowsMultiple = this.input?.multiple ?? false;
+			const maxUpload = this.config.maxUpload ?? Infinity;
+			if (Array.isArray(newFiles) && newFiles.length > 0) {
+				const incomingFiles = allowsMultiple && maxUpload > 1 ? newFiles : [newFiles[0]];
+				if (!allowsMultiple || maxUpload <= 1) this._selectedFiles = incomingFiles.filter(Boolean);
+				else {
+					const existing = new Set(this._selectedFiles.map((f) => fileKey(f)));
+					for (const f of incomingFiles) {
+						const k = fileKey(f);
+						if (!existing.has(k)) {
+							this._selectedFiles.push(f);
+							existing.add(k);
+						}
+					}
+				}
+			}
+			this.filesToUpload.length = 0;
+			this.unAllowedFiles.length = 0;
+			const max = this.config.maxUpload ?? Infinity;
+			const entries = this._selectedFiles.map((file, idx) => {
+				return {
+					file,
+					base: this.runValidation(file, void 0),
+					originalIndex: idx
+				};
+			});
+			const chosenAllowed = entries.filter((e) => e.base.allowed === true).slice(0, max).map((e) => e.file);
+			const chosenAllowedSet = new Set(chosenAllowed.map((f) => fileKey(f)));
+			const final = entries.map((e) => {
+				const { file, base } = e;
+				const key = fileKey(file);
+				if (chosenAllowedSet.has(key)) return {
+					file,
+					validation: {
+						...base,
+						allowed: true,
+						unAllowedGroup: false
+					}
+				};
+				if (!base.allowed) return {
+					file,
+					validation: {
+						...base,
+						allowed: false
+					}
+				};
+				const messages = this.config.messages ?? FileUploader.config.messages;
+				return {
+					file,
+					validation: {
+						...base,
+						allowed: false,
+						unAllowedGroup: true,
+						message: messages?.tooMany(max) ?? null
+					}
+				};
+			});
+			const weight = (v) => {
+				if (v.allowed) return 0;
+				if (v.notAccepted || v.unAllowedGroup || v.maxFileSize) return 2;
+				return 1;
+			};
+			const stable = final.map((item, i) => ({
+				item,
+				i
+			}));
+			stable.sort((a, b) => {
+				const wa = weight(a.item.validation);
+				const wb = weight(b.item.validation);
+				if (wa !== wb) return wa - wb;
+				return a.i - b.i;
+			});
+			const sorted = stable.map((s) => s.item);
+			this.filesToUpload = sorted.filter((v) => v.validation.allowed).map((v) => v.file);
+			this.unAllowedFiles = sorted.filter((v) => !v.validation.allowed).map((v) => {
+				const { name: _ignoredName, ...validation } = v.validation;
+				return {
+					name: v.file.name,
+					file: v.file,
+					...validation
+				};
+			});
+			try {
+				const dt = new DataTransfer();
+				this.filesToUpload.forEach((f) => dt.items.add(f));
+				if (this.input) {
+					this.input.files = dt.files;
+					if (emitChange) this.input.dispatchEvent(new Event("change", { bubbles: true }));
+				}
+			} catch (err) {
+				console.warn("Could not set input.files programmatically:", err);
+			}
+			this.renderView(final);
+		}
+		/**
+		*
+		* @param {Object[]} validations - An array of objects, each containing a `File` object and its `validation` result.
+		*
+		* @description
+		* Renders the visual representation of the selected files (both allowed and unallowed)
+		* based on the configured `view` mode ("list" or "thumbnails"). It first clears
+		* any existing view and then calls the appropriate build method (`_buildListView` or `_buildThumbnailsView`).
+		* Finally, it updates the upload information summary.
+		*
+		* @returns {void}
+		*
+		* @example
+		* // Called internally by `handleFiles` after file processing.
+		* // `this.renderView(finalValidationResults);`
+		*
+		* @summary
+		* 1. **Reset UI**: Clears the `viewContainer`'s content and class, then adds the appropriate view class and removes 'hidden'.
+		* 2. **Conditional Build**: Calls `_buildListView` if `config.view` is "list", otherwise calls `_buildThumbnailsView`.
+		* 3. **Update Info**: Calls `updateUploadInfo` to display a summary of selected and allowed files.
+		*/
+		renderView(validations) {
+			if (!this.viewContainer) return;
+			this.viewContainer.className = `file${this.config.view === "list" ? " list" : " thumbnails"} hidden`;
+			this.viewContainer.replaceChildren();
+			this.viewContainer.classList.remove("hidden");
+			if (!validations.length) {
+				this.viewContainer.replaceChildren();
+				this.viewContainer.classList.add("hidden");
+				return;
+			}
+			if (this.config.view === "list") this._buildListView(validations);
+			else this._buildThumbnailsView(validations);
+			this.updateUploadInfo(this._selectedFiles.length, this.filesToUpload.length);
+		}
+		/**
+		* @private
+		*
+		*
+		* @description
+		* Removes the file uploader and cleans up all associated event listeners and DOM elements.
+		* This method should be called when the file uploader is no longer needed to prevent memory leaks.
+		*
+		* @returns {void}
+		*
+		* @summary
+		* 1. **Remove Element**: Removes the main `container` element from the DOM.
+		* 2. **Clean State**: Resets the `input`, `container`, `viewContainer`, `uploadInfo`, and file arrays.
+		* 3. **Event Cleanup**: Removes all event listeners attached to the input and its container.
+		*
+		* @example
+		* // Call this method when you want to remove the file uploader.
+		* // `uploaderInstance.destroy();`
+		*/
+		destroy() {
+			if (this.container && this.container.parentNode) this.container.remove();
+			if (this.input) delete this.input._uploaderInstance;
+			this.input = null;
+			this.container = null;
+			this.viewContainer = null;
+			this.uploadInfo = null;
+			this.filesToUpload = [];
+			this._selectedFiles = [];
+			this.unAllowedFiles = [];
+		}
+		/**
+		* @private
+		*
+		* @param {Object[]} validations - An array of objects, each containing a `File` object and its `validation` result.
+		*
+		* @description
+		* Builds and appends the list-style view for files to the `viewContainer`.
+		* Each file is represented as an `item` with a thumbnail (if enabled), content (message),
+		* file size, and a close button. It also handles grouping of unallowed files if configured.
+		*
+		* @returns {void}
+		*
+		* @example
+		* // Called internally by `renderView` when `config.view` is "list".
+		* // `this._buildListView(validations);`
+		*
+		* @summary
+		* 1. **Initialize Counter**: Sets `countMSNA` to track files unallowed due to max size or non-acceptance.
+		* 2. **Iterate Validations**: Loops through each file and its validation result.
+		* 3. **Skip Grouped Unallowed**: If `groupUnallowed` is true and the file is part of an `unAllowedGroup` (exceeded max upload count), it skips rendering the individual item.
+		* 4. **Count Max Size/Not Accepted**: Increments `countMSNA` for files unallowed due to size or type, if `groupUnallowed` is active.
+		* 5. **Create Item Elements**: Creates `div.item`, `div.content`, `div.label.filesize`, and `div.close.button` for each file.
+		* 6. **Thumbnail**: Creates and appends a thumbnail if `renderThumbnail` is true.
+		* 7. **Message**: Appends the file message (name, status, validation message).
+		* 8. **File Size**: Displays the formatted file size and adds 'unallowed' class if applicable.
+		* 9. **Close Button**: Creates a close button and attaches `_onCloseRemoveItem` listener.
+		* 10. **Append to View**: Appends all created elements to the `item`, then appends the `item` to `viewContainer`.
+		* 11. **Grouped Summary**: If `groupUnallowed` is true and there are files exceeding the max upload limit, it creates and appends a summary item for them.
+		*/
+		_buildListView(validations) {
+			const viewContainer = this.viewContainer;
+			if (!viewContainer) return;
+			let countMSNA = 0;
+			validations.forEach(({ file, validation }) => {
+				if (this.config.groupUnallowed && validation.unAllowedGroup) return;
+				if (this.config.groupUnallowed && validation.maxFileSize || this.config.groupUnallowed && validation.notAccepted) countMSNA++;
+				const item = document.createElement("div");
+				item.classList.add("item");
+				const thumb = this.config.renderThumbnail ? this.createImageThumbnail(file) : null;
+				const content = document.createElement("div");
+				content.classList.add("content");
+				content.appendChild(this.createMessage(file, validation));
+				const size = document.createElement("div");
+				size.classList.add("label", "filesize");
+				size.textContent = this._formatFileSize(file.size);
+				if (!validation.allowed) size.classList.add("unallowed");
+				const close = document.createElement("div");
+				close.classList.add("close", "button");
+				close.insertAdjacentHTML("afterbegin", `<i class="icon trash"></i>`);
+				this._onCloseRemoveItem(file, close, item);
+				if (thumb) item.append(thumb);
+				item.append(content, size, close);
+				viewContainer.appendChild(item);
+			});
+			if (this._config.groupUnallowed) {
+				const groupedExceeded = validations.find((v) => v.validation.unAllowedGroup);
+				if (groupedExceeded) {
+					const unallowedCount = this._selectedFiles.length - (this.filesToUpload.length + countMSNA);
+					const message = groupedExceeded.validation.message ?? "File is not allowed.";
+					const item = this.createUnallowedItem("list", message, unallowedCount);
+					item.title = this.unAllowedFiles.map((f) => f.name).join(", ");
+					viewContainer.appendChild(item);
+				}
+			}
+		}
+		/**
+		* @private
+		*
+		* @param {Object[]} validations - An array of objects, each containing a `File` object and its `validation` result.
+		*
+		* @description
+		* Builds and appends the thumbnail-style view for files to the `viewContainer`.
+		* It creates two main rows: one for thumbnails and one for details (messages).
+		* Each file's thumbnail is displayed with its size and a close button, and its
+		* validation message is shown in the details row. It also handles grouping of
+		* unallowed files if configured.
+		*
+		* @returns {void}
+		*
+		* @example
+		* // Called internally by `renderView` when `config.view` is "thumbnails".
+		* // `this._buildThumbnailsView(validations);`
+		*
+		* @summary
+		* 1. **Create Row Containers**: Creates `rowThumbs` for thumbnails and `rowDetails` for messages.
+		* 2. **Initialize Counter**: Sets `countMSNA` to track files unallowed due to max size or non-acceptance.
+		* 3. **Iterate Validations**: Loops through each file and its validation result.
+		* 4. **Skip Grouped Unallowed**: If `groupUnallowed` is true and the file is part of an `unAllowedGroup`, it skips rendering the individual item.
+		* 5. **Count Max Size/Not Accepted**: Increments `countMSNA` for files unallowed due to size or type, if `groupUnallowed` is active.
+		* 6. **Create Item Elements**: Creates `div.item` for each file.
+		* 7. **Thumbnail**: Creates and appends a thumbnail if `renderThumbnail` is true, adding 'unallowed' or 'warning' classes as needed.
+		* 8. **File Size**: Displays the formatted file size.
+		* 9. **Close Button**: Creates a close button and attaches `_onCloseRemoveItem` listener.
+		* 10. **Append to Rows**: Appends the item to `rowThumbs` and the message to `rowDetails`.
+		* 11. **Append Rows to View**: Appends `rowThumbs` and `rowDetails` to `viewContainer`.
+		* 12. **Grouped Summary**: If `groupUnallowed` is true and there are files exceeding the max upload limit, it creates and appends a summary item for them in `rowDetails`.
+		*/
+		_buildThumbnailsView(validations) {
+			const viewContainer = this.viewContainer;
+			if (!viewContainer) return;
+			const rowThumbs = document.createElement("div");
+			rowThumbs.classList.add("filerow");
+			const rowDetails = document.createElement("div");
+			rowDetails.classList.add("filerow", "details");
+			rowDetails.insertAdjacentHTML("afterbegin", `<div class="title">Details</div>`);
+			let countMSNA = 0;
+			validations.forEach(({ file, validation }) => {
+				if (this.config.groupUnallowed && validation.unAllowedGroup) return;
+				if (this.config.groupUnallowed && validation.maxFileSize || this.config.groupUnallowed && validation.notAccepted) countMSNA++;
+				const item = document.createElement("div");
+				item.classList.add("item");
+				if (this.config.renderThumbnail) {
+					const thumb = this.createImageThumbnail(file);
+					if (!validation.allowed) thumb.classList.add("unallowed");
+					if (validation.allowed && validation.warning) thumb.classList.add("warning");
+					item.append(thumb);
+				}
+				const size = document.createElement("div");
+				size.classList.add("label", "filesize");
+				size.textContent = this._formatFileSize(file.size);
+				const close = document.createElement("div");
+				close.classList.add("close", "button");
+				close.title = `Remove ${file.name}`;
+				close.insertAdjacentHTML("afterbegin", `<i class="icon close"></i>`);
+				this._onCloseRemoveItem(file, close, item);
+				item.append(size, close);
+				rowThumbs.appendChild(item);
+				rowDetails.appendChild(this.createMessage(file, validation));
+			});
+			viewContainer.append(rowThumbs, rowDetails);
+			if (this._config.groupUnallowed) {
+				const groupedExceeded = validations.find((v) => v.validation.unAllowedGroup);
+				if (groupedExceeded) {
+					const unallowedCount = this._selectedFiles.length - (this.filesToUpload.length + countMSNA);
+					const msg = this.createUnallowedItem("thumbnails", groupedExceeded.validation.message, unallowedCount);
+					msg.dataset.filename = this.unAllowedFiles.map((f) => f.name).join(", ");
+					rowDetails.appendChild(msg);
+				}
+			}
+		}
+		/**
+		* @public
+		*
+		* @param {"list"|"thumbnails"} view - The current view mode ("list" or "thumbnails").
+		* @param {string} msg - The validation message explaining why the files are unallowed.
+		* @param {number} count - The number of unallowed files being grouped.
+		*
+		* @description
+		* Creates a DOM element to display a grouped summary of unallowed files,
+		* typically used when `groupUnallowed` is enabled and multiple files
+		* exceed the `maxUpload` limit or are unallowed for other reasons.
+		* The structure of the element varies slightly based on the `view` mode.
+		*
+		* @returns {HTMLElement} The created DOM element representing the grouped unallowed files message.
+		*
+		* @example
+		* // Called internally by `_buildListView` or `_buildThumbnailsView` for grouped unallowed files.
+		* // `this.createUnallowedItem("list", "Too many files selected.", 3);`
+		*
+		* @summary
+		* 1. **Message Text**: Constructs a generic message indicating the number of files not uploaded.
+		* 2. **List View**:
+		*    - Creates a `div.item` as the main container.
+		*    - Adds a generic file icon thumbnail.
+		*    - Creates a `div.content` to hold the filename and info.
+		*    - Displays the `messageText` as the filename.
+		*    - Displays the specific `msg` from validation as info, with a 'times circle' icon.
+		* 3. **Thumbnails View**:
+		*    - Creates a `div.message.unallowed.group` as the main container.
+		*    - Displays the `messageText` with a file icon as the filename.
+		*    - Displays the specific `msg` from validation as info, with a 'times circle' icon.
+		* 4. **Return Element**: Returns the constructed DOM element.
+		*
+		* @security
+		* - Uses `textContent` for `msg` to prevent XSS when inserting validation messages.
+		*/
+		createUnallowedItem(view, msg, count) {
+			const messageText = `${count} file(s) will not be uploaded.`;
+			if (view === "list") {
+				const item = document.createElement("div");
+				item.classList.add("item");
+				const exImg = document.createElement("div");
+				exImg.classList.add("thumbnail", "image");
+				exImg.insertAdjacentHTML("afterbegin", `<i class="icon file"></i>`);
+				const content = document.createElement("div");
+				content.classList.add("content");
+				const messageGroup = document.createElement("div");
+				messageGroup.classList.add("message", "group");
+				const filename = document.createElement("div");
+				filename.classList.add("filename");
+				filename.style.color = "var(--input-file-unallowed-color)";
+				filename.textContent = messageText;
+				const info = document.createElement("div");
+				info.classList.add("info", "unallowed");
+				info.textContent = msg;
+				const icon = document.createElement("i");
+				icon.classList.add("icon", "cross", "circle");
+				info.appendChild(icon);
+				messageGroup.append(filename, info);
+				content.appendChild(messageGroup);
+				item.append(exImg, content);
+				return item;
+			} else {
+				const item = document.createElement("div");
+				item.classList.add("message", "unallowed", "group");
+				const filename = document.createElement("div");
+				filename.classList.add("filename");
+				filename.style.color = "var(--input-file-unallowed-color)";
+				filename.insertAdjacentHTML("afterbegin", `<i class="icon file"></i> ${messageText}`);
+				const info = document.createElement("div");
+				info.classList.add("info", "unallowed");
+				info.textContent = msg;
+				const icon = document.createElement("i");
+				icon.classList.add("icon", "close", "circle");
+				info.appendChild(icon);
+				item.append(filename, info);
+				return item;
+			}
+		}
+		/**
+		* @public
+		*
+		* @description
+		* Creates a `div` element containing an `img` tag that displays a thumbnail
+		* for the given file. If the file is an image, it uses `URL.createObjectURL`
+		* to generate a preview. For other file types, it generates an SVG icon
+		* based on the file extension.
+		*
+		* @param {File} file - The File object for which to create a thumbnail.
+		* @returns {HTMLDivElement} The `div` element containing the thumbnail image.
+		*
+		*/
+		createImageThumbnail(file) {
+			const thumb = document.createElement("div");
+			thumb.classList.add("thumbnail", "image");
+			const img = document.createElement("img");
+			if (file.type.startsWith("image/")) {
+				img.src = URL.createObjectURL(file);
+				img.onload = () => URL.revokeObjectURL(img.src);
+			} else img.src = this._getSvgThumbnail(file);
+			img.title = file.name;
+			thumb.appendChild(img);
+			return thumb;
+		}
+		/**
+		* @public
+		*
+		* @param {number} allSelectedFiles
+		* @param {number} totalAllowedFiles
+		* @returns {void}
+		*/
+		updateUploadInfo(allSelectedFiles, totalAllowedFiles) {
+			const messages = this.config.messages ?? FileUploader.config.messages;
+			if (!this.viewContainer || !messages) return;
+			const totalFilesMsg = `
+      <div class="message">
+        <i class="copy file icon"></i>
+        ${messages.selectedFiles(allSelectedFiles)}
+      </div>`;
+			const allowedFilesMsg = `
+      <div class="message allowed">
+        <i class="checkmark circle icon"></i>
+        ${messages.readyFiles(totalAllowedFiles)}
+      </div>`;
+			const unAllowedFilesMsg = `
+      <div class="message unallowed">
+        <i class="cross circle icon"></i>
+        ${messages.unAllowedFiles(allSelectedFiles - totalAllowedFiles)}
+      </div>`;
+			this.uploadInfo = document.createElement("div");
+			this.uploadInfo.classList.add("item", "info");
+			this.viewContainer.prepend(this.uploadInfo);
+			if (this._selectedFiles.length - this.filesToUpload.length > 0) this.uploadInfo.insertAdjacentHTML("beforeend", `${totalFilesMsg} ${allowedFilesMsg} ${unAllowedFilesMsg}`);
+			else this.uploadInfo.insertAdjacentHTML("beforeend", `${totalFilesMsg} ${allowedFilesMsg}`);
+		}
+		/**
+		* @public
+		*
+		*
+		* @description
+		* Creates a DOM element to display a file's name, status, and any associated validation message.
+		* It includes an icon representing the file type and another icon indicating its validation status.
+		*
+		* @returns {HTMLDivElement} The created DOM element representing the file message.
+		*
+		* @example
+		* // Called internally by `_buildListView` or `_buildThumbnailsView`.
+		* // `this.createMessage(fileObject, { allowed: true, message: "Ready to upload" });`
+		*
+		* @summary
+		* 1. **Create Wrapper**: Creates a `div` element with class "message" to contain the file information.
+		* 2. **Define Icons**: Sets up an object mapping validation states ("allowed", "unallowed", "warning") to their respective Semantic UI icon HTML.
+		* 3. **Filename Element**: Creates a `div` for the filename, including a file type icon and a truncated version of the file's name.
+		* 4. **Info Element**: Creates a `div` for additional information or validation messages.
+		* 5. **Conditional Message**: If a `validation.message` exists, it adds appropriate styling ("warning" or "unallowed") and displays the message along with its corresponding icon.
+		* 6. **Default Message**: If no specific validation message, it displays "Ready to upload" with the "allowed" icon.
+		* 7. **Append Elements**: Appends the filename and info elements to the wrapper.
+		* 8. **Return Element**: Returns the constructed wrapper element.
+		*
+		* @param {File} file - The File object for which to create the message.
+		* @param {Object} validation - The validation result object for the file.
+		* @param {boolean} validation.allowed - Whether the file is allowed for upload.
+		* @param {string} [validation.message] - The validation message (e.g., warning, error).
+		*/
+		createMessage(file, validation) {
+			const wrapper = document.createElement("div");
+			wrapper.classList.add("message");
+			const icons = {
+				allowed: `<i class="checkmark circle icon"></i>`,
+				unallowed: `<i class="cross circle icon"></i>`,
+				warning: `<i class="error icon"></i>`
+			};
+			const filename = document.createElement("div");
+			filename.classList.add("filename");
+			filename.insertAdjacentHTML("beforeend", this._getFileIconSVG(file) + truncateText$1(file.name, 15));
+			const info = document.createElement("div");
+			info.classList.add("info");
+			if (validation.message) {
+				const state = validation.allowed ? "warning" : "unallowed";
+				info.classList.add(state);
+				info.insertAdjacentHTML("beforeend", validation.message + " " + icons[state]);
+			} else {
+				info.classList.add("allowed");
+				info.insertAdjacentHTML("beforeend", "Ready to upload " + icons.allowed);
+			}
+			wrapper.append(filename, info);
+			return wrapper;
+		}
+		/**
+		* @public
+		*
+		*
+		* @description
+		* Clears the file uploader view and resets its internal state.
+		* This method removes all file previews from the UI and clears the internal arrays that store file references.
+		* It can optionally clear the actual file input element as well.
+		*
+		* @param {boolean} [clearInput=false] - If true, the file input element will also be cleared.
+		* @returns {void}
+		*
+		* @example
+		* // Clear the view and the input
+		* uploaderInstance.clearView(true);
+		*
+		* @example
+		* // Clear only the view, keeping the input value
+		* uploaderInstance.clearView(false);
+		*
+		* @summary
+		* 1. **View Container Cleanup**: Removes all content from `this.viewContainer` and hides it.
+		* 2. **State Reset**: Clears the `filesToUpload` and `unAllowedFiles` arrays.
+		* 3. **Optional Input Reset**: If `clearInput` is true, it also clears the `_selectedFiles` array and resets the value of the actual file input element.
+		*/
+		clearView(clearInput = false, emitChange = false) {
+			if (this.viewContainer) {
+				this.viewContainer.className = "";
+				this.viewContainer.replaceChildren();
+				this.viewContainer.classList.add("hidden");
+			}
+			this.filesToUpload.length = 0;
+			this.unAllowedFiles.length = 0;
+			if (clearInput) {
+				this._selectedFiles = [];
+				if (this.input) {
+					this.input.value = "";
+					if (emitChange) this.input.dispatchEvent(new Event("change", { bubbles: true }));
+				}
+			}
+		}
+		/**
+		* @typedef {Object} FileValidationResult
+		* @property {boolean} allowed - True if the file is allowed for upload, false otherwise.
+		* @property {boolean} [unAllowedGroup] - True if the file was disallowed because it exceeded the maxUpload limit.
+		* @property {string|null} message - A message explaining the validation status (e.g., warning, error).
+		* @property {string} name - The name of the file.
+		* @property {boolean} [notAccepted] - True if the file type is not accepted.
+		* @property {boolean} [maxFileSize] - True if the file size exceeds the maximum allowed.
+		* @property {boolean} [warning] - True if the file triggers a warning (e.g., near max size).
+		*/
+		/**
+		* @public
+		*
+		* @description
+		* Validates a given file against the configured rules such as maximum file size,
+		* accepted file types, and maximum number of files allowed for upload.
+		* It returns an object detailing the validation result, including whether the file is allowed,
+		* any specific reasons for disallowance, and a user-friendly message.
+		*
+		* @param {File} file - The File object to validate.
+		* @param {number} [index] - The index of the file in the selection. Used for `maxUpload` validation.
+		* @returns {FileValidationResult} An object containing the validation status and message.
+		*
+		* @example
+		* // Validate a file
+		* const myFile = new File(["content"], "document.pdf", { type: "application/pdf" });
+		* const validationResult = uploader.runValidation(myFile);
+		* console.log(validationResult);
+		* // { allowed: true, message: null, name: "document.pdf" }
+		*
+		* @example
+		* // Validate a file that exceeds max size
+		* const largeFile = new File(new ArrayBuffer(6 * 1024 * 1024), "large.jpg", { type: "image/jpeg" });
+		* const validationResult = uploader.runValidation(largeFile);
+		* console.log(validationResult);
+		* // { allowed: false, maxFileSize: true, message: "Exceeds the maximum file size of 5.0 MB.", name: "large.jpg" }
+		*
+		* @example
+		* // Validate a file that is beyond the maxUpload limit (assuming maxUpload is 2 and this is the 3rd file)
+		* // const validationResult = uploader.runValidation(anotherFile, 2); // index 2 means 3rd file
+		* // console.log(validationResult);
+		* // { allowed: false, unAllowedGroup: true, message: "Maximum of 2 files allowed.", name: "another.png" }
+		*
+		* @summary
+		* 1. **Extract Config**: Destructures relevant configuration properties.
+		* 2. **Max Upload Check**: If `index` is provided and exceeds `maxUpload`, marks the file as `unAllowedGroup`.
+		* 3. **Accepted File Type Check**: Uses `_isAcceptedFile` to check if the file type is allowed. If not, constructs a readable error message.
+		* 4. **Max File Size Check**: Compares `file.size` with `maxFileSize`.
+		* 5. **Warning File Size Check**: Compares `file.size` with `warnFileSize` to issue a warning if near the limit.
+		* 6. **Default Allowed**: If all checks pass, the file is marked as allowed.
+		*/
+		runValidation(file, index) {
+			const { maxFileSize, maxUpload, warnFileSize, accept } = this.config;
+			const messages = this.config.messages ?? FileUploader.config.messages;
+			if (typeof index === "number" && maxUpload && index >= maxUpload) return {
+				allowed: false,
+				unAllowedGroup: true,
+				message: messages?.tooMany(maxUpload) ?? null,
+				name: file.name
+			};
+			if (accept && !this._isAcceptedFile(file, accept)) {
+				const readableTypes = accept.map((type) => {
+					if (type.startsWith(".")) return type.toUpperCase().replace(".", "");
+					if (type.includes("/*")) {
+						const category = type.split("/")[0];
+						return category.charAt(0).toUpperCase() + category.slice(1) + "s";
+					}
+					if (type.includes("/")) return type.split("/")[1].toUpperCase();
+					return type;
+				});
+				return {
+					allowed: false,
+					notAccepted: true,
+					message: (messages?.notAccepted(readableTypes.join(", ")) ?? "File type is not accepted.") + ` You tried '${file.type || file.name}'.`,
+					name: file.name
+				};
+			}
+			if (maxFileSize && file.size > maxFileSize) return {
+				allowed: false,
+				maxFileSize: true,
+				message: messages?.tooLarge(this._formatFileSize(maxFileSize)) ?? null,
+				name: file.name
+			};
+			const maxSize = maxFileSize ?? Number.POSITIVE_INFINITY;
+			if (warnFileSize && file.size > warnFileSize && file.size < maxSize) return {
+				allowed: true,
+				warning: true,
+				message: messages?.nearLimit(this._formatFileSize(maxSize)) ?? null,
+				name: file.name
+			};
+			return {
+				allowed: true,
+				message: null,
+				name: file.name
+			};
+		}
+		/**
+		* @public
+		*
+		* @description
+		* Getter for the merged configuration object. It combines the static default configuration
+		* with any instance-specific configuration provided during instantiation.
+		*
+		* @returns {FileUploaderConfig} The merged configuration object for this instance.
+		*
+		* @example
+		* const uploader = new FileUploader(inputElement, { maxUpload: 5 });
+		* console.log(uploader.config.maxUpload); // Output: 5
+		* console.log(uploader.config.view);     // Output: "thumbnails" (default)
+		*
+		* @summary
+		* 1. **Merge Configurations**: Spreads the static `FileUploader.config` (defaults)
+		*    and the instance's `_config` (overrides) into a new object.
+		* 2. **Return Merged Config**: Returns the resulting merged configuration.
+		*/
+		get config() {
+			return {
+				...FileUploader.config,
+				...this._config
+			};
+		}
+		/**
+		* @public
+		*
+		* @description
+		* Getter for the default configuration object.
+		*
+		* @returns {FileUploaderConfig} The default configuration object for the FileUploader class.
+		*
+		* @example
+		* console.log(FileUploader.config.maxUpload); // Output: 10
+		* console.log(FileUploader.config.view);     // Output: "thumbnails" (default)
+		*
+		* @summary
+		* 1. **Access Static Default Config**: Checks for a cached `_configDefaults` property.
+		* 2. **Create Defaults if Needed**: If no cached defaults, it initializes a new configuration object
+		*    with default values for all settings (e.g., `accept`, `maxFileSize`, `view`, etc.)
+		* 3. **Return Defaults**: Returns the default configuration object.
+		*/
+		static get config() {
+			return this._configDefaults || {
+				accept: ["image/*", ".pdf"],
+				input: "input[type=\"file\"][data-uploader]",
+				container: "",
+				closeButton: ".close.icon",
+				maxFileSize: 5242880,
+				maxUpload: 10,
+				warnFileSize: 2097152,
+				view: "thumbnails",
+				renderThumbnail: true,
+				groupUnallowed: true,
+				icons: {
+					remove: `<i class="close icon"></i>`,
+					allowed: `<i class="check circle icon"></i>`,
+					unallowed: `<i class="times circle icon"></i>`,
+					warning: `<i class="circle exclamation icon"></i>`,
+					image: `<i class="file image icon"></i>`,
+					audio: `<i class="file audio icon"></i>`,
+					video: `<i class="file video icon"></i>`,
+					pdf: `<i class="file pdf icon"></i>`,
+					file: `<i class="file icon"></i>`,
+					files: `<i class="copy file icon"></i>`
+				},
+				messages: {
+					selectedFiles: (count) => `${count} selected file(s)`,
+					readyFiles: (count) => `${count} file(s) ready to upload.`,
+					unAllowedFiles: (count) => `${count} file(s) not allowed.`,
+					tooMany: (limit) => `Maximum of ${limit} files allowed.`,
+					tooLarge: (maxSize) => `Exceeds the maximum file size of ${maxSize}.`,
+					nearLimit: (warnSize) => `Is near the max file size (${warnSize}).`,
+					notAccepted: (acceptablefileType) => `Only '${acceptablefileType}' type are allowed.`
+				}
+			};
+		}
+		/**
+		*
+		* @static
+		*
+		* @description
+		* Setter for the static default configuration of the `FileUploader` class.
+		* This allows global modification of default settings for all future `FileUploader` instances
+		* that do not explicitly override these settings.
+		*
+		* @param {FileUploaderConfig} custom - An object containing custom configuration properties
+		*   to merge with the existing static defaults.
+		* @returns {void}
+		*
+		* @example
+		* FileUploader.config = { maxUpload: 20, accept: ["image/*"] };
+		* // Now, all new FileUploader instances will default to max 20 uploads and only images.
+		*
+		* @summary
+		* 1. **Merge Custom Config**: Merges the provided `custom` configuration with the current static defaults.
+		* 2. **Update Defaults**: Stores the new merged configuration as the static `_configDefaults`.
+		*/
+		static set config(custom) {
+			this._configDefaults = {
+				...this.config,
+				...custom
+			};
+		}
+		/**
+		* @private
+		*
+		* @description
+		* Synchronizes native input attributes with the resolved uploader configuration.
+		* This keeps the browser file picker behavior aligned with the uploader logic.
+		*/
+		_syncInputAttributes() {
+			if (!this.input) return;
+			const acceptValue = (this._config.accept ?? []).join(",");
+			if (acceptValue) this.input.setAttribute("accept", acceptValue);
+			else this.input.removeAttribute("accept");
+			if ((this._config.maxUpload ?? Infinity) > 1) {
+				this.input.setAttribute("multiple", "");
+				this.input.multiple = true;
+			} else {
+				this.input.removeAttribute("multiple");
+				this.input.multiple = false;
+			}
+		}
+		static reset(input = null) {
+			const selector = this.config.input ?? "input[type=\"file\"][data-uploader]";
+			if (input instanceof HTMLInputElement) {
+				const uploaderInstance = input._uploaderInstance;
+				if (uploaderInstance) uploaderInstance.clearView(true);
+			} else if (input instanceof HTMLFormElement) input.querySelectorAll(selector).forEach((inp) => {
+				inp._uploaderInstance?.clearView(true);
+			});
+			else document.querySelectorAll(selector).forEach((inp) => {
+				inp._uploaderInstance?.clearView(true);
+			});
+		}
+		/**
+		* @static
+		*
+		* @description
+		* Retrieves all files selected across all `FileUploader` instances within a specific form.
+		* It groups the files by their input name attribute.
+		*
+		* @param {string} formId - The ID of the form element.
+		* @returns {Object} An object where keys are the input names and values are arrays of File objects for that input.
+		*
+		* @example
+		* const filesData = FileUploader.getFiles("myForm");
+		* console.log(filesData); // { profilePic: [File...], gallery: [File...] }
+		*
+		* @summary
+		* 1. **Find Form**: Locates the form element by ID or uses the document if no ID is provided.
+		* 2. **Find Inputs**: Selects all file input elements within the form using the configured selector.
+		* 3. **Collect Files**: Iterates through each input, retrieves the associated `FileUploader` instance.
+		* 4. **Group by Name**: Collects the `filesToUpload` for each instance and groups them by the input's `name` attribute.
+		* 5. **Return Result**: Returns the grouped files.
+		*/
+		static getFiles(formId) {
+			const form = formId ? document.getElementById(formId) : null;
+			const selector = this.config.input ?? "input[type=\"file\"][data-uploader]";
+			const inputs = (form || document).querySelectorAll(selector);
+			const result = {};
+			inputs.forEach((input) => {
+				const uploader = input._uploaderInstance;
+				if (uploader && input.name) result[input.name] = Array.from(uploader.filesToUpload);
+			});
+			return result;
+		}
+		/**
+		* @static
+		*
+		* @description
+		* Processes all active file attachment inputs inside a target form, converting them
+		* into clean, binary byte-stream payloads optimized for the Google Apps Script transport bridge.
+		* This version uses FileReader with onload callback, which is more widely supported and performant for large files compared to the arrayBuffer() method.
+		*
+		* @param {string} formId - The HTML DOM element ID string for the form context
+		* @returns {Promise<Object>} An object mapping input names to binary structural files
+		*/
+		static async getFilesForGoogleDrive(formId) {
+			const filesMap = FileUploader.getFiles(formId);
+			const result = {};
+			if (!filesMap || Object.keys(filesMap).length === 0) return result;
+			const entries = Object.entries(filesMap);
+			for (const [inputName, fileArray] of entries) {
+				if (!fileArray || fileArray.length === 0) continue;
+				result[inputName] = await Promise.all(fileArray.map((file) => {
+					return new Promise((resolve, reject) => {
+						const reader = new FileReader();
+						reader.readAsArrayBuffer(file);
+						reader.onload = () => {
+							const arrayBuffer = reader.result;
+							if (!(arrayBuffer instanceof ArrayBuffer)) {
+								reject(/* @__PURE__ */ new Error(`Unable to read file data for '${file.name}'.`));
+								return;
+							}
+							const byteArray = Array.from(new Uint8Array(arrayBuffer));
+							resolve({
+								name: file.name,
+								mimeType: file.type,
+								size: file.size,
+								bytes: byteArray
+							});
+						};
+						reader.onerror = (error) => {
+							console.error(`[FileUploader] Failed to process payload data for '${file.name}':`, error);
+							reject(error);
+						};
+					});
+				}));
+			}
+			return result;
+		}
+		/**
+		* @static
+		*
+		* @description
+		* Initializes all `FileUploader` instances within a given DOM element.
+		* It finds all file input elements with the `data-uploader` attribute and creates a `FileUploader` instance for each.
+		* This method uses a global flag (`data-uploader-initialized`) to prevent re-initialization of the same element.
+		*
+		* @param {Document | HTMLFormElement | HTMLElement} [root=document] - The root element to search for file inputs. Defaults to the entire document.
+		* @param {FileUploaderConfig} [config={}] - Optional configuration object to override default settings.
+		* @returns {FileUploader[]} An array of all initialized `FileUploader` instances.
+		*
+		* @example
+		* // Initialize all file uploaders in the document
+		* const uploaders = FileUploader.initAll();
+		*
+		* // Initialize within a specific form
+		* const form = document.getElementById("myForm");
+		* const formUploaders = FileUploader.initAll(form);
+		*
+		* // With custom configuration
+		* const customUploaders = FileUploader.initAll(document, { maxUpload: 5 });
+		*
+		* @summary
+		* 1. **Set Default Config**: Applies the static `this.config` with any provided `config` overrides.
+		* 2. **Find Inputs**: Selects all file inputs using the configured selector.
+		* 3. **Iterate and Initialize**: Loops through each input.
+		* 4. **Check Initialization**: Skips inputs that have already been initialized (checked via `data-uploader-initialized`).
+		* 5. **Create Instance**: Creates a new `FileUploader` instance for the input, passing the element and config.
+		* 6. **Mark as Initialized**: Sets a flag on the input to prevent re-initialization.
+		* 7. **Collect Instances**: Adds the new instance to an array.
+		* 8. **Return Result**: Returns the array of all `FileUploader` instances.
+		* @memberof FileUploader
+		*/
+		static initAll(root = document, config = {}) {
+			const selector = {
+				...this.config,
+				...config
+			}.input ?? "input[type=\"file\"][data-uploader]";
+			const inputs = root.querySelectorAll(selector);
+			const uploaders = [];
+			inputs.forEach((input) => {
+				if (input instanceof HTMLInputElement && input.dataset.uploaderInitialized !== "true") uploaders.push(new FileUploader(input, config));
+			});
+			return uploaders;
+		}
+		/**
+		* @private
+		*
+		* @description
+		* Formats a given number of bytes into a human-readable string (e.g., "1.2 MB", "500 KB").
+		* It iteratively divides the byte count by 1024 and updates the unit until the value
+		* is less than 1024 or the largest unit (GB) is reached.
+		*
+		* @param {number} bytes - The number of bytes to format.
+		* @returns {string} The formatted file size string.
+		*
+		* @example
+		* // Called internally to display file sizes.
+		* // `this._formatFileSize(1234567);` // Returns "1.2 MB"
+		*
+		* @summary
+		* 1. **Initialize Units**: Defines an array of size units (B, KB, MB, GB).
+		* 2. **Iterate and Convert**: Divides `bytes` by 1024 and increments the unit index (`i`) until `bytes` is less than 1024 or the last unit is reached.
+		* 3. **Format Output**: Returns the formatted number (to one decimal place) concatenated with the appropriate unit.
+		*/
+		_formatFileSize(bytes) {
+			const units = [
+				"B",
+				"KB",
+				"MB",
+				"GB"
+			];
+			let i = 0;
+			while (bytes >= 1024 && i < units.length - 1) {
+				bytes /= 1024;
+				i++;
+			}
+			return `${bytes.toFixed(1)} ${units[i]}`;
+		}
+		/**
+		* @private
+		*
+		* @description
+		* Checks if a given file's type or extension is accepted based on a list of rules.
+		* The rules can be MIME types (e.g., "image/jpeg"), wildcard MIME types (e.g., "image/*"),
+		* or file extensions (e.g., ".pdf").
+		*
+		* @param {File} file - The File object to check.
+		* @param {string[]} acceptList - An array of strings representing accepted file types or extensions.
+		* @returns {boolean} True if the file is accepted, false otherwise.
+		*
+		* @example
+		* // Check if an image file is accepted
+		* const imageFile = new File([], "photo.jpg", { type: "image/jpeg" });
+		* uploader._isAcceptedFile(imageFile, ["image/*", ".png"]); // Returns true
+		*
+		* // Check if a PDF file is accepted by extension
+		* const pdfFile = new File([], "document.pdf", { type: "application/pdf" });
+		* uploader._isAcceptedFile(pdfFile, [".pdf"]); // Returns true
+		*
+		* @summary
+		* 1. **Handle Empty Accept List**: If `acceptList` is empty or null, all files are accepted.
+		* 2. **Normalize File Info**: Converts file name and type to lowercase for case-insensitive comparison.
+		* 3. **Iterate Rules**: Loops through each rule in `acceptList`.
+		* 4. **Normalize Rule**: Converts the current rule to lowercase and trims whitespace.
+		* 5. **Extension Match**: If the rule starts with ".", checks if the file name ends with the rule.
+		* 6. **Wildcard MIME Match**: If the rule ends with "/*", checks if the file type starts with the rule's prefix.
+		* 7. **Exact MIME Match**: Otherwise, checks for an exact match with the file type.
+		* 8. **Return Result**: Returns `true` if any rule matches, `false` otherwise.
+		*/
+		_isAcceptedFile(file, acceptList) {
+			if (!acceptList || acceptList.length === 0) return true;
+			const fileName = file.name.toLowerCase();
+			const fileType = file.type.toLowerCase();
+			return acceptList.some((rule) => {
+				rule = rule.toLowerCase().trim();
+				if (rule.startsWith(".")) return fileName.endsWith(rule);
+				if (rule.endsWith("/*")) return fileType.startsWith(rule.replace("/*", ""));
+				return fileType === rule;
+			});
+		}
+		/**
+		* @private
+		*
+		* @description
+		* Returns an HTML string for a Semantic UI icon representing the file type.
+		* It checks the file's MIME type and returns a specific icon for images, audio, video, and PDFs.
+		* For any other file type, it returns a generic file icon.
+		*
+		* @param {File} file - The File object for which to get the icon.
+		* @returns {string} An HTML string containing the `<i>` tag for the Semantic UI icon.
+		*
+		* @example
+		* // Called internally to display file type icons.
+		* // `this._getFileIconSVG(myImageFile);` // Returns `<i class="file image outline icon"></i>`
+		* // `this._getFileIconSVG(myPdfFile);`   // Returns `<i class="file pdf outline icon"></i>`
+		*
+		* @summary
+		* 1. **Check MIME Type**: Determines the file type category (image, audio, video, PDF).
+		* 2. **Return Specific Icon**: Returns an appropriate Semantic UI icon HTML string based on the category.
+		* 3. **Return Generic Icon**: If no specific category matches, returns a generic file icon.
+		*/
+		_getFileIconSVG(file) {
+			const type = file.type;
+			if (type.startsWith("image/")) return `<i class="file jpg icon"></i>`;
+			if (type.startsWith("audio/")) return `<i class="file mp3 icon"></i>`;
+			if (type.startsWith("video/")) return `<i class="file mp4 icon"></i>`;
+			if (type === "application/pdf") return `<i class="file pdf icon"></i>`;
+			return `<i class="file icon"></i>`;
+		}
+		/**
+		* @private
+		*
+		* @description
+		* Generates a Data URL for an SVG thumbnail representing the file, primarily for non-image files.
+		* The SVG contains a file icon shape and the file's extension in uppercase.
+		* The color of the SVG icon is determined by common file extensions (e.g., PDF, DOC, XLS).
+		*
+		* @param {File} file - The File object for which to generate the SVG thumbnail.
+		* @returns {string} A Data URL (base64 encoded SVG) that can be used as an `<img>` src.
+		*
+		* @example
+		* // Called internally to display thumbnails for non-image files.
+		* // `this._getSvgThumbnail(myPdfFile);` // Returns a Data URL for a red PDF icon.
+		*
+		* @summary
+		* 1. **Extract Extension**: Gets the file extension from the file name.
+		* 2. **Determine Color**: Assigns a specific color based on common file extensions.
+		* 3. **Construct SVG**: Builds an SVG string with a file shape and the uppercase extension.
+		* 4. **Encode to Data URL**: Base64 encodes the SVG string and prepends the Data URL prefix.
+		*/
+		_getSvgThumbnail(file) {
+			const ext = (file.name.split(".").pop() || "").toLowerCase();
+			let color = "#888";
+			if (["pdf"].includes(ext)) color = "#e63946";
+			if (["doc", "docx"].includes(ext)) color = "#457b9d";
+			if (["xls", "xlsx"].includes(ext)) color = "#2a9d8f";
+			if (["ppt", "pptx"].includes(ext)) color = "#f4a261";
+			if (["zip", "rar"].includes(ext)) color = "#6d597a";
+			const svg = `
+        <svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"${color}\">
+          <path d=\"M6 2C5.4477 2 5 2.4477 5 3V21C5 21.5523 5.4477 22 6 22H18C18.5523 22 19 21.5523 19 21V8L13 2H6Z\"/>
+          <text x=\"12\" y=\"17\" text-anchor=\"middle\" font-size=\"5\" fill=\"white\" font-family=\"Arial, sans-serif\">
+            ${ext.toUpperCase()}
+          </text>
+        </svg>
+      `;
+			return `data:image/svg+xml;base64,${btoa(svg)}`;
+		}
+	};
+	_defineProperty(FileUploader, "_configDefaults", void 0);
+	/**
+	* File input module.
+	*
+	* The uploader is the heaviest optional piece of the input layer (preview grid, size and
+	* count validation), so it is a module: a `file` field gets it, nothing else does.
+	*
+	* What this module does **not** do is decide what a selected file means. It reports raw
+	* `File` objects — through `config.onFileSelected` on the field and through the global
+	* `elementChanged` event — and offers `getFiles(formId)` for callers that want the
+	* current selection. Parsing a CSV into a table, serializing to a Drive payload, showing
+	* a preview: all of that belongs to whoever owns the file, not to the input layer.
+	*/
+	var FileUploaderInputModule = class {
+		/**
+		* Attaches the uploader to a file field and wires the selection callback.
+		*
+		* @summary The uploader looks for its host `.field` when constructed, so this runs after
+		* the control is mounted. Calling it twice is safe: the constructor is idempotent per
+		* element, and the `change` listener is installed once per input.
+		*/
+		decorate(_wrapper, control, field, host) {
+			if (field.type !== "file" || !(control instanceof HTMLInputElement)) return;
+			if (!control.__fileSelectedBound) {
+				control.__fileSelectedBound = true;
+				control.addEventListener("change", () => {
+					const files = Array.from(control.files ?? []);
+					const onFileSelected = field.config?.onFileSelected;
+					if (typeof onFileSelected === "function") try {
+						onFileSelected(files, field);
+					} catch (error) {
+						console.error("[InputBuilder] onFileSelected failed:", error);
+					}
+					host.builderConfig.emit?.("elementChanged", {
+						builder: "input",
+						type: "@field>file",
+						element: control,
+						data: {
+							field: field.id,
+							files
+						}
+					});
+				});
+			}
+			try {
+				new FileUploader(control);
+			} catch (error) {
+				console.warn("[InputBuilder] file adapter init failed:", error);
+			}
+		}
+		/**
+		* Covers file inputs that bypass `InputBuilder` (raw HTML inside a form).
+		*
+		* @param root - Subtree to scan.
+		*/
+		mount(root) {
+			try {
+				FileUploader.initAll(root);
+			} catch (error) {
+				console.warn("[InputBuilder] file adapter init failed:", error);
+			}
+		}
+		/**
+		* The files currently selected inside a form, keyed by input name.
+		*
+		* @param formId - Id of the form that owns the file inputs.
+		* @returns Raw `File` arrays; empty when nothing is selected.
+		*/
+		getFiles(formId) {
+			return FileUploader.getFiles(formId);
+		}
+	};
+	/**
+	* File module definition.
+	*
+	* @example
+	* // registered by INPUT_MODULE_DEFINITIONS; a form that never uploads can drop it
+	*/
+	var fileUploaderInputModule = {
+		id: INPUT_MODULE_IDS.file,
+		load: () => new FileUploaderInputModule()
+	};
+	// packages/components/input/FormValues.ts
+	/**
+	* Submit values — what a form actually contains.
+	*
+	* `Object.fromEntries(new FormData(form))` is not enough for a form builder: it drops every
+	* unchecked checkbox, collapses a group of checkboxes that share a name to the last value,
+	* and keeps only the last selected option of a multi-select. A payload that lies is worse
+	* than no payload, because the consumer cannot tell the difference.
+	*
+	* The rules are deliberately explicit:
+	*
+	* | Control                  | Value                                             |
+	* | ------------------------ | ------------------------------------------------- |
+	* | text / number / date / … | the string in the field                           |
+	* | `select`                 | the selected value                                |
+	* | `select[multiple]`       | array of selected values                          |
+	* | `checkbox` (lone)        | `true` / `false` — "not ticked" is information    |
+	* | `checkbox` (shared name) | array of the ticked values                        |
+	* | `radio` group            | value of the checked option, or omitted           |
+	* | `file`                   | never — uploads are a decision (`config.files`)   |
+	*
+	* Disabled controls and buttons are skipped, exactly like a real submission would.
+	*/
+	/** Controls that never contribute a value to the payload. */
+	var SKIPPED_TYPES = /* @__PURE__ */ new Set([
+		"file",
+		"submit",
+		"button",
+		"reset",
+		"image"
+	]);
+	/**
+	* Reads every successful control of a form — or of any container holding controls.
+	*
+	* @param form - Live form element, a `<fieldset>` group, or any wrapper (a `.field`).
+	* @param options - Collection options; see {@link iCollectValuesOptions}.
+	* @returns Payload keyed by control name.
+	*
+	* @summary A `<fieldset>` and a `.field` wrapper are scopes a control set can own, and
+	* `search` has to read them with the same vocabulary a submit uses — one definition of
+	* "what this form holds", not two that drift apart. `elements` is used when the root has
+	* it (it skips nothing and keeps document order); a plain wrapper falls back to a query.
+	*/
+	function collectFormValues(form, options = {}) {
+		const controls = Array.from(typeof HTMLFieldSetElement !== "undefined" && form instanceof HTMLFieldSetElement || form instanceof HTMLFormElement ? form.elements : form.querySelectorAll("input, select, textarea"));
+		const entries = [];
+		for (const control of controls) {
+			if (!control || !control.name) continue;
+			if (SKIPPED_TYPES.has(control.type)) continue;
+			if (control.disabled) continue;
+			if (control instanceof HTMLInputElement && (control.type === "checkbox" || control.type === "radio")) {
+				entries.push({
+					name: control.name,
+					kind: "toggle",
+					toggle: control.type,
+					value: control.value,
+					checked: control.checked
+				});
+				continue;
+			}
+			if (control instanceof HTMLSelectElement && control.multiple) {
+				entries.push({
+					name: control.name,
+					kind: "field",
+					toggle: null,
+					value: Array.from(control.selectedOptions).map((option) => option.value),
+					checked: true
+				});
+				continue;
+			}
+			entries.push({
+				name: control.name,
+				kind: "field",
+				toggle: null,
+				value: control.value,
+				checked: true
+			});
+		}
+		return options.excludeEmpty ? stripEmpty(assemble(entries)) : assemble(entries);
+	}
+	/**
+	* Removes values a consumer would treat as "nothing".
+	*
+	* @param data - Assembled payload.
+	* @returns Payload without `""`, `false` and empty arrays.
+	*/
+	function stripEmpty(data) {
+		const kept = {};
+		for (const [name, value] of Object.entries(data)) {
+			if (value === "" || value === false) continue;
+			if (Array.isArray(value) && value.length === 0) continue;
+			kept[name] = value;
+		}
+		return kept;
+	}
+	/** A toggle's contribution: `true` when it was left at the browser's default value. */
+	function toggleValue(entry) {
+		return entry.value === "on" ? true : entry.value;
+	}
+	/**
+	* Collapses per-control entries into one value per name.
+	*
+	* @param entries - Raw contributions, in document order.
+	* @returns Payload.
+	*/
+	function assemble(entries) {
+		const grouped = /* @__PURE__ */ new Map();
+		for (const entry of entries) {
+			const bucket = grouped.get(entry.name);
+			if (bucket) bucket.push(entry);
+			else grouped.set(entry.name, [entry]);
+		}
+		const data = {};
+		for (const [name, bucket] of grouped) {
+			const fields = bucket.filter((entry) => entry.kind === "field");
+			const toggles = bucket.filter((entry) => entry.kind === "toggle");
+			if (fields.length) {
+				data[name] = fields[fields.length - 1].value;
+				continue;
+			}
+			const radios = toggles.filter((entry) => entry.toggle === "radio");
+			const boxes = toggles.filter((entry) => entry.toggle === "checkbox");
+			const ticked = toggles.filter((entry) => entry.checked);
+			if (radios.length) {
+				if (ticked.length) data[name] = toggleValue(ticked[0]);
+				continue;
+			}
+			if (boxes.length === 1) {
+				data[name] = boxes[0].checked ? toggleValue(boxes[0]) : false;
+				continue;
+			}
+			data[name] = ticked.map(toggleValue);
+		}
+		return data;
+	}
+	// packages/components/input/InputControls/InputControls.ts
+	/** Every control a set may act on, in document order. */
+	var CONTROL_SELECTOR = "input, select, textarea";
+	/** Types `readOnly` does not apply to — those lock through `disabled` instead. */
+	var READONLY_TYPES = /* @__PURE__ */ new Set([
+		"text",
+		"search",
+		"url",
+		"tel",
+		"email",
+		"password",
+		"number",
+		"date",
+		"month",
+		"week",
+		"time",
+		"datetime-local"
+	]);
+	/** Controls that are never part of a set's data (buttons, hidden inputs). */
+	var NOT_DATA_TYPES = /* @__PURE__ */ new Set([
+		"button",
+		"submit",
+		"reset",
+		"image",
+		"hidden"
+	]);
+	var _editableState = /* @__PURE__ */ new WeakMap();
+	var _searchBound = /* @__PURE__ */ new WeakMap();
+	var _InputControlsBuilder_brand = /* @__PURE__ */ new WeakSet();
+	var InputControlsBuilder = class extends Builder$1 {
+		constructor(config) {
+			super();
+			_classPrivateMethodInitSpec(this, _InputControlsBuilder_brand);
+			_defineProperty(this, "builderId", "input-controls");
+			_defineProperty(this, "name", "input-controls");
+			_defineProperty(
+				this,
+				/** Matches the host's key (`@aio-ui/input/controls.css`): resolution is by basename. */
+				"stylesheet",
+				"./controls.css"
+			);
+			_classPrivateFieldInitSpec(this, _editableState, /* @__PURE__ */ new WeakMap());
+			_classPrivateFieldInitSpec(this, _searchBound, /* @__PURE__ */ new WeakSet());
+			const defaultConfig = {
+				themeId: "default",
+				namespace: null,
+				selectors: {
+					"@controls": {
+						tagName: "div",
+						className: "controls"
+					},
+					"@controls>add": {
+						tagName: "button",
+						className: "add",
+						icon: "icon plus"
+					},
+					"@controls>delete": {
+						tagName: "button",
+						className: "delete",
+						icon: "icon trash"
+					},
+					"@controls>save": {
+						tagName: "button",
+						className: "save",
+						icon: "icon checkmark"
+					},
+					"@controls>edit": {
+						tagName: "button",
+						className: "edit",
+						icon: "icon edit"
+					},
+					"@controls>copy": {
+						tagName: "button",
+						className: "copy",
+						icon: "icon copy file"
+					},
+					"@controls>search": {
+						tagName: "button",
+						className: "search",
+						icon: "icon search"
+					},
+					"@controls>custom": {
+						tagName: "button",
+						className: "custom"
+					}
+				},
+				emit: null
+			};
+			this.config = this.resolveConfig(defaultConfig, config);
+		}
+		/**
+		* 🧱 METODE PREPARE
+		*/
+		prepare(payload) {
+			const content = payload;
+			const actions = content.actions ?? [];
+			const position = content.position;
+			const input = content.input ?? null;
+			const scope = content.scope ?? content.parentElement ?? null;
+			const container = this.render("@controls", position);
+			container.__payload = {
+				actions,
+				scope,
+				input
+			};
+			for (const action of actions) {
+				const Templatekey = `@controls>${action.type}`;
+				const button = this.render(Templatekey, {
+					scope,
+					parentElement: scope,
+					input,
+					action
+				});
+				container.appendChild(button);
+			}
+			container.querySelectorAll("button").forEach((button) => {
+				button.type = "button";
+			});
+			return container;
+		}
+		template(typeKey, el, payload, props) {
+			switch (typeKey) {
+				case "@controls":
+					el.setAttribute("position", payload);
+					break;
+				default:
+					const button = el;
+					const { action } = payload;
+					button.title = "Click to " + action.label;
+					button.type = "button";
+					if (action?.label) button.textContent = action.label;
+					if (props?.icon) {
+						const icon = document.createElement("i");
+						icon.className = props.icon;
+						button.appendChild(icon);
+					}
+					button.__payload = payload;
+			}
+		}
+		/**
+		* 🧱 METODE INITIALIZE
+		*
+		* Applies the edit policy for the scope, then wires every button. Safe to call twice on
+		* the same controls (a duplicated group does), because buttons are re-bound by
+		* assignment and the Enter listener is bound once per scope.
+		*/
+		initialize(controls, _payload) {
+			if (!controls) return;
+			const actions = _payload?.content?.actions ?? controls.__payload?.actions ?? [];
+			const scope = _payload?.content?.scope ?? _payload?.content?.parentElement ?? controls.__payload?.scope ?? controls.__payload?.parentElement;
+			if (!scope) return;
+			_assertClassBrand(_InputControlsBuilder_brand, this, _applyEditPolicy).call(this, scope, actions);
+			controls.querySelectorAll("button").forEach((button) => {
+				this.bindButton(button, controls, actions);
+			});
+			if (actions.some((action) => action.type === "search")) _assertClassBrand(_InputControlsBuilder_brand, this, _bindEnterToSearch).call(this, scope, controls);
+			if (actions.some((action) => action.type === "edit")) _assertClassBrand(_InputControlsBuilder_brand, this, _togglePair).call(this, controls, "edit");
+		}
+		bindButton(button, controls, actions) {
+			button.onclick = async (event) => {
+				event.preventDefault();
+				const payload = button.__payload;
+				const scope = payload?.scope ?? payload?.parentElement;
+				const action = payload?.action;
+				if (!scope || !action) return;
+				const elements = _assertClassBrand(_InputControlsBuilder_brand, this, _controls).call(this, scope);
+				const context = {
+					parentElement: scope,
+					input: payload?.input ?? null,
+					action: action.type,
+					button,
+					element: elements[0] ?? null,
+					value: _assertClassBrand(_InputControlsBuilder_brand, this, _valueOf).call(this, scope, elements),
+					values: _assertClassBrand(_InputControlsBuilder_brand, this, _query).call(this, scope),
+					event
+				};
+				switch (action.type) {
+					case "copy":
+						await this.copy(context.values ?? context.value);
+						context.result = context.values ?? context.value;
+						break;
+					case "edit":
+						this._unlock(scope);
+						context.result = true;
+						this.toggleEdit(button, controls, "save", actions);
+						break;
+					case "save":
+						context.result = this.update(scope);
+						this.toggleEdit(button, controls, "edit", actions);
+						break;
+					case "add":
+						context.result = this.duplicate(scope, actions);
+						break;
+					case "search":
+						context.result = this.search(scope);
+						break;
+					case "delete":
+					case "remove": context.result = this.delete(scope);
+				}
+				this.emit(action.type, context);
+				if (action.type === "search") _assertClassBrand(_InputControlsBuilder_brand, this, _setSearching).call(this, scope, true);
+				const outcome = action.onClick(scope, context);
+				if (action.type === "search") try {
+					await outcome;
+				} finally {
+					_assertClassBrand(_InputControlsBuilder_brand, this, _setSearching).call(this, scope, false);
+				}
+			};
+		}
+		toggleEdit(currentButton, controls, actionType, actions) {
+			if ((actionType === "edit" || actionType === "save") && actions.some((action) => action.type === actionType) && _assertClassBrand(_InputControlsBuilder_brand, this, _togglePair).call(this, controls, actionType)) return;
+			const payload = currentButton.__payload;
+			const editAction = {
+				type: actionType,
+				label: actionType,
+				onClick: () => {}
+			};
+			const editButton = this.render(`@controls>${actionType}`, {
+				scope: payload.scope ?? payload.parentElement,
+				parentElement: payload.scope ?? payload.parentElement,
+				input: payload.input,
+				action: editAction
+			});
+			if (!editButton) return;
+			currentButton.replaceWith(editButton);
+			this.bindButton(editButton, controls, actions);
+		}
+		emit(action, context) {
+			this.config.emit?.("elementChanged", {
+				builder: this.builderId,
+				type: `@controls>${action}`,
+				element: context.parentElement,
+				data: {
+					action,
+					value: context.value,
+					values: context.values,
+					input: context.input,
+					result: context.result
+				}
+			});
+		}
+		async copy(payload) {
+			try {
+				const text = typeof payload === "string" ? payload : JSON.stringify(payload);
+				await navigator.clipboard.writeText(text);
+			} catch (err) {
+				console.error("Gagal menyalin teks: ", err);
+			}
+		}
+		/**
+		* Clones the whole scope — a field or an entire group — under a fresh index.
+		*
+		* @param scope - Element to duplicate.
+		* @param actions - Action set the clone receives.
+		* @returns The clone.
+		*/
+		duplicate(scope, actions) {
+			const clone = scope.cloneNode(true);
+			const owner = scope.parentElement ?? scope;
+			const index = _assertClassBrand(_InputControlsBuilder_brand, this, _duplicateIndex).call(this, scope, owner);
+			const suffix = `-${index}`;
+			const labelSuffix = ` ${index}`;
+			if (clone.id) clone.id += suffix;
+			clone.querySelectorAll("[id]").forEach((element) => {
+				element.id += suffix;
+			});
+			clone.querySelectorAll("label").forEach((label) => {
+				if (label.textContent?.trim()) label.textContent += labelSuffix;
+			});
+			clone.querySelectorAll("input,select,textarea").forEach((element) => {
+				if (element.name) element.name += suffix;
+				if (element instanceof HTMLInputElement && (element.type === "checkbox" || element.type === "radio")) element.checked = false;
+				else element.value = "";
+			});
+			scope.after(clone);
+			const sourceControls = _assertClassBrand(_InputControlsBuilder_brand, this, _controls).call(this, scope);
+			_assertClassBrand(_InputControlsBuilder_brand, this, _controls).call(this, clone).forEach((control, index) => {
+				const state = _classPrivateFieldGet2(_editableState, this).get(sourceControls[index]);
+				const valueInput = _assertClassBrand(_InputControlsBuilder_brand, this, _dropdownValue).call(this, control);
+				if (state) {
+					control.disabled = state.disabled;
+					if (_assertClassBrand(_InputControlsBuilder_brand, this, _supportsReadOnly).call(this, control)) control.readOnly = state.readonly;
+					if (valueInput) valueInput.disabled = state.valueDisabled ?? false;
+				} else if (!_assertClassBrand(_InputControlsBuilder_brand, this, _isEditable).call(this, control)) {
+					control.disabled = false;
+					if (_assertClassBrand(_InputControlsBuilder_brand, this, _supportsReadOnly).call(this, control)) control.readOnly = false;
+					if (valueInput) valueInput.disabled = false;
+				}
+			});
+			clone.removeAttribute("data-locked");
+			clone.classList.remove("locked");
+			clone.querySelectorAll("[data-locked]").forEach((element) => element.removeAttribute("data-locked"));
+			clone.setAttribute("data-instance", "true");
+			const clonedControls = clone.querySelector(".controls");
+			const sourceButtons = scope.querySelectorAll(".controls button");
+			clonedControls?.querySelectorAll("button").forEach((button, index) => {
+				const sourcePayload = sourceButtons[index]?.__payload;
+				if (sourcePayload) button.__payload = {
+					...sourcePayload,
+					scope: clone,
+					parentElement: clone
+				};
+			});
+			if (clonedControls) {
+				clonedControls.__payload = {
+					actions,
+					scope: clone,
+					parentElement: clone,
+					input: sourceButtons[0]?.__payload?.input ?? null
+				};
+				this.initialize(clonedControls, { content: {
+					actions,
+					scope: clone
+				} });
+			}
+			clone.dispatchEvent(new CustomEvent("scopeAdded", {
+				bubbles: true,
+				detail: { scope: clone }
+			}));
+			return clone;
+		}
+		delete(scope) {
+			if (scope.tagName === "FORM") return false;
+			scope.remove();
+			return true;
+		}
+		/** Saving: every control returns to the lock state it had before `edit`, then reports. */
+		update(scope) {
+			this._lock(scope);
+			for (const control of _assertClassBrand(_InputControlsBuilder_brand, this, _controls).call(this, scope)) control.dispatchEvent(new Event("change", { bubbles: true }));
+			return true;
+		}
+		/**
+		* Collects the scope's values and tells everyone who listens.
+		*
+		* @param scope - Field or group the set belongs to.
+		* @returns The query, already handed to `onClick` as `context.result`.
+		*
+		* @summary `search` is a **read**, not a submit: it takes the same vocabulary a submit
+		* would (`collectFormValues`), dispatches a bubbling `search` CustomEvent on the scope
+		* so the owning page can react without knowing this builder, and leaves the payload in
+		* `context.result` for `onClick`. The scope is marked `searching` (and `aria-busy`) while
+		* `onClick`'s promise is pending, so an async query shows a state without this layer
+		* knowing what a request is.
+		*/
+		search(scope) {
+			const query = _assertClassBrand(_InputControlsBuilder_brand, this, _query).call(this, scope);
+			scope.dispatchEvent(new CustomEvent("search", {
+				detail: {
+					query,
+					scope
+				},
+				bubbles: true
+			}));
+			return query;
+		}
+		/** Locks every control in the scope, remembering what it looked like. */
+		_lock(scope) {
+			for (const control of _assertClassBrand(_InputControlsBuilder_brand, this, _controls).call(this, scope)) {
+				if (_assertClassBrand(_InputControlsBuilder_brand, this, _isEditable).call(this, control)) continue;
+				const dropdown = _assertClassBrand(_InputControlsBuilder_brand, this, _dropdownRoot).call(this, control);
+				const valueInput = dropdown ? _assertClassBrand(_InputControlsBuilder_brand, this, _dropdownValue).call(this, control) : null;
+				if (!_classPrivateFieldGet2(_editableState, this).has(control)) _classPrivateFieldGet2(_editableState, this).set(control, {
+					readonly: _assertClassBrand(_InputControlsBuilder_brand, this, _supportsReadOnly).call(this, control) ? control.readOnly : false,
+					disabled: control.disabled,
+					valueDisabled: valueInput?.disabled
+				});
+				if (dropdown) {
+					control.disabled = true;
+					if (valueInput) valueInput.disabled = true;
+					dropdown.setAttribute("data-locked", "true");
+				} else if (control instanceof HTMLSelectElement) control.disabled = true;
+				else if (_assertClassBrand(_InputControlsBuilder_brand, this, _supportsReadOnly).call(this, control)) control.readOnly = true;
+				else control.disabled = true;
+			}
+			scope.setAttribute("data-locked", "true");
+			scope.classList.add("locked");
+		}
+		/**
+		* Restores every control in the scope.
+		*
+		* @param scope - Field or group.
+		* @param force - Open controls that carry no snapshot. Used when the scope is known to
+		*   have been locked by this set (a duplicate, a re-render) — leaving them locked would
+		*   reproduce exactly the trap the policy exists to avoid.
+		*/
+		_unlock(scope, force = false) {
+			for (const control of _assertClassBrand(_InputControlsBuilder_brand, this, _controls).call(this, scope)) {
+				const state = _classPrivateFieldGet2(_editableState, this).get(control);
+				const dropdown = _assertClassBrand(_InputControlsBuilder_brand, this, _dropdownRoot).call(this, control);
+				const valueInput = dropdown ? _assertClassBrand(_InputControlsBuilder_brand, this, _dropdownValue).call(this, control) : null;
+				if (state) {
+					control.disabled = state.disabled;
+					if (_assertClassBrand(_InputControlsBuilder_brand, this, _supportsReadOnly).call(this, control)) control.readOnly = state.readonly;
+					if (valueInput) valueInput.disabled = state.valueDisabled ?? false;
+					_classPrivateFieldGet2(_editableState, this).delete(control);
+				} else if (force) {
+					control.disabled = false;
+					if (_assertClassBrand(_InputControlsBuilder_brand, this, _supportsReadOnly).call(this, control)) control.readOnly = false;
+					if (valueInput) valueInput.disabled = false;
+				}
+				dropdown?.removeAttribute("data-locked");
+			}
+			scope.removeAttribute("data-locked");
+			scope.classList.remove("locked");
+		}
+	};
+	/**
+	* Makes exactly one of `edit`/`save` available.
+	*
+	* @param controls - The controls node holding the pair.
+	* @param actionType - Which side to enable.
+	* @returns `true` when both buttons exist and the switch happened; `false` when the set
+	*   has only one side, so the caller must swap the button itself.
+	*/
+	function _togglePair(controls, actionType) {
+		const edit = controls.querySelector("button.edit");
+		const save = controls.querySelector("button.save");
+		if (!edit || !save) return false;
+		edit.disabled = actionType !== "edit";
+		save.disabled = actionType !== "save";
+		return true;
+	}
+	/**
+	* Applies the edit policy for a scope.
+	*
+	* @param scope - Field or group.
+	* @param actions - Declared action set.
+	*
+	* @summary Two sides of one rule: with an `edit` action the scope starts **locked**
+	* (a record viewer until the visitor asks to edit), and without one it must not be
+	* left locked — nothing could unlock it. "Locked by this set" is answered by the set's
+	* own bookkeeping (`data-locked` + the per-control snapshot), never by looking at
+	* `readonly`/`disabled`: those properties reflect to attributes, so an author's lock
+	* and one of ours look identical in the DOM.
+	*/
+	function _applyEditPolicy(scope, actions) {
+		if (actions.some((action) => action.type === "edit")) {
+			this._lock(scope);
+			return;
+		}
+		if (scope.getAttribute("data-locked") === "true" || _assertClassBrand(_InputControlsBuilder_brand, this, _controls).call(this, scope).some((control) => _classPrivateFieldGet2(_editableState, this).has(control))) this._unlock(scope, true);
+	}
+	/**
+	* The `div.dropdown` a control belongs to, when it is a custom dropdown.
+	*
+	* @param control - Control being locked or unlocked.
+	* @returns The dropdown container, or `null` for a plain control.
+	*
+	* @summary `closest()` matches the element itself and the visible box is itself
+	* `input.dropdown`, so the walk starts at the parent — otherwise the "container" would
+	* be the box and the hidden value would never be found.
+	*/
+	function _dropdownRoot(control) {
+		const root = control.parentElement?.closest(".dropdown") ?? null;
+		return root && root !== control ? root : null;
+	}
+	/** The hidden input of a dropdown: the value that actually submits. */
+	function _dropdownValue(control) {
+		return _assertClassBrand(_InputControlsBuilder_brand, this, _dropdownRoot).call(this, control)?.querySelector("input[type='hidden']") ?? null;
+	}
+	/**
+	* Whether the schema gave this control to the visitor permanently.
+	*
+	* @param control - Control being considered for a lock.
+	* @returns `true` when the field (or an ancestor scope) declares `editable`.
+	*
+	* @summary `editable: true` outranks the edit policy: a record viewer with an `edit`
+	* action may still expose one field that is always live (a comment box, a quantity).
+	* `InputBuilder` writes the marker on the field wrapper, so an ancestor lookup covers a
+	* group whose fields each decide for themselves.
+	*/
+	function _isEditable(control) {
+		return Boolean(control.closest("[data-editable='true']"));
+	}
+	/** Enter inside a text control of a searching set runs the search. */
+	function _bindEnterToSearch(scope, controls) {
+		if (_classPrivateFieldGet2(_searchBound, this).has(scope)) return;
+		_classPrivateFieldGet2(_searchBound, this).add(scope);
+		scope.addEventListener("keydown", (event) => {
+			if (event.key !== "Enter") return;
+			const target = event.target;
+			if (!(target instanceof HTMLElement) || target instanceof HTMLTextAreaElement) return;
+			if (!_assertClassBrand(_InputControlsBuilder_brand, this, _controls).call(this, scope).includes(target)) return;
+			const button = controls.querySelector("button.search");
+			if (!button) return;
+			event.preventDefault();
+			button.click();
+		});
+	}
+	function _setSearching(scope, searching) {
+		scope.classList.toggle("searching", searching);
+		if (searching) scope.setAttribute("aria-busy", "true");
+		else scope.removeAttribute("aria-busy");
+	}
+	/** Controls of a scope that carry data, in document order. */
+	function _controls(scope) {
+		return Array.from(scope.querySelectorAll(CONTROL_SELECTOR)).filter((control) => !(control instanceof HTMLInputElement && NOT_DATA_TYPES.has(control.type)));
+	}
+	/** One control's value, or every value of a group, for `context.value`. */
+	function _valueOf(scope, elements) {
+		if (elements.length === 1) return elements[0].value;
+		const query = _assertClassBrand(_InputControlsBuilder_brand, this, _query).call(this, scope);
+		return Object.entries(query).map(([key, value]) => `${key}=${Array.isArray(value) ? value.join(",") : String(value)}`).join("&");
+	}
+	/**
+	* The scope's values, in submit vocabulary.
+	*
+	* @param scope - Field, fieldset or form.
+	* @returns Payload keyed by control name.
+	*/
+	function _query(scope) {
+		if (scope instanceof HTMLFormElement || typeof HTMLFieldSetElement !== "undefined" && scope instanceof HTMLFieldSetElement) return collectFormValues(scope, { excludeEmpty: true });
+		const control = _assertClassBrand(_InputControlsBuilder_brand, this, _controls).call(this, scope)[0];
+		if (!control?.name) return {};
+		if (control instanceof HTMLInputElement && (control.type === "checkbox" || control.type === "radio")) return control.checked ? { [control.name]: true } : {};
+		return control.value === "" ? {} : { [control.name]: control.value };
+	}
+	/** Whether `readOnly` actually locks this control. */
+	function _supportsReadOnly(control) {
+		if (control instanceof HTMLSelectElement) return false;
+		if (control instanceof HTMLTextAreaElement) return true;
+		return READONLY_TYPES.has(control.type);
+	}
+	/**
+	* The next free `<base>-<n>` suffix for a clone of `scope`.
+	*
+	* @param scope - Element being duplicated.
+	* @param owner - Parent whose children share the naming space.
+	* @returns The first suffix not already used by a sibling clone.
+	*
+	* @summary Only ids that extend the same base are counted, so `rec-1` yields
+	* `rec-1-1` (not `rec-1-2`): the suffix belongs to the clone chain, not to whatever
+	* number the author put at the end of the original id.
+	*/
+	function _duplicateIndex(scope, owner) {
+		const base = scope.id || scope.tagName.toLowerCase();
+		const taken = /* @__PURE__ */ new Set();
+		Array.from(owner.children).forEach((child) => {
+			const id = child.id;
+			if (!id || !id.startsWith(`${base}-`)) return;
+			const suffix = Number(id.slice(base.length + 1));
+			if (Number.isInteger(suffix) && suffix >= 1) taken.add(suffix);
+		});
+		let index = 1;
+		while (taken.has(index)) index += 1;
+		return index;
+	}
+	var _context$2 = /* @__PURE__ */ new WeakMap();
+	/**
+	* Action controls module.
+	*
+	* A field that declares `config.actions` gets a button set beside it (add/remove/edit/
+	* save/…), and a group that declares `actions` gets the same set on its `<fieldset>`.
+	* The button markup and its click behaviour belong to `InputControlsBuilder`; this module
+	* is the only thing that knows that, so `InputBuilder` and `FormBuilder` stay renderers.
+	*/
+	var InputControlsInputModule = class {
+		constructor(context) {
+			_classPrivateFieldInitSpec(this, _context$2, void 0);
+			_classPrivateFieldSet2(_context$2, this, context);
+		}
+		/**
+		* Appends the action set to a field that asked for one.
+		*
+		* @param wrapper - The `.field` element.
+		* @param _control - The rendered control (unused: actions attach to the wrapper).
+		* @param field - Resolved field payload.
+		*/
+		decorate(wrapper, _control, field) {
+			const cfg = field.config ?? {};
+			if (!cfg.actions) return;
+			const controls = this.renderActions(wrapper, {
+				actions: cfg.actions,
+				position: cfg.position || "right",
+				input: field
+			});
+			if (!controls) return;
+			wrapper.classList.add("actions");
+			wrapper.appendChild(controls);
+		}
+		/**
+		* Builds the button set for any scope: a single field wrapper or a whole group.
+		*
+		* @param scope - Element the set acts on (`.field` or `<fieldset>`).
+		* @param spec - Actions, position, and the field when there is one.
+		* @returns The controls node, or `null` when nothing was declared.
+		*/
+		renderActions(scope, spec) {
+			const actions = normaliseActions(spec.actions);
+			if (!actions.length) return null;
+			return new InputControlsBuilder(_classPrivateFieldGet2(_context$2, this).builderConfig).create({ content: {
+				scope,
+				parentElement: scope,
+				position: spec.position || "right",
+				actions,
+				input: spec.input ?? null
+			} });
+		}
+	};
+	/**
+	* Composite presets: one word for a pair of buttons.
+	*
+	* @summary `editor` is edit+save and `repeater` is add+delete — the two pairs a control set
+	* almost always needs together. Expanding them before rendering means the DOM, the pair
+	* toggle and every consumer only ever see the four real types.
+	*/
+	var ACTION_PRESETS = {
+		editor: ["edit", "save"],
+		repeater: ["add", "delete"]
+	};
+	/** Human label for a button that was asked for by name only. */
+	var ACTION_LABELS = {
+		add: "Add",
+		delete: "Delete",
+		remove: "Remove",
+		edit: "Edit",
+		save: "Save",
+		copy: "Copy",
+		search: "Search",
+		custom: "Custom"
+	};
+	/**
+	* Accepts both action shapes — an array (mixed names and objects) or `{ [type]: definition }`.
+	*
+	* @param configured - Declared actions.
+	* @returns Array form, with composite presets expanded and `type` filled in.
+	*
+	* @example
+	* normaliseActions(["editor", { type: "copy", label: "Copy", onClick }])
+	* // → edit, save, copy
+	*/
+	function normaliseActions(configured) {
+		if (!configured) return [];
+		const entries = Array.isArray(configured) ? configured.filter(Boolean) : Object.entries(configured).map(([type, action]) => ({
+			...action,
+			type
+		}));
+		const resolved = [];
+		for (const entry of entries) {
+			const preset = typeof entry === "string" ? (ACTION_PRESETS[entry] ?? [entry]).map((type) => ({
+				type,
+				label: ACTION_LABELS[type] ?? type,
+				onClick: () => {}
+			})) : (ACTION_PRESETS[entry.type] ?? [entry.type]).map((type) => ({
+				...entry,
+				type,
+				label: entry.label ?? ACTION_LABELS[type] ?? type
+			}));
+			resolved.push(...preset);
+		}
+		return resolved;
+	}
+	/**
+	* Action controls module definition.
+	*
+	* @example
+	* // registered by INPUT_MODULE_DEFINITIONS; drop it and `config.actions` silently renders nothing
+	*/
+	var inputControlsInputModule = {
+		id: INPUT_MODULE_IDS.controls,
+		load: (context) => new InputControlsInputModule(context)
+	};
+	// packages/components/input/InputPicker/InputPicker.ts
+	/** Default shape per key; a theme overrides it through `config.selectors`. */
+	var PICKER_SELECTORS = {
+		"@picker": {
+			tagName: "div",
+			className: "picker"
+		},
+		"@picker>trigger": {
+			tagName: "button",
+			className: "trigger",
+			attrs: { type: "button" }
+		},
+		"@picker>trigger>preview": {
+			tagName: "span",
+			className: "preview"
+		},
+		"@picker>trigger>label": {
+			tagName: "span",
+			className: "label"
+		},
+		"@picker>panel": {
+			tagName: "div",
+			className: "panel"
+		},
+		"@picker>panel>search": {
+			tagName: "input",
+			className: "search"
+		},
+		"@picker>panel>grid": {
+			tagName: "div",
+			className: "grid"
+		},
+		"@picker>panel>grid>option": {
+			tagName: "button",
+			className: "cell",
+			attrs: { type: "button" }
+		},
+		"@picker>panel>grid>option>preview": {
+			tagName: "span",
+			className: "preview"
+		},
+		"@picker>panel>grid>option>name": {
+			tagName: "span",
+			className: "name"
+		},
+		"@picker>panel>empty": {
+			tagName: "p",
+			className: "empty"
+		},
+		"@picker>value": {
+			tagName: "input",
+			className: "value",
+			attrs: { type: "hidden" }
+		},
+		"@picker>visual>icon": {
+			tagName: "i",
+			className: "icon"
+		},
+		"@picker>visual>image": {
+			tagName: "img",
+			className: "image"
+		},
+		"@picker>visual>swatch": {
+			tagName: "span",
+			className: "swatch"
+		}
+	};
+	/** Strings are shorthand for `{ value, label }`; everything else is copied as-is. */
+	function toOptions(list) {
+		return (list ?? []).map((entry) => typeof entry === "string" ? {
+			value: entry,
+			label: entry
+		} : {
+			...entry,
+			value: String(entry.value)
+		});
+	}
+	var _selected = /* @__PURE__ */ new WeakMap();
+	var _cells = /* @__PURE__ */ new WeakMap();
+	var _root = /* @__PURE__ */ new WeakMap();
+	var _trigger = /* @__PURE__ */ new WeakMap();
+	var _label$1 = /* @__PURE__ */ new WeakMap();
+	var _preview$1 = /* @__PURE__ */ new WeakMap();
+	var _panel = /* @__PURE__ */ new WeakMap();
+	var _search = /* @__PURE__ */ new WeakMap();
+	var _empty = /* @__PURE__ */ new WeakMap();
+	var _value = /* @__PURE__ */ new WeakMap();
+	var _options = /* @__PURE__ */ new WeakMap();
+	var _placeholder = /* @__PURE__ */ new WeakMap();
+	var _PickerBuilder_brand = /* @__PURE__ */ new WeakSet();
+	var _outside = /* @__PURE__ */ new WeakMap();
+	var PickerBuilder = class extends Builder$1 {
+		constructor(config = {}) {
+			super();
+			_classPrivateMethodInitSpec(this, _PickerBuilder_brand);
+			_defineProperty(this, "builderId", "input-picker");
+			_defineProperty(this, "name", "input-picker");
+			_defineProperty(
+				this,
+				/** Short specifier the package maps to `InputPicker.css` — the file-uploader pattern. */
+				"stylesheet",
+				"./picker.css"
+			);
+			_defineProperty(this, "config", void 0);
+			_classPrivateFieldInitSpec(this, _selected, []);
+			_classPrivateFieldInitSpec(this, _cells, /* @__PURE__ */ new Map());
+			_classPrivateFieldInitSpec(this, _root, null);
+			_classPrivateFieldInitSpec(this, _trigger, null);
+			_classPrivateFieldInitSpec(this, _label$1, null);
+			_classPrivateFieldInitSpec(this, _preview$1, null);
+			_classPrivateFieldInitSpec(this, _panel, null);
+			_classPrivateFieldInitSpec(this, _search, null);
+			_classPrivateFieldInitSpec(this, _empty, null);
+			_classPrivateFieldInitSpec(this, _value, null);
+			_classPrivateFieldInitSpec(this, _options, []);
+			_classPrivateFieldInitSpec(this, _placeholder, "");
+			_classPrivateFieldInitSpec(this, _outside, (event) => {
+				if (!_assertClassBrand(_PickerBuilder_brand, this, _isOpen).call(this) || !_classPrivateFieldGet2(_root, this)) return;
+				if (_classPrivateFieldGet2(_root, this).contains(event.target)) return;
+				this.close();
+			});
+			this.config = this.resolveConfig({
+				themeId: "default",
+				namespace: null,
+				emit: () => {},
+				selectors: PICKER_SELECTORS,
+				kind: "icon",
+				expanded: false,
+				searchable: true,
+				columns: 6,
+				isMultiple: false,
+				placeholder: "Pilih…"
+			}, config);
+		}
+		/** The selection as plain strings — what the hidden input and the form see. */
+		get value() {
+			return [..._classPrivateFieldGet2(_selected, this)];
+		}
+		/** Adds (or replaces) a selection without a pointer: `multiple` decides which. */
+		select(value) {
+			const next = Array.isArray(value) ? value : [value];
+			_classPrivateFieldSet2(_selected, this, this.config.isMultiple ? [...new Set(next)] : next.slice(0, 1));
+			_assertClassBrand(_PickerBuilder_brand, this, _paint).call(this);
+		}
+		prepare(data = {}) {
+			_classPrivateFieldSet2(_options, this, toOptions(data.options));
+			_classPrivateFieldSet2(_placeholder, this, data.placeholder || this.config.placeholder);
+			_classPrivateFieldSet2(_selected, this, _assertClassBrand(_PickerBuilder_brand, this, _readValue).call(this, data.value));
+			_classPrivateFieldGet2(_cells, this).clear();
+			const root = this.render("@picker", data);
+			_classPrivateFieldSet2(_root, this, root);
+			if (!this.config.expanded) {
+				const trigger = this.render("@picker>trigger", data);
+				_classPrivateFieldSet2(_preview$1, this, this.render("@picker>trigger>preview", data));
+				_classPrivateFieldSet2(_label$1, this, this.render("@picker>trigger>label", data));
+				trigger.append(_classPrivateFieldGet2(_preview$1, this), _classPrivateFieldGet2(_label$1, this));
+				trigger.setAttribute("aria-haspopup", "listbox");
+				trigger.setAttribute("aria-expanded", "false");
+				_classPrivateFieldSet2(_trigger, this, trigger);
+				root.appendChild(trigger);
+			}
+			const panel = this.render("@picker>panel", data);
+			_classPrivateFieldSet2(_panel, this, panel);
+			if (!this.config.expanded && _classPrivateFieldGet2(_trigger, this)) {
+				panel.setAttribute("popover", "manual");
+				const anchor = `--picker-${Math.random().toString(36).slice(2, 8)}`;
+				_classPrivateFieldGet2(_trigger, this).style.setProperty("anchor-name", anchor);
+				panel.style.setProperty("position-anchor", anchor);
+			}
+			if (this.config.searchable) {
+				const search = this.render("@picker>panel>search", data);
+				search.type = "search";
+				search.placeholder = "Filter…";
+				search.setAttribute("aria-label", `${data.title ?? "Pilihan"}: filter`);
+				_classPrivateFieldSet2(_search, this, search);
+				panel.appendChild(search);
+			}
+			const grid = this.render("@picker>panel>grid", data);
+			for (const option of _classPrivateFieldGet2(_options, this)) {
+				const cell = this.render("@picker>panel>grid>option", option);
+				cell.dataset.value = option.value;
+				cell.setAttribute("role", "option");
+				const visual = this.render("@picker>panel>grid>option>preview", option);
+				const name = this.render("@picker>panel>grid>option>name", option);
+				visual.appendChild(_assertClassBrand(_PickerBuilder_brand, this, _visual).call(this, option));
+				cell.append(visual, name);
+				if (option.label || option.value) cell.title = option.label ?? option.value;
+				_classPrivateFieldGet2(_cells, this).set(option.value, cell);
+				grid.appendChild(cell);
+			}
+			const empty = this.render("@picker>panel>empty", data);
+			empty.textContent = "Tidak ada pilihan.";
+			empty.hidden = true;
+			_classPrivateFieldSet2(_empty, this, empty);
+			panel.append(grid, empty);
+			root.appendChild(panel);
+			const value = this.render("@picker>value", data);
+			value.name = data.name || data.id || this.config.namespace || "picker";
+			value.value = _classPrivateFieldGet2(_selected, this).join(",");
+			_classPrivateFieldSet2(_value, this, value);
+			root.appendChild(value);
+			_assertClassBrand(_PickerBuilder_brand, this, _paint).call(this);
+			return root;
+		}
+		template(typeKey, el, payload) {
+			switch (typeKey) {
+				case "@picker":
+					el.dataset.kind = this.config.kind;
+					el.dataset.expanded = String(this.config.expanded);
+					el.style.setProperty("--picker-columns", String(this.config.columns));
+					break;
+				case "@picker>panel>grid>option>name":
+					el.textContent = payload?.label ?? payload?.value ?? "";
+					break;
+				case "@picker>panel>grid>option>preview": {
+					const option = payload;
+					if (option?.label) el.setAttribute("aria-label", option.label);
+					el.setAttribute("aria-hidden", "true");
+					break;
+				}
+				case "@picker>visual>icon":
+					if (typeof payload === "string" && payload) {
+						const tokens = payload.split(/[.\s]+/).filter(Boolean);
+						if (tokens.length) el.classList.add(...tokens);
+					}
+					break;
+				case "@picker>visual>image":
+					if (payload?.src) {
+						el.src = payload.src;
+						el.alt = payload.label ?? payload.value ?? "";
+						el.loading = "lazy";
+					}
+					break;
+				case "@picker>visual>swatch":
+					if (payload?.color) el.style.setProperty("--picker-swatch", payload.color);
+					break;
+				case "@picker>value": el.setAttribute("type", "hidden");
+			}
+		}
+		initialize() {
+			const root = _classPrivateFieldGet2(_root, this);
+			if (!root) return;
+			_classPrivateFieldGet2(_trigger, this)?.addEventListener("click", () => {
+				if (this.config.expanded) return;
+				_assertClassBrand(_PickerBuilder_brand, this, _isOpen).call(this) ? this.close() : this.open();
+			});
+			_classPrivateFieldGet2(_panel, this)?.addEventListener("click", (event) => {
+				const cell = event.target?.closest("[role='option']");
+				if (cell?.dataset.value !== void 0) _assertClassBrand(_PickerBuilder_brand, this, _pick).call(this, cell.dataset.value);
+			});
+			_classPrivateFieldGet2(_search, this)?.addEventListener("input", () => _assertClassBrand(_PickerBuilder_brand, this, _filter).call(this, _classPrivateFieldGet2(_search, this)?.value ?? ""));
+			_classPrivateFieldGet2(_panel, this)?.addEventListener("keydown", (event) => {
+				if (event.key !== "Escape" || this.config.expanded) return;
+				event.preventDefault();
+				this.close();
+				_classPrivateFieldGet2(_trigger, this)?.focus();
+			});
+			document.addEventListener("pointerdown", _classPrivateFieldGet2(_outside, this));
+			root.addEventListener("picker:destroy", () => {
+				document.removeEventListener("pointerdown", _classPrivateFieldGet2(_outside, this));
+			}, { once: true });
+		}
+		/** Opens the popover panel. No-op in the expanded look. */
+		open() {
+			if (!_classPrivateFieldGet2(_panel, this) || this.config.expanded) return;
+			_classPrivateFieldGet2(_panel, this).dataset.open = "true";
+			_classPrivateFieldGet2(_trigger, this)?.setAttribute("aria-expanded", "true");
+			_assertClassBrand(_PickerBuilder_brand, this, _showPopover).call(this, true);
+			_classPrivateFieldGet2(_search, this)?.focus();
+		}
+		/** Closes the popover panel. No-op in the expanded look. */
+		close() {
+			if (!_classPrivateFieldGet2(_panel, this) || this.config.expanded) return;
+			delete _classPrivateFieldGet2(_panel, this).dataset.open;
+			_classPrivateFieldGet2(_trigger, this)?.setAttribute("aria-expanded", "false");
+			_assertClassBrand(_PickerBuilder_brand, this, _showPopover).call(this, false);
+		}
+	};
+	/** The panel opens only through native popover when the platform supports it. */
+	function _showPopover(show) {
+		const panel = _classPrivateFieldGet2(_panel, this);
+		if (!panel || typeof panel.showPopover !== "function") return;
+		try {
+			show ? panel.showPopover() : panel.hidePopover();
+		} catch {}
+	}
+	function _isOpen() {
+		return _classPrivateFieldGet2(_panel, this)?.dataset.open === "true";
+	}
+	function _pick(value) {
+		if (this.config.isMultiple) _classPrivateFieldSet2(_selected, this, _classPrivateFieldGet2(_selected, this).includes(value) ? _classPrivateFieldGet2(_selected, this).filter((entry) => entry !== value) : [..._classPrivateFieldGet2(_selected, this), value]);
+		else {
+			_classPrivateFieldSet2(_selected, this, [value]);
+			this.close();
+		}
+		_assertClassBrand(_PickerBuilder_brand, this, _paint).call(this);
+		_assertClassBrand(_PickerBuilder_brand, this, _notify).call(this);
+	}
+	/** Hidden cells disappear; the empty note speaks only when nothing matches. */
+	function _filter(query) {
+		const needle = query.trim().toLowerCase();
+		let visible = 0;
+		for (const option of _classPrivateFieldGet2(_options, this)) {
+			const cell = _classPrivateFieldGet2(_cells, this).get(option.value);
+			if (!cell) continue;
+			const haystack = `${option.label ?? ""} ${option.value}`.toLowerCase();
+			const match = !needle || haystack.includes(needle);
+			cell.hidden = !match;
+			if (match) visible += 1;
+		}
+		if (_classPrivateFieldGet2(_empty, this)) _classPrivateFieldGet2(_empty, this).hidden = visible > 0;
+	}
+	/** Pushes `#selected` into the DOM: cells, trigger preview and the hidden input. */
+	function _paint() {
+		for (const [value, cell] of _classPrivateFieldGet2(_cells, this)) cell.setAttribute("aria-selected", String(_classPrivateFieldGet2(_selected, this).includes(value)));
+		const chosen = _classPrivateFieldGet2(_options, this).find((option) => option.value === _classPrivateFieldGet2(_selected, this)[0]);
+		if (_classPrivateFieldGet2(_preview$1, this)) {
+			_classPrivateFieldGet2(_preview$1, this).replaceChildren();
+			if (chosen) _classPrivateFieldGet2(_preview$1, this).appendChild(_assertClassBrand(_PickerBuilder_brand, this, _visual).call(this, chosen));
+		}
+		if (_classPrivateFieldGet2(_label$1, this)) {
+			_classPrivateFieldGet2(_label$1, this).textContent = chosen ? _classPrivateFieldGet2(_selected, this).length > 1 ? `${chosen.label ?? chosen.value} +${_classPrivateFieldGet2(_selected, this).length - 1}` : chosen.label ?? chosen.value : _classPrivateFieldGet2(_placeholder, this);
+			_classPrivateFieldGet2(_label$1, this).classList.toggle("is-placeholder", !chosen);
+		}
+		if (_classPrivateFieldGet2(_value, this)) _classPrivateFieldGet2(_value, this).value = _classPrivateFieldGet2(_selected, this).join(",");
+		_classPrivateFieldGet2(_root, this)?.classList.toggle("is-empty", _classPrivateFieldGet2(_selected, this).length === 0);
+	}
+	/** The visual a kind draws. One function, so trigger and cells never drift. */
+	function _visual(option) {
+		const kind = this.config.kind;
+		if (kind === "swatch") return this.render("@picker>visual>swatch", option);
+		if (kind === "image" || kind === "media") {
+			const image = this.render("@picker>visual>image", option);
+			if (!option.src) {
+				const name = option.icon;
+				return name ? this.render("@picker>visual>icon", name) : _assertClassBrand(_PickerBuilder_brand, this, _letter).call(this, option);
+			}
+			return image;
+		}
+		const name = option.icon ?? option.value;
+		return name ? this.render("@picker>visual>icon", name) : _assertClassBrand(_PickerBuilder_brand, this, _letter).call(this, option);
+	}
+	/** Last resort preview: the option's initial, so a cell is never blank. */
+	function _letter(option) {
+		const span = document.createElement("span");
+		span.className = "letter";
+		span.textContent = (option.label ?? option.value).charAt(0).toUpperCase();
+		return span;
+	}
+	/** Value may arrive as an array, a comma string, or nothing. */
+	function _readValue(value) {
+		if (Array.isArray(value)) return value.map(String);
+		if (typeof value === "string" && value) return value.split(",").map((entry) => entry.trim()).filter(Boolean);
+		return [];
+	}
+	/** One event pair: `change` for forms, `picker:change` for a host that listens by name. */
+	function _notify() {
+		const detail = {
+			value: _classPrivateFieldGet2(_selected, this).join(","),
+			values: this.value,
+			name: _classPrivateFieldGet2(_value, this)?.name ?? ""
+		};
+		_classPrivateFieldGet2(_value, this)?.dispatchEvent(new Event("change", { bubbles: true }));
+		_classPrivateFieldGet2(_root, this)?.dispatchEvent(new CustomEvent("picker:change", {
+			detail,
+			bubbles: true
+		}));
+		this.config.emit?.("picker:change", detail);
+	}
+	/** Field-level settings and the builder key each one feeds. */
+	var SETTINGS = [
+		["style", "kind"],
+		["column", "columns"],
+		["expanded", "expanded"],
+		["searchable", "searchable"],
+		["isMultiple", "isMultiple"],
+		["placeholder", "placeholder"]
+	];
+	var _context$1 = /* @__PURE__ */ new WeakMap();
+	/**
+	* Picker input module.
+	*
+	* `type: "picker"` is a grid of choices — icons, swatches, images — owned by
+	* `PickerBuilder`, not by an `@field>` selector. Keeping the builder out of `InputBuilder`
+	* means a project that never declares a picker never compiles it.
+	*
+	* Settings live flat on the field's `config`, next to `options`, using the same vocabulary
+	* the rest of the schema already speaks:
+	*
+	*   `style`     — `icon | image | media | swatch` (the cell visual)
+	*   `column`    — grid track count, like a row's `column`
+	*   `expanded`  — print the grid inline instead of behind the trigger's popover
+	*   `searchable`, `isMultiple`, `placeholder`
+	*/
+	var PickerInputModule = class {
+		constructor(context) {
+			_classPrivateFieldInitSpec(this, _context$1, void 0);
+			_classPrivateFieldSet2(_context$1, this, context);
+		}
+		/**
+		* Builds the picker for a `picker` field.
+		*
+		* @param field - Resolved field payload.
+		* @returns The picker root, or `null` for any other type.
+		*/
+		renderControl(field) {
+			if (field.type !== "picker") return null;
+			const cfg = field.config ?? {};
+			const settings = {};
+			for (const [from, to] of SETTINGS) {
+				const value = cfg[from];
+				if (value !== void 0) settings[to] = value;
+			}
+			const payload = {
+				id: field.id,
+				title: field.label ?? field.title,
+				name: field.name || field.id,
+				placeholder: field.placeholder,
+				value: field.value,
+				options: cfg.options ?? []
+			};
+			return new PickerBuilder({
+				...settings,
+				themeId: _classPrivateFieldGet2(_context$1, this).builderConfig.themeId || "default",
+				namespace: _classPrivateFieldGet2(_context$1, this).builderConfig.namespace,
+				emit: _classPrivateFieldGet2(_context$1, this).builderConfig.emit
+			}).create({ content: payload });
+		}
+	};
+	SETTINGS.map(([from]) => from);
+	/**
+	* Picker module definition.
+	*
+	* @example
+	* // registered by INPUT_MODULE_DEFINITIONS; omit it from a custom preset and a
+	* // `picker` field degrades to a native select over the same options.
+	*/
+	var pickerInputModule = {
+		id: INPUT_MODULE_IDS.picker,
+		load: (context) => new PickerInputModule(context)
+	};
 	// packages/components/input/FieldTypes.ts
 	/** Attributes shared by every free-text control. */
 	var TEXTUAL = [
@@ -14305,6 +26069,51 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 		"value",
 		"required",
 		"disabled"
+	];
+	/**
+	* Keys the builder itself consumes and must never forward to the DOM.
+	*
+	* `title` is the important one: it is **not** the HTML `title` attribute. It is the legacy
+	* shorthand for `[id, name, label, placeholder]` and is read as label text
+	* (`input.label ?? input.title`). Renaming it would break every consumer schema, so it
+	* stays an alias and stays out of the attribute matrix.
+	*/
+	var INPUT_STRUCTURAL_KEYS = [
+		"type",
+		"id",
+		"name",
+		"title",
+		"label",
+		"value",
+		"config",
+		"info",
+		"input",
+		"group",
+		"row",
+		"column",
+		"wide",
+		"span",
+		"condition",
+		"then",
+		"table",
+		"legend",
+		"description",
+		"infos",
+		"class",
+		"className",
+		"position",
+		"useLabel",
+		"display",
+		"picker",
+		"editable",
+		"actions",
+		"popover",
+		"options",
+		"steps",
+		"step",
+		"isLast",
+		"formId",
+		"modules"
 	];
 	/** The matrix. Every `InputType` must appear, so a new type cannot be half-added. */
 	var INPUT_TYPE_REGISTRY = {
@@ -14479,15 +26288,39 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 	function inputTypeOf(type) {
 		return INPUT_TYPE_REGISTRY[type ?? "text"] ?? INPUT_TYPE_REGISTRY.text;
 	}
-	// packages/components/input/InputModuleTypes.ts
-	/** Stable ids for input sub-modules. */
-	var INPUT_MODULE_IDS = {
-		dropdown: "dropdown",
-		file: "file",
-		controls: "controls",
-		popover: "popover",
-		picker: "picker"
-	};
+	/** Whether a DOM attribute is meaningful for this field type. */
+	function isInputAttributeAllowed(type, attribute) {
+		return inputTypeOf(type).attributes.includes(attribute);
+	}
+	/**
+	* Splits a schema into the attributes a type accepts and the ones it does not.
+	*
+	* Used by `Attribute.ts` as the validator, and the reason the matrix lives in one place:
+	* the renderer and the validator can never disagree about what a type may carry.
+	*
+	* @param type - Field type (`"checkbox"`, `"number"`, …).
+	* @param schema - Keys to check; structural keys are ignored, not reported.
+	* @returns `accepted` and `rejected` attribute names, plus the structural keys found.
+	*/
+	function scanInputAttributes(type, schema) {
+		const definition = inputTypeOf(type);
+		const accepted = [];
+		const rejected = [];
+		const structural = [];
+		for (const key of Object.keys(schema)) {
+			if (INPUT_STRUCTURAL_KEYS.includes(key)) {
+				structural.push(key);
+				continue;
+			}
+			if (definition.attributes.includes(key)) accepted.push(key);
+			else rejected.push(key);
+		}
+		return {
+			accepted,
+			rejected,
+			structural
+		};
+	}
 	// packages/components/input/InputRegistry.ts
 	/**
 	* Input module registry — **data and helpers only, zero implementations.**
@@ -14496,12 +26329,13 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 	* field asks for them: a dropdown (a whole builder), the uploader (~1.8k lines), the
 	* action button set, and popovers. This file declares them as **refs** (`InputModuleManifest`,
 	* strings) and offers the helpers that walk a preset; the live definitions
-	* (`INPUT_MODULE_DEFINITIONS`, `{ id, load }`) live in `./InputModules`, behind the
-	* `@aio-ui/input/modules` subpath.
+	* (`INPUT_MODULE_DEFINITIONS`, `{ id, load }`) are re-exported from `./index`, which
+	* provides them from each component subpath.
 	*
-	* That split is deliberate: importing `@aio-ui/input` must not compile the four modules.
-	* `scripts/bundle-probe.mjs` proves it against the parsed module graph — which is also why
-	* no helper here may name a default preset: a default parameter is an import edge.
+	* The root pulls the four modules (one door), but they are also published beside their own
+	* component subpaths, so a bundler that only imports a field keeps the other builders out.
+	* No helper here may name a default preset: a default parameter is an import edge, and the
+	* helpers must stay usable without one.
 	*
 	* The helpers therefore take an **optional** preset and do nothing without one. There is
 	* nothing to mount, read or offer when the host declared no modules — that is a capability,
@@ -14545,27 +26379,27 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 	var INPUT_MODULE_MANIFEST = [
 		{
 			id: "dropdown",
-			path: "@aio-ui/input/dropdown/module",
+			path: "@aio-ui/input/dropdown",
 			export: "dropdownInputModule"
 		},
 		{
 			id: "picker",
-			path: "@aio-ui/input/picker/module",
+			path: "@aio-ui/input/picker",
 			export: "pickerInputModule"
 		},
 		{
 			id: "file",
-			path: "@aio-ui/input/file-uploader/module",
+			path: "@aio-ui/input/file-uploader",
 			export: "fileUploaderInputModule"
 		},
 		{
 			id: "controls",
-			path: "@aio-ui/input/controls/module",
+			path: "@aio-ui/input/controls",
 			export: "inputControlsInputModule"
 		},
 		{
 			id: "popover",
-			path: "@aio-ui/input/popover/module",
+			path: "@aio-ui/input",
 			export: "popoverInputModule"
 		}
 	];
@@ -14586,6 +26420,29 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 		const { adapters, dispose } = adaptersOf(preset, { builderConfig: { themeId: "default" } });
 		for (const module of adapters) module.mount?.(root);
 		dispose();
+	}
+	/**
+	* Builds a control set for a scope — a field wrapper or a whole group.
+	*
+	* @param scope - Element the set acts on.
+	* @param actions - Declared actions; the module normalises the shape.
+	* @param position - Where the buttons sit relative to the scope.
+	* @param preset - Definitions to resolve. Omit it and there is no controls module to ask.
+	* @returns The controls node, or `null` when the preset has no controls module.
+	*
+	* @summary The group-level entry point: `FormBuilder` offers a `<fieldset>` here and never
+	* learns that buttons exist, and a preset without the `controls` module simply has no
+	* capability rather than a dead button set.
+	*/
+	function mountControls(scope, actions, position = "right", preset) {
+		if (!preset?.length) return null;
+		const { adapters, dispose } = adaptersOf(preset, { builderConfig: { themeId: "default" } });
+		const node = adapters.find((m) => typeof m.renderActions === "function")?.renderActions?.(scope, {
+			actions,
+			position
+		}) ?? null;
+		dispose();
+		return node;
 	}
 	/**
 	* The files currently selected inside a form, keyed by input name.
@@ -14614,7 +26471,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 	*
 	* @example
 	* // A field fell back to a native select, so say it once.
-	* reportMissing({ capability: "dropdown", module: "dropdown", fix: "@aio-ui/input/dropdown/module (dropdownInputModule)", consequence: "the field falls back to a native select with the same options", severity: "warn" }, { seen });
+	* reportMissing({ capability: "dropdown", module: "dropdown", fix: "@aio-ui/input/dropdown (dropdownInputModule)", consequence: "the field falls back to a native select with the same options", severity: "warn" }, { seen });
 	*/
 	function reportMissing(report, options = {}) {
 		const { owner = "InputBuilder", seen, emit = null } = options;
@@ -14802,7 +26659,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 			const cfg = _classPrivateFieldGet2(_input, this).config;
 			const definition = inputTypeOf(_classPrivateFieldGet2(_input, this).type);
 			_classPrivateFieldSet2(_modules, this, [..._classPrivateFieldGet2(_loader, this)?.resolveAll(_get_moduleContext.call(_assertClassBrand(_InputBuilder_brand, this))) ?? [], ..._classPrivateFieldGet2(_live, this)]);
-			if (cfg?.actions && !_assertClassBrand(_InputBuilder_brand, this, _offers).call(this, "renderActions")) _assertClassBrand(_InputBuilder_brand, this, _missing).call(this, "actions", INPUT_MODULE_IDS.controls, "@aio-ui/input/controls/module (inputControlsInputModule)", "the declared action buttons would never render.", "error");
+			if (cfg?.actions && !_assertClassBrand(_InputBuilder_brand, this, _offers).call(this, "renderActions")) _assertClassBrand(_InputBuilder_brand, this, _missing).call(this, "actions", INPUT_MODULE_IDS.controls, "@aio-ui/input/controls (inputControlsInputModule)", "the declared action buttons would never render.", "error");
 			const wrapper = this.render("@field", _classPrivateFieldGet2(_input, this));
 			const labelText = _classPrivateFieldGet2(_input, this).label ?? _classPrivateFieldGet2(_input, this).title;
 			const isToggle = _classPrivateFieldGet2(_input, this).type === "checkbox" || _classPrivateFieldGet2(_input, this).type === "radio";
@@ -14828,11 +26685,11 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 				if (!controlKey) {
 					const type = String(_classPrivateFieldGet2(_input, this).type ?? "");
 					const module = INPUT_MODULE_IDS[type] ?? type;
-					_assertClassBrand(_InputBuilder_brand, this, _missing).call(this, type, module, `@aio-ui/input/${module}/module (${module}InputModule)`, "the field falls back to a native select over the same options.");
+					_assertClassBrand(_InputBuilder_brand, this, _missing).call(this, type, module, `@aio-ui/input/${module} (${module}InputModule)`, "the field falls back to a native select over the same options.");
 				}
 				if ((_classPrivateFieldGet2(_input, this).type === "text" || _classPrivateFieldGet2(_input, this).type === "number") && cfg?.className === "loading") inputEl.classList.add("loading");
 			}
-			if (_classPrivateFieldGet2(_input, this).type === "file" && !_assertClassBrand(_InputBuilder_brand, this, _offers).call(this, "getFiles")) _assertClassBrand(_InputBuilder_brand, this, _missing).call(this, "file", INPUT_MODULE_IDS.file, "@aio-ui/input/file-uploader/module (fileUploaderInputModule)", "the field is a plain file input: no preview, and onFileSelected never fires.");
+			if (_classPrivateFieldGet2(_input, this).type === "file" && !_assertClassBrand(_InputBuilder_brand, this, _offers).call(this, "getFiles")) _assertClassBrand(_InputBuilder_brand, this, _missing).call(this, "file", INPUT_MODULE_IDS.file, "@aio-ui/input/file-uploader (fileUploaderInputModule)", "the field is a plain file input: no preview, and onFileSelected never fires.");
 			if (inputEl) this.applyAttributes(inputEl, _classPrivateFieldGet2(_input, this));
 			if (_classPrivateFieldGet2(_input, this).editable === true || cfg?.editable === true) wrapper.setAttribute("data-editable", "true");
 			if (_classPrivateFieldGet2(_input, this).info) {
@@ -14842,7 +26699,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 			if (inputEl) inputEl.__outer ? wrapper.appendChild(inputEl.__outer) : wrapper.appendChild(inputEl);
 			if (inputEl) {
 				for (const module of _classPrivateFieldGet2(_modules, this)) module.decorate?.(wrapper, inputEl, _classPrivateFieldGet2(_input, this), _get_moduleContext.call(_assertClassBrand(_InputBuilder_brand, this)));
-				if (cfg?.popover && _get_popoverMissing.call(_assertClassBrand(_InputBuilder_brand, this))) _assertClassBrand(_InputBuilder_brand, this, _missing).call(this, "popover", INPUT_MODULE_IDS.popover, "@aio-ui/input/popover/module (popoverInputModule)", "config.popover is ignored and no anchor attaches to the control.");
+				if (cfg?.popover && _get_popoverMissing.call(_assertClassBrand(_InputBuilder_brand, this))) _assertClassBrand(_InputBuilder_brand, this, _missing).call(this, "popover", INPUT_MODULE_IDS.popover, "@aio-ui/input (popoverInputModule)", "config.popover is ignored and no anchor attaches to the control.");
 			}
 			return wrapper;
 		}
@@ -15049,14 +26906,458 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 			placeholder: "you@example.com"
 		}
 	});
+	var _PopoverInputModule_brand = /* @__PURE__ */ new WeakSet();
+	/**
+	* Popover module.
+	*
+	* `config.popover` may be an HTML string or a ready element (a date picker, a search
+	* panel). The focus/blur plumbing and the value sync-back live here, not in
+	* `InputBuilder`, so the field renderer never learns about popovers.
+	*/
+	var PopoverInputModule = class {
+		constructor() {
+			_classPrivateMethodInitSpec(this, _PopoverInputModule_brand);
+		}
+		/**
+		* Attaches the configured popover to the control.
+		*
+		* @param _wrapper - The `.field` element.
+		* @param control - The rendered control, used as the anchor.
+		* @param field - Resolved field payload.
+		*/
+		decorate(_wrapper, control, field) {
+			const target = field.config?.popover;
+			if (!target) return;
+			const popover = typeof target === "string" ? _assertClassBrand(_PopoverInputModule_brand, this, _parse).call(this, target) : target;
+			if (!popover) return;
+			if (!popover.hasAttribute("popover")) popover.setAttribute("popover", "manual");
+			const anchor = control.id ? `--anchor-${control.id}` : null;
+			if (anchor) {
+				control.style.setProperty("anchor-name", anchor);
+				popover.style.setProperty("position-anchor", anchor);
+			}
+			control.insertAdjacentElement("afterend", popover);
+			control.addEventListener("focus", () => {
+				if (typeof HTMLElement.prototype.showPopover === "function") popover.showPopover();
+			});
+			control.addEventListener("blur", (event) => {
+				const related = event.relatedTarget;
+				if (related && popover.contains(related)) {
+					popover.addEventListener("blur", (inner) => {
+						const next = inner.relatedTarget;
+						if (popover.contains(next) || next === control) return;
+						const innerField = popover.querySelector("textarea, input, select");
+						if (innerField && "value" in control) {
+							control.value = innerField.value;
+							control.dispatchEvent(new Event("input", { bubbles: true }));
+							control.dispatchEvent(new Event("change", { bubbles: true }));
+						}
+						if (typeof HTMLElement.prototype.hidePopover === "function") popover.hidePopover();
+					}, {
+						capture: true,
+						once: true
+					});
+					return;
+				}
+				if (typeof HTMLElement.prototype.hidePopover === "function") popover.hidePopover();
+			});
+		}
+	};
+	/** Parses an HTML string into a single element. */
+	function _parse(html) {
+		const holder = document.createElement("div");
+		holder.innerHTML = html.trim();
+		return holder.firstElementChild;
+	}
+	/**
+	* Popover module definition.
+	*
+	* @example
+	* // registered by INPUT_MODULE_DEFINITIONS; drop it and `config.popover` is ignored
+	*/
+	var popoverInputModule = {
+		id: INPUT_MODULE_IDS.popover,
+		load: () => new PopoverInputModule()
+	};
+	// packages/components/input/Attribute.ts
+	var baseInputConfig = {
+		label: "",
+		name: "",
+		value: "",
+		required: false,
+		disabled: false
+	};
+	var InputAttributeBuilder = class {
+		static resolveMinMaxType(inputType, key) {
+			if (!["min", "max"].includes(key)) return null;
+			switch (inputType) {
+				case "date": return "date";
+				case "time": return "time";
+				case "datetime-local": return "datetime-local";
+				default: return "number";
+			}
+		}
+		static buildSchemaForType(inputType, header = {}) {
+			const merged = {
+				...baseInputConfig,
+				...this.inputs[inputType],
+				...header,
+				type: inputType
+			};
+			const schema = {
+				...merged,
+				template: ""
+			};
+			for (const attrKey in this.attributes) {
+				const key = attrKey;
+				const schemaDef = this.attributes[key];
+				if (!schemaDef) continue;
+				if (!(key in merged)) continue;
+				let value = merged[key];
+				let attrType = schemaDef.type;
+				if (["min", "max"].includes(key)) {
+					const resolved = this.resolveMinMaxType(inputType, key);
+					if (resolved) attrType = resolved;
+				}
+				if (inputType === "checkbox" || inputType === "radio") {
+					if (typeof value === "boolean") {
+						schema.checked = value;
+						value = value;
+					}
+				}
+				if (inputType === "file") delete schema.value;
+				const elementId = `${header.id ? header.id.toLowerCase().replace(/[\s_]+/g, "-") : header.title ? header.title.toLowerCase().replace(/[\s_]+/g, "-") : inputType}-${schemaDef.name}`;
+				let attrConfig = {
+					type: attrType,
+					title: schemaDef.name,
+					label: schemaDef.label,
+					id: elementId,
+					value,
+					...schemaDef.config ? { config: schemaDef.config } : {}
+				};
+				schema[key] = {
+					input: attrType,
+					value,
+					...schemaDef.config ? { config: schemaDef.config } : {},
+					template: new InputBuilder().create({ content: attrConfig })
+				};
+			}
+			return schema;
+		}
+		/**
+		* Checks a field schema against the registry matrix for its type.
+		*
+		* One source of truth: the same rows `InputBuilder` renders with decide what may be
+		* accepted, so the editor and the renderer can never disagree. The previous version
+		* kept its own copy of the matrix and returned `true` as soon as *any* key was
+		* allowed — one bad key next to one good key passed silently.
+		*
+		* @param type - Field type the schema claims.
+		* @param schema - Field schema (`{ type, id, title, placeholder, config, … }`).
+		* @param customAllowed - Extra keys this project allows beyond the matrix.
+		* @returns Accepted/rejected/structural keys; `ok` is true when nothing was rejected.
+		*/
+		static scan(type, schema, customAllowed = []) {
+			const result = scanInputAttributes(type, schema);
+			const extra = result.rejected.filter((key) => customAllowed.includes(key));
+			const rejected = result.rejected.filter((key) => !customAllowed.includes(key));
+			return {
+				type,
+				accepted: [...result.accepted, ...extra],
+				rejected,
+				structural: result.structural,
+				ok: rejected.length === 0
+			};
+		}
+		/**
+		* Boolean form of {@link scan}, kept for callers that only need a pass/fail.
+		*
+		* @param type - Field type.
+		* @param config - Field schema.
+		* @param customAllowed - Extra keys this project allows.
+		* @returns `true` when every non-structural key is valid for the type.
+		*/
+		static scanUnallowedAttrs(type, config, customAllowed = []) {
+			return this.scan(type, config, customAllowed).ok;
+		}
+		static create(headers) {
+			return headers.map((header) => {
+				const type = header.type || "text";
+				return this.buildSchemaForType(type, header);
+			});
+		}
+	};
+	_defineProperty(InputAttributeBuilder, "inputs", {
+		text: {
+			placeholder: "Enter text",
+			maxlength: 255
+		},
+		textarea: {
+			placeholder: "Enter your message",
+			rows: 3,
+			cols: 30
+		},
+		number: {
+			placeholder: "Enter a number",
+			value: 50,
+			min: 0,
+			max: 100,
+			step: 1
+		},
+		select: {
+			placeholder: "Select an option",
+			range: "sheet_range",
+			form: "form_id",
+			multiple: false
+		},
+		dropdown: {
+			placeholder: "Select an option",
+			range: "sheet_range",
+			form: "form_id",
+			multiple: false
+		},
+		picker: {
+			placeholder: "Select an option",
+			multiple: false
+		},
+		checkbox: {
+			value: "default_value",
+			checked: false
+		},
+		radio: {
+			value: "default_value",
+			range: "sheet_range"
+		},
+		range: {
+			value: 50,
+			min: 0,
+			max: 100,
+			step: 1,
+			orient: "horizontal"
+		},
+		actions: { config: { actions: ["editor"] } },
+		date: {
+			min: "yyyy-MM-dd",
+			max: "yyyy-MM-dd"
+		},
+		time: {},
+		"datetime-local": {
+			min: "YYYY-MM-DDTHH:mm",
+			max: "YYYY-MM-DDTHH:mm"
+		},
+		file: {
+			accept: "image/*,.pdf",
+			multiple: false,
+			"data-max-upload": 10,
+			"data-max-file-size": 5,
+			"data-group-unallowed": true,
+			"data-thumbnail": true,
+			"data-view": "thumbnails"
+		},
+		color: { value: "#000000" },
+		email: { placeholder: "Enter email" },
+		password: {
+			placeholder: "Enter password",
+			minlength: 8,
+			maxlength: 255
+		},
+		url: {
+			placeholder: "Enter URL",
+			pattern: "https://.*"
+		},
+		tel: {
+			placeholder: "Enter phone number",
+			pattern: ""
+		},
+		hidden: { value: "hidden_value" }
+	});
+	_defineProperty(InputAttributeBuilder, "attributes", {
+		value: {
+			name: "value",
+			type: "text",
+			value: ""
+		},
+		placeholder: {
+			name: "placeholder",
+			type: "text",
+			value: ""
+		},
+		required: {
+			name: "required",
+			type: "checkbox",
+			config: {
+				style: "toggle",
+				position: "left"
+			},
+			value: false
+		},
+		disabled: {
+			name: "disabled",
+			type: "checkbox",
+			config: {
+				style: "toggle",
+				position: "left"
+			},
+			value: false
+		},
+		min: {
+			name: "min",
+			type: "number",
+			value: ""
+		},
+		max: {
+			name: "max",
+			type: "number",
+			value: ""
+		},
+		minlength: {
+			name: "minlength",
+			type: "number",
+			value: ""
+		},
+		maxlength: {
+			name: "maxlength",
+			type: "number",
+			value: ""
+		},
+		step: {
+			name: "step",
+			type: "number",
+			value: 1
+		},
+		rows: {
+			name: "rows",
+			type: "number",
+			value: 3
+		},
+		cols: {
+			name: "cols",
+			type: "number",
+			value: 30
+		},
+		accept: {
+			name: "accept",
+			type: "text",
+			value: ""
+		},
+		multiple: {
+			name: "multiple",
+			type: "checkbox",
+			config: {
+				style: "toggle",
+				position: "left"
+			},
+			value: false
+		},
+		checked: {
+			name: "checked",
+			type: "checkbox",
+			config: {
+				style: "toggle",
+				position: "left"
+			},
+			value: false
+		},
+		orient: {
+			name: "orient",
+			type: "text",
+			value: "horizontal"
+		},
+		pattern: {
+			name: "pattern",
+			type: "text",
+			value: ""
+		},
+		["data-max-upload"]: {
+			name: "data-max-upload",
+			label: "max upload",
+			type: "number",
+			value: 10
+		},
+		["data-max-file-size"]: {
+			name: "data-max-file-size",
+			label: "max file size",
+			type: "number",
+			value: 5
+		},
+		["data-view"]: {
+			name: "data-view",
+			type: "select",
+			value: "thumbnails",
+			config: { options: ["thumbnails", "list"] }
+		},
+		["data-group-unallowed"]: {
+			name: "data-group-unallowed",
+			label: "group unallowed",
+			type: "checkbox",
+			config: {
+				style: "toggle",
+				position: "left"
+			},
+			value: false
+		},
+		["data-thumbnail"]: {
+			name: "data-thumbnail",
+			label: "display thumbnail",
+			type: "checkbox",
+			config: {
+				style: "toggle",
+				position: "left"
+			},
+			value: false
+		}
+	});
 	// packages/components/input/index.ts
+	/**
+	* Public surface of `@aio-ui/input` — curated, never `export *`.
+	*
+	* One door: the builder, the field-type matrix, the module stack and the helpers all come
+	* from the root. The module *implementations* ship beside their own component subpath
+	* (`@aio-ui/input/dropdown`, `@aio-ui/input/picker`, …) as well, so a tree-shaking
+	* bundler can still drop the dropdown builder for a text-only form — but a host never
+	* needs a second specifier to register one.
+	*/
 	var input_exports = /* @__PURE__ */ __exportAll({
+		INPUT_MODULE_DEFINITIONS: () => INPUT_MODULE_DEFINITIONS,
+		INPUT_MODULE_DEFINITION_IDS: () => INPUT_MODULE_DEFINITION_IDS,
 		INPUT_MODULE_IDS: () => INPUT_MODULE_IDS,
 		INPUT_MODULE_MANIFEST: () => INPUT_MODULE_MANIFEST,
+		INPUT_STRUCTURAL_KEYS: () => INPUT_STRUCTURAL_KEYS,
+		INPUT_TYPE_REGISTRY: () => INPUT_TYPE_REGISTRY,
+		InputAttributeBuilder: () => InputAttributeBuilder,
 		InputBuilder: () => InputBuilder,
+		collectFormValues: () => collectFormValues,
 		inputFilesOf: () => inputFilesOf,
-		mountInputModules: () => mountInputModules
+		inputTypeOf: () => inputTypeOf,
+		isInputAttributeAllowed: () => isInputAttributeAllowed,
+		mountControls: () => mountControls,
+		mountInputModules: () => mountInputModules,
+		popoverInputModule: () => popoverInputModule,
+		reportMissing: () => reportMissing,
+		scanInputAttributes: () => scanInputAttributes
 	});
+	/**
+	* The input layer's default sub-module stack, as data a `ModuleLoader` takes.
+	*
+	* Registration order is decorate order, so `controls` (the action set) runs before
+	* `popover`, which anchors to a wrapper the controls may have changed. Nothing is
+	* instantiated until a field, a form or a helper asks for it, so a host that omits the
+	* stack still renders plain labelled controls.
+	*
+	* ```ts
+	* import { InputBuilder, INPUT_MODULE_DEFINITIONS } from "@aio-ui/input";
+	* new InputBuilder({ modules: INPUT_MODULE_DEFINITIONS, type: "dropdown", options });
+	* ```
+	*/
+	var INPUT_MODULE_DEFINITIONS = [
+		dropdownInputModule,
+		pickerInputModule,
+		fileUploaderInputModule,
+		inputControlsInputModule,
+		popoverInputModule
+	];
+	/** Ids of the definitions above, so a test can pin the two shapes together. */
+	var INPUT_MODULE_DEFINITION_IDS = INPUT_MODULE_DEFINITIONS.map((definition) => String(definition.id));
 	// packages/components/markdown/Markdown.engine.ts
 	var FENCE = /^```(.*)$/;
 	var HEADING = /^(#{1,6})\s+(.*)$/;
@@ -17202,8 +29503,80 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 			type: "success"
 		}
 	});
+	// packages/components/message/adapters/FormAdapter.ts
+	var _messages = /* @__PURE__ */ new WeakMap();
+	/**
+	* Message adapter.
+	*
+	* @summary Owns every user-facing status toast. `FormBuilder` has no message
+	* renderer of its own, so unplugging this adapter only silences feedback — the
+	* form keeps working.
+	*
+	* Sentences are not written here: the adapter reads `config.messages.submit`,
+	* so wording and toast presentation belong to the form, not to the renderer.
+	*/
+	var MessageFormAdapter = class {
+		/**
+		* @param messages - `config.messages` of the form this adapter serves.
+		*/
+		constructor(messages) {
+			_classPrivateFieldInitSpec(this, _messages, void 0);
+			_classPrivateFieldSet2(_messages, this, messages);
+		}
+		/**
+		* Presents one status message next to the form.
+		*
+		* @param content - Message content; anything it provides wins over config.
+		* @param target - Form the message belongs to and whether the action succeeded.
+		* @returns Nothing.
+		*/
+		notify(content, target) {
+			if (!content) return;
+			const compose = messageDraft({
+				category: "submit",
+				slot: target.success ? "success" : "error",
+				code: target.success ? "SUBMIT_SUCCESS" : "SUBMIT_FAILED",
+				formId: target.form.id,
+				fallback: content.message || ""
+			});
+			const style = resolveStyle(_classPrivateFieldGet2(_messages, this), compose);
+			const toast = new MessageBuilder({
+				id: `msg-${target.form.id}`,
+				element: target.form,
+				duration: style.duration ?? (target.success ? 4e3 : 6e3)
+			});
+			toast.prepare({
+				header: content.header ?? style.title,
+				message: content.message || composeMessage(_classPrivateFieldGet2(_messages, this), compose),
+				type: content.type ?? style.type,
+				icon: content.icon ?? style.icon
+			});
+			toast.initialize();
+		}
+	};
+	/**
+	* Message module definition.
+	*
+	* @summary Loaded with the core preset; contributes the `notify` hook.
+	*
+	* @example
+	* // registered by FORM_ADAPTER_DEFINITIONS; no manual wiring needed
+	*/
+	var messageFormAdapter = {
+		id: FORM_MODULE_IDS.message,
+		/**
+		* Builds the message adapter.
+		*
+		* @param context - Host context; provides `config.messages` for the wording.
+		* @returns The live adapter.
+		*/
+		load: (context) => new MessageFormAdapter(context.config?.messages)
+	};
 	// packages/components/message/index.ts
-	var message_exports = /* @__PURE__ */ __exportAll({ MessageBuilder: () => MessageBuilder });
+	var message_exports = /* @__PURE__ */ __exportAll({
+		MessageBuilder: () => MessageBuilder,
+		messageFormAdapter: () => messageFormAdapter
+	});
 	// packages/components/modal/Modal.ts
 	var _destroyed = /* @__PURE__ */ new WeakMap();
 	var _ModalBuilder_brand = /* @__PURE__ */ new WeakSet();
@@ -17831,7 +30204,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 	*
 	* @example
 	* import { ModuleLoader, resolveModuleDefinitions } from "@aio-ui/module-loader";
-	* import { FORM_ADAPTER_MANIFEST } from "@aio-ui/form/FormRegistry";
+	* import { FORM_ADAPTER_MANIFEST } from "@aio-ui/form";
 	*
 	* const definitions = await resolveModuleDefinitions(FORM_ADAPTER_MANIFEST);
 	* const form = new FormBuilder({ modules: new ModuleLoader("form", definitions) });
@@ -17879,1323 +30252,6 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 		ModuleLoader: () => ModuleLoader,
 		ModuleRegistry: () => ModuleRegistry,
 		resolveModuleDefinitions: () => resolveModuleDefinitions
-	});
-	// packages/modules/router/dist/HashRouter.js
-	var HashRouter$1 = class {
-		/**
-		* @param config - Options for standalone use (`{ defaultRoute, initialTheme, validRoutes, onRouteChanged }`).
-		* @param context - Host-supplied runtime data; wins over `config` when both are given.
-		*/
-		constructor(config = {}, context) {
-			_defineProperty(this, "defaultRoute", void 0);
-			_defineProperty(this, "currentThemeId", void 0);
-			_defineProperty(this, "onRouteChanged", void 0);
-			_defineProperty(this, "validRoutes", []);
-			_defineProperty(this, "_handleHashChange", () => {
-				const state = this.parseUrlHash();
-				if (state.theme) this.currentThemeId = state.theme;
-				this.onRouteChanged(state);
-			});
-			const defaultRoute = context?.defaultRoute ?? config.defaultRoute ?? "home";
-			const initialTheme = context?.theme ?? config.initialTheme ?? "default";
-			const validRoutes = context?.routes ?? config.validRoutes ?? [];
-			const onRouteChanged = context?.onRouteChanged ?? config.onRouteChanged;
-			this.defaultRoute = this._normalizeRoute(defaultRoute);
-			this.currentThemeId = this._normalizeTheme(initialTheme) || "default";
-			this.onRouteChanged = onRouteChanged ?? (() => void 0);
-			this.validRoutes = validRoutes.map((r) => r.trim().toLowerCase());
-			window.addEventListener("hashchange", this._handleHashChange);
-		}
-		redirect(targetRoute, themeId, fragmentId = "") {
-			const activeTheme = this._normalizeTheme(themeId || this.currentThemeId);
-			const redirectState = {
-				route: this._normalizeRoute(targetRoute),
-				theme: activeTheme,
-				fragment: fragmentId.trim().replace(/^#/, "")
-			};
-			this.currentThemeId = activeTheme;
-			localStorage.setItem("active_theme", activeTheme);
-			const targetHash = this._buildHash(redirectState);
-			window.history.replaceState(null, "", targetHash);
-			return redirectState;
-		}
-		navigate(routeId, themeId, fragmentId, _isValidRoute = false) {
-			const activeTheme = this._normalizeTheme(themeId || this.currentThemeId);
-			let targetRoute = this._normalizeRoute(routeId);
-			let targetFragment = fragmentId?.trim().replace(/^#/, "") || "";
-			if (!this.validRoutes.includes(targetRoute.toLowerCase()) && !_isValidRoute) {
-				console.warn(`[Router] Redirecting dynamic section anchor click to default page path.`);
-				const correctedState = this.redirect(this.defaultRoute, activeTheme, targetRoute);
-				this.onRouteChanged(correctedState);
-				return;
-			}
-			const normalizedState = {
-				route: targetRoute,
-				theme: activeTheme,
-				fragment: targetFragment
-			};
-			window.history.pushState(null, "", this._buildHash(normalizedState));
-			this.currentThemeId = activeTheme;
-			localStorage.setItem("active_theme", activeTheme);
-			this.onRouteChanged(normalizedState);
-		}
-		parseUrlHash() {
-			const rawHash = window.location.hash.trim().replace(/^#/, "");
-			const persistedTheme = this._normalizeTheme(localStorage.getItem("active_theme"));
-			if (!rawHash) {
-				console.log("[Router] Empty URL hash. Executing central auto-redirect to home launcher...");
-				return this.redirect(this.defaultRoute, persistedTheme);
-			}
-			const [rawPathPart, queryString = ""] = rawHash.split("?");
-			const pathPart = rawPathPart.trim().replace(/^\/+/, "");
-			const queryTheme = new URLSearchParams(queryString).get("theme");
-			let extractedTheme = queryTheme ? this._normalizeTheme(queryTheme) : null;
-			let targetRoute = "";
-			let targetFragment = "";
-			const segments = pathPart.split("/").map((part) => part.trim()).filter(Boolean);
-			if (segments.length > 1) {
-				const firstPart = segments[0];
-				const remainder = segments.slice(1).join("/");
-				if (queryTheme) {
-					targetRoute = firstPart;
-					targetFragment = remainder;
-				} else if (this.validRoutes.includes(firstPart.toLowerCase())) {
-					targetRoute = firstPart;
-					targetFragment = remainder;
-				} else if (this.validRoutes.includes(remainder.toLowerCase())) {
-					extractedTheme = this._normalizeTheme(firstPart);
-					targetRoute = remainder;
-				} else {
-					targetRoute = firstPart;
-					targetFragment = remainder;
-				}
-			} else targetRoute = segments[0] || pathPart.trim();
-			let finalRoute = this._normalizeRoute(targetRoute);
-			let finalFragment = this._safeDecode(targetFragment);
-			if (!this.validRoutes.includes(finalRoute.toLowerCase())) {
-				console.log(`[Router Live] Route "${finalRoute}" is unrecognized. Delegating central redirect.`);
-				return this.redirect(this.defaultRoute, extractedTheme || persistedTheme, finalRoute);
-			}
-			const resolvedState = {
-				route: finalRoute,
-				theme: extractedTheme || persistedTheme || this.currentThemeId || "default",
-				fragment: finalFragment
-			};
-			this.currentThemeId = resolvedState.theme || this.currentThemeId;
-			if (resolvedState.theme) localStorage.setItem("active_theme", resolvedState.theme);
-			this._syncAddressBar(resolvedState, true);
-			return resolvedState;
-		}
-		/**
-		* Mengupdate daftar rute yang valid secara dinamis (misalnya ketika mendaftarkan controller baru)
-		*/
-		updateValidRoutes(validRoutes) {
-			this.validRoutes = validRoutes.map((r) => r.trim().toLowerCase());
-		}
-		updateValidRoute(route) {
-			this.validRoutes.push(route);
-		}
-		/**
-		* Pembersih memory leak saat instance dihancurkan
-		*/
-		destroy() {
-			window.removeEventListener("hashchange", this._handleHashChange);
-		}
-		/**
-		* HELPER
-		*/
-		_normalizeRoute(route) {
-			return route.trim().replace(/^#/, "").replace(/^\/+/, "") || "home";
-		}
-		_normalizeTheme(theme) {
-			return (theme || "").trim().replace(/^#/, "");
-		}
-		_buildHash(state) {
-			const route = this._normalizeRoute(state.route);
-			const theme = this._normalizeTheme(state.theme || this.currentThemeId) || "default";
-			const fragment = state.fragment?.trim().replace(/^#/, "");
-			const query = `?theme=${encodeURIComponent(theme)}`;
-			return `#${route}${fragment ? `/${fragment}` : ""}${query}`;
-		}
-		_safeDecode(value) {
-			try {
-				return decodeURIComponent(value);
-			} catch {
-				return value;
-			}
-		}
-		_syncAddressBar(state, replace = false) {
-			const normalizedHash = this._buildHash(state);
-			if (window.location.hash === normalizedHash) return;
-			if (replace) window.history.replaceState(null, "", normalizedHash);
-			else window.history.pushState(null, "", normalizedHash);
-		}
-	};
-	_defineProperty(HashRouter$1, "slot", "router");
-	// packages/modules/event-emitter/dist/EventEmitter.js
-	/**
-	* Small synchronous event bus.
-	*
-	* Two kinds of event travel through it: component-level ones (`elementAdded`, …) that a
-	* builder reports through `config.emit`, and page-level ones the shell emits around a
-	* render pass. The registry receives this emitter's `emit` once
-	* (`registry.useEmitter(emitter.emit)`) and injects it into every builder config, so a
-	* component never has to be told that the application has a bus.
-	*
-	* Unknown event names are accepted on purpose: a component may name its own
-	* (`formValidation`, `tabs:content-loaded`) without registering anything first.
-	*/
-	var EventEmitter = class {
-		constructor() {
-			_defineProperty(this, "listeners", {});
-			_defineProperty(
-				this,
-				/**
-				* Publishes an event.
-				*
-				* A throwing listener cannot stop the others: its error is logged and the loop
-				* continues, because an event bus is reporting, not control flow.
-				*/
-				"emit",
-				(event, data) => {
-					const callbacks = this.listeners[event];
-					if (!callbacks) return;
-					for (const callback of callbacks) try {
-						callback(data);
-					} catch (err) {
-						console.error(`[EventEmitter] Error executing callback for event "${event}":`, err);
-					}
-				}
-			);
-		}
-		/**
-		* Subscribes to an event.
-		*
-		* @param event - Known page/component event, or any custom component event name.
-		* @param callback - Receives the payload; known events are typed, custom ones are not.
-		*/
-		on(event, callback) {
-			if (!this.listeners[event]) this.listeners[event] = [];
-			this.listeners[event].push(callback);
-		}
-		off(event, callback) {
-			if (!this.listeners[event]) return;
-			this.listeners[event] = this.listeners[event].filter((cb) => cb !== callback);
-		}
-		clear() {
-			this.listeners = {};
-		}
-		/**
-		* Releases every listener.
-		*
-		* Named `destroy` so a host that releases its modules generically
-		* (`port.destroy?.()`) does not need a special case for this class.
-		*/
-		destroy() {
-			this.clear();
-		}
-	};
-	_defineProperty(EventEmitter, "slot", "events");
-	// packages/modules/theme/dist/ThemeRegistry.js
-	var _themes$3 = /* @__PURE__ */ new WeakMap();
-	/**
-	* Theme store.
-	*
-	* Same shape as every other registry in the framework: an instance over the `Registry`
-	* kernel, keyed by `themeId`. It stores modules only — applying a theme to the DOM is
-	* `ThemeRenderer`'s job.
-	*/
-	var ThemeRegistry$1 = class {
-		constructor() {
-			_classPrivateFieldInitSpec(this, _themes$3, new Registry$1("theme", { duplicate: "warn" }));
-		}
-		/** Number of registered themes. */
-		get size() {
-			return _classPrivateFieldGet2(_themes$3, this).size;
-		}
-		/** Registers (or replaces) a theme module. */
-		register(theme) {
-			_classPrivateFieldGet2(_themes$3, this).register(theme.themeId, theme);
-			return this;
-		}
-		/** The theme for `themeId`, or `null`. */
-		resolve(themeId) {
-			return _classPrivateFieldGet2(_themes$3, this).resolve(themeId);
-		}
-		/** Whether a theme id is registered. */
-		has(themeId) {
-			return _classPrivateFieldGet2(_themes$3, this).has(themeId);
-		}
-		/** Registered theme ids, in registration order. */
-		ids() {
-			return _classPrivateFieldGet2(_themes$3, this).ids();
-		}
-		/** All registered themes. */
-		all() {
-			return _classPrivateFieldGet2(_themes$3, this).entries().map((entry) => entry.value);
-		}
-		/** Removes every theme. */
-		clear() {
-			_classPrivateFieldGet2(_themes$3, this).clear();
-		}
-	};
-	// packages/modules/theme/dist/ThemeRenderer.js
-	var _themes$2 = /* @__PURE__ */ new WeakMap();
-	var _templates$1 = /* @__PURE__ */ new WeakMap();
-	var _id$1 = /* @__PURE__ */ new WeakMap();
-	var _active$1 = /* @__PURE__ */ new WeakMap();
-	var _ThemeRenderer_brand$1 = /* @__PURE__ */ new WeakSet();
-	/**
-	* Theme renderer — the `theme` slot.
-	*
-	* It is a plain object with three phases, not an event subscriber: the app calls
-	* `prepare` before the DOM is built, `activate` after it is attached, and `deactivate`
-	* before the page is replaced. That is why no listener has to guess the right moment,
-	* and why two apps on one page cannot steal each other's theme.
-	*
-	* Templates land in an instance `TemplateRegistry` which installs itself into the core
-	* port, replacing the old `globalThis.TemplateRegistry`.
-	*
-	* Typed structurally (`page: any`) on purpose: this package must not depend on
-	* `@aio-ui/app`, so the app's `iThemePort` accepts it by shape.
-	*/
-	var ThemeRenderer$1 = class {
-		constructor(config = {}) {
-			_classPrivateMethodInitSpec(this, _ThemeRenderer_brand$1);
-			_classPrivateFieldInitSpec(this, _themes$2, new ThemeRegistry$1());
-			_classPrivateFieldInitSpec(this, _templates$1, new TemplateRegistry$1());
-			_classPrivateFieldInitSpec(this, _id$1, void 0);
-			_classPrivateFieldInitSpec(this, _active$1, null);
-			for (const theme of config.themes ?? []) _classPrivateFieldGet2(_themes$2, this).register(theme);
-			setTemplates$1(_classPrivateFieldGet2(_templates$1, this));
-			for (const theme of _classPrivateFieldGet2(_themes$2, this).all()) _assertClassBrand(_ThemeRenderer_brand$1, this, _registerTemplates$1).call(this, theme);
-			_classPrivateFieldSet2(_id$1, this, _classPrivateFieldGet2(_themes$2, this).ids()[0] ?? "default");
-			_classPrivateFieldSet2(_active$1, this, _classPrivateFieldGet2(_themes$2, this).resolve(_classPrivateFieldGet2(_id$1, this)));
-		}
-		/** Registered theme ids. */
-		get ids() {
-			return _classPrivateFieldGet2(_themes$2, this).ids();
-		}
-		/** Currently applied theme id. */
-		get current() {
-			return _classPrivateFieldGet2(_id$1, this);
-		}
-		/**
-		* Adds a theme after construction.
-		*
-		* Registration is not tied to the constructor: a theme is just an id plus hooks, and
-		* its templates are per-instance, so adding one later is safe. If no theme was active
-		* yet (unknown id), the new one becomes the active theme.
-		*/
-		register(theme) {
-			_classPrivateFieldGet2(_themes$2, this).register(theme);
-			_assertClassBrand(_ThemeRenderer_brand$1, this, _registerTemplates$1).call(this, theme);
-			if (!_classPrivateFieldGet2(_active$1, this)) {
-				_classPrivateFieldSet2(_active$1, this, theme);
-				_classPrivateFieldSet2(_id$1, this, theme.themeId);
-			}
-		}
-		/** Switches the active theme. Unknown ids are reported and ignored. */
-		use(themeId) {
-			const next = _classPrivateFieldGet2(_themes$2, this).resolve(themeId);
-			if (!next) {
-				console.warn(`[ThemeRenderer] Unknown theme "${themeId}"; keeping "${_classPrivateFieldGet2(_id$1, this)}".`);
-				return;
-			}
-			_classPrivateFieldSet2(_active$1, this, next);
-			_classPrivateFieldSet2(_id$1, this, themeId);
-		}
-		/** Structural hook: lets the active theme rewrite the page before rendering. */
-		prepare(page, _route, themeId) {
-			this.use(themeId);
-			const theme = _classPrivateFieldGet2(_active$1, this);
-			if (!theme?.beforePageRender) return page;
-			const isDocument = Array.isArray(page?.blocks);
-			const nodes = isDocument ? page.blocks : [page];
-			const result = theme.beforePageRender(nodes, null, null);
-			if (!result) return page;
-			return isDocument ? {
-				...page,
-				blocks: result.pages
-			} : result.pages[0] ?? page;
-		}
-		/** Behavioural hook: runs once the page is live. */
-		activate(shell, blocks) {
-			_classPrivateFieldGet2(_active$1, this)?.activate(shell, Array.from(blocks.values()), { setConfig: () => void 0 });
-		}
-		/** Cleanup hook: runs before the page is replaced. */
-		deactivate(shell) {
-			_classPrivateFieldGet2(_active$1, this)?.deactivate?.(shell);
-		}
-		/** Releases the template store so a destroyed app leaves nothing installed. */
-		destroy() {
-			setTemplates$1(null);
-			_classPrivateFieldGet2(_templates$1, this).clear();
-			_classPrivateFieldGet2(_themes$2, this).clear();
-		}
-	};
-	function _registerTemplates$1(theme) {
-		const templates = theme.templates?.();
-		if (!templates) return;
-		for (const [key, handler] of Object.entries(templates)) _classPrivateFieldGet2(_templates$1, this).register(theme.themeId, key, handler);
-	}
-	_defineProperty(ThemeRenderer$1, "slot", "theme");
-	// packages/modules/animations/dist/behaviours/typewriter.js
-	var TypewriterBehaviour = class {
-		/**
-		* Pemecah karakter menggunakan Intl.Segmenter (grapheme murni)
-		*/
-		static getCharacters(text) {
-			return [...new Intl.Segmenter(document.documentElement.lang || "id", { granularity: "grapheme" }).segment(text)].map((s) => s.segment);
-		}
-		static sleep(ms) {
-			return new Promise((resolve) => setTimeout(resolve, ms));
-		}
-		static rng(min, max) {
-			return Math.floor(Math.random() * (max - min) + min);
-		}
-		/** Jeda antar karakter — ambil nilai acak bila interval berupa array (dikali faktor kecepatan) */
-		static async _typingInterval(options, speedFactor = 1) {
-			if (Array.isArray(options.interval)) await this.sleep(options.interval[this.rng(0, options.interval.length)] * speedFactor);
-			else await this.sleep(options.interval * speedFactor);
-		}
-		/**
-		* Hitung ritme jeda tanda baca (Anti-tabrakan Spasi):
-		* - akhir kalimat (. ! ? diikuti spasi/baris baru/akhir teks) -> jeda penuh,
-		*   atau setengahnya saat mode rewrite aktif;
-		* - jeda pendek (; : ,) -> delay / 6.
-		* Bila tanda pendek diikuti spasi, spasi langsung dilekatkan ke layar dan pemanggil
-		* diminta melompati indeks spasi tersebut (swallowNextChar).
-		*/
-		static _punctuationRhythm(char, nextChar, el, options) {
-			const sentenceEnders = [
-				".",
-				"!",
-				"?"
-			];
-			const shortPauses = [
-				",",
-				";",
-				":"
-			];
-			if (sentenceEnders.includes(char)) {
-				if (!nextChar || nextChar === " " || nextChar === "\n") return {
-					pauseMs: options.rewrite ? options.delay / 2 : options.delay,
-					swallowNextChar: false
-				};
-			} else if (shortPauses.includes(char)) {
-				const swallowNextChar = nextChar === " ";
-				if (swallowNextChar) el.textContent += nextChar;
-				return {
-					pauseMs: options.delay / 6,
-					swallowNextChar
-				};
-			}
-			return {
-				pauseMs: 0,
-				swallowNextChar: false
-			};
-		}
-		/** Fase ketik: tempelkan karakter satu-per-satu mengikuti ritme interval & jeda tanda baca */
-		static async _typeOut(node, el, characters, options, isStopped = () => false) {
-			for (let i = 0; i < characters.length; i++) {
-				if (!node.isConnected || isStopped()) return;
-				const char = characters[i];
-				el.textContent += char;
-				await this._typingInterval(options);
-				const rhythm = this._punctuationRhythm(char, characters[i + 1], el, options);
-				if (rhythm.swallowNextChar) i++;
-				if (rhythm.pauseMs > 0) {
-					el.classList.remove("tw-writing");
-					await this.sleep(rhythm.pauseMs);
-					if (!node.isConnected || isStopped()) return;
-					el.classList.add("tw-writing");
-				}
-			}
-		}
-		/**
-		* Fase hapus mundur: untuk kalimat bukan-terakhir (atau saat mode loop aktif),
-		* teks dikosongkan kembali dengan efek hapus super cepat (interval x 0.1).
-		*/
-		static async _deleteBackwards(node, el, options, isLastSentence, isStopped = () => false) {
-			if (!isLastSentence || options.loop) {
-				el.classList.add("tw-writing");
-				while (el.textContent !== "") {
-					if (!node.isConnected || isStopped()) return;
-					const currentChars = this.getCharacters(el.textContent);
-					currentChars.pop();
-					el.textContent = currentChars.join("");
-					await this._typingInterval(options, .1);
-				}
-				await this.sleep(200);
-			} else el.classList.remove("tw-writing");
-		}
-		/**
-		* Core Engine Typewriter Effect (Konsisten & Unified):
-		* merangkai fase ketik -> jeda membaca -> hapus mundur untuk SATU kalimat.
-		*/
-		static async _typewriterEffect(node, el, targetText, options, isLastSentence, isStopped = () => false) {
-			const characters = this.getCharacters(targetText);
-			el.textContent = "";
-			el.style.whiteSpace = "normal";
-			el.style.wordBreak = "break-word";
-			el.classList.add("tw-writing");
-			await this._typeOut(node, el, characters, options, isStopped);
-			if (!node.isConnected || isStopped()) return;
-			el.classList.remove("tw-writing");
-			await this.sleep(options.delay);
-			if (!node.isConnected || isStopped()) return;
-			await this._deleteBackwards(node, el, options, isLastSentence, isStopped);
-		}
-		/** MODE REWRITE step-1: pecah teks tiap blok anak jadi daftar kalimat lalu kosongkan layarnya */
-		static _extractRewriteBlocks(originalChildren) {
-			const sentenceSegmenter = new Intl.Segmenter(document.documentElement.lang || "id", { granularity: "sentence" });
-			return originalChildren.map((child) => {
-				const rawText = (child.textContent || "").trim().replace(/\s+/g, " ");
-				const sentences = [...sentenceSegmenter.segment(rawText)].map((s) => s.segment.trim()).filter(Boolean);
-				child.textContent = "";
-				child.style.visibility = "hidden";
-				return {
-					el: child,
-					sentences
-				};
-			});
-		}
-		/** MODE REWRITE step-2: satu lintasan penuh — tampilkan blok bergantian sambil mengetik kalimatnya */
-		static async _rewritePass(node, blockData, options, isStopped = () => false) {
-			for (const block of blockData) {
-				block.el.style.display = "";
-				block.el.style.visibility = "visible";
-				for (let sIndex = 0; sIndex < block.sentences.length; sIndex++) {
-					if (!node.isConnected || isStopped()) return;
-					const isLastBlock = block === blockData[blockData.length - 1];
-					const isLastSentenceOfBlock = sIndex === block.sentences.length - 1;
-					const isAbsoluteLast = isLastBlock && isLastSentenceOfBlock;
-					await this._typewriterEffect(node, block.el, block.sentences[sIndex], options, isAbsoluteLast, isStopped);
-				}
-				if (block !== blockData[blockData.length - 1] || options.loop) block.el.style.display = "none";
-			}
-		}
-		/**
-		* SCENARIO A ENGINE — MODE REWRITE (Mendukung Struktur Bersarang Komponen Skema Anda):
-		* sekali jalan, atau berputar tanpa henti selama opsi loop aktif.
-		*/
-		static async _rewriteEngine(node, options, onDone, isStopped = () => false) {
-			const childElements = [...Array.from(node.children)];
-			const originalChildren = childElements.length > 0 ? childElements : [node];
-			const blockData = this._extractRewriteBlocks(originalChildren);
-			if (options.loop) while (true) {
-				if (!node.isConnected || isStopped()) break;
-				await this._rewritePass(node, blockData, options, isStopped);
-			}
-			else {
-				await this._rewritePass(node, blockData, options, isStopped);
-				onDone();
-			}
-		}
-		/**
-		* SCENARIO B ENGINE — LOOP MULTI-ELEMENT (Berdasarkan Array Teks):
-		* seluruh teks anak digabung menjadi satu paragraf dinamis lalu diputar terus.
-		*/
-		static async _loopMultiElement(node, options, isStopped = () => false) {
-			const loopTexts = [...Array.from(node.children)].map((el) => el.textContent || "");
-			const firstChild = node.firstElementChild;
-			const loopParagraphTag = firstChild ? firstChild.tagName.toLowerCase() : "p";
-			while (node.firstChild) node.removeChild(node.firstChild);
-			const loopParagraph = document.createElement(loopParagraphTag);
-			node.appendChild(loopParagraph);
-			while (true) {
-				if (!node.isConnected || isStopped()) break;
-				for (const text of loopTexts) {
-					if (!node.isConnected || isStopped()) break;
-					await this._typewriterEffect(node, loopParagraph, text, options, false, isStopped);
-				}
-			}
-		}
-		/** True bila elemen hanya memuat satu anak bertipe Text murni */
-		static _hasSingleTextNode(el) {
-			return el.childNodes.length === 1 && el.childNodes[0].nodeType === Node.TEXT_NODE;
-		}
-		/**
-		* SCENARIO C ENGINE — SEKUENSIAL / PARALEL DEFAULT (Sekali Jalan Tanpa Rewrite):
-		* teks setiap elemen anak diketik bergantian dari atas ke bawah.
-		*/
-		static async _runSequential(node, options, onDone, isStopped = () => false) {
-			const sequentialData = [...Array.from(node.children)].map((el) => {
-				const text = el.textContent || "";
-				el.textContent = "";
-				return {
-					el,
-					text
-				};
-			});
-			for (let i = 0; i < sequentialData.length; i++) {
-				if (!node.isConnected || isStopped()) return;
-				const item = sequentialData[i];
-				item.el.textContent = item.text;
-				await this._typewriterEffect(node, item.el, item.text, options, true, isStopped);
-			}
-			onDone();
-		}
-		/**
-		* Router utama untuk memproses efek typewriter pada DOM Node.
-		* Port 1:1 dari AnimationsService._handleTypewriter (versi lama).
-		*/
-		static async animate(node, baseOptions, onDone, isStopped = () => false) {
-			let loop = baseOptions.loop;
-			if (node.hasAttribute("data-tw-loop")) {
-				const attr = node.getAttribute("data-tw-loop");
-				if (attr === "true") loop = true;
-				else if (attr === "false") loop = false;
-				else {
-					const num = parseInt(attr || "", 10);
-					loop = isNaN(num) ? false : num;
-				}
-			}
-			const rewrite = node.hasAttribute("data-tw-rewrite") ? node.getAttribute("data-tw-rewrite") === "true" : baseOptions.rewrite;
-			const options = {
-				...baseOptions,
-				loop,
-				rewrite
-			};
-			node.style.visibility = "visible";
-			if (options.rewrite) {
-				await this._rewriteEngine(node, options, onDone, isStopped);
-				return;
-			}
-			if (options.loop) {
-				await this._loopMultiElement(node, options, isStopped);
-				return;
-			}
-			if (this._hasSingleTextNode(node) || node.children.length === 0) {
-				await this._typewriterEffect(node, node, node.textContent || "", options, true, isStopped);
-				onDone();
-			} else await this._runSequential(node, options, onDone, isStopped);
-		}
-	};
-	/** `animation="typewriter"` — typing engine with rewrite and loop scenarios. */
-	var typewriterBehaviour = {
-		type: "typewriter",
-		animate: ({ node, options, delay, stopped, done }) => TypewriterBehaviour.animate(node, {
-			...options,
-			delay
-		}, () => done(), stopped)
-	};
-	// packages/modules/animations/dist/behaviours/stagger-fade.js
-	/**
-	* MODUL: STAGGERING FADE IN (Tetap Menggunakan Native Masking Premium)
-	*
-	* Port 1:1 dari _handleStaggerFade lama di AnimationsService:
-	* - konversi durasi '0.6s' | '600ms' -> ms tetap sama,
-	* - delay bertingkat = index × delay,
-	* - event 'animation:done' dipicu PER SEGMEN (bukan sekali di akhir) karena
-	*   begitulah perilaku versi lama; listener rantai memakai { once: true },
-	*   sehingga rantai bisa terpicu sedini segmen pertama selesai. Oleh karena
-	*   itu callback-nya bernama onSegmentDone dan menerima elemen segmen.
-	*/
-	var StaggerFadeBehaviour = class {
-		/** Konversi string durasi CSS ('0.6s' | '600ms') ke angka milidetik untuk WAAPI */
-		static _toMs(durationStr) {
-			return durationStr.endsWith("ms") ? parseFloat(durationStr) : parseFloat(durationStr) * 1e3;
-		}
-		/**
-		* Bangun daftar segmen sesuai mode:
-		* - 'line': pakai anak elemen yang sudah ada, atau buat satu <p> per baris.
-		* - default ('sentence'): pecah teks menjadi kalimat berdiri sendiri (<span>).
-		* Catatan: fungsi ini memutasi node (mengosongkan lalu mengisi ulang),
-		* persis seperti perilaku versi lama.
-		*/
-		static _buildSegments(node, mode) {
-			if (mode === "line") {
-				if (node.children.length > 0) return [...Array.from(node.children)];
-				const lines = (node.textContent || "").split("\n").filter((line) => line.trim() !== "");
-				node.textContent = "";
-				const created = [];
-				lines.forEach((line) => {
-					const p = document.createElement("p");
-					p.textContent = line;
-					node.appendChild(p);
-					created.push(p);
-				});
-				return created;
-			}
-			const rawText = (node.textContent || "").trim();
-			node.textContent = "";
-			const textSegments = [...new Intl.Segmenter(document.documentElement.lang || "id", { granularity: "sentence" }).segment(rawText)].map((s) => s.segment.trim());
-			const segments = [];
-			textSegments.forEach((sentence) => {
-				if (sentence) {
-					const span = document.createElement("span");
-					span.textContent = sentence + " ";
-					span.style.display = "inline-block";
-					node.appendChild(span);
-					segments.push(span);
-				}
-			});
-			return segments;
-		}
-		/** Jalankan fade bertahap segmen-demi-segmen menggunakan Native Web Animations API */
-		static animate(node, options, onSegmentDone) {
-			const mode = node.getAttribute("data-stagger-mode") || "sentence";
-			const durationMs = this._toMs(options.duration);
-			this._buildSegments(node, mode).forEach((el, index) => {
-				el.style.opacity = "0";
-				el.style.transform = "translateY(15px)";
-				el.animate([{
-					opacity: 0,
-					transform: "translateY(15px)"
-				}, {
-					opacity: 1,
-					transform: "translateY(0)"
-				}], {
-					duration: durationMs,
-					delay: index * options.delay,
-					easing: "cubic-bezier(0.25, 1, 0.5, 1)",
-					fill: "forwards"
-				}).finished.then(() => {
-					if (!el.isConnected) return;
-					onSegmentDone(el);
-				}).catch((error) => {
-					if (!(error instanceof DOMException) || error.name !== "AbortError") console.error("[StaggerFadeBehaviour] Animation failed:", error);
-				});
-			});
-		}
-	};
-	/** `animation="stagger-fade"` — segment-by-segment entrance. */
-	var staggerFadeBehaviour = {
-		type: "stagger-fade",
-		optionKey: "staggerFade",
-		animate: ({ node, options, done }) => {
-			StaggerFadeBehaviour.animate(node, options, (segment) => done(segment));
-		}
-	};
-	// packages/modules/animations/dist/behaviours/fade-in.js
-	/**
-	* MODUL: FADE IN (Web Animations API)
-	*
-	* Port dari _handleFadeIn lama di AnimationsService:
-	* - delay dinamis dibaca dari atribut data-fade-delay (default '0s'),
-	* - variabel --fade-delay / --fade-duration di-set ulang tiap eksekusi,
-	* - pre-hide CSS memakai visibility:hidden (elemen tetap memegang ruang
-	*   layout) — dibuka inline saat animasi mulai, lalu opacity 0 -> 1 +
-	*   translateY(10px) -> 0 (500ms, ease-out) via WAAPI fill:forwards,
-	* - event 'animation:done' dipicu lewat Promise .finished bawaan WAAPI.
-	*/
-	var FadeInBehaviour = class {
-		static async animate(node, options, onDone) {
-			const delay = node.getAttribute("data-fade-delay") || "0s";
-			node.style.setProperty("--fade-delay", delay);
-			node.style.setProperty("--fade-duration", options.duration);
-			node.style.visibility = "visible";
-			node.animate([{
-				opacity: 0,
-				transform: "translateY(10px)"
-			}, {
-				opacity: 1,
-				transform: "translateY(0)"
-			}], {
-				duration: 500,
-				easing: "ease-out",
-				fill: "forwards"
-			}).finished.then(() => {
-				if (!node.isConnected) return;
-				onDone();
-			}).catch((error) => {
-				if (!(error instanceof DOMException) || error.name !== "AbortError") console.error("[FadeInBehaviour] Animation failed:", error);
-			});
-		}
-	};
-	/** `animation="fade-in"` — WAAPI opacity/translate entrance. */
-	var fadeInBehaviour = {
-		type: "fade-in",
-		optionKey: "fade",
-		animate: ({ node, options, done }) => FadeInBehaviour.animate(node, options, () => done())
-	};
-	// packages/modules/animations/dist/behaviours/scramble.js
-	/**
-	* MODUL: TEXT SCRAMBLE (Matrix/Cyberpunk)
-	*
-	* Port 1:1 dari _handleScramble lama di AnimationsService:
-	* karakter diacak dari pool, dikunci satu-per-satu ke huruf asli,
-	* dengan pengecekan node.isConnected di tiap loop utama dan sub-loop,
-	* lalu memicu event 'animation:done' tepat setelah efek selesai total.
-	*/
-	var ScrambleBehaviour = class {
-		/** Utilitas jeda non-blocking */
-		static sleep(ms) {
-			return new Promise((resolve) => setTimeout(resolve, ms));
-		}
-		/** Bilangan bulat acak [min, max) — hasilnya identik dengan Math.floor(Math.random() * length) versi lama */
-		static rng(min, max) {
-			return Math.floor(Math.random() * (max - min) + min);
-		}
-		/** Core Engine Text-Scramble */
-		static async animate(node, options, onDone, isStopped = () => false) {
-			const targetText = (node.textContent || "").trim();
-			node.textContent = "";
-			node.style.opacity = "1";
-			const pool = options.chars;
-			const speed = options.speed;
-			const targetChars = [...new Intl.Segmenter(document.documentElement.lang || "id", { granularity: "grapheme" }).segment(targetText)].map((s) => s.segment);
-			let currentTextArray = new Array(targetChars.length).fill("");
-			const maxCycles = 12;
-			for (let i = 0; i < targetChars.length; i++) {
-				if (!node.isConnected || isStopped()) return;
-				for (let cycle = 0; cycle < maxCycles; cycle++) {
-					if (!node.isConnected || isStopped()) return;
-					currentTextArray[i] = pool[this.rng(0, pool.length)];
-					for (let j = i + 1; j < Math.min(i + 3, targetChars.length); j++) currentTextArray[j] = pool[this.rng(0, pool.length)];
-					node.textContent = currentTextArray.join("");
-					await this.sleep(speed / 2);
-				}
-				currentTextArray[i] = targetChars[i];
-				node.textContent = currentTextArray.join("");
-				await this.sleep(speed);
-			}
-			onDone();
-		}
-	};
-	/** `animation="text-scramble"` — Matrix/Cyberpunk decode entrance. */
-	var scrambleBehaviour = {
-		type: "text-scramble",
-		optionKey: "scramble",
-		animate: ({ node, options, stopped, done }) => ScrambleBehaviour.animate(node, options, () => done(), stopped)
-	};
-	// packages/modules/animations/dist/behaviours/count-up.js
-	var CountUpBehaviour = class {
-		static animate(node) {
-			const targetNumber = parseInt(node.textContent || "", 10) || 0;
-			node.setAttribute("data-target-number", String(targetNumber));
-		}
-	};
-	/** `animation="count-up"` — reads the target number and hands it to the counter. */
-	var countUpBehaviour = {
-		type: "count-up",
-		animate: ({ node, done }) => {
-			CountUpBehaviour.animate(node);
-			done();
-		}
-	};
-	// packages/modules/animations/dist/behaviours/loading-placeholder.js
-	var LoadingPlaceholderBehaviour = class {
-		static async animate(node, options, onDone, isStopped = () => false) {
-			const attrDuration = node.getAttribute("data-duration");
-			const parsedAttrDelay = attrDuration !== null ? parseInt(attrDuration, 10) : NaN;
-			const duration = Number.isFinite(parsedAttrDelay) ? parsedAttrDelay : Number(options.duration) || 500;
-			const settledDelay = Number.isFinite(duration) ? Math.max(0, duration) : 0;
-			window.setTimeout(() => {
-				if (isStopped()) return;
-				if (!node.isConnected) {
-					onDone();
-					return;
-				}
-				const releaseDuration = Math.max(200, parseInt(String(options.instantRevealDelayTime ?? 200), 10) || 200);
-				const restoreOriginalOpacity = () => {
-					const backupValue = node.getAttribute("data-anim-hold-opacity");
-					if (backupValue === null) return;
-					if (backupValue.trim() === "") {
-						if (options.restoreFallbackOpacity !== void 0 && String(options.restoreFallbackOpacity).trim() !== "") node.style.opacity = String(options.restoreFallbackOpacity);
-						else node.style.removeProperty("opacity");
-					} else node.style.opacity = backupValue;
-				};
-				node.classList.remove("anim-placeholder-active");
-				restoreOriginalOpacity();
-				node.removeAttribute("data-anim-hold-opacity");
-				if (node.getAttribute("animation") === "loading-placeholder") node.removeAttribute("animation");
-				window.setTimeout(() => {
-					node.style.removeProperty("transition");
-				}, releaseDuration);
-				onDone();
-			}, settledDelay);
-		}
-	};
-	// packages/modules/animations/dist/behaviours/registry.js
-	/**
-	* Built-in behaviours, in declaration order. Add a behaviour here only when it
-	* belongs to the framework itself; project-specific effects register at runtime.
-	*/
-	var ANIMATION_BEHAVIOURS = [
-		typewriterBehaviour,
-		staggerFadeBehaviour,
-		fadeInBehaviour,
-		scrambleBehaviour,
-		countUpBehaviour,
-		{
-			type: "loading-placeholder",
-			optionKey: "loadingPlaceholder",
-			animate: ({ node, options, stopped, done }) => LoadingPlaceholderBehaviour.animate(node, options, () => done(), stopped)
-		}
-	];
-	ANIMATION_BEHAVIOURS.map((b) => b.type);
-	/**
-	* Indexes a behaviour list by `type`.
-	*
-	* @throws {Error} On a duplicate type — silently keeping the last one hides a
-	*   real configuration mistake (two packages claiming `animation="fade-in"`).
-	*/
-	function indexBehaviours(behaviours) {
-		const index = /* @__PURE__ */ new Map();
-		for (const behaviour of behaviours) {
-			if (!behaviour?.type) throw new Error("[animations] A behaviour definition is missing its `type`.");
-			if (index.has(behaviour.type)) throw new Error(`[animations] Duplicate animation behaviour: "${behaviour.type}".`);
-			index.set(behaviour.type, behaviour);
-		}
-		return index;
-	}
-	// packages/modules/animations/dist/Animations.js
-	var _behaviours = /* @__PURE__ */ new WeakMap();
-	var _pendingScan = /* @__PURE__ */ new WeakMap();
-	var _scanFrame = /* @__PURE__ */ new WeakMap();
-	/**
-	* AnimationsService — unified lifecycle and execution engine for declarative DOM animations.
-	*
-	* Implements tree-agnostic document-order sequencing, WeakMap/Map node tracking,
-	* dynamic mutation discovery, and viewport intersection entry/exit management.
-	*/
-	var AnimationsService = class {
-		constructor(config = {}) {
-			_defineProperty(this, "globalDelay", void 0);
-			_defineProperty(this, "config", void 0);
-			_defineProperty(
-				this,
-				/** Registry of all active animation records keyed by element */
-				"records",
-				/* @__PURE__ */ new Map()
-			);
-			_defineProperty(
-				this,
-				/** Ordered list of chained elements per execution scope (e.g. fieldset, form, section) */
-				"scopes",
-				/* @__PURE__ */ new Map()
-			);
-			_defineProperty(
-				this,
-				/** Native DOM observers */
-				"mutationObserver",
-				null
-			);
-			_defineProperty(this, "viewObserver", null);
-			_classPrivateFieldInitSpec(this, _behaviours, void 0);
-			_classPrivateFieldInitSpec(this, _pendingScan, /* @__PURE__ */ new Set());
-			_classPrivateFieldInitSpec(this, _scanFrame, null);
-			_classPrivateFieldSet2(_behaviours, this, indexBehaviours([...ANIMATION_BEHAVIOURS, ...config.behaviours ?? []]));
-			this.globalDelay = config.delay ?? 500;
-			this.config = {
-				typewriter: {
-					loop: config.typewriter?.loop ?? false,
-					interval: config.typewriter?.interval ?? 30,
-					delay: config.typewriter?.delay ?? this.globalDelay,
-					rewrite: config.typewriter?.rewrite ?? false
-				},
-				fade: { duration: config.fade?.duration ?? "0.5s" },
-				staggerFade: {
-					delay: config.staggerFade?.delay ?? 5e3,
-					duration: config.staggerFade?.duration ?? "0.6s"
-				},
-				scramble: {
-					chars: config.scramble?.chars ?? "!<>-_\\/[]{}—=+*^?#________",
-					speed: config.scramble?.speed ?? 40
-				},
-				loadingPlaceholder: { duration: config.loadingPlaceholder?.duration ?? this.globalDelay },
-				...config
-			};
-			this._observeMutations();
-		}
-		/**
-		* Initializes the animation engine, scanning the target root and establishing observers.
-		*/
-		init(root = document.body) {
-			this.scan(root);
-			return this;
-		}
-		/**
-		* Registers a behaviour at runtime, keyed by its `type`.
-		*
-		* Overrides an existing type deliberately: the engine keeps one definition per
-		* attribute value, so a host can restyle `fade-in` without touching the DOM.
-		*
-		* @returns This service, for chaining.
-		*/
-		use(behaviour) {
-			if (!behaviour?.type) throw new Error("[AnimationsService] A behaviour definition is missing its `type`.");
-			_classPrivateFieldGet2(_behaviours, this).set(behaviour.type, behaviour);
-			return this;
-		}
-		/** The `animation` attribute values this service can currently run. */
-		get types() {
-			return [..._classPrivateFieldGet2(_behaviours, this).keys()];
-		}
-		/**
-		* Scans a subtree for elements with `[animation]` in document order and mounts them.
-		*/
-		scan(root = document.body) {
-			if (!root || typeof root.querySelectorAll !== "function") return [];
-			const nodes = [];
-			if (root instanceof HTMLElement && root.hasAttribute("animation")) nodes.push(root);
-			nodes.push(...Array.from(root.querySelectorAll("[animation]")));
-			nodes.forEach((node) => this.mount(node));
-			this.scopes.forEach((_, scope) => {
-				if (this._inViewport(scope)) this._startScope(scope);
-			});
-			nodes.forEach((node) => {
-				const rec = this.records.get(node);
-				if (rec && !rec.chained && this._inViewport(node)) this.trigger(node);
-			});
-			return nodes;
-		}
-		/**
-		* Mounts a single animated node into the registry and configures its initial state.
-		*/
-		mount(node) {
-			if (this.records.has(node)) return;
-			const type = node.getAttribute("animation") || "";
-			if (!_classPrivateFieldGet2(_behaviours, this).has(type)) {
-				console.warn(`[AnimationsService] Unknown animation type: "${type}"`);
-				return;
-			}
-			const chained = node.getAttribute("animation-chain") === "true";
-			const once = node.getAttribute("animated-once") === "true";
-			const scope = this._scope(node);
-			const snapshot = {
-				opacity: node.style.opacity,
-				pointerEvents: node.style.pointerEvents,
-				html: node.innerHTML,
-				text: node.textContent || ""
-			};
-			const record = {
-				node,
-				type,
-				chained,
-				once,
-				played: false,
-				scope,
-				state: chained ? "waiting" : "idle",
-				snapshot,
-				controller: new AbortController()
-			};
-			if (chained) {
-				let chainList = this.scopes.get(scope);
-				if (!chainList) {
-					chainList = [];
-					this.scopes.set(scope, chainList);
-				}
-				if (!chainList.includes(node)) {
-					chainList.push(node);
-					chainList.sort((a, b) => a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1);
-				}
-				if (chainList.indexOf(node) > 0 && type !== "fade-in" && type !== "typewriter") {
-					node.style.opacity = "0";
-					node.style.pointerEvents = "none";
-				}
-			}
-			this.records.set(node, record);
-			this.observe(node);
-		}
-		/**
-		* Unmounts a node, canceling any active animation and cleaning up registry references.
-		*/
-		unmount(node) {
-			const rec = this.records.get(node);
-			if (!rec) return;
-			this.stop(node);
-			if (rec.chained) {
-				const chainList = this.scopes.get(rec.scope);
-				if (chainList) {
-					const idx = chainList.indexOf(node);
-					if (idx !== -1) chainList.splice(idx, 1);
-					if (chainList.length === 0) {
-						this.scopes.delete(rec.scope);
-						this.viewObserver?.unobserve(rec.scope);
-					}
-				}
-			} else this.viewObserver?.unobserve(node);
-			this.records.delete(node);
-		}
-		/**
-		* Observes a node or its host container for viewport visibility.
-		*/
-		observe(node) {
-			this._ensureViewObserver();
-			const rec = this.records.get(node);
-			if (!rec) return;
-			if (rec.chained) this.viewObserver?.observe(rec.scope);
-			else this.viewObserver?.observe(node);
-		}
-		/**
-		* Unobserves the element a record actually observes — for chained nodes that is
-		* the scope container, not the node itself.
-		*/
-		unobserve(node) {
-			if (!this.viewObserver) return;
-			const rec = this.records.get(node);
-			this.viewObserver.unobserve(rec?.chained ? rec.scope : node);
-		}
-		/**
-		* Executes the appropriate animation behaviour for a node.
-		*/
-		trigger(node) {
-			const rec = this.records.get(node);
-			if (!rec) return;
-			if (rec.once && rec.played) return;
-			const behaviour = _classPrivateFieldGet2(_behaviours, this).get(rec.type);
-			if (!behaviour) return;
-			if (rec.state === "running") this.stop(node);
-			rec.state = "running";
-			rec.played = true;
-			rec.controller = new AbortController();
-			const signal = rec.controller.signal;
-			this._release(node, rec.snapshot);
-			const isStopped = () => signal.aborted || !node.isConnected;
-			let reported = false;
-			const done = (target) => {
-				if (reported || rec.state !== "running") return;
-				reported = true;
-				rec.state = "done";
-				this._dispatch(target ?? node, "animation:done");
-				if (rec.chained) this.next(rec.scope);
-			};
-			const context = {
-				node,
-				options: this._optionsOf(behaviour),
-				delay: this._delay(node),
-				signal,
-				stopped: isStopped,
-				done
-			};
-			try {
-				const result = behaviour.animate(context);
-				if (result && typeof result.catch === "function") result.catch((error) => {
-					if (!isStopped()) console.error(`[AnimationsService] Behaviour "${rec.type}" failed:`, error);
-				});
-			} catch (error) {
-				console.error(`[AnimationsService] Behaviour "${rec.type}" failed:`, error);
-				rec.state = "idle";
-			}
-		}
-		/**
-		* Advances a chain sequence in a scope by triggering the next waiting element in document order.
-		*/
-		next(scope) {
-			const chain = this.scopes.get(scope);
-			if (!chain || chain.length === 0) return;
-			const nextNode = chain.find((n) => {
-				const rec = this.records.get(n);
-				return rec && (rec.state === "waiting" || rec.state === "idle");
-			});
-			if (!nextNode) {
-				this._dispatch(scope, "animation:scope-done");
-				return;
-			}
-			this.trigger(nextNode);
-		}
-		/**
-		* Stops an active animation on a node.
-		*/
-		stop(node) {
-			const rec = this.records.get(node);
-			if (!rec) return;
-			rec.controller.abort();
-			if (rec.state === "running") rec.state = "idle";
-			if (typeof node.getAnimations === "function") node.getAnimations().forEach((anim) => anim.cancel());
-		}
-		/**
-		* Resets element(s) to initial state, enabling replay when the viewport or page is revisited.
-		*/
-		reset(target) {
-			if (!target) {
-				this.records.forEach((_, node) => this._resetNode(node));
-				return;
-			}
-			if (target instanceof HTMLElement && this.records.has(target)) {
-				this._resetNode(target);
-				return;
-			}
-			this.records.forEach((_, node) => {
-				if (target.contains(node) || target === node) this._resetNode(node);
-			});
-		}
-		/**
-		* Clears state for elements that have left the viewport or page. Alias for reset.
-		*/
-		clear(target) {
-			this.reset(target);
-		}
-		/**
-		* Releases loading placeholders frozen by lazy-loading anti-FOUC guards.
-		*/
-		release(root = document.body) {
-			if (!root || typeof root.querySelectorAll !== "function") return;
-			root.querySelectorAll("[animation=\"loading-placeholder\"]").forEach((node) => this.trigger(node));
-		}
-		/**
-		* Backwards-compatibility alias for release().
-		*/
-		releaseLoadingPlaceholders(root = document.body) {
-			this.release(root);
-		}
-		/**
-		* Disconnects observers, stops all running animations, and clears internal maps.
-		*/
-		destroy() {
-			if (this.mutationObserver) {
-				this.mutationObserver.disconnect();
-				this.mutationObserver = null;
-			}
-			if (this.viewObserver) {
-				this.viewObserver.disconnect();
-				this.viewObserver = null;
-			}
-			this.records.forEach((rec, node) => {
-				rec.controller.abort();
-				this.stop(node);
-			});
-			if (_classPrivateFieldGet2(_scanFrame, this) !== null) {
-				cancelAnimationFrame(_classPrivateFieldGet2(_scanFrame, this));
-				_classPrivateFieldSet2(_scanFrame, this, null);
-			}
-			_classPrivateFieldGet2(_pendingScan, this).clear();
-			this.records.clear();
-			this.scopes.clear();
-		}
-		_ensureViewObserver() {
-			if (this.viewObserver) return;
-			this.viewObserver = new IntersectionObserver((entries) => {
-				entries.forEach((entry) => {
-					const target = entry.target;
-					if (!target.isConnected) return;
-					if (entry.isIntersecting) {
-						if (this.scopes.has(target)) this._startScope(target);
-						const rec = this.records.get(target);
-						if (rec && !rec.chained && rec.state === "idle") this.trigger(target);
-					} else if (this.records.has(target)) this.reset(target);
-				});
-			}, { threshold: 0 });
-		}
-		_startScope(scope) {
-			const chain = this.scopes.get(scope);
-			if (!chain || chain.length === 0) return;
-			if (chain.some((n) => this.records.get(n)?.state === "running")) return;
-			if (chain.every((n) => this.records.get(n)?.state === "done")) return;
-			this.next(scope);
-		}
-		_resetNode(node) {
-			const rec = this.records.get(node);
-			if (!rec) return;
-			if (rec.once && rec.played) return;
-			this.stop(node);
-			if (rec.chained) {
-				rec.state = "waiting";
-				node.style.opacity = "0";
-				node.style.pointerEvents = "none";
-			} else {
-				rec.state = "idle";
-				if (rec.snapshot.opacity !== "") node.style.opacity = rec.snapshot.opacity;
-				else node.style.removeProperty("opacity");
-				if (rec.snapshot.pointerEvents !== "") node.style.pointerEvents = rec.snapshot.pointerEvents;
-				else node.style.removeProperty("pointer-events");
-			}
-			if (rec.type === "typewriter" && rec.snapshot.html !== void 0) {
-				node.innerHTML = rec.snapshot.html;
-				node.classList.remove("tw-writing");
-			} else if (rec.type === "text-scramble" && rec.snapshot.text !== void 0) node.textContent = rec.snapshot.text;
-			node.style.removeProperty("visibility");
-		}
-		_release(node, snapshot) {
-			if (snapshot.pointerEvents !== "") node.style.pointerEvents = snapshot.pointerEvents;
-			else node.style.removeProperty("pointer-events");
-			if (snapshot.opacity !== "") node.style.opacity = snapshot.opacity;
-			else node.style.removeProperty("opacity");
-		}
-		_scope(node) {
-			return node.closest("fieldset, form, section, article, dialog, aside, header, footer, main, [data-animation-scope]") || document.body;
-		}
-		_inViewport(el) {
-			const rect = el.getBoundingClientRect();
-			return rect.bottom > 0 && rect.right > 0 && rect.top < (window.innerHeight || document.documentElement.clientHeight) && rect.left < (window.innerWidth || document.documentElement.clientWidth) && rect.width > 0 && rect.height > 0;
-		}
-		_delay(node) {
-			if (!node.hasAttribute("data-delay")) return this.globalDelay;
-			const parsed = parseInt(node.getAttribute("data-delay") || "", 10);
-			return Number.isFinite(parsed) ? parsed : this.globalDelay;
-		}
-		/**
-		* Resolves a behaviour's options: definition defaults first, then the config
-		* block for this behaviour (keyed by `optionKey`, else by `type`).
-		*/
-		_optionsOf(behaviour) {
-			const key = behaviour.optionKey ?? behaviour.type;
-			const provided = this.config[key];
-			return {
-				...behaviour.defaults ?? {},
-				...provided ?? {}
-			};
-		}
-		_dispatch(node, eventName, detail) {
-			const event = new CustomEvent(eventName, {
-				bubbles: true,
-				composed: true,
-				detail: {
-					origin: node,
-					...detail
-				}
-			});
-			node.dispatchEvent(event);
-		}
-		_observeMutations() {
-			this.mutationObserver = new MutationObserver((mutations) => {
-				mutations.forEach((mutation) => {
-					mutation.removedNodes.forEach((node) => {
-						if (!(node instanceof HTMLElement)) return;
-						if (this.records.has(node)) this.unmount(node);
-						node.querySelectorAll("[animation]").forEach((child) => {
-							this.unmount(child);
-						});
-					});
-					mutation.addedNodes.forEach((node) => {
-						if (!(node instanceof HTMLElement)) return;
-						this._queueScan(node);
-					});
-				});
-			});
-			this.mutationObserver.observe(document.body, {
-				childList: true,
-				subtree: true
-			});
-		}
-		/**
-		* Batches added nodes into one scan.
-		*
-		* The previous implementation scheduled two animation frames *per node*, so a
-		* single page swap queued hundreds of callbacks. Collecting the roots first
-		* keeps the cost proportional to the number of mutations, not nodes.
-		*/
-		_queueScan(root) {
-			_classPrivateFieldGet2(_pendingScan, this).add(root);
-			if (_classPrivateFieldGet2(_scanFrame, this) !== null) return;
-			_classPrivateFieldSet2(_scanFrame, this, requestAnimationFrame(() => {
-				_classPrivateFieldSet2(_scanFrame, this, requestAnimationFrame(() => {
-					_classPrivateFieldSet2(_scanFrame, this, null);
-					const roots = [..._classPrivateFieldGet2(_pendingScan, this)];
-					_classPrivateFieldGet2(_pendingScan, this).clear();
-					roots.forEach((node) => {
-						if (node.isConnected) this.scan(node);
-					});
-				}));
-			}));
-		}
-	};
-	_defineProperty(AnimationsService, "slot", "animation");
-	// packages/kits/modules/index.ts
-	var modules_exports = /* @__PURE__ */ __exportAll({
-		AnimationsService: () => AnimationsService,
-		EventEmitter: () => EventEmitter,
-		HashRouter: () => HashRouter$1,
-		HttpService: () => HttpService,
-		ModuleLoader: () => ModuleLoader$1,
-		ModuleRegistry: () => ModuleRegistry$1,
-		ThemeRegistry: () => ThemeRegistry$1,
-		ThemeRenderer: () => ThemeRenderer$1,
-		resolveModuleDefinitions: () => resolveModuleDefinitions$1
 	});
 	// packages/components/pricing-card/PricingCard.ts
 	var PricingCardBuilder = class extends Builder$1 {
@@ -20112,13 +31168,13 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 			scope: "grid",
 			path: "@aio-ui/product",
 			export: "ProductGridBuilder",
-			stylesheet: "@aio-ui/product/ProductGrid.css"
+			stylesheet: "@aio-ui/product/index.css"
 		}, {
 			id: "detail",
 			scope: "detail",
 			path: "@aio-ui/product",
 			export: "ProductDetailBuilder",
-			stylesheet: "@aio-ui/product/ProductDetail.css"
+			stylesheet: "@aio-ui/product/index.css"
 		}];
 	}
 	var _host = /* @__PURE__ */ new WeakMap();
@@ -20281,180 +31337,6 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 		ProductGridBuilder: () => ProductGridBuilder,
 		productModules: () => productModules
 	});
-	// packages/components/rating/Rating.ts
-	var RatingBuilder = class extends Builder$1 {
-		/**
-		* 🪶 LOADING MOCKUP — five stars over the numeric bar, drawn with the mandatory
-		* `@aio-ui/skeleton` primitive. The score is data; the silhouette is the widget.
-		*/
-		loading() {
-			return Skeleton$1.create({
-				shape: "stack",
-				children: [{
-					shape: "row",
-					gap: "0.25rem",
-					children: [{
-						shape: "bone",
-						width: "1.25rem",
-						height: "1.25rem",
-						count: 5
-					}]
-				}, {
-					shape: "line",
-					width: "60%"
-				}]
-			});
-		}
-		constructor(config = {}) {
-			super();
-			_defineProperty(this, "builderId", "rating");
-			_defineProperty(this, "name", "rating");
-			_defineProperty(this, "stylesheet", "");
-			_defineProperty(this, "config", void 0);
-			const defaultConfig = {
-				themeId: "default",
-				type: "count-up",
-				max: 5,
-				animate: true,
-				selectors: {
-					"@container": {
-						tagName: "div",
-						className: "rating-widget-wrapper"
-					},
-					"@rating": {
-						tagName: "div",
-						className: "rating-core-display"
-					},
-					"@rating>track": {
-						tagName: "div",
-						className: "bar-track"
-					},
-					"@rating>fill": {
-						tagName: "div",
-						className: "bar-fill"
-					},
-					"@rating>label": {
-						tagName: "span",
-						className: "rating-numerical-label"
-					},
-					"@rating>stars-group": {
-						tagName: "div",
-						className: "stars-row"
-					},
-					"@rating>stars-item": {
-						tagName: "span",
-						className: "star-icon"
-					}
-				},
-				namespace: null,
-				emit: () => {}
-			};
-			this.config = {
-				...defaultConfig,
-				...config
-			};
-		}
-		/**
-		* 👑 THE POLYMORPHIC RATING COMPILER
-		* Membaca properti config.type JIT untuk merakit organ tubuh secara otonom!
-		*/
-		prepare(data) {
-			const score = typeof data === "number" ? data : data.value || 0;
-			const container = this.render("@container", { score });
-			const coreWidget = this.render("@rating", { score });
-			if (this.config.type === "star") {
-				const starsGroup = this.render("@rating>stars-group", { score });
-				for (let i = 1; i <= this.config.max; i++) {
-					const isFull = i <= Math.floor(score);
-					const isHalf = !isFull && i - score < 1 && i - score > 0;
-					const starItem = this.render("@rating>stars-item", {
-						isFull,
-						isHalf,
-						index: i
-					});
-					if (starItem && starsGroup) starsGroup.appendChild(starItem);
-				}
-				if (starsGroup) coreWidget?.appendChild(starsGroup);
-			} else if (this.config.type === "line-bar" || this.config.type === "round-bar") {
-				const track = this.render("@rating>track", { score });
-				const fill = this.render("@rating>fill", { score });
-				if (track && fill) {
-					track.appendChild(fill);
-					coreWidget?.appendChild(track);
-				}
-			}
-			const label = this.render("@rating>label", { score });
-			if (label) coreWidget?.appendChild(label);
-			if (container && coreWidget) container.appendChild(coreWidget);
-			return this.load("@container");
-		}
-		/**
-		* 👑 ULTRA-CLEAN HYDRATION VALVE
-		* 0% Teks XML Markup! Murni hanya bertugas mengelola status kelas logika (Class State Driver).
-		*/
-		template(typeKey, el, payload) {
-			if (!payload) return;
-			const ratio = Math.min(Math.max(payload.score / this.config.max, 0), 1);
-			const percentage = Math.round(ratio * 100);
-			switch (typeKey) {
-				case "@container":
-					el.classList.add("rating-widget-wrapper", `type-${this.config.type}`);
-					break;
-				case "@rating>track":
-					el.style.setProperty("--progress-ratio", ratio.toString());
-					el.style.setProperty("--progress-percent", `${percentage}%`);
-					break;
-				case "@rating>fill":
-					if (this.config.type === "line-bar") {
-						el.style.width = this.config.animate ? "0%" : `${percentage}%`;
-						if (this.config.animate) window.requestAnimationFrame(() => {
-							el.style.width = `${percentage}%`;
-						});
-					}
-					break;
-				case "@rating>stars-item":
-					if (payload.isFull) el.className = `${el.className} star-full`.trim();
-					else if (payload.isHalf) el.className = `${el.className} star-half`.trim();
-					else el.className = `${el.className} star-empty`.trim();
-					break;
-				case "@rating>label": if (this.config.type === "count-up" || this.config.type === "round-bar" || this.config.type === "line-bar") el.textContent = `${percentage}%`;
-				else el.textContent = `${payload.score} / ${this.config.max}`;
-			}
-		}
-		/**
-		* 👑 THE ENCAPSULATED INTERACTIVE EVENT BINDINGS
-		* Mengatur detonasi jiwa interaksi, seperti efek animasi Count-Up angka persentase secara live.
-		*/
-		initialize() {
-			const label = this.load("@rating>label");
-			if (this.config.type === "count-up" && this.config.animate && label) {
-				const targetPercent = parseInt(label.textContent || "0", 10);
-				if (isNaN(targetPercent) || targetPercent === 0) return;
-				let currentCount = 0;
-				label.textContent = "0%";
-				const stepDuration = Math.max(Math.floor(1500 / targetPercent), 10);
-				const counterTimer = window.setInterval(() => {
-					currentCount++;
-					label.textContent = `${currentCount}%`;
-					if (currentCount >= targetPercent) window.clearInterval(counterTimer);
-				}, stepDuration);
-				label._activeCountTimer = counterTimer;
-			}
-		}
-	};
-	_defineProperty(RatingBuilder, "contract", {
-		schema: {
-			t: "union",
-			of: [{ t: "number" }, {
-				t: "record",
-				open: true,
-				of: { value: { t: "number" } }
-			}]
-		},
-		example: 4.5
-	});
-	// packages/components/rating/index.ts
-	var rating_exports = /* @__PURE__ */ __exportAll({ RatingBuilder: () => RatingBuilder });
 	// packages/modules/router/HashRouter.ts
 	var HashRouter = class {
 		/**
@@ -22768,8 +33650,155 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 			body: [["Coffee", 2]]
 		}
 	});
+	// packages/components/table/adapters/FormAdapter.ts
+	var _context = /* @__PURE__ */ new WeakMap();
+	var _preview = /* @__PURE__ */ new WeakMap();
+	var _previewKey = /* @__PURE__ */ new WeakMap();
+	var _fileBound = /* @__PURE__ */ new WeakMap();
+	var _TableFormAdapter_brand = /* @__PURE__ */ new WeakSet();
+	/**
+	* Table adapter.
+	*
+	* @summary Owns every `TableBuilder` the form uses: schema tables declared by a
+	* group, and the preview table built from a selected CSV/JSON file.
+	*/
+	var TableFormAdapter = class {
+		/**
+		* @param context - Host context.
+		*/
+		constructor(context) {
+			_classPrivateMethodInitSpec(this, _TableFormAdapter_brand);
+			_classPrivateFieldInitSpec(this, _context, void 0);
+			_classPrivateFieldInitSpec(this, _preview, null);
+			_classPrivateFieldInitSpec(this, _previewKey, null);
+			_classPrivateFieldInitSpec(this, _fileBound, false);
+			_classPrivateFieldSet2(_context, this, context);
+		}
+		/**
+		* Binds the form-level file delegation once, so files mounted later by cascade
+		* or multistep also produce a preview table.
+		*
+		* @param root - Form element or freshly mounted fieldset.
+		* @returns Nothing.
+		*/
+		mount(root) {
+			if (root !== _classPrivateFieldGet2(_context, this).form || _classPrivateFieldGet2(_fileBound, this)) return;
+			_classPrivateFieldSet2(_fileBound, this, true);
+			root.addEventListener("change", (event) => {
+				_assertClassBrand(_TableFormAdapter_brand, this, _rebuildPreview).call(this, event);
+			});
+		}
+		/**
+		* Builds a table for a group schema and wires its submit button.
+		*
+		* @param spec - The `table` descriptor: `{ data, id? }`.
+		* @param target - Fieldset and submit button the table belongs to.
+		* @returns The table container, or `null` when the spec has no data.
+		*/
+		renderTable(spec, target) {
+			if (!spec || spec.data === void 0) return null;
+			const table = new TableBuilder();
+			const tableEl = table.create({ content: spec.data });
+			if (spec.id) tableEl.id = spec.id;
+			target.submitButton.onclick = (event) => {
+				event.preventDefault();
+				table.addRow(_assertClassBrand(_TableFormAdapter_brand, this, _collectValues).call(this, target.fieldset));
+			};
+			return [tableEl];
+		}
+		/**
+		* Contributes the CSV preview table to the submit payload.
+		*
+		* @param payload - Mutable submit payload.
+		* @returns Nothing.
+		*
+		* @summary The key is the field that carried the file (`name`, else `id`), not a fixed
+		* `product`: two CSV fields in one form must not overwrite each other.
+		*/
+		beforeSubmit(payload) {
+			if (_classPrivateFieldGet2(_preview, this) && _classPrivateFieldGet2(_previewKey, this)) payload[_classPrivateFieldGet2(_previewKey, this)] = _classPrivateFieldGet2(_preview, this).toJson();
+		}
+		/** Releases the preview table held by this adapter. */
+		destroy() {
+			_classPrivateFieldGet2(_preview, this)?.destroy?.();
+			_classPrivateFieldSet2(_preview, this, null);
+		}
+	};
+	/**
+	* Rebuilds the preview table after a CSV/JSON file is selected.
+	*
+	* @param event - Change event bubbling from the form.
+	* @returns A promise resolved once the preview is mounted.
+	*/
+	async function _rebuildPreview(event) {
+		const form = _classPrivateFieldGet2(_context, this).form;
+		const fileInput = event.target?.closest?.("input[type='file'][data-uploader-csv]");
+		if (!fileInput || !form.contains(fileInput)) return;
+		form.querySelector(".table-container")?.remove();
+		_classPrivateFieldGet2(_preview, this)?.destroy?.();
+		_classPrivateFieldSet2(_preview, this, null);
+		_classPrivateFieldSet2(_previewKey, this, null);
+		if (!fileInput.files || fileInput.files.length === 0) return;
+		const tableData = await parseTableFile$1(fileInput.files[0]);
+		const table = new TableBuilder({
+			renderAsCard: false,
+			autoFreezeAt: 0
+		});
+		const tableEl = table.create({ content: tableData });
+		_classPrivateFieldSet2(_preview, this, table);
+		_classPrivateFieldSet2(_previewKey, this, fileInput.name || fileInput.id || null);
+		fileInput.parentElement?.insertAdjacentElement("afterend", tableEl);
+	}
+	/**
+	* Reads the current control values of a fieldset.
+	*
+	* @param fieldset - Group whose controls are collected.
+	* @returns One value per control, with checked radios and checkboxes only.
+	*/
+	function _collectValues(fieldset) {
+		const values = [];
+		const elements = fieldset.elements;
+		for (const element of elements) {
+			if (!element) break;
+			if (element instanceof HTMLInputElement && (element.type === "checkbox" || element.type === "radio")) {
+				if (element.checked) values.push(element.value);
+				continue;
+			}
+			values.push(element.value);
+		}
+		return values;
+	}
+	/**
+	* Table module definition.
+	*
+	* @summary Loaded with the core preset; `renderTable` only fires for groups that
+	* declare `table`, and the file delegation only reacts to CSV/JSON inputs.
+	*
+	* @example
+	* // registered by FORM_ADAPTER_DEFINITIONS; no manual wiring needed
+	*/
+	var tableFormAdapter = {
+		id: FORM_MODULE_IDS.table,
+		/**
+		* Builds the table adapter for the host form.
+		*
+		* @param context - Host context.
+		* @returns The live adapter.
+		*/
+		load: (context) => new TableFormAdapter(context),
+		/**
+		* Releases the preview table.
+		*
+		* @param adapter - The adapter returned by `load()`.
+		* @returns Nothing.
+		*/
+		destroy: (adapter) => adapter.destroy()
+	};
 	// packages/components/table/index.ts
-	var table_exports = /* @__PURE__ */ __exportAll({ TableBuilder: () => TableBuilder });
+	var table_exports = /* @__PURE__ */ __exportAll({
+		TableBuilder: () => TableBuilder,
+		tableFormAdapter: () => tableFormAdapter
+	});
 	// packages/modules/theme/src/ThemeRegistry.ts
 	var _themes$1 = /* @__PURE__ */ new WeakMap();
 	/**
@@ -24346,6 +35375,26 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 			footer: null
 		};
 	}
+	/**
+	* Reads a `.csv`/`.json` file and parses it into table data.
+	*
+	* The extension decides the parser; anything else resolves to an empty table instead of
+	* throwing, because "the user picked the wrong file" is a normal state, not an error.
+	*
+	* @param file - File selected by the user.
+	* @returns Table data.
+	*/
+	async function parseTableFile(file) {
+		const extension = file.name.split(".").pop()?.toLowerCase();
+		if (extension !== "csv" && extension !== "json") return { ...EMPTY_TABLE };
+		const text = await file.text();
+		if (extension === "json") try {
+			return parseTableRecords(JSON.parse(text));
+		} catch {
+			return { ...EMPTY_TABLE };
+		}
+		return parseTableText(text);
+	}
 	// packages/utilities/src/SelectorToTree.ts
 	/**
 	* 👑 THE SOVEREIGN SELECTOR GRAPH PARSER (SIHIR KILAT HASIL IDE DEWA ANDA!)
@@ -24420,10 +35469,8 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 			modal: modal_exports,
 			modeSwitcher: mode_switcher_exports,
 			moduleLoader: module_loader_exports,
-			modules: modules_exports,
 			pricingCard: pricing_card_exports,
 			product: product_exports,
-			rating: rating_exports,
 			router: router_exports,
 			section: section_exports,
 			skeleton: skeleton_exports,
@@ -24447,6 +35494,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 				hexToRgba: () => hexToRgba,
 				mergeInputConfig: () => mergeInputConfig,
 				numberToText: () => numberToText,
+				parseTableFile: () => parseTableFile,
 				parseTableRecords: () => parseTableRecords,
 				parseTableText: () => parseTableText,
 				selectorToTree: () => selectorToTree,
@@ -24458,13 +35506,22 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 		}
 	};
 	AioUI.AccordionBuilder = AccordionBuilder;
-	AioUI.AnimationsService = AnimationsService$1;
+	AioUI.AnimationsService = AnimationsService;
+	AioUI.ANIMATION_BEHAVIOURS = ANIMATION_BEHAVIOURS;
+	AioUI.ANIMATION_TYPES = ANIMATION_TYPES;
+	AioUI.indexBehaviours = indexBehaviours;
 	AioUI.ArticleBuilder = ArticleBuilder;
 	AioUI.BadgeBuilder = BadgeBuilder;
 	AioUI.Builder = Builder;
 	AioUI.GLOBAL_INSTANCE_COUNTER = GLOBAL_INSTANCE_COUNTER;
 	AioUI.normalize = normalize;
 	AioUI.validate = validate;
+	AioUI.Binding = Binding;
+	AioUI.BuilderProxy = BuilderProxy;
+	AioUI.isReactive = isReactive;
+	AioUI.holdUntilStyled = holdUntilStyled;
+	AioUI.releaseMarkers = releaseMarkers;
+	AioUI.ReactiveGraph = ReactiveGraph;
 	AioUI.CarouselBuilder = CarouselBuilder;
 	AioUI.CodeBlockBuilder = CodeBlockBuilder;
 	AioUI.ComponentRegistry = ComponentRegistry;
@@ -24498,27 +35555,48 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 	AioUI.assertValidScope = assertValidScope;
 	AioUI.qualifyId = qualifyId;
 	AioUI.splitQualifiedId = splitQualifiedId;
-	AioUI.EventEmitter = EventEmitter$1;
+	AioUI.GLOBAL_DISPLAY_LOG = false;
+	AioUI.EventEmitter = EventEmitter;
 	AioUI.FabMenuBuilder = FabMenuBuilder;
 	AioUI.FooterBuilder = FooterBuilder;
-	AioUI.DEFAULT_FORM_MESSAGES = DEFAULT_FORM_MESSAGES;
-	AioUI.FormBuilder = FormBuilder;
-	AioUI.composeMessage = composeMessage;
-	AioUI.messageDraft = messageDraft;
-	AioUI.resolveStyle = resolveStyle;
-	AioUI.FORM_ADAPTER_MANIFEST = FORM_ADAPTER_MANIFEST;
-	AioUI.FORM_MODULE_IDS = FORM_MODULE_IDS;
+	AioUI.DEFAULT_FORM_MESSAGES = DEFAULT_FORM_MESSAGES$1;
+	AioUI.FormBuilder = FormBuilder$1;
+	AioUI.composeMessage = composeMessage$1;
+	AioUI.messageDraft = messageDraft$1;
+	AioUI.resolveStyle = resolveStyle$1;
+	AioUI.FORM_ADAPTER_MANIFEST = FORM_ADAPTER_MANIFEST$1;
+	AioUI.FORM_MODULE_IDS = FORM_MODULE_IDS$1;
+	AioUI.FORM_ADAPTER_DEFINITIONS = FORM_ADAPTER_DEFINITIONS$1;
+	AioUI.FORM_ADAPTER_IDS = FORM_ADAPTER_IDS$1;
+	AioUI.inputFormAdapter = inputFormAdapter$1;
 	AioUI.HttpService = HttpService$1;
 	AioUI.IdAddressBuilder = IdAddressBuilder;
+	AioUI.IdAddressAdapterAio = IdAddressAdapterAio;
+	AioUI.IdAddressAdapterBase = IdAddressAdapterBase;
+	AioUI.IdAddressAdapterNative = IdAddressAdapterNative;
+	AioUI.idAddressFormAdapter = idAddressFormAdapter;
+	AioUI.INPUT_MODULE_DEFINITIONS = INPUT_MODULE_DEFINITIONS;
+	AioUI.INPUT_MODULE_DEFINITION_IDS = INPUT_MODULE_DEFINITION_IDS;
 	AioUI.InputBuilder = InputBuilder;
+	AioUI.popoverInputModule = popoverInputModule;
 	AioUI.INPUT_MODULE_IDS = INPUT_MODULE_IDS;
 	AioUI.INPUT_MODULE_MANIFEST = INPUT_MODULE_MANIFEST;
 	AioUI.inputFilesOf = inputFilesOf;
 	AioUI.mountInputModules = mountInputModules;
+	AioUI.mountControls = mountControls;
+	AioUI.INPUT_STRUCTURAL_KEYS = INPUT_STRUCTURAL_KEYS;
+	AioUI.INPUT_TYPE_REGISTRY = INPUT_TYPE_REGISTRY;
+	AioUI.inputTypeOf = inputTypeOf;
+	AioUI.isInputAttributeAllowed = isInputAttributeAllowed;
+	AioUI.scanInputAttributes = scanInputAttributes;
+	AioUI.reportMissing = reportMissing;
+	AioUI.collectFormValues = collectFormValues;
+	AioUI.InputAttributeBuilder = InputAttributeBuilder;
 	AioUI.MarkdownBuilder = MarkdownBuilder;
 	AioUI.MasonryBuilder = MasonryBuilder;
 	AioUI.MenuBuilder = MenuBuilder;
 	AioUI.MessageBuilder = MessageBuilder;
+	AioUI.messageFormAdapter = messageFormAdapter;
 	AioUI.ModalBuilder = ModalBuilder;
 	AioUI.ModeSwitcherBuilder = ModeSwitcherBuilder;
 	AioUI.ModuleLoader = ModuleLoader;
@@ -24530,13 +35608,13 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 	AioUI.ProductCardBuilder = ProductCardBuilder;
 	AioUI.ProductDetailBuilder = ProductDetailBuilder;
 	AioUI.ProductGridBuilder = ProductGridBuilder;
-	AioUI.RatingBuilder = RatingBuilder;
 	AioUI.HashRouter = HashRouter;
 	AioUI.SectionBuilder = SectionBuilder;
 	AioUI.Skeleton = Skeleton;
 	AioUI.SkeletonBuilder = SkeletonBuilder;
 	AioUI.TabBuilder = TabBuilder;
 	AioUI.TableBuilder = TableBuilder;
+	AioUI.tableFormAdapter = tableFormAdapter;
 	AioUI.ThemeRegistry = ThemeRegistry;
 	AioUI.ThemeRenderer = ThemeRenderer;
 	AioUI.CyberpunkTheme = CyberpunkTheme$1;
@@ -24558,6 +35636,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 	AioUI.setMetadata = setMetadata;
 	AioUI.EMPTY_TABLE = EMPTY_TABLE;
 	AioUI.detectDelimiter = detectDelimiter;
+	AioUI.parseTableFile = parseTableFile;
 	AioUI.parseTableRecords = parseTableRecords;
 	AioUI.parseTableText = parseTableText;
 	AioUI.splitCsvRows = splitCsvRows;

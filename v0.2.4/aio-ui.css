@@ -2264,122 +2264,6 @@ section:is(.article) {
   visibility: visible;
 }
 
-/* ==========================================================================
-   Code Block (.code-block)
-   One dark "paper" panel per source snippet: a caption, then `pre > code`.
-
-   The two base colours are deliberately LITERAL in both light and dark mode. A code
-   block is paper with ink of its own — it is not a surface of the page — so it does not
-   derive from `--app-surface-*`; doing so would invert it with the theme and turn it
-   into a second card. Only the corner radius joins the app contract.
-   ========================================================================== */
-
-:root,
-[data-theme] {
-  --code-block-background: #14100c;
-  --code-block-text-color: #e9e2d8;
-  --code-block-label-color: rgba(233, 226, 216, 0.62);
-  --code-block-radius: var(--app-component-border-radius, 1rem);
-  --code-block-padding: 0.9rem 1rem;
-  --code-block-font-family: ui-monospace, monospace;
-  --code-block-font-size: 0.72rem;
-  --code-block-line-height: 1.5;
-  --code-block-label-font-size: 0.68rem;
-  --code-block-label-letter-spacing: 0.08em;
-  --code-block-gap: 0.5rem;
-  --code-block-label-gap: 0.35rem;
-  --code-block-action-color: rgba(233, 226, 216, 0.7);
-  --code-block-action-hover-color: #e9e2d8;
-  --code-block-action-background: rgba(233, 226, 216, 0.08);
-  --code-block-action-hover-background: rgba(233, 226, 216, 0.16);
-  --code-block-action-padding: 0.3rem 0.6rem;
-  --code-block-action-gap: 0.35rem;
-  --code-block-action-radius: calc(var(--code-block-radius) * 0.5);
-  --code-block-edit-outline: 1px solid rgba(233, 226, 216, 0.45);
-}
-
-/* Several labelled blocks in one call: they stack, they do not touch. */
-.code-block {
-  display: grid;
-  gap: var(--code-block-gap);
-  margin: 0;
-
-  /* One labelled panel. A Markdown fence is a single panel, so it is the root AND its own
-     frame (`figure.code-block.frame`) instead of nesting one more wrapper. */
-  & .frame,
-  &.frame {
-    display: grid;
-    gap: var(--code-block-label-gap);
-    margin: 0;
-  }
-
-  & .label {
-    font-family: var(--code-block-font-family);
-    font-size: clamp(0.64rem, 0.6rem + 0.15vw, var(--code-block-label-font-size));
-    letter-spacing: var(--code-block-label-letter-spacing);
-    text-transform: uppercase;
-    color: var(--code-block-label-color);
-  }
-
-  & .paper {
-    margin: 0;
-    padding: var(--code-block-padding);
-    background: var(--code-block-background);
-    color: var(--code-block-text-color);
-    border-radius: var(--code-block-radius);
-    font-family: var(--code-block-font-family);
-    font-size: var(--code-block-font-size);
-    line-height: var(--code-block-line-height);
-    overflow-x: auto;
-
-    /* `code` carries no look of its own here: the panel owns the type, the element is
-       the hook a highlighter would decorate. */
-    & .body {
-      font: inherit;
-      color: inherit;
-      white-space: pre;
-    }
-
-    /* In edit mode the panel itself is the editor: no outline of the browser's own. */
-    & [contenteditable="true"] {
-      outline: none;
-      cursor: text;
-    }
-  }
-
-  /* Action row. Only rendered when the caller configures `actions`, so a read-only block
-     keeps the exact DOM it always had. */
-  & .actions {
-    display: flex;
-    gap: var(--code-block-action-gap);
-    justify-content: flex-end;
-  }
-
-  & .actions button {
-    padding: var(--code-block-action-padding);
-    border: 0;
-    border-radius: var(--code-block-action-radius);
-    background: var(--code-block-action-background);
-    color: var(--code-block-action-color);
-    font-family: var(--code-block-font-family);
-    font-size: var(--code-block-label-font-size);
-    letter-spacing: var(--code-block-label-letter-spacing);
-    text-transform: uppercase;
-    cursor: pointer;
-
-    &:hover,
-    &:focus-visible {
-      background: var(--code-block-action-hover-background);
-      color: var(--code-block-action-hover-color);
-    }
-  }
-
-  /* The panel being edited: a hairline so it reads as a field, not as paper. */
-  & .frame.editing .paper {
-    outline: var(--code-block-edit-outline);
-    outline-offset: 2px;
-  }
-}
 /* Component token layer. The popover used to be a white card with a fixed accent, so a
    docked widget painted the live theme on the page while the panel it sat in stayed light.
    Every value here derives from an `--app-*` token, so an app overrides a fab by
@@ -5616,6 +5500,122 @@ select:focus-visible {
    code panels that reuse the code-block sheet either side of this file.
    ========================================================================== */
 
+/* ==========================================================================
+   Code Block (.code-block)
+   One dark "paper" panel per source snippet: a caption, then `pre > code`.
+
+   The two base colours are deliberately LITERAL in both light and dark mode. A code
+   block is paper with ink of its own — it is not a surface of the page — so it does not
+   derive from `--app-surface-*`; doing so would invert it with the theme and turn it
+   into a second card. Only the corner radius joins the app contract.
+   ========================================================================== */
+
+:root,
+[data-theme] {
+  --code-block-background: #14100c;
+  --code-block-text-color: #e9e2d8;
+  --code-block-label-color: rgba(233, 226, 216, 0.62);
+  --code-block-radius: var(--app-component-border-radius, 1rem);
+  --code-block-padding: 0.9rem 1rem;
+  --code-block-font-family: ui-monospace, monospace;
+  --code-block-font-size: 0.72rem;
+  --code-block-line-height: 1.5;
+  --code-block-label-font-size: 0.68rem;
+  --code-block-label-letter-spacing: 0.08em;
+  --code-block-gap: 0.5rem;
+  --code-block-label-gap: 0.35rem;
+  --code-block-action-color: rgba(233, 226, 216, 0.7);
+  --code-block-action-hover-color: #e9e2d8;
+  --code-block-action-background: rgba(233, 226, 216, 0.08);
+  --code-block-action-hover-background: rgba(233, 226, 216, 0.16);
+  --code-block-action-padding: 0.3rem 0.6rem;
+  --code-block-action-gap: 0.35rem;
+  --code-block-action-radius: calc(var(--code-block-radius) * 0.5);
+  --code-block-edit-outline: 1px solid rgba(233, 226, 216, 0.45);
+}
+
+/* Several labelled blocks in one call: they stack, they do not touch. */
+.code-block {
+  display: grid;
+  gap: var(--code-block-gap);
+  margin: 0;
+
+  /* One labelled panel. A Markdown fence is a single panel, so it is the root AND its own
+     frame (`figure.code-block.frame`) instead of nesting one more wrapper. */
+  & .frame,
+  &.frame {
+    display: grid;
+    gap: var(--code-block-label-gap);
+    margin: 0;
+  }
+
+  & .label {
+    font-family: var(--code-block-font-family);
+    font-size: clamp(0.64rem, 0.6rem + 0.15vw, var(--code-block-label-font-size));
+    letter-spacing: var(--code-block-label-letter-spacing);
+    text-transform: uppercase;
+    color: var(--code-block-label-color);
+  }
+
+  & .paper {
+    margin: 0;
+    padding: var(--code-block-padding);
+    background: var(--code-block-background);
+    color: var(--code-block-text-color);
+    border-radius: var(--code-block-radius);
+    font-family: var(--code-block-font-family);
+    font-size: var(--code-block-font-size);
+    line-height: var(--code-block-line-height);
+    overflow-x: auto;
+
+    /* `code` carries no look of its own here: the panel owns the type, the element is
+       the hook a highlighter would decorate. */
+    & .body {
+      font: inherit;
+      color: inherit;
+      white-space: pre;
+    }
+
+    /* In edit mode the panel itself is the editor: no outline of the browser's own. */
+    & [contenteditable="true"] {
+      outline: none;
+      cursor: text;
+    }
+  }
+
+  /* Action row. Only rendered when the caller configures `actions`, so a read-only block
+     keeps the exact DOM it always had. */
+  & .actions {
+    display: flex;
+    gap: var(--code-block-action-gap);
+    justify-content: flex-end;
+  }
+
+  & .actions button {
+    padding: var(--code-block-action-padding);
+    border: 0;
+    border-radius: var(--code-block-action-radius);
+    background: var(--code-block-action-background);
+    color: var(--code-block-action-color);
+    font-family: var(--code-block-font-family);
+    font-size: var(--code-block-label-font-size);
+    letter-spacing: var(--code-block-label-letter-spacing);
+    text-transform: uppercase;
+    cursor: pointer;
+
+    &:hover,
+    &:focus-visible {
+      background: var(--code-block-action-hover-background);
+      color: var(--code-block-action-hover-color);
+    }
+  }
+
+  /* The panel being edited: a hairline so it reads as a field, not as paper. */
+  & .frame.editing .paper {
+    outline: var(--code-block-edit-outline);
+    outline-offset: 2px;
+  }
+}
 :root,
 [data-theme] {
   --markdown-gap: 0.85rem;
@@ -7011,6 +7011,13 @@ aside:has(> .nav[data-position*="sticky"]) {
   }
 }
 
+/* One published sheet for `@aio-ui/product`.
+ *
+ * The three builders keep their own sheets (each one owns its region); this file is the
+ * single specifier a host links, in mount order. `scripts/build-bundle.mjs` lists the
+ * imported sheets instead of this one, so the bundle never carries a duplicated copy.
+ */
+
 /* ==========================================================================
    PRODUCT CARD — one item of the product grid
    ========================================================================== */
@@ -7392,42 +7399,6 @@ aside:has(> .nav[data-position*="sticky"]) {
   }
 }
 
-/* 🪐 Vektor Bintang (Star SVG Asset Managed inside CSS) */
-.star-icon {
-  display: inline-block;
-  width: 24px; /* 🟢 TINGGAL GANTI DISINI UNTUK PERBESAR UKURAN BINTANG! */
-  height: 24px;
-  background-repeat: no-repeat;
-  background-size: contain;
-  transition: transform 0.2s ease;
-}
-.star-icon:hover {
-  transform: scale(1.2);
-}
-
-/* 🌟 Bintang Terisi Penuh (Menggunakan URL Data-URI SVG Star Murni) */
-.star-icon.star-full {
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://w3.org' viewBox='0 0 24 24' fill='%23ffcc00'><path d='M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z'/></svg>");
-}
-
-/* 🌗 Bintang Setengah (Gunakan warna fill oranye dengan kliping/masking) */
-.star-icon.star-half {
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://w3.org' viewBox='0 0 24 24'><defs><linearGradient id='grad'><stop offset='50%25' stop-color='%23ffcc00'/><stop offset='50%25' stop-color='%23e0e0e0'/></linearGradient></defs><path fill='url(%23grad)' d='M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z'/></svg>");
-}
-
-/* 🫙 Bintang Kosong (Warna Abu-Abu Netral) */
-.star-icon.star-empty {
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://w3.org' viewBox='0 0 24 24' fill='%23e0e0e0'><path d='M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z'/></svg>");
-}
-
-/* ====================================================
-   🎨 TIPS WARNAI ULANG SECARA LIVE DARI TEMA LUAR
-   Karena SVG berada di CSS background, ganti warnanya secepat kilat 
-   murni memanfaatkan kekuatan filter hue-rotate / brightness CSS!
-   ==================================================== */
-.theme-cyberpunk .star-icon.star-full {
-  filter: drop-shadow(0 0 4px #ff007f) brightness(1.2) hue-rotate(120deg); /* Bermetamorfosis jadi neon pink otomatis! */
-}
 /* ==========================================================================
    SECTION — one row, 2–3 content columns
    Each column stacks: image → eyebrow → title → description → actions.
@@ -9209,7 +9180,7 @@ table.table:is(.stacked),
 /* =========================================================================
    4. MODULE: HYDRATION HOLD — data-hydrating + --is-loading (O(1), ROOT-ONLY)
    ONE seam owns this whole protocol: `holdUntilStyled(root, specifier, mockup?)`
-   in `@aio-ui/base/BaseAdapters/Hydration`, called at the end of `Builder.create()`.
+   in `@aio-ui/base`, called at the end of `Builder.create()`.
    This section is the FALLBACK skin: a builder that implements `loading()` shows
    its own `@aio-ui/skeleton` mockup instead and never sets `data-hydrating`.
    • HOLD    — only while THAT component's own sheet is missing (asked before

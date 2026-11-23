@@ -8,6 +8,7 @@
 
 | Agent | Band | Task | Write scope | Started | Checkpoint | State |
 | ----- | ---- | ---- | ----------- | ------- | ---------- | ----- |
+| copilot b67 | Tooling | Release automation — b67: the five publish-side followers | `scripts/publish-release-assets.mjs`, `scripts/publish-releases.mjs`, `scripts/release-doc.mjs`, `orchestrator/__test__/release.test.ts`, `docs/live-cdn-repo.md`, `packages/**/README.md`, `docs/framework/catalogue.json`, `scripts/README.md`, `.guidance/project/STATUS.md` | 2026-11-24 | `/memories/session/b67.md` | active |
 
 ## Row shape
 

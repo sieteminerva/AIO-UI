@@ -46,6 +46,8 @@ if (!existsSync(join(dir, "registry.json"))) {
 
 const registry = JSON.parse(readFileSync(join(dir, "registry.json"), "utf8"));
 const packages = Object.entries(registry.packages ?? {});
+// One tag, one version per package (Option A): the closing example names a real asset.
+const sample = packages.at(-1)?.[1]?.tarball?.split("/").pop() ?? `aio-ui-form-${version}.tgz`;
 
 // Gate: the registry is the contract, so every tarball it names must exist on disk and
 // every tarball on disk must be named by it. Half a folder is worse than none.
@@ -81,4 +83,4 @@ commitWorktree(worktree, `releases: v${version}`);
 pushBranch(worktree, { branch, remote });
 
 console.log(`[releases] pushed ${branch} · ${version}`);
-console.log(`[releases] verify: npm install <repo>/raw/${branch}/v${version}/aio-ui-form-${version}.tgz`);
+console.log(`[releases] verify: npm install <repo>/raw/${branch}/v${version}/${sample}`);

@@ -16,6 +16,11 @@ refuses an unbumped source change. Proofs: `--bump @aio-ui/input --tag 0.2.5` mo
 one dependent range and the tag; a 0.2.5 rehearsal against a copy of 0.2.4 produced **identical
 checksums**; the same rehearsal with one appended line in `packages/base/src/index.ts` was
 refused. `npm run verify`: 970 passed, 1 skipped.
+**b67** (2026-11-24) finished the publish-side followers: the two publishers derive their example
+asset name from `registry.packages[…].tarball`, the README `## Install` block prints `entry.version`
+beside the tag, and `release.test.ts` asserts the filename rule plus reuse-copy byte identity
+(**972 passed**, 1 skipped). 29 of 37 packages carry a README; the 8 without one (`base`, `core`,
+`styles`, `utilities`, the three themes, `kits/themes`) still print no install block.
 
 Owner decisions 2026-11-24: **Q7 reversed** — the CDN stays versioned (`@v<x>`), no versionless
 alias, because breaking changes are expected and a silent moving alias is the bigger risk;
@@ -296,19 +301,19 @@ find, so a clean checkout without artefacts skips them and says so):
 3. every internal range on `@aio-ui/*` equals `^<that package's own version>`;
 4. the tag is not older than the previous tag (equal is the normal state between releases).
 
-**Changes — b65/b66 landed, b67 pending**
+**Changes — b65–b67 landed**
 
 | File                                    | Change                                                                                                                                                                                                                                                                                                                           |
 | --------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `scripts/semver.mjs` (new)              | `parse` / `compare` / `next`, pre-release aware, no dependency: a release tool that cannot install its own dependency is not a release tool.                                                                                                                                                                                     |
 | `scripts/version.mjs`                   | **landed b65** — single-version drift stops being an error; `--check` loads the newest released registry and asserts the four invariants; `--bump <name…> [--level patch\|minor\|major]` bumps those packages and follows their internal ranges; `--tag <x.y.z>` writes only the root manifest version.                          |
 | `scripts/release.mjs`                   | **landed b66** — Gate 1 is per-package (version ≤ tag, ≥ previous); `tarballName()` takes the package version; `version`, `deps`, `tree` and `registry.mode` are recorded; unchanged packages copy the previous tarball instead of repacking; the drift report runs before anything is written and `--strict` refuses the write. |
-| `scripts/publish-releases.mjs`          | logic unchanged (it derives filenames from `entry.tarball`), but the closing `verify:` line stops hardcoding `aio-ui-form-<tag>.tgz` and prints a real asset name.                                                                                                                                                               |
-| `scripts/publish-release-assets.mjs`    | the release-note install example derives a real asset name from the registry instead of `${version}`.                                                                                                                                                                                                                            |
+| `scripts/publish-releases.mjs`          | **landed b67** — the closing `verify:` line derives a real asset name from the last registry entry instead of `${version}`.                                                                                                                                                                                                     |
+| `scripts/publish-release-assets.mjs`    | **landed b67** — `fallbackBody` reads `registry.json` and names a real entry; the body says package versions may differ from the tag.                                                                                                                                                                                           |
 | `scripts/publish-cdn.mjs`               | no change: it unpacks by `entry.tarball.split("/").pop()` and the branch README already prints the asset name.                                                                                                                                                                                                                   |
-| `scripts/release-doc.mjs`               | `--readme` already prints `entry.tarball`; print the package version beside the package name so a reader sees `0.2.4` while the tag is `0.2.5`.                                                                                                                                                                                  |
-| `orchestrator/__test__/release.test.ts` | add: the folder name equals the tag while filenames carry package versions; an unchanged package's bytes equal the previous folder's.                                                                                                                                                                                            |
-| `docs/live-cdn-repo.md` §9              | chain gains `--bump` and `--strict`, plus one line stating "one tag per release, package versions may differ".                                                                                                                                                                                                                   |
+| `scripts/release-doc.mjs`               | **landed b67** — the `## Install` block prints `Version — \`<entry.version>\` (tag \`v<registry.version>\`)`; `--readme --apply` + `catalogue.mjs --apply` rewritten (29 READMEs; a third pass is byte-identical).                                                                                                             |
+| `orchestrator/__test__/release.test.ts` | **landed b67** — the filename rule (`aio-ui-<scope-stripped>-<version>.tgz`, 37/37) and the reuse-copy hash against the previous `v*/` folder.                                                                                                                                                                                   |
+| `docs/live-cdn-repo.md` §9              | **landed b67** — chain gains `--bump` and `--strict`, plus the "one tag per release; package versions may differ" line.                                                                                                                                                                                                        |
 
 **Downsides, stated**
 
@@ -349,30 +354,17 @@ find, so a clean checkout without artefacts skips them and says so):
 
 ## Next — start here (cold)
 
-1. **b67 — the publish-side followers** (the writers landed in `a4a9610`; what follows still
-   assumes one version = tag):
-   1. `scripts/publish-release-assets.mjs` — `fallbackBody` (~:51) prints
-      `aio-ui-form-${version}.tgz`; the file is now `aio-ui-form-<package version>.tgz`. The script
-      already checks that `releases/v<tag>/registry.json` exists (~:37) but never reads it: read it
-      and use a real entry, e.g. `Object.entries(registry.packages).at(-1)[1].tarball.split("/").pop()`.
-      Add one sentence to the body: package versions may differ from the tag.
-   2. `scripts/publish-releases.mjs` — the closing `verify:` line (~:84) hardcodes
-      `aio-ui-form-${version}.tgz`. It already holds `packages` as `[name, entry]` pairs: derive
-      the sample from `packages.at(-1)[1].tarball.split("/").pop()`.
-   3. `scripts/release-doc.mjs` — `installInner()` (~:150) prints only `npm install <tarball>`. Add a
-      line `Version — \`<entry.version>\` (tag \`v<registry.version>\`)` under the heading, then
-      `node scripts/release-doc.mjs --version 0.2.4 --readme --apply` and
-      `node scripts/catalogue.mjs --apply` (37 READMEs change; `check:catalogue` is the gate).
-   4. `orchestrator/__test__/release.test.ts` — two assertions inside the existing descriptions:
-      (a) `entry.tarball.split("/").pop()` equals `aio-ui-<short>-<entry.version>.tgz`;
-      (b) when an earlier `releases/v<tag>/` folder exists, an entry whose version did not move has
-      the same sha256 as that folder's file. Skip (b) when `entry.version` is absent.
-   5. `docs/live-cdn-repo.md` §9 — chain gains `--bump` / `--strict`, plus the line "one tag per
-      release; package versions may differ from it".
-
-   Gate: `npm run check` while editing, `npm run verify` once at the end.
-2. **Probe** — `npm run check:live` (separate gate, callable any time) fetches `registry.json`, the
+1. **Probe** — `npm run check:live` (separate gate, callable any time) fetches `registry.json`, the
    four loose bundle files, one package tarball, and both aggregate tarballs once §2.1 lands.
+   It cannot go green before the publish: `v0.2.4` is regenerated locally, not pushed.
+2. **README gap (b67 finding)** — 8 of 37 packages have no `README.md` at all, so `--readme` can
+   never place a block there: `base`, `core`, `styles`, `utilities`, `theme-cyberpunk`,
+   `theme-default`, `theme-horizontal`, `kits/themes`. Owner call: write 8 READMEs, or accept the
+   gap and say so in `docs/live-cdn-repo.md`.
+3. **Parked (owner, 2026-11-24)** — §2.1 aggregate tarballs; Q6 answered "versioned filenames
+   only", so when they land there is no root `.tgz` alias.
+4. **LAST** — publish (`publish-releases` → `publish-cdn` → `publish-assets`), only on the owner's
+   word (card 3).
 3. **Parked (owner, 2026-11-24)** — §2.1 aggregate tarballs; Q6 answered "versioned filenames
    only", so when they land there is no root `.tgz` alias.
 4. **LAST** — publish (`publish-releases` → `publish-cdn` → `publish-assets`), only on the owner's

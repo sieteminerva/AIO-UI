@@ -51,6 +51,8 @@ interface RegistryEntry {
   subpaths: Record<string, string>;
   tarball: string;
   integrity?: string;
+  /** The package's own version; absent in a registry written before b66. */
+  version?: string;
 }
 
 interface Registry {
@@ -147,6 +149,51 @@ describe.skipIf(!available)("release artefacts", () => {
       const actual = createHash("sha256").update(readFileSync(join(RELEASE, file))).digest("hex");
       if (actual !== hash) bad.push(file);
     }
+    expect(bad).toEqual([]);
+  });
+
+  it("names every tarball after its own package version", () => {
+    // One tag, one version per package (Option A): the folder carries the tag, the filename the
+    // package version. A registry written before b66 records no `version`, so the tag is the
+    // package version by definition and the assertion still holds.
+    const bad: string[] = [];
+    for (const [name, entry] of Object.entries(registry.packages)) {
+      const file = entry.tarball.split("/").pop();
+      const version = entry.version ?? registry.version;
+      const short = name.slice("@aio-ui/".length);
+      if (file !== `aio-ui-${short}-${version}.tgz`) bad.push(`${name} → ${file} (expected ${version})`);
+    }
+    expect(bad).toEqual([]);
+  });
+
+  it("keeps an unchanged package's bytes identical to the previous release", () => {
+    // Semver order over `release/V*`: the newest folder that is not the current tag is the one
+    // a reuse-copy reads from. Absent in a fresh checkout, so the test proves nothing there.
+    const folders = readdirSync(join(ROOT, "releases"), { withFileTypes: true })
+      .filter((entry) => entry.isDirectory() && /^v\d+\.\d+\.\d+/.test(entry.name))
+      .map((entry) => entry.name)
+      .filter((name) => name !== `v${WORKSPACE_VERSION}`)
+      .filter((name) => existsSync(join(ROOT, "releases", name, "registry.json")))
+      .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+    if (!folders.length) return;
+
+    const previousDir = folders[folders.length - 1];
+    const previous = JSON.parse(readFileSync(join(ROOT, "releases", previousDir, "registry.json"), "utf8")) as Registry;
+    const hashOf = (path: string) => createHash("sha256").update(readFileSync(path)).digest("hex");
+
+    const bad: string[] = [];
+    for (const [name, entry] of Object.entries(registry.packages)) {
+      // No recorded version (pre-b66 registry) or the version moved: a repack is expected.
+      if (!entry.version) continue;
+      const before = previous.packages[name];
+      if (!before?.version || before.version !== entry.version) continue;
+      const file = entry.tarball.split("/").pop()!;
+      const beforeFile = before.tarball.split("/").pop()!;
+      const beforePath = join(ROOT, "releases", previousDir, beforeFile);
+      if (!existsSync(beforePath)) continue;
+      if (hashOf(join(RELEASE, file)) !== hashOf(beforePath)) bad.push(`${name}@${entry.version}`);
+    }
+    // A vacuous pass is honest here: a pre-b66 registry records no version, so nothing matches.
     expect(bad).toEqual([]);
   });
 

@@ -156,12 +156,24 @@ function pickStylesheet(name, entry) {
   return match ?? keys[0];
 }
 
-/** The `## Install` block body — tarball, the CDN URL a host loads, and its stylesheet. */
+/**
+ * The `## Install` block body — package version, tarball, the CDN URL a host loads, and its
+ * stylesheet. The version line matters because one tag can carry several package versions:
+ * the tag says which folder, the version says which file.
+ */
 function installInner(name, entry) {
   const url = (subpath) => `${base}${entry.dir}/${subpath}`;
   const root = entry.subpaths?.["."];
   const css = pickStylesheet(name, entry);
-  const lines = ["## Install", "", `    npm install ${entry.tarball}`, ""];
+  const packageVersion = entry.version ?? registry.version;
+  const lines = [
+    "## Install",
+    "",
+    `Version — \`${packageVersion}\` (tag \`v${registry.version}\`)`,
+    "",
+    `    npm install ${entry.tarball}`,
+    "",
+  ];
 
   if (root && root.endsWith(".js")) {
     // A real ES module: the URL the import map points at.

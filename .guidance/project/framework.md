@@ -8,17 +8,18 @@ Why / stages: `.guidance/plan-framework.md`. Engineering rules:
 
 | #   | Task                     | State       | Gate                                                                                                    |
 | --- | ------------------------ | ----------- | ------------------------------------------------------------------------------------------------------- |
-| 1   | Release automation (b67) | next        | `docs/framework/TASK-release-automation.md` §Next — b67 publish-side followers: assets example, releases verify line, README version line, 2 test assertions, live-cdn §9 |
+| 1   | Release automation (b67) | landed      | b67 publish-side followers done; next is the live probe, blocked on the publish (`TASK-release-automation.md` §Next) |
 | 2   | Theme console view (fab) | in progress | `examples/demo/src/ThemeConsole/TASKS.md` — view composed, gate green; open: page-only popover sections |
 | 3   | Inspect surface (b43)    | in progress | `inspect()` + `inspectPage()` green; open: dead relay removal, `#cleanupMap` reset                      |
 
 ## Next
 
-- **Release automation — b67 next.** b60–b62, b64 and b65–b66 are landed: session prompt opt-in,
-  `release-doc.mjs` (note tables + `## Install` blocks), the 37-package registry, and per-package
-  versions under one tag (`semver.mjs`, `version.mjs --bump/--tag`, `release.mjs --strict`). What is
-  left is the publish-side followers, listed cold in the task doc §Next. CDN stays **versioned**
-  (owner, 2026-11-24). → `docs/framework/TASK-release-automation.md`
+- **Release automation — probe next (b67 landed).** b60–b67 are landed: session prompt opt-in,
+  `release-doc.mjs` (note tables, `## Install` blocks with the package version), the 37-package
+  registry, per-package versions under one tag, and the publish-side followers that now derive
+  their asset names from the registry. `npm run check:live` cannot go green before the publish.
+  Open: 8 packages without a README (owner call). CDN stays **versioned** (owner, 2026-11-24).
+  → `docs/framework/TASK-release-automation.md` §Next
 - **Publish — owner's order: LAST.** The post-refactor 37-package tree is regenerated and not
   published; it is worked on only after the orchestrator band is finished, or when the owner asks.
   Do not raise it unprompted (STATUS card #3). The official release also waits for the `store` /

@@ -4,20 +4,23 @@
 > **only** after the user picks it — never "to orient" (`AGENT_RULES.md` §13). Rewritten each
 > session, newest on top. One card = one line + one pointer.
 >
-> Recent batches (newest first): **b65–b66** per-package versions · **b64** registry regen to 37
+> Recent batches (newest first): **b67** publish-side followers · **b65–b66** per-package versions ·
+> **b64** registry regen to 37
 > packages · **b63** this task doc · **b60–b62** session prompt opt-in, `release-doc.mjs`, `## Install`
 > in every package README · **b57** Apps Script hosting · **b52–b59** shell mount point, tab seams.
 > Older history: `git log --oneline`.
 
-### 1. Release automation — b65–b66 landed, b67 next (tooling band)
+### 1. Release automation — b65–b67 landed, next is the live probe (tooling band)
 
 Option A is built: one **tag**, one **version per package**. `scripts/semver.mjs`; `version.mjs`
 `--bump/--tag` + four invariants; `release.mjs` names tarballs by package version, records
 `version`/`deps`/`tree`/`mode`, copies unchanged bytes, `--strict` refuses an unbumped change.
-Proved: a bump moved one range and the tag; a 0.2.5 rehearsal on 0.2.4 reproduced **identical
-checksums**; an appended line was refused; `npm run verify` 970 passed.
-Open: **b67** — five publish-side followers, listed cold in the task doc §Next.
-Open: aggregate tarballs parked (Q5); publish is LAST (card 3).
+**b67** made the readers follow: both publishers derive their example asset from the registry, the
+README `## Install` block prints the package version beside the tag, and two tests pin the filename
+rule and the reuse-copy hash. Proved: 37/37 names match, a third `--readme` pass is byte-identical,
+`npm run verify` 972 passed.
+Open: `check:live` needs the publish; 8 packages have no README (owner call); aggregate tarballs
+parked (Q5); publish is LAST (card 3).
 → `docs/framework/TASK-release-automation.md` §Next · `.guidance/project/framework.md` §Next
 
 ### 2. Rajutan app — published site

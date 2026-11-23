@@ -6,6 +6,8 @@ tree-to-DOM engine without adopting the framework. It is the migration door for 
 <!-- install:begin -->
 ## Install
 
+Version — `0.2.4` (tag `v0.2.4`)
+
     npm install https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.4/aio-ui-dom-renderer-0.2.4.tgz
 
 CDN (ES module, no build step) — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.4/packages/modules/dom-renderer/dist/index.js`

@@ -39,6 +39,11 @@ if (!existsSync(join(dir, "registry.json"))) {
   process.exit(1);
 }
 
+// One tag, one version per package (Option A): a filename carries the *package* version, so the
+// example must come from the registry, never from the tag.
+const registry = JSON.parse(readFileSync(join(dir, "registry.json"), "utf8"));
+const sample = Object.values(registry.packages ?? {}).at(-1)?.tarball?.split("/").pop() ?? `aio-ui-form-${version}.tgz`;
+
 const tarballs = readdirSync(dir)
   .filter((file) => file.endsWith(".tgz"))
   .sort()
@@ -50,8 +55,10 @@ const fallbackBody = [
   "Each file is one package. Its internal dependencies point at the sibling tarballs on the",
   "`releases` branch, so installing one pulls the rest automatically:",
   "",
+  `Package versions may differ from the tag \`${tag}\` — each filename carries its own version.`,
+  "",
   "```bash",
-  `npm install https://github.com/${repository}/releases/download/${tag}/aio-ui-form-${version}.tgz`,
+  `npm install https://github.com/${repository}/releases/download/${tag}/${sample}`,
   "```",
   "",
   "Registry: https://cdn.jsdelivr.net/gh/" + `${repository}@${tag}/registry.json`,

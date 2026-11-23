@@ -12,6 +12,8 @@ redeclare a `--app-*` token on an ancestor to retheme a view without touching it
 <!-- install:begin -->
 ## Install
 
+Version — `0.2.4` (tag `v0.2.4`)
+
     npm install https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.4/aio-ui-product-0.2.4.tgz
 
 CDN (ES module, no build step) — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.4/packages/components/product/dist/index.js`

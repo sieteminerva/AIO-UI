@@ -49,8 +49,13 @@ block (tarball + CDN URL + stylesheet) into 29 package READMEs, catalogue regene
 loose files, `release.test.ts` 14/14 green, nothing published); per-package release **Option A
 accepted for design** with the change table in the task doc; Q5 aggregates parked, Q6 = versioned
 filenames only.
-Open: aggregate tarballs (`@aio-ui/bundle`, `@aio-ui/iife`) parked behind Q5; implement Option A
-(b65 `version.mjs` → b66 `release.mjs` → b67 followers); publish is still LAST (card 3).
+**b65–b66 (2026-11-24):** Option A built — `scripts/semver.mjs`; `version.mjs --bump/--tag` +
+four invariants; `release.mjs` names tarballs by package version, records
+`version`/`deps`/`tree`/`mode`, copies unchanged bytes, `--strict` refuses an unbumped change.
+Proofs: 1-package bump moved 1 range + the tag; a 0.2.5 rehearsal on a copy of 0.2.4 reproduced
+**identical checksums**; the appended-line rehearsal was refused; `npm run verify` 970 passed.
+Open: **b67** (publish-side followers + two test assertions + §9), aggregate tarballs parked,
+publish still LAST (card 3).
 → `docs/framework/TASK-release-automation.md` §Next · `.guidance/project/framework.md` §Next
 
 ### 2. Rajutan app — published site

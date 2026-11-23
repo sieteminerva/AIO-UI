@@ -8,6 +8,14 @@ Prior art: `packages/TASKS.md`, `docs/live-cdn-repo.md` §9.
 **b64** (2026-11-24) regenerated the local `releases/v0.2.4` artefacts from the 37-package tree
 (was 39): 37 tarballs + 4 loose bundle files, `orchestrator/__test__/release.test.ts` 14/14 green.
 Nothing published — card 3 still rules.
+**b65–b66** (2026-11-24) built Option A: `scripts/semver.mjs`; `version.mjs` gains
+`--bump/--tag/--level` and checks the four invariants against the newest released registry;
+`release.mjs` names each tarball by its package version, records `version`/`deps`/`tree` per
+package plus `registry.mode`, copies the previous bytes for an unchanged package, and `--strict`
+refuses an unbumped source change. Proofs: `--bump @aio-ui/input --tag 0.2.5` moved one version,
+one dependent range and the tag; a 0.2.5 rehearsal against a copy of 0.2.4 produced **identical
+checksums**; the same rehearsal with one appended line in `packages/base/src/index.ts` was
+refused. `npm run verify`: 970 passed, 1 skipped.
 
 Owner decisions 2026-11-24: **Q7 reversed** — the CDN stays versioned (`@v<x>`), no versionless
 alias, because breaking changes are expected and a silent moving alias is the bigger risk;
@@ -261,9 +269,10 @@ per-package import map and publish loop for a case nobody has asked for.
 
 **Rules**
 
-- `registry.version` keeps meaning the **tag**; `registry.packages[name].version` is the new
-  per-package field (today it does not exist — the registry only names `dir`, `subpaths`,
-  `tarball`, `integrity`, `size`).
+- `registry.version` keeps meaning the **tag**; `registry.packages[name]` now also records
+  `version`, `deps` (each internal edge's version) and `tree` (a hash of the shipped files), and the
+  document records `registry.mode` (`"A"`/`"B"`). Additive: an older registry without them is read
+  with the tag as each package's version, and simply repacks once.
 - Tarball **filename** carries the package version (`aio-ui-input-0.2.5.tgz`); the **folder**
   carries the tag (`v0.2.5/`).
 - Internal edges are already rewritten to the sibling's own version (`release.mjs`'s
@@ -272,10 +281,12 @@ per-package import map and publish loop for a case nobody has asked for.
 - A package whose version did not change is **not repacked**: its previous bytes are copied into
   the new folder, so one version keeps exactly one byte identity and one checksum. Repacking
   would produce the same version twice with different bytes (mtime, zlib) — an integrity trap.
-- The bump is **declared** (`version.mjs --bump <name>`); a forgotten bump is caught by
-  `release.mjs`, which repacks nothing extra but compares the plan against the previous registry:
-  a package whose version did not move but whose bytes would differ is a **warning**, and
-  `--strict` turns it into an error.
+  The copy is allowed only when version, dependency versions **and** mode all match; a changed
+  dependency URL forces a repack, because the tarball's manifest embeds those URLs.
+- The bump is **declared** (`version.mjs --apply --bump <name> --tag <x.y.z>`); a forgotten bump is
+  caught by `release.mjs`, which compares each package's `tree` hash — the files `files[]` ships,
+  minus the generated `package.json`/`README.md` — against the previous registry: source moved but
+  version did not is a **warning**, and `--strict` turns it into an error.
 
 **Invariants `version.mjs --check` asserts** (against the newest `releases/v*/registry.json` it can
 find, so a clean checkout without artefacts skips them and says so):
@@ -283,14 +294,15 @@ find, so a clean checkout without artefacts skips them and says so):
 1. every `packages[x].version` ≤ the root tag (semver, pre-release allowed);
 2. no package version decreased against the previous registry;
 3. every internal range on `@aio-ui/*` equals `^<that package's own version>`;
-4. the tag is greater than the previous tag.
+4. the tag is not older than the previous tag (equal is the normal state between releases).
 
-**Changes**
+**Changes — b65/b66 landed, b67 pending**
 
 | File                           | Change                                                                                                                                                                                                                                                                                                                                                                                        |
 | ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `scripts/version.mjs`          | single-version drift stops being an error; `--check` loads the newest released registry and asserts the four invariants; `--bump <name…> [--level patch\|minor\|major]` bumps those packages and follows their internal ranges; `--tag <x.y.z>` writes only the root manifest version.                                                                                                          |
-| `scripts/release.mjs`          | Gate 1 becomes per-package (version ≤ tag, ≥ previous); `tarballName()` takes the package version; `registry.packages[name].version` and `registry.mode` (`"A"`/`"B"`, today absent) are recorded; unchanged packages copy the previous tarball instead of repacking; the checksum-vs-version drift report runs before the size gates.                                                       |
+| `scripts/semver.mjs` (new)     | `parse` / `compare` / `next`, pre-release aware, no dependency: a release tool that cannot install its own dependency is not a release tool.                                                                                                                                                                                                                                                   |
+| `scripts/version.mjs`          | **landed b65** — single-version drift stops being an error; `--check` loads the newest released registry and asserts the four invariants; `--bump <name…> [--level patch\|minor\|major]` bumps those packages and follows their internal ranges; `--tag <x.y.z>` writes only the root manifest version.                                                                                        |
+| `scripts/release.mjs`          | **landed b66** — Gate 1 is per-package (version ≤ tag, ≥ previous); `tarballName()` takes the package version; `version`, `deps`, `tree` and `registry.mode` are recorded; unchanged packages copy the previous tarball instead of repacking; the drift report runs before anything is written and `--strict` refuses the write.                                                              |
 | `scripts/publish-releases.mjs` | logic unchanged (it derives filenames from `entry.tarball`), but the closing `verify:` line stops hardcoding `aio-ui-form-<tag>.tgz` and prints a real asset name.                                                                                                                                                                                                                             |
 | `scripts/publish-release-assets.mjs` | the release-note install example derives a real asset name from the registry instead of `${version}`.                                                                                                                                                                                                                                                                                       |
 | `scripts/publish-cdn.mjs`      | no change: it unpacks by `entry.tarball.split("/").pop()` and the branch README already prints the asset name.                                                                                                                                                                                                                                                                              |
@@ -309,8 +321,9 @@ find, so a clean checkout without artefacts skips them and says so):
 
 **Done when**
 
-- `version.mjs --bump input --apply` moves only `@aio-ui/input`, with no tag change, and
-  `version:check` stays green.
+- `version.mjs --apply --bump input --tag 0.2.5` moves `@aio-ui/input` to 0.2.5, the one dependent's
+  range to `^0.2.5`, and the tag — every other package stays at 0.2.4, and `version:check` is green.
+  (The tag travels with the bump because invariant 1 says no package may outrun it.)
 - `release.mjs --version 0.2.5 --apply --strict` writes a folder holding `aio-ui-input-0.2.5.tgz`
   beside `aio-ui-form-0.2.4.tgz`, records both versions, and passes strict because the unchanged
   bytes match `v0.2.4/`.
@@ -336,19 +349,17 @@ find, so a clean checkout without artefacts skips them and says so):
 
 ## Next — start here (cold)
 
-1. **b65** — `scripts/version.mjs`: `--bump <name…> [--level …]`, `--tag <x.y.z>`, and `--check`
-   against the newest released registry (invariants 1–4 of Option A). Gate: a synthetic previous
-   registry + a temp package tree, no `releases/` write.
-2. **b66** — `scripts/release.mjs`: package-version tarball names, `registry.packages[name].version`,
-   `registry.mode`, reuse-copy for unchanged packages, checksum-vs-version report + `--strict`.
-   Gate: `release.mjs --version 0.2.4 --apply` still reproduces the b64 bytes for every package
-   whose version did not move.
-3. **b67** — the followers: `publish-release-assets.mjs` example, `publish-releases.mjs` verify
-   line, `release-doc.mjs --readme` prints the package version, the two new `release.test.ts`
-   assertions, `docs/live-cdn-repo.md` §9.
-4. **Parked (owner, 2026-11-24)** — §2.1 aggregate tarballs; Q6 answered "versioned filenames
+1. **b67** — the followers: `publish-release-assets.mjs` install example derives a real asset name
+   (today it prints `aio-ui-form-${version}`), `publish-releases.mjs`'s closing `verify:` line stops
+   hardcoding the tag as the filename, `release-doc.mjs --readme` prints the package version beside
+   the name, two `release.test.ts` assertions (folder = tag, filename = package version; an
+   unchanged package's bytes equal the previous folder's), and `docs/live-cdn-repo.md` §9 gains
+   `--bump` / `--strict` and the "one tag, many versions" line.
+2. **Probe** — `npm run check:live` (separate gate, callable any time) fetches `registry.json`, the
+   four loose bundle files, one package tarball, and both aggregate tarballs once §2.1 lands.
+3. **Parked (owner, 2026-11-24)** — §2.1 aggregate tarballs; Q6 answered "versioned filenames
    only", so when they land there is no root `.tgz` alias.
-5. **LAST** — publish (`publish-releases` → `publish-cdn` → `publish-assets`), only on the owner's
+4. **LAST** — publish (`publish-releases` → `publish-cdn` → `publish-assets`), only on the owner's
    word (card 3).
 
 > b60–b62 are done (§1–§3 above); their acceptance probes live there, not here.

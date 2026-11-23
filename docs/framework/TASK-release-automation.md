@@ -3,9 +3,10 @@
 Recorded 2026-11-21 (batch 44). Band: **Tooling** (`scripts/**` + `docs/`).
 Prior art: `packages/TASKS.md`, `docs/live-cdn-repo.md` §9.
 
-**Status:** open (2026-11-24) — nothing implemented yet. Scope agreed as three separate batches,
-in this order: **b60** job 1 (§1), **b61** `release-doc.mjs` (§2), **b62** `## install` blocks in
-every package README (new, §3). §2.1 (aggregate tarballs) stays parked behind Q5/Q6.
+**Status:** b60–b62 landed (2026-11-24). Scope was three batches: **b60** job 1 (§1), **b61**
+`release-doc.mjs` (§2), **b62** `## install` blocks in every package README (§3) — all committed.
+Still open: §2.1 (aggregate tarballs, behind Q5/Q6), the publish step (LAST, card 3), and the
+per-package release question below.
 Owner decision 2026-11-24 supersedes Q7: **the CDN stays versioned** (`@v<x>`), no versionless
 alias — breaking changes are expected, so a silent moving alias is the bigger risk.
 
@@ -225,6 +226,48 @@ Rules:
   `check:catalogue` fails. Versioned URLs are the reason; a versionless CDN was rejected.
 - **Gate.** `npm run check` plus a diff assertion that only text between `install:begin/end`
   changed (a hand-written section must never be touched).
+
+## Per-package releases (open, 2026-11-24)
+
+A small bug fix should be shippable without re-releasing the whole framework. What the current
+pipeline allows, and what it does not:
+
+- **Works today — tarball patch.** Bump one package's `version`, `npm pack` it, and put the `.tgz`
+  on the `releases` branch (or as a GitHub Release asset). `npm install <tarball-url>` consumers
+  get the patch; no CDN tag moves.
+- **Does not work — moving one package inside an old CDN tag.** jsDelivr tags the whole repo and
+  tags are immutable (`publish-cdn.mjs`): a patched package needs a *new* tag, and `@v<x>` serves
+  the whole tree. The versionless alias was cancelled (Q7), so consumers on `@v0.2.4` never move.
+- **Needs a structural change — true per-package semver.** `version.mjs` fixes one number for the
+  family ("34 numbers that must agree"), `release.mjs` Gate 1 requires every package to equal
+  `--version`, and mode-B `dependencies` pin a *specific* tarball version, so patching a package
+  others depend on requires repacking those dependents (or switching edges to ranges).
+  `registry.base` is a single tag; per-package tags would mean a per-package base and import map.
+
+Proposal (Option A, for the owner): keep **one monotonically increasing global CDN tag** per
+release, but let `registry.packages[name].version` differ from the tag. A patch release bumps only
+the changed package(s), repacks all packages into the new `v<x>/` folder (cheap, mode B), and
+`release.mjs` / `version.mjs` relax "every package == global version" to "changed ≥ previous".
+Effect: real per-package version numbers and tarball installs, with one unavoidable global tag
+bump. Option B (a tag per package, e.g. `input-v0.2.5`) keeps the old tags but costs a per-package
+base, import map and publish loop — not recommended unless a CDN user must pin a single package.
+
+### Release blockers to clear before the next publish
+
+1. Stale committed registry: `releases/v0.2.4/registry.json` is the 39-package tree, the workspace
+   is 37 → `orchestrator/__test__/release.test.ts` fails 9 tests and `npm run verify` is not green.
+   Regenerate with `release.mjs --version 0.2.4 --apply` (writes the `releases` worktree, not `main`).
+2. Aggregate tarballs `@aio-ui/bundle` / `@aio-ui/iife` (§2.1) are not built; the bundled pair is
+   loose files only, so `npm install` of the pair is impossible and the "Bundled pair" block has no
+   tarball rows.
+3. `publish-release-assets.mjs` needs `GITHUB_TOKEN` — the one manual step.
+4. Mode-B installs resolve internal edges over the network (raw `releases` URLs); `--offline` fails
+   by design, and the `releases` branch must stay live.
+5. Mode-A figures in the note (34.07 MB, heaviest `table`) are hand-typed — not derivable, so the
+   artefacts table can never be fully generated.
+6. `docs/releases/v0.2.4.md` mixes two snapshots: `## Published` (39, historical) and the CDN table
+   (37, regenerated). Keep them clearly labelled when the publish lands.
+7. Reference apps `store` / `profile` / `blog` do not exist yet; the official release waits on them.
 
 ## Next — start here (cold)
 

@@ -124,10 +124,15 @@ export interface iBasicInputConfig {
   style?: string;
   field?: string;
   className?: string;
+  /**
+   * @deprecated Choices belong to the field: write `content.options`. Kept so a sheet that
+   * still says `config.options` keeps rendering; nothing inside the layer reads this bag
+   * for options any more.
+   */
   options?: Array<string | iBasicSelectOption>;
   position?: "left" | "right";
   icon?: string;
-  content?: string | Record<string, unknown>;
+  textContent?: string | Record<string, unknown>;
   /**
    * Buttons for this set.
    *
@@ -186,6 +191,13 @@ export interface iBasicInputNode extends iBuilderConfig<InputElementType> {
   title?: string;
   /** Alternatif `title` untuk teks label; dipakai lebih dulu bila ada. */
   label?: string;
+  /**
+   * Choices for `select`, `dropdown`, `picker` and a `radio`/`checkbox` group.
+   *
+   * One spelling for every chooser: a string is `{ value, label }`, and `multiple`
+   * (also at this level) decides single or many. The config bag no longer carries options.
+   */
+  options?: Array<string | iBasicSelectOption>;
   placeholder?: string;
   value?: any;
   /** Numeric increment; defaults to "any" so decimal values pass native validation. */
@@ -409,7 +421,6 @@ export class InputBuilder extends Builder<InputElementType, iInputConfig> {
         attributes: [],
         style: "",
         className: "",
-        options: [],
         useLabel: true,
         display: undefined,
         createEventListener: false,
@@ -424,13 +435,13 @@ export class InputBuilder extends Builder<InputElementType, iInputConfig> {
       inputPayload.placeholder = (inputPayload.type === "select" || inputPayload.type === "textarea") ? `Pilih ${inputPayload.title}` : `Isi ${inputPayload.title}`;
     }
 
-    // 🧩 `options` is accepted at the top level (`{ type: "select", options: [...] }`) as
-    // well as under `config`, because a schema read from a sheet writes it flat. Both
-    // shapes normalise into `config.options`, which is where the select and dropdown
-    // templates read from.
-    const rawOptions = inputObj.config?.options ?? (inputObj as any).options;
+    // 🧩 `options` is the field's own list — the one place `select`, `dropdown`, `picker`
+    // and a `radio`/`checkbox` group read from. The legacy `config.options` spelling is
+    // still lifted onto the field so an older sheet keeps working, but nothing downstream
+    // ever reads the config bag for choices again.
+    const rawOptions = inputObj.options ?? inputObj.config?.options;
     if (Array.isArray(rawOptions)) {
-      inputPayload.config.options = rawOptions.map((option: any) => typeof option === "string" ? { value: option, label: option } : option);
+      inputPayload.options = rawOptions.map((option: any) => typeof option === "string" ? { value: option, label: option } : option);
     }
 
     return inputPayload;
@@ -464,6 +475,14 @@ export class InputBuilder extends Builder<InputElementType, iInputConfig> {
 
     const wrapper = this.render("@field", this.#input)!;
 
+    // 🔘 A `radio`/`checkbox` field given `options` is a group, not one lone control: every
+    // option becomes a control on the field's `name`, and `value` marks the chosen one(s).
+    // `radio` stays exclusive, `checkbox` takes several — the type decides, the same way
+    // a `select` decides through `multiple`. With no `options` the plain single control
+    // below is still what renders, so nothing that worked before changes shape.
+    const choices = Array.isArray(this.#input.options) ? this.#input.options : [];
+    const isChoiceGroup = (this.#input.type === "radio" || this.#input.type === "checkbox") && choices.length > 0;
+
     // 🏷️ One label, one place. `useLabel` is an on/off switch (default on, set in
     // `resolvePayload`); `position` is a CSS hint (`data-position`), never an order change.
     //
@@ -480,7 +499,12 @@ export class InputBuilder extends Builder<InputElementType, iInputConfig> {
       ?? (isToggle ? "right" : undefined);
 
     const label = labelText && this.#input.config?.useLabel !== false
-      ? this.render("@field>label", { text: labelText, position: labelPosition, id: this.#input.id }) as HTMLElement
+      ? this.render("@field>label", {
+        text: labelText,
+        position: isChoiceGroup ? "top" : labelPosition,
+        // A group has no single control to point at; the caption names the group instead.
+        id: isChoiceGroup ? undefined : this.#input.id,
+      }) as HTMLElement
       : null;
 
     if (label) wrapper.appendChild(label);
@@ -490,26 +514,30 @@ export class InputBuilder extends Builder<InputElementType, iInputConfig> {
     // `<input>` fallback. `InputBuilder` never names a adapter.
     let inputEl: (HTMLInputElement | HTMLSelectElement | HTMLElement | null) = null;
 
-    for (const module of this.#modules) {
-      const rendered = module.renderControl?.(this.#input, this.#moduleContext);
-      if (rendered) {
-        inputEl = rendered;
-        break;
+    if (isChoiceGroup) {
+      this.renderChoices(wrapper);
+    } else {
+      for (const module of this.#modules) {
+        const rendered = module.renderControl?.(this.#input, this.#moduleContext);
+        if (rendered) {
+          inputEl = rendered;
+          break;
+        }
       }
     }
 
     // A toggle renders the same switch shell a checkbox has. `style: "toggle"` is the
     // opt-in for a radio, whose default is the native dot: a group of options should not
     // turn into a wall of switches unless the schema asks for it.
-    const controlKey: InputElementType | null = this.#input.type === "radio" && this.#isToggleStyle()
+    const controlKey: InputElementType | null = !isChoiceGroup && this.#input.type === "radio" && this.#isToggleStyle()
       ? "@field>toggle"
       : definition.control;
 
-    if (!inputEl && controlKey) {
+    if (!isChoiceGroup && !inputEl && controlKey) {
       inputEl = this.render(controlKey, this.#input) as HTMLElement;
     }
 
-    if (!inputEl) {
+    if (!isChoiceGroup && !inputEl) {
       // A matrix row with no control of its own is a type owned by a module (`dropdown`,
       // `picker`). A module may only *enhance* a field, never be the only way it exists:
       // without the module the same options render as a native `<select>` — plainer, not a
@@ -609,7 +637,8 @@ export class InputBuilder extends Builder<InputElementType, iInputConfig> {
         break;
 
       case "@field>label":
-        el.setAttribute("for", payload.id);
+        // A choice group's caption names the group; there is no control to point at.
+        if (payload.id) el.setAttribute("for", payload.id);
         el.textContent = payload.text;
         if (payload.position) el.setAttribute("data-position", payload.position)
         break;
@@ -642,7 +671,7 @@ export class InputBuilder extends Builder<InputElementType, iInputConfig> {
         el.appendChild(placeholderOpt);
 
         // Render barisan opsi anak secara rekursif/looping
-        const options = (cfg?.options || []) as any[];
+        const options = (payload.options || []) as any[];
         for (const option of options) {
           const optionEl = this.render("@field>select>option", { option, parentValue: payload.value })!;
           el.appendChild(optionEl);
@@ -706,6 +735,58 @@ export class InputBuilder extends Builder<InputElementType, iInputConfig> {
         _el?.insertAdjacentHTML("beforeend", this.#input.config?.popover);
       }
     }
+  }
+
+  /**
+   * A `radio`/`checkbox` field given `options` is a group: one control per option, all on
+   * the field's `name`. `radio` is exclusive by nature, `checkbox` takes several — the
+   * field type decides, exactly the way `select` decides through its own type.
+   *
+   * The caption above the group names it, and every control owns a
+   * `<label class="choice-item">`, so the text next to a dot is clickable too.
+   */
+  private renderChoices(wrapper: HTMLElement): void {
+    const field = this.#input;
+    const name = String(field.name || field.id);
+    const chosen = this.choiceValues();
+
+    wrapper.classList.add("choice");
+    wrapper.setAttribute("role", field.type === "radio" ? "radiogroup" : "group");
+
+    (field.options ?? []).forEach((option, index) => {
+      const value = typeof option === "string" ? option : String(option.value ?? "");
+      const caption = typeof option === "string" ? option : (option.label ?? value);
+      const id = `${field.id}-${index}`;
+
+      const input = this.render("@field>radio", { type: field.type, checked: chosen.includes(value) }) as HTMLInputElement;
+      input.type = field.type === "checkbox" ? "checkbox" : "radio";
+      input.id = id;
+      input.name = name;
+      input.value = value;
+      input.checked = chosen.includes(value);
+      if (field.disabled) input.disabled = true;
+      if (field.required) input.required = true;
+
+      const item = document.createElement("label");
+      item.className = "choice-item";
+      item.setAttribute("for", id);
+
+      const text = document.createElement("span");
+      text.className = "choice-label";
+      text.textContent = caption;
+
+      item.append(input, text);
+      wrapper.appendChild(item);
+    });
+  }
+
+  /** The chosen values of a choice group: an array, a comma string, or one scalar. */
+  private choiceValues(): string[] {
+    const value = this.#input.value;
+    if (Array.isArray(value)) return value.map(String);
+    if (typeof value === "string") return value ? value.split(",").map((entry) => entry.trim()).filter(Boolean) : [];
+    if (value === undefined || value === null || value === "") return [];
+    return [String(value)];
   }
 
   /** Whether this field asked for the switch shell (`config.style: "toggle"`). */

@@ -63,6 +63,8 @@ export interface iPickerPayload {
   placeholder?: string;
   value?: string | string[] | null;
   options?: Array<iPickerOption | string>;
+  /** Several cells at once. Content, not config: one field, one schema object. */
+  multiple?: boolean;
 }
 
 export interface iPickerConfig extends iBuilderConfig<PickerElementType> {
@@ -74,8 +76,6 @@ export interface iPickerConfig extends iBuilderConfig<PickerElementType> {
   searchable?: boolean;
   /** Grid columns. */
   columns?: number;
-  /** Lets the visitor pick more than one cell. */
-  isMultiple?: boolean;
   placeholder?: string;
 }
 
@@ -117,6 +117,8 @@ export class PickerBuilder extends Builder<PickerElementType, iPickerConfig> {
 
   /** Current selection, in pick order. */
   #selected: string[] = [];
+  /** Set from `content.multiple` on every prepare. */
+  #multiple = false;
   /** Rendered option cells, keyed by value. */
   #cells = new Map<string, HTMLElement>();
 
@@ -144,7 +146,6 @@ export class PickerBuilder extends Builder<PickerElementType, iPickerConfig> {
         expanded: false,
         searchable: true,
         columns: 6,
-        isMultiple: false,
         placeholder: "Pilih…",
       },
       config,
@@ -159,12 +160,13 @@ export class PickerBuilder extends Builder<PickerElementType, iPickerConfig> {
   /** Adds (or replaces) a selection without a pointer: `multiple` decides which. */
   public select(value: string | string[]): void {
     const next = Array.isArray(value) ? value : [value];
-    this.#selected = this.config.isMultiple ? [...new Set(next)] : next.slice(0, 1);
+    this.#selected = this.#multiple ? [...new Set(next)] : next.slice(0, 1);
     this.#paint();
   }
 
   public prepare(data: iPickerPayload = {}): HTMLElement {
     this.#options = toOptions(data.options);
+    this.#multiple = data.multiple === true;
     this.#placeholder = data.placeholder || this.config.placeholder;
     this.#selected = this.#readValue(data.value);
     this.#cells.clear();
@@ -361,7 +363,7 @@ export class PickerBuilder extends Builder<PickerElementType, iPickerConfig> {
   };
 
   #pick(value: string): void {
-    if (this.config.isMultiple) {
+    if (this.#multiple) {
       this.#selected = this.#selected.includes(value)
         ? this.#selected.filter((entry) => entry !== value)
         : [...this.#selected, value];
@@ -469,7 +471,6 @@ const SETTINGS: Array<[string, keyof iPickerConfig]> = [
   ["column", "columns"],
   ["expanded", "expanded"],
   ["searchable", "searchable"],
-  ["isMultiple", "isMultiple"],
   ["placeholder", "placeholder"],
 ];
 
@@ -486,7 +487,9 @@ const SETTINGS: Array<[string, keyof iPickerConfig]> = [
  *   `style`     — `icon | image | media | swatch` (the cell visual)
  *   `column`    — grid track count, like a row's `column`
  *   `expanded`  — print the grid inline instead of behind the trigger's popover
- *   `searchable`, `isMultiple`, `placeholder`
+ *   `searchable`, `placeholder`
+ *
+ * `options`, `value` and `multiple` are the field's own content, like every other chooser.
  */
 class PickerInputModule implements iInputAdapter {
   readonly #context: iInputModuleContext;
@@ -520,7 +523,8 @@ class PickerInputModule implements iInputAdapter {
       name: field.name || field.id,
       placeholder: field.placeholder,
       value: field.value,
-      options: cfg.options ?? [],
+      options: field.options ?? [],
+      multiple: field.multiple === true,
     };
 
     const builder = new PickerBuilder({

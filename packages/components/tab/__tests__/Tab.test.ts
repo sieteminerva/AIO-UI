@@ -149,4 +149,52 @@ describe("tab", () => {
     expect(panels[0].dataset.loaded).toBe("false");
     expect(panels[0].classList.contains("hidden")).toBe(true);
   });
+
+  it("keeps a nested tab's menu and panels out of its parent's list", () => {
+    const inner = build({
+      menu: [{ label: "C1" }, { label: "C2" }],
+      body: [{ panel: { title: "c1" } }, { panel: { title: "c2" } }],
+    });
+    const outer = build({
+      menu: [{ label: "P1" }, { label: "P2" }],
+      body: [{ panel: { title: "p1" } }, { panel: { title: "p2" } }],
+    });
+
+    // The way an application nests: a built child element inside a parent panel.
+    (outer.querySelector(".body") as HTMLElement).children[0].append(inner);
+    document.body.append(outer);
+
+    // Direct children only: a descendant query would mix the child's panels into the list,
+    // which is the bug under test.
+    const own = Array.from((outer.querySelector(".body") as HTMLElement).children) as HTMLElement[];
+    const ownMenu = Array.from((outer.querySelector(".menu") as HTMLElement).children) as HTMLElement[];
+    const childPanels = Array.from((inner.querySelector(".body") as HTMLElement).children) as HTMLElement[];
+    const childMenu = Array.from((inner.querySelector(".menu") as HTMLElement).children) as HTMLElement[];
+
+    // Parent tab 2 must open the parent's own second panel, not the child's first.
+    ownMenu[1].click();
+
+    expect(own[1].style.display).toBe("block");
+    expect(own[1].querySelector(".content .title")?.textContent).toBe("p2");
+    expect(childPanels[0].style.display).toBe("block");
+    expect(childPanels[1].style.display).toBe("none");
+
+    // And clicking a child tab moves only the child.
+    childMenu[1].click();
+
+    expect(childPanels[0].style.display).toBe("none");
+    expect(childPanels[1].style.display).toBe("block");
+    expect(own[1].style.display).toBe("block");
+    expect(ownMenu.map((b) => b.getAttribute("aria-selected"))).toEqual(["false", "true"]);
+  });
+
+  it("gives each instance its own id stem, so nested ids never collide", () => {
+    const first = build(content);
+    const second = build(content);
+
+    const id = (root: HTMLElement) => root.querySelector<HTMLElement>(".body > .panel")?.id;
+
+    expect(id(first)).toMatch(/^tabpanel-tab-/);
+    expect(id(first)).not.toBe(id(second));
+  });
 });

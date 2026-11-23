@@ -37,6 +37,27 @@ action buttons are present), `info`, `position` (`top | left | right | bottom`),
 `dropdown` (forwarded to the dropdown module), `popover`, `onFileSelected`,
 `onValueChange` and `calculator` (calculation strategy for a readonly total).
 
+### Choices — one door for every chooser
+
+`options` and `multiple` belong to the **field**, next to `type` and `value`. One shape feeds
+`select`, `dropdown`, `picker` and a `radio`/`checkbox` group, and `multiple` means the same
+thing in all four:
+
+```ts
+{ type: "select", id: "size", options: ["S", "M", "L"] }
+{ type: "dropdown", id: "city", options: [{ value: "jkt", label: "Jakarta" }], multiple: true }
+{ type: "picker", id: "icon", options: ["gear", "user"], multiple: true }
+{ type: "radio", id: "ship", name: "ship", options: ["pickup", "courier"], value: "courier" }
+```
+
+A `radio`/`checkbox` field **with `options`** renders a group — one control per option, all
+on the field's `name`, `radio` exclusive and `checkbox` taking several — and the group's
+caption is not a `<label for>`, because there is no single control. Without `options` the
+field is the single control it always was.
+
+`config.options` is still lifted onto the field for an older sheet, but it is deprecated:
+write the list on the field.
+
 `useLabel`, `view`, `thumbnail`, `maxUpload`, `maxFileSize`, `groupUnallowed` and
 `createEventListener` are consumed by the file module.
 
@@ -72,8 +93,8 @@ import { InputBuilder, INPUT_MODULE_DEFINITIONS } from "@aio-ui/input";
 new InputBuilder({ modules: INPUT_MODULE_DEFINITIONS });
 ```
 
-A `picker` field is one grid behind one control — icons, swatches or images. The settings
-are flat on `config`, next to `options`, in the same vocabulary the rest of a schema uses:
+A `picker` field is one grid behind one control — icons, swatches or images. The look is
+flat on `config`; the choices and the multiplicity stay on the field:
 
 ```ts
 {
@@ -81,22 +102,22 @@ are flat on `config`, next to `options`, in the same vocabulary the rest of a sc
   id: "featureIcon",
   title: "Pilih ikon",
   value: "gear",
+  // The choices are the field's own `options` (`{ value, label }` plus `icon` / `src` /
+  // `color`), exactly the shape a select uses. A string option is `{ value, label }`.
+  options: ["gear", "user", "checkmark"],
+  multiple: false,    // several cells at once
   config: {
-    // The choices are the field's own `options` (`{ value, label }` plus `icon` / `src` /
-    // `color`), exactly the shape a select uses. A string option is `{ value, label }`.
-    options: ["gear", "user", "checkmark"],
     style: "icon",      // icon | image | media | swatch — what a cell draws
     column: 6,          // grid tracks, the same word a row layout uses
     expanded: false,    // true = print the grid inline, no trigger/popover
     searchable: true,   // adds the filter box
-    isMultiple: false,  // several cells at once
   },
 }
 ```
 
 `style` decides what a cell draws: `icon` (a global `i.icon.<name>` class, the option value
 by default), `image` / `media` (`src`), `swatch` (`color`). The value reaches the form through
-a hidden input named after the field, joined with commas when `isMultiple` is on.
+a hidden input named after the field, joined with commas when `multiple` is on.
 
 Each subpath is a builder **and** its module definition — there is no separate `/module` door
 since `0.2.4`. Take one without instantiating the other four:

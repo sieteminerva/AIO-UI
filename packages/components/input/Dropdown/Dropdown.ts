@@ -38,7 +38,6 @@ export interface iDropdownConfig extends iBuilderConfig<DropdownElementType> {
   onSelect?: (value: string, id: string | null) => void; // Callback saat item dipilih
   min?: number; // Menggantikan hardcode keyword.length < 2
   max?: number; // Membatasi jumlah option yang dirender ke DOM
-  isMultiple?: boolean;
   onMultiChange?: (items: iDropdownOption[]) => void;
 }
 
@@ -47,6 +46,8 @@ export interface iDropdownContent {
   name?: string;
   title?: string;
   placeholder?: string;
+  /** Several picks at once. Content, not config: one field, one schema object. */
+  multiple?: boolean;
   value?: string | number | null;
   options?: iDropdownOption[];
   attributes?: Array<{ name: string; value: string }>;
@@ -74,6 +75,9 @@ export class DropdownBuilder extends Builder<DropdownElementType, iDropdownConfi
 
   // State reaktif utama komponen
   #state!: iDropdownState;
+
+  /** Set from `content.multiple` on every prepare: one field, one schema object. */
+  private multiple = false;
 
   constructor(config: Partial<iDropdownConfig>) {
     super();
@@ -108,7 +112,6 @@ export class DropdownBuilder extends Builder<DropdownElementType, iDropdownConfi
       style: "select",
       min: 3, // Menggantikan hardcode keyword.length < 2
       max: 10, // Membatasi jumlah option yang dirender ke DOM
-      isMultiple: false,
       onMultiChange: (_a: any) => { },
       onSelect: () => { },
     };
@@ -233,6 +236,10 @@ export class DropdownBuilder extends Builder<DropdownElementType, iDropdownConfi
   }
 
   public prepare(content: any, _config?: Required<iDropdownConfig> | undefined): HTMLElement {
+    // `multiple` is part of the field's content, next to `options` and `value` — the same
+    // door a `select` uses for its own `multiple`.
+    this.multiple = content?.multiple === true;
+
     // Inisialisasi state awal sebelum dibungkus Proxy oleh framework Anda
     this.#state = {
       options: Array.isArray(content?.options) ? content.options : [],
@@ -282,7 +289,7 @@ export class DropdownBuilder extends Builder<DropdownElementType, iDropdownConfi
 
     // 2. PROTEKSI NILAI TIDAK VALID (Strict Mode saat Blur)
     input.addEventListener("blur", () => {
-      if (this.config.isMultiple) return;
+      if (this.multiple) return;
 
       const prevValue = this.#state.value; // Nilai sebelum potensi reset di bawah
       const currentText = input.value;
@@ -435,7 +442,7 @@ export class DropdownBuilder extends Builder<DropdownElementType, iDropdownConfi
       const label = item.getAttribute("data-label") || item.textContent || "";
       const items = menu.querySelectorAll(".item");
       items.forEach((opt: Element) => {
-        if (this.config.isMultiple) {
+        if (this.multiple) {
           // Untuk Multi-Select: Cek apakah ID item ini ada di dalam array selectedMultiItems
           const optId = String(opt.getAttribute("data-id") ?? "");
           const isSelected = this.#state.selectedMultiItems.some(i => String(i.id) === optId) || opt === item;
@@ -449,7 +456,7 @@ export class DropdownBuilder extends Builder<DropdownElementType, iDropdownConfi
       // Patokan deteksi perubahan untuk emit change di bawah (nilai sebelum mutasi)
       const prevValue = this.#state.value;
 
-      if (this.config.isMultiple) {
+      if (this.multiple) {
         const exists = this.#state.selectedMultiItems.some(i => String(i.id) === id);
         if (!exists) this.#state.selectedMultiItems.push({ id, label });
         this.#state.value = this.#state.selectedMultiItems.map(i => i.id).join(",");
@@ -517,7 +524,7 @@ export class DropdownBuilder extends Builder<DropdownElementType, iDropdownConfi
       try {
         const response = await fetch(`${this.config.apiUrl}?search=${encodeURIComponent(value)}`);
         const data: iDropdownOption[] = await response.json();
-        const unselectedData = this.config.isMultiple
+        const unselectedData = this.multiple
           ? data.filter(p => !this.#state.selectedMultiItems.some(item => String(item.id) === String(p.id)))
           : data;
         this.#state.options = unselectedData.slice(0, this.config.max || 10);
@@ -552,7 +559,7 @@ export class DropdownBuilder extends Builder<DropdownElementType, iDropdownConfi
     if (matchedOption) {
       const selectedId = matchedOption.getAttribute("data-id") || "";
 
-      if (this.config.isMultiple) {
+      if (this.multiple) {
         const alreadyExists = this.#state.selectedMultiItems.some(item => String(item.id) === String(selectedId));
         if (!alreadyExists) {
           // Cukup ubah datanya secara reaktif!
@@ -575,7 +582,7 @@ export class DropdownBuilder extends Builder<DropdownElementType, iDropdownConfi
       }
 
       // Trigger render ulang bagian DOM yang terpengaruh perubahan state
-      if (this.config.isMultiple) this.renderOptions(datalist);
+      if (this.multiple) this.renderOptions(datalist);
       const tagsContainer = datalist.parentElement?.querySelector(".tags") as HTMLDivElement;
       if (tagsContainer) this.renderTags(tagsContainer);
 
@@ -734,15 +741,17 @@ class DropdownInputModule implements iInputAdapter {
     if (field.type !== "dropdown") return null;
 
     const cfg = field.config ?? {};
-    const options = (cfg.options || []).map((option: any) =>
+    const options = (field.options || []).map((option: any) =>
       typeof option === "string" ? { id: option, label: option } : { id: option.value, label: option.label });
 
     const payload: iDropdownContent = {
       id: field.id,
       title: field.title,
       placeholder: field.placeholder,
-      value: field.value,
+      // Choices and multiplicity are the field's, never the config bag's.
       options,
+      multiple: field.multiple === true,
+      value: field.value,
       name: field.name || field.id,
       attributes: cfg.attributes || [],
     };
@@ -762,7 +771,6 @@ class DropdownInputModule implements iInputAdapter {
         style: cfg.style || "select",
         min: cfg.min,
         max: cfg.max,
-        isMultiple: cfg.isMultiple,
         onSelect: cfg.onSelect,
         onMultiChange: cfg.onMultiChange,
       },

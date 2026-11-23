@@ -291,26 +291,26 @@ export const DropdownSet = {
     {
       type: "dropdown",
       id: "test-dropdown-multi",
-      title: "Banyak pilihan (style=select + isMultiple)",
+      title: "Banyak pilihan (multiple)",
       placeholder: "Ketik lalu pilih banyak...",
+      multiple: true,
+      options: [
+        "Kopi",
+        "Teh",
+        "Jus Alpukat",
+        "Kue Lapis",
+        "Klepon",
+        "Wajik",
+        "Sekoteng",
+        "Semar Mendem",
+        "Jenang",
+        "Nasi Liwet",
+        "Tengkleng"
+      ],
       config: {
         style: "select",
-        isMultiple: true,
         min: 1,
         max: 15,
-        options: [
-          "Kopi",
-          "Teh",
-          "Jus Alpukat",
-          "Kue Lapis",
-          "Klepon",
-          "Wajik",
-          "Sekoteng",
-          "Semar Mendem",
-          "Jenang",
-          "Nasi Liwet",
-          "Tengkleng"
-        ],
         onMultiChange: (items: any[]) => {
           console.log("[Dropdown multi] onMultiChange", items);
         }
@@ -338,9 +338,9 @@ export const orderSchema = [
         type: "dropdown",
         id: "material",
         title: "Bahan",
+        options: ["Katun Combed 30s", "Katun Combed 24s", "Cvc", "Linen", "Rajut"],
         config: {
           style: "datalist",
-          options: ["Katun Combed 30s", "Katun Combed 24s", "Cvc", "Linen", "Rajut"],
         },
       },
       { type: "number", id: "qty", title: "Jumlah", placeholder: "1" },
@@ -560,18 +560,18 @@ export const fieldTypesSchema = [
         id: "t-picker-swatch",
         title: "picker (swatch, multiple)",
         value: "#e5484d,#30a46c",
+        multiple: true,
+        options: [
+          { value: "#e5484d", label: "Merah", color: "#e5484d" },
+          { value: "#f5a524", label: "Amber", color: "#f5a524" },
+          { value: "#30a46c", label: "Hijau", color: "#30a46c" },
+          { value: "#3e63dd", label: "Biru", color: "#3e63dd" },
+          { value: "#8e4ec6", label: "Ungu", color: "#8e4ec6" },
+          { value: "#f3ede2", label: "Krem", color: "#f3ede2" },
+        ],
         config: {
           style: "swatch",
           column: 8,
-          isMultiple: true,
-          options: [
-            { value: "#e5484d", label: "Merah", color: "#e5484d" },
-            { value: "#f5a524", label: "Amber", color: "#f5a524" },
-            { value: "#30a46c", label: "Hijau", color: "#30a46c" },
-            { value: "#3e63dd", label: "Biru", color: "#3e63dd" },
-            { value: "#8e4ec6", label: "Ungu", color: "#8e4ec6" },
-            { value: "#f3ede2", label: "Krem", color: "#f3ede2" },
-          ],
         },
       },
       { type: "checkbox", id: "t-checkbox", title: "checkbox", position: "right" },

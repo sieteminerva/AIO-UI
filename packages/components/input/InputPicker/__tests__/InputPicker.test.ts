@@ -20,13 +20,14 @@ const sheet = readFileSync(
 
 const ICONS = ["gear", "user", "checkmark", "close", "plus", "search"];
 
-function build(overrides: Record<string, unknown> = {}): HTMLElement {
+function build(overrides: Record<string, unknown> = {}, content: Record<string, unknown> = {}): HTMLElement {
   return new PickerBuilder({ kind: "icon", columns: 3, ...overrides }).create({
     content: {
       id: "featureIcon",
       title: "Pilih Ikon",
       name: "featureIcon",
       options: ICONS,
+      ...content,
     },
   }) as HTMLElement;
 }
@@ -96,7 +97,8 @@ describe("picker", () => {
   });
 
   it("keeps the panel open for a multiple picker and joins the values", () => {
-    const root = build({ isMultiple: true });
+    // `multiple` is part of the picker's content — the same door `options` and `value` use.
+    const root = build({}, { multiple: true });
     root.querySelector<HTMLElement>(".trigger")!.click();
     expect(root.querySelector<HTMLElement>(".panel")!.dataset.open).toBe("true");
 
@@ -146,8 +148,8 @@ describe("picker", () => {
   });
 
   it("accepts a preset selection, as an array or a comma string", () => {
-    const many = new PickerBuilder({ isMultiple: true }).create({
-      content: { options: ICONS, value: ["gear", "close"] },
+    const many = new PickerBuilder().create({
+      content: { options: ICONS, value: ["gear", "close"], multiple: true },
     }) as HTMLElement;
     const one = new PickerBuilder().create({ content: { options: ICONS, value: "user" } }) as HTMLElement;
 

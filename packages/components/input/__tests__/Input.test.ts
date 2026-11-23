@@ -1,4 +1,6 @@
 // @vitest-environment happy-dom
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { describe, expect, it, vi } from "vitest";
 
 import { InputBuilder } from "../Input";
@@ -153,6 +155,49 @@ describe("InputBuilder attributes", () => {
     const options = [...(control as HTMLSelectElement).options].map((o) => o.value);
 
     expect(options).toEqual(["", "S", "M", "L"]);
+  });
+
+  it("reads a radio group's options from the field and marks the chosen value", () => {
+    const { container, control } = build({
+      type: "radio",
+      id: "delivery",
+      name: "delivery",
+      title: "Pengiriman",
+      value: "courier",
+      options: [
+        { value: "pickup", label: "Ambil sendiri" },
+        { value: "courier", label: "Kirim kurir" },
+      ],
+    });
+    const inputs = [...container.querySelectorAll<HTMLInputElement>("input[type='radio']")];
+
+    expect(inputs).toHaveLength(2);
+    expect(inputs.map((input) => input.name)).toEqual(["delivery", "delivery"]);
+    expect(inputs.map((input) => input.checked)).toEqual([false, true]);
+    // Every option owns its label, so the text beside a dot is clickable too; the group's
+    // caption is not a `<label for>` any more, because there is no single control.
+    expect([...container.querySelectorAll(".choice-item")].map((item) => item.textContent)).toEqual([
+      "Ambil sendiri",
+      "Kirim kurir",
+    ]);
+    expect(container.querySelector("label")?.hasAttribute("for")).toBe(false);
+    expect(container.getAttribute("role")).toBe("radiogroup");
+    expect(control).toBe(inputs[0]);
+  });
+
+  it("turns the same list into checkboxes for a `checkbox` field", () => {
+    const { container } = build({
+      type: "checkbox",
+      id: "extras",
+      title: "Tambahan",
+      value: "cheese,sauce",
+      options: ["cheese", "sauce", "onion"],
+    });
+    const inputs = [...container.querySelectorAll<HTMLInputElement>("input[type='checkbox']")];
+
+    expect(inputs.map((input) => input.type)).toEqual(["checkbox", "checkbox", "checkbox"]);
+    expect(inputs.map((input) => input.checked)).toEqual([true, true, false]);
+    expect(container.getAttribute("role")).toBe("group");
   });
 
   it("keeps config.attributes as the escape hatch, applied last", () => {
@@ -322,5 +367,16 @@ describe("InputBuilder toggle style", () => {
     expect(second.name).toBe("delivery");
     expect(first.value).toBe("pickup");
     expect(second.value).toBe("courier");
+  });
+});
+
+describe("input sheet", () => {
+  const sheet = readFileSync(resolve(process.cwd(), "packages/components/input/Input.css"), "utf8");
+
+  it("styles the choice group, so an option row is not the text-field skin", () => {
+    // A `radio` input falls into the shared text-control rule; the choice group restores
+    // the native control and lays the options out as rows.
+    expect(sheet).toContain("&:is(.choice) {");
+    expect(sheet).toContain("& > .choice-item > input {");
   });
 });

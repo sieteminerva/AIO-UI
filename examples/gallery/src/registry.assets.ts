@@ -13,18 +13,19 @@ export const componentAssets = {
     "@aio-ui/table": () => import("@aio-ui/table"),
     "@aio-ui/masonry": () => import("@aio-ui/masonry"),
     "@aio-ui/article": () => import("@aio-ui/article"),
+    // The message adapter lives on the package root, so the module map needs the root
+    // specifier — the CSS entry below only carries the sheet.
+    "@aio-ui/message": () => import("@aio-ui/message"),
     // The form renders fields through adapters; `FORM_ADAPTER_MANIFEST` names these
     // specifiers, and the registry resolves each one through this map.
     "@aio-ui/form/validation-adapter": () => import("@aio-ui/form/validation-adapter"),
     "@aio-ui/form/cascade-adapter": () => import("@aio-ui/form/cascade-adapter"),
     "@aio-ui/form/multistep-adapter": () => import("@aio-ui/form/multistep-adapter"),
     "@aio-ui/form/calculation-adapter": () => import("@aio-ui/form/calculation-adapter"),
-    "@aio-ui/form": () => import("@aio-ui/form"),
     "@aio-ui/input/dropdown": () => import("@aio-ui/input/dropdown"),
     "@aio-ui/input/file-uploader": () => import("@aio-ui/input/file-uploader"),
     "@aio-ui/input/controls": () => import("@aio-ui/input/controls"),
     "@aio-ui/input/picker": () => import("@aio-ui/input/picker"),
-    "@aio-ui/table": () => import("@aio-ui/table"),
   } satisfies Record<string, () => Promise<unknown>>,
   styles: {
     // `?inline` keeps stylesheet text addressable so the registry can inject it

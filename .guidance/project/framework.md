@@ -28,6 +28,17 @@ Why / stages: `.guidance/plan-framework.md`. Engineering rules:
 
 ## Landed (newest first)
 
+- **Batch 59 (2026-11-24)** — three seams closed. (1) **Tab nesting**: lookups are scoped to the
+  instance's own menu/body children and ids come from a per-instance `uid`, so a nested tab no
+  longer answers the parent's menu nor collides on `tabpanel-gen-*`. (2) **Message root**: the
+  form adapter already leaves from `@aio-ui/message`; a surface test pins it, and the gallery
+  asset map now carries the module (it only had the sheet). (3) **Chooser contract**: `options`
+  - `multiple` are the field's, for `select`/`dropdown`/`picker`/`radio`/`checkbox`;
+    `config.options` is a deprecated lift, `config.isMultiple` is gone, and a `radio`/`checkbox`
+    field with `options` now renders a group. Proof: `npm run verify` → 961 pass / 1 skip / 9
+    pre-existing release-artefact failures (`orchestrator/__test__/release.test.ts` reads the
+    stale `releases/` map, which still names `modules`/`rating`).
+
 - **Batch 52 (2026-11-23)** — the mount point **is** the shell: `AioApp` paints `menu + page roots
   - footer`as direct children of the container and marks it`aio-shell`; every page top-level
 entry is rendered and mounted as its own root, so `main.page`+`footer`stay siblings (no bare`div`). `#frame`releases builders per root;`destroy()`clears the host's children. Proof:`npm run verify`→ 954 pass / 1 skip; rajutan probe → 0 bare divs, 1`main` per route.

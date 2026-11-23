@@ -182,6 +182,15 @@ files plus both tarballs, and `npm i <url>/aio-ui-bundle-0.2.4.tgz` in a scratch
    (an `export *` needs the duplicate-name handling `build-bundle.mjs` already has)
 6. Are the unversioned aliases (`aio-ui-bundle.tgz`, `aio-ui-iife.tgz` at the branch root) part of
    the first implementation, or versioned filenames only until the naming settles?
+7. **The CDN must not be versioned** (owner, 2026-11-23). Every generated import map and
+   `CDN_BASE` currently pin `@v0.2.4/`, so a consumer only moves when the emitter is changed. The
+   decided rule is one **versionless** URL that a patch rides automatically, and a version tag only
+   for pinning/rollback. To settle here: which alias (`@releases` branch vs a `@latest` tag the
+   publish moves), where the alias is written (`registry.base`, `injectLayout`, the emitted import
+   map), and how a breaking change is announced — a **new major** tag and a note, never a silent
+   move of the alias. Until then `publish-cdn.mjs` keeps moving the version tag and the
+   orchestrator keeps pinning it, which is the mismatch behind "update the CDN, but the app still
+   points at the old one".
 
 ## Done =
 

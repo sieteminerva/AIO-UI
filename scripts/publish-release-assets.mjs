@@ -42,7 +42,11 @@ if (!existsSync(join(dir, "registry.json"))) {
 // One tag, one version per package (Option A): a filename carries the *package* version, so the
 // example must come from the registry, never from the tag.
 const registry = JSON.parse(readFileSync(join(dir, "registry.json"), "utf8"));
-const sample = Object.values(registry.packages ?? {}).at(-1)?.tarball?.split("/").pop() ?? `aio-ui-form-${version}.tgz`;
+const sample =
+  Object.values(registry.packages ?? {})
+    .at(-1)
+    ?.tarball?.split("/")
+    .pop() ?? `aio-ui-form-${version}.tgz`;
 
 const tarballs = readdirSync(dir)
   .filter((file) => file.endsWith(".tgz"))

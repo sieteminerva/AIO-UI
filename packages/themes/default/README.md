@@ -5,6 +5,7 @@ overrides, no listeners**. Every other theme is a diff against this one, so anyt
 under `default` comes from `@aio-ui/styles` and the components themselves.
 
 <!-- install:begin -->
+
 ## Install
 
 Version — `0.2.4` (tag `v0.2.4`)
@@ -12,15 +13,16 @@ Version — `0.2.4` (tag `v0.2.4`)
     npm install https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.4/aio-ui-theme-default-0.2.4.tgz
 
 CDN (ES module, no build step) — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.4/packages/themes/default/dist/index.js`
+
 <!-- install:end -->
 
 ## Hooks
 
-| Hook                                     | What it does here                                          |
-| ---------------------------------------- | ---------------------------------------------------------- |
-| `beforePageRender(pages, menu, footer)`  | Returns the tree untouched — no structural hook needed     |
-| `activate(shell, elements, context)`     | Sets `display: block` and `overflow: initial` on the shell |
-| `deactivate(shell)`                      | Removes that inline style                                  |
+| Hook                                    | What it does here                                          |
+| --------------------------------------- | ---------------------------------------------------------- |
+| `beforePageRender(pages, menu, footer)` | Returns the tree untouched — no structural hook needed     |
+| `activate(shell, elements, context)`    | Sets `display: block` and `overflow: initial` on the shell |
+| `deactivate(shell)`                     | Removes that inline style                                  |
 
 `themeId` is `"default"`, `name` is `"Default"`.
 

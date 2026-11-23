@@ -33,8 +33,7 @@ const valueOf = (name) => {
 const apply = flag("--apply");
 const remote = valueOf("--remote") ?? "origin";
 const branch = valueOf("--branch") ?? "releases";
-const version =
-  valueOf("--version") ?? JSON.parse(readFileSync(join(ROOT, "package.json"), "utf8")).version;
+const version = valueOf("--version") ?? JSON.parse(readFileSync(join(ROOT, "package.json"), "utf8")).version;
 const dir = join(ROOT, "releases", `v${version}`);
 
 if (!existsSync(join(dir, "registry.json"))) {
@@ -69,7 +68,9 @@ const mb = (value) => `${(value / 1024 / 1024).toFixed(2)} MB`;
 console.log(
   `[releases] v${version} · ${packages.length} package(s) · ${files.length} file(s) · ${mb(bytes)} · branch ${branch}`,
 );
-console.log(`[releases] ${relative(ROOT, dir).replace(/\\/g, "/")} → raw.githubusercontent.com/<owner>/<repo>/${branch}/v${version}/`);
+console.log(
+  `[releases] ${relative(ROOT, dir).replace(/\\/g, "/")} → raw.githubusercontent.com/<owner>/<repo>/${branch}/v${version}/`,
+);
 
 if (!apply) {
   for (const file of files.slice(0, 8)) console.log(`  ${file}`);

@@ -4,23 +4,19 @@
 > **only** after the user picks it — never "to orient" (`AGENT_RULES.md` §13). Rewritten each
 > session, newest on top. One card = one line + one pointer.
 >
-> Recent batches (newest first): **b67** publish-side followers · **b65–b66** per-package versions ·
-> **b64** registry regen to 37
+> Recent batches (newest first): **b68** the eight missing package READMEs · **b67** publish-side
+> followers · **b65–b66** per-package versions · **b64** registry regen to 37
 > packages · **b63** this task doc · **b60–b62** session prompt opt-in, `release-doc.mjs`, `## Install`
 > in every package README · **b57** Apps Script hosting · **b52–b59** shell mount point, tab seams.
 > Older history: `git log --oneline`.
 
-### 1. Release automation — b65–b67 landed, next is the live probe (tooling band)
+### 1. Release v0.2.5 — ordered by the owner, chain ready (tooling band)
 
-Option A is built: one **tag**, one **version per package**. `scripts/semver.mjs`; `version.mjs`
-`--bump/--tag` + four invariants; `release.mjs` names tarballs by package version, records
-`version`/`deps`/`tree`/`mode`, copies unchanged bytes, `--strict` refuses an unbumped change.
-**b67** made the readers follow: both publishers derive their example asset from the registry, the
-README `## Install` block prints the package version beside the tag, and two tests pin the filename
-rule and the reuse-copy hash. Proved: 37/37 names match, a third `--readme` pass is byte-identical,
-`npm run verify` 972 passed.
-Open: `check:live` needs the publish; 8 packages have no README (owner call); aggregate tarballs
-parked (Q5); publish is LAST (card 3).
+b65–b68 landed: one tag with a version per package, both publishers reading the registry, and the
+eight package READMEs that never existed (**37/37** now carry an install block). **Owner ordered
+release + publish v0.2.5** (2026-11-24). No `packages/**/src` moved since 0.2.4, so the chain bumps
+the **whole family** (`version.mjs --apply --version 0.2.5`) — `--tag` alone would reuse-copy the
+tarballs and the new READMEs would never ship. Next: the chain in the task doc §Next.
 → `docs/framework/TASK-release-automation.md` §Next · `.guidance/project/framework.md` §Next
 
 ### 2. Rajutan app — published site
@@ -32,16 +28,14 @@ emitted files and enables Pages, so a job returns a hosted `data.live` + `data.r
 Open: `/exec` is unauthenticated (`CLIENT_TOKEN` unset, `public/sw.js` never registered).
 → `orchestrator/mechanism.md` §1–§11 · `.guidance/project/generator.md` §Next
 
-### 3. Release — publish is LAST (deferred by the owner)
+### 3. Publish — ordered for v0.2.5 (no longer deferred)
 
-`releases/v0.2.4` is regenerated locally (37 packages, `mode`/`version`/`deps`/`tree`) and is **not
-committed or published** — the worktree stays dirty by design. **Owner decision (2026-11-22):
-publish sits at the END of the task order — only after the orchestrator band is finished, or when
-the owner asks. Do not raise it, do not propose it, do not ask about publishing before one of
-those two conditions is true.** The official release also waits for the `store`, `profile`, `blog`
-reference apps.
+The owner ordered publish on 2026-11-24, which is the condition this card used to wait for. Order:
+`publish-releases` → `publish-cdn` → `publish-assets` (the only step needing `GITHUB_TOKEN`) →
+`git push origin main`. `releases/v0.2.4` stays uncommitted history; v0.2.5 is the release that
+lands. It is a **pre-release**: `store` / `profile` / `blog` do not exist yet.
 Open: tarball-consumption probe (`npm i <tarball>` + Node ESM import) still unrun.
-→ `docs/releases/v0.2.4.md` · `docs/live-cdn-repo.md` §9 · `.guidance/project/generator.md`
+→ `docs/releases/v0.2.5.md` · `docs/live-cdn-repo.md` §9 · `.guidance/project/generator.md`
 
 ## Map
 
@@ -58,8 +52,8 @@ Open: tarball-consumption probe (`npm i <tarball>` + Node ESM import) still unru
 
 - **Publish is the last item, on the owner's order** (card 3): only after the orchestrator band is
   finished, or when the owner asks. Never raise it unprompted.
-- Official release waits for the `store`, `profile`, `blog` references (`gallery` exists).
-- Tree, packages and last tag are at **`0.2.4`** (pre-release, tag `v0.2.4` = branch `5eeee94`).
-- `main` is **ahead of `origin/main`** — the release branch and tag are pushed, the source branch
+- Official releordered for v0.2.5\*\* (owner, 2026-11-24) — the deferred rule is satisfied; nothing
+  else gates it except the `GITHUB_TOKEN` step and `git push origin main`.
+- The official release stilld of `origin/main`\*\* — the release branch and tag are pushed, the source branch
   is not. One command when the owner wants it: `git push origin main`.
 - Scratch is `temp/` (deletable whole); `releases/` is the branch worktree, not scratch.

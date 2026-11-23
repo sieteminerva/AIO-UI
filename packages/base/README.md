@@ -6,6 +6,7 @@ leaving state behind. `@aio-ui/core` renders whatever a builder returns; this pa
 builder becomes one.
 
 <!-- install:begin -->
+
 ## Install
 
 Version — `0.2.4` (tag `v0.2.4`)
@@ -13,6 +14,7 @@ Version — `0.2.4` (tag `v0.2.4`)
     npm install https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.4/aio-ui-base-0.2.4.tgz
 
 CDN (ES module, no build step) — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.4/packages/base/dist/index.js`
+
 <!-- install:end -->
 
 ## Builder
@@ -35,14 +37,14 @@ per-key `hierarchy` (what each key actually rendered), the `namespace`, the root
 
 Published from the root, because `Builder` already pulls them:
 
-| Export                          | Role                                                                     |
-| ------------------------------- | ------------------------------------------------------------------------ |
-| `Binding`                       | Turns config entries into record fields and back                          |
-| `BuilderProxy`, `isReactive`    | The reactive wrapper a builder's config reads through                     |
-| `ReactiveGraph`, `EffectFn`     | The dependency graph behind a proxy — effects re-run when a key changes   |
-| `holdUntilStyled`, `releaseMarkers` | The anti-FOUC hold and the markers it leaves in the DOM               |
-| `normalize`, `validate`         | Content contract: coercion and issue collection (`iNormalizedContent`)    |
-| `GLOBAL_INSTANCE_COUNTER`       | Per-name instance counter, used for stable namespaces                     |
+| Export                              | Role                                                                    |
+| ----------------------------------- | ----------------------------------------------------------------------- |
+| `Binding`                           | Turns config entries into record fields and back                        |
+| `BuilderProxy`, `isReactive`        | The reactive wrapper a builder's config reads through                   |
+| `ReactiveGraph`, `EffectFn`         | The dependency graph behind a proxy — effects re-run when a key changes |
+| `holdUntilStyled`, `releaseMarkers` | The anti-FOUC hold and the markers it leaves in the DOM                 |
+| `normalize`, `validate`             | Content contract: coercion and issue collection (`iNormalizedContent`)  |
+| `GLOBAL_INSTANCE_COUNTER`           | Per-name instance counter, used for stable namespaces                   |
 
 `Builder` registers its adapter into `@aio-ui/core` through `setBuilderAdapter`, so the renderer
 builds components without importing this package at runtime.

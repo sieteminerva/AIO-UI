@@ -6,9 +6,8 @@
 
 ## Live claims
 
-| Agent | Band | Task | Write scope | Started | Checkpoint | State |
-| ----- | ---- | ---- | ----------- | ------- | ---------- | ----- |
-| copilot b68 | Framework → Tooling | Release automation — 8 missing package READMEs, then release + publish v0.2.5 | `packages/{base,core,styles,utilities}/README.md`, `packages/themes/*/README.md`, `packages/kits/themes/README.md`, then release paths (`scripts/**` read, `releases/v0.2.5/**`, `docs/releases/v0.2.5.md`) | 2026-11-24 | `/memories/session/b68.md` | active |
+| Agent       | Band                | Task                                                                          | Write scope                                                                                                                                                                                                 | Started    | Checkpoint                 | State  |
+| ----------- | ------------------- | ----------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- | -------------------------- | ------ |
 
 ## Row shape
 

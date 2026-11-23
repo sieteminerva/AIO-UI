@@ -8,6 +8,7 @@ import { DefaultTheme, CyberpunkTheme, HorizontalTheme } from "@aio-ui/themes";
 ```
 
 <!-- install:begin -->
+
 ## Install
 
 Version — `0.2.4` (tag `v0.2.4`)
@@ -15,6 +16,7 @@ Version — `0.2.4` (tag `v0.2.4`)
     npm install https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.4/aio-ui-themes-0.2.4.tgz
 
 CDN (ES module, no build step) — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.4/packages/kits/themes/dist/index.js`
+
 <!-- install:end -->
 
 ## Why an aggregator
@@ -26,11 +28,11 @@ closure instead of trusting it.
 
 ## Packages
 
-| Package                     | Look                                                  |
-| --------------------------- | ----------------------------------------------------- |
-| `@aio-ui/theme-default`     | Reference theme — no classes, no overrides            |
-| `@aio-ui/theme-cyberpunk`   | Tokens only, plus `./CyberpunkTheme.css` the host links |
-| `@aio-ui/theme-horizontal`  | Horizontal panels, keyboard scrolling included        |
+| Package                    | Look                                                    |
+| -------------------------- | ------------------------------------------------------- |
+| `@aio-ui/theme-default`    | Reference theme — no classes, no overrides              |
+| `@aio-ui/theme-cyberpunk`  | Tokens only, plus `./CyberpunkTheme.css` the host links |
+| `@aio-ui/theme-horizontal` | Horizontal panels, keyboard scrolling included          |
 
 ## Tokens
 

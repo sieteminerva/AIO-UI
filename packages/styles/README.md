@@ -6,6 +6,7 @@ so a host links it (or lets `ensureStylesheet` request it) and every component t
 tokens restyles itself.
 
 <!-- install:begin -->
+
 ## Install
 
 Version — `0.2.4` (tag `v0.2.4`)
@@ -13,6 +14,7 @@ Version — `0.2.4` (tag `v0.2.4`)
     npm install https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.4/aio-ui-styles-0.2.4.tgz
 
 CDN (no build step) — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.4/packages/styles/src/index.css`
+
 <!-- install:end -->
 
 ## Sheets
@@ -20,13 +22,13 @@ CDN (no build step) — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.4/
 `index.css` imports the five sheets in presentation order — tokens first, then type, then shared
 component surfaces, then layout, then iconography:
 
-| Sheet            | Contents                                                                |
-| ---------------- | ----------------------------------------------------------------------- |
-| `variables.css`  | `:root` `--app-*` tokens: colour, spacing, radius, type scale, motion    |
-| `typography.css` | Base type, headings, measure                                           |
-| `components.css` | Surfaces more than one component draws on (focus ring, scrollbar)       |
-| `layout.css`     | Section, container and spacing composition                              |
-| `icon.css`       | Icon sizing and alignment                                               |
+| Sheet            | Contents                                                              |
+| ---------------- | --------------------------------------------------------------------- |
+| `variables.css`  | `:root` `--app-*` tokens: colour, spacing, radius, type scale, motion |
+| `typography.css` | Base type, headings, measure                                          |
+| `components.css` | Surfaces more than one component draws on (focus ring, scrollbar)     |
+| `layout.css`     | Section, container and spacing composition                            |
+| `icon.css`       | Icon sizing and alignment                                             |
 
 ## Token rule
 

@@ -6,6 +6,7 @@ Pages laid out as horizontally scrolling panels. The scroll engine already exist
 duplicating a line of the scroll logic.
 
 <!-- install:begin -->
+
 ## Install
 
 Version — `0.2.4` (tag `v0.2.4`)
@@ -13,20 +14,23 @@ Version — `0.2.4` (tag `v0.2.4`)
     npm install https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.4/aio-ui-theme-horizontal-0.2.4.tgz
 
 CDN (ES module, no build step) — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.4/packages/themes/horizontal/dist/index.js`
+
 <!-- install:end -->
 
 ## Hooks
 
-| Hook                                     | What it does here                                  |
-| ---------------------------------------- | -------------------------------------------------- |
-| `beforePageRender(pages, menu, footer)`  | Returns the tree untouched — panels stay authored  |
-| `activate(shell, elements, context)`     | Wires the scroll engine to the live page           |
-| `deactivate(shell)`                      | Unwires it                                         |
+| Hook                                    | What it does here                                 |
+| --------------------------------------- | ------------------------------------------------- |
+| `beforePageRender(pages, menu, footer)` | Returns the tree untouched — panels stay authored |
+| `activate(shell, elements, context)`    | Wires the scroll engine to the live page          |
+| `deactivate(shell)`                     | Unwires it                                        |
 
 The constructor takes a partial `HorizontalScrollingConfig`, so a host can tune the engine:
 
 ```js
-const theme = new HorizontalTheme({ /* HorizontalScrollingConfig */ });
+const theme = new HorizontalTheme({
+  /* HorizontalScrollingConfig */
+});
 ```
 
 ## `HorizontalScrollingPage` is exported too

@@ -5,6 +5,7 @@ A **tokens-only** theme: it flips one marker attribute and lets `CyberpunkTheme.
 surgery, no per-component code — the cheapest possible theme, and the template for a new one.
 
 <!-- install:begin -->
+
 ## Install
 
 Version — `0.2.4` (tag `v0.2.4`)
@@ -13,15 +14,16 @@ Version — `0.2.4` (tag `v0.2.4`)
 
 CDN (ES module, no build step) — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.4/packages/themes/cyberpunk/dist/index.js`
 Stylesheet — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.4/packages/themes/cyberpunk/dist/src/CyberpunkTheme.css`
+
 <!-- install:end -->
 
 ## Hooks
 
-| Hook                                     | What it does here                                              |
-| ---------------------------------------- | -------------------------------------------------------------- |
-| `beforePageRender(pages, menu, footer)`  | Returns the tree untouched                                      |
-| `activate(shell, elements, context)`     | Sets `shell.dataset.theme = "cyberpunk"`                        |
-| `deactivate(shell)`                      | Removes that attribute                                          |
+| Hook                                    | What it does here                        |
+| --------------------------------------- | ---------------------------------------- |
+| `beforePageRender(pages, menu, footer)` | Returns the tree untouched               |
+| `activate(shell, elements, context)`    | Sets `shell.dataset.theme = "cyberpunk"` |
+| `deactivate(shell)`                     | Removes that attribute                   |
 
 `themeId` is `"cyberpunk"`, `name` is `"Cyberpunk"`.
 

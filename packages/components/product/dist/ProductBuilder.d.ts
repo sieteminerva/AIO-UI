@@ -23,9 +23,9 @@
  * `onBack` returns. The host keeps what only it can know: where the data came from and
  * what "add to cart" means.
  */
-import type { iBuilderConfig, iContentContract } from "@aio-ui/core/interface";
+import type { iBuilderConfig, iContentContract } from "@aio-ui/core";
 import { Builder } from "@aio-ui/base";
-import type { iBuilderRegistry } from "@aio-ui/core/interface";
+import type { iBuilderRegistry } from "@aio-ui/core";
 import type { ProductElementType } from "./Product.kit";
 import type { iProductDetailConfig, iProductRecord } from "./ProductDetail";
 import type { iProductGridConfig } from "./ProductGrid";

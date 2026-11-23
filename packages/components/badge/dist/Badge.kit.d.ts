@@ -7,7 +7,7 @@
  *
  * Not published: `index.ts` is the only entry, and it does not mention this file.
  */
-import type { iBuilderSelectorsConfig } from "@aio-ui/core/interface";
+import type { iBuilderSelectorsConfig } from "@aio-ui/core";
 /** Every node this component can render. Order is documentation, not behaviour. */
 export declare const ELEMENT_KEYS: readonly ["@container", "@badge", "@badge>item", "@badge>item>label", "@badge>item>desc"];
 export type BadgeElementType = (typeof ELEMENT_KEYS)[number];

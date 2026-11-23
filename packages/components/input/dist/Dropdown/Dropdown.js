@@ -1,4 +1,5 @@
 import { Builder } from "@aio-ui/base";
+import { INPUT_MODULE_IDS } from "../InputModuleTypes.js";
 export class DropdownBuilder extends Builder {
     builderId = "dropdown";
     name = "dropdown";
@@ -11,6 +12,8 @@ export class DropdownBuilder extends Builder {
     abortController = new AbortController();
     // State reaktif utama komponen
     #state;
+    /** Set from `content.multiple` on every prepare: one field, one schema object. */
+    multiple = false;
     constructor(config) {
         super();
         // Membuat ID unik agar input dan datalist saling terhubung dengan aman
@@ -42,7 +45,6 @@ export class DropdownBuilder extends Builder {
             style: "select",
             min: 3, // Menggantikan hardcode keyword.length < 2
             max: 10, // Membatasi jumlah option yang dirender ke DOM
-            isMultiple: false,
             onMultiChange: (_a) => { },
             onSelect: () => { },
         };
@@ -162,6 +164,9 @@ export class DropdownBuilder extends Builder {
         }
     }
     prepare(content, _config) {
+        // `multiple` is part of the field's content, next to `options` and `value` — the same
+        // door a `select` uses for its own `multiple`.
+        this.multiple = content?.multiple === true;
         // Inisialisasi state awal sebelum dibungkus Proxy oleh framework Anda
         this.#state = {
             options: Array.isArray(content?.options) ? content.options : [],
@@ -205,7 +210,7 @@ export class DropdownBuilder extends Builder {
         }, { signal: this.abortController.signal });
         // 2. PROTEKSI NILAI TIDAK VALID (Strict Mode saat Blur)
         input.addEventListener("blur", () => {
-            if (this.config.isMultiple)
+            if (this.multiple)
                 return;
             const prevValue = this.#state.value; // Nilai sebelum potensi reset di bawah
             const currentText = input.value;
@@ -365,7 +370,7 @@ export class DropdownBuilder extends Builder {
             const label = item.getAttribute("data-label") || item.textContent || "";
             const items = menu.querySelectorAll(".item");
             items.forEach((opt) => {
-                if (this.config.isMultiple) {
+                if (this.multiple) {
                     // Untuk Multi-Select: Cek apakah ID item ini ada di dalam array selectedMultiItems
                     const optId = String(opt.getAttribute("data-id") ?? "");
                     const isSelected = this.#state.selectedMultiItems.some(i => String(i.id) === optId) || opt === item;
@@ -379,7 +384,7 @@ export class DropdownBuilder extends Builder {
             });
             // Patokan deteksi perubahan untuk emit change di bawah (nilai sebelum mutasi)
             const prevValue = this.#state.value;
-            if (this.config.isMultiple) {
+            if (this.multiple) {
                 const exists = this.#state.selectedMultiItems.some(i => String(i.id) === id);
                 if (!exists)
                     this.#state.selectedMultiItems.push({ id, label });
@@ -451,7 +456,7 @@ export class DropdownBuilder extends Builder {
             try {
                 const response = await fetch(`${this.config.apiUrl}?search=${encodeURIComponent(value)}`);
                 const data = await response.json();
-                const unselectedData = this.config.isMultiple
+                const unselectedData = this.multiple
                     ? data.filter(p => !this.#state.selectedMultiItems.some(item => String(item.id) === String(p.id)))
                     : data;
                 this.#state.options = unselectedData.slice(0, this.config.max || 10);
@@ -484,7 +489,7 @@ export class DropdownBuilder extends Builder {
         const matchedOption = datalist.querySelector(`option[value="${CSS.escape(value)}"]`);
         if (matchedOption) {
             const selectedId = matchedOption.getAttribute("data-id") || "";
-            if (this.config.isMultiple) {
+            if (this.multiple) {
                 const alreadyExists = this.#state.selectedMultiItems.some(item => String(item.id) === String(selectedId));
                 if (!alreadyExists) {
                     // Cukup ubah datanya secara reaktif!
@@ -510,7 +515,7 @@ export class DropdownBuilder extends Builder {
                     this.config.onSelect(value, selectedId);
             }
             // Trigger render ulang bagian DOM yang terpengaruh perubahan state
-            if (this.config.isMultiple)
+            if (this.multiple)
                 this.renderOptions(datalist);
             const tagsContainer = datalist.parentElement?.querySelector(".tags");
             if (tagsContainer)
@@ -630,4 +635,75 @@ export class DropdownBuilder extends Builder {
         }
     }
 }
+/**
+ * Dropdown input module.
+ *
+ * `type: "dropdown"` is the one field type whose markup a sibling builder owns: the
+ * dropdown has its own open/close state, filtering and keyboard handling. Owning it here
+ * keeps `InputBuilder` free of a direct import, so a project that never uses a dropdown
+ * never pays for it.
+ */
+class DropdownInputModule {
+    #context;
+    constructor(context) {
+        this.#context = context;
+    }
+    /**
+     * Builds the dropdown for a `dropdown` field.
+     *
+     * @param field - Resolved field payload.
+     * @returns The dropdown root, or `null` for any other type.
+     */
+    renderControl(field) {
+        if (field.type !== "dropdown")
+            return null;
+        const cfg = field.config ?? {};
+        const options = (field.options || []).map((option) => typeof option === "string" ? { id: option, label: option } : { id: option.value, label: option.label });
+        const payload = {
+            id: field.id,
+            title: field.title,
+            placeholder: field.placeholder,
+            // Choices and multiplicity are the field's, never the config bag's.
+            options,
+            multiple: field.multiple === true,
+            value: field.value,
+            name: field.name || field.id,
+            attributes: cfg.attributes || [],
+        };
+        const builder = new DropdownBuilder({
+            ...cfg.dropdown,
+            themeId: this.#context.builderConfig.themeId || "default",
+            namespace: this.#context.builderConfig.namespace,
+            emit: this.#context.builderConfig.emit,
+        });
+        const element = builder.create({
+            content: payload,
+            config: {
+                apiUrl: cfg.apiUrl || null,
+                debounceDelay: cfg.debounceDelay,
+                style: cfg.style || "select",
+                min: cfg.min,
+                max: cfg.max,
+                onSelect: cfg.onSelect,
+                onMultiChange: cfg.onMultiChange,
+            },
+        });
+        // The dropdown root already is a `.field`-shaped block: give its hidden input the
+        // form field name so submission works without a second wrapper.
+        const hidden = element.querySelector("input[type='hidden']");
+        if (hidden && field.id)
+            hidden.setAttribute("name", field.name || field.id);
+        return element;
+    }
+}
+/**
+ * Dropdown module definition.
+ *
+ * @example
+ * // registered by INPUT_MODULE_DEFINITIONS; omit it from a custom preset to drop the builder
+ */
+export const dropdownInputModule = {
+    id: INPUT_MODULE_IDS.dropdown,
+    load: (context) => new DropdownInputModule(context),
+};
 //# sourceMappingURL=Dropdown.js.map

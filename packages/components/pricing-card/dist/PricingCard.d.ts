@@ -1,4 +1,4 @@
-import type { iBasicNode, iBuilderConfig, iContentContract } from "@aio-ui/core/interface";
+import type { iBasicNode, iBuilderConfig, iContentContract } from "@aio-ui/core";
 import { Builder } from "@aio-ui/base";
 export type PricingCardElementType = "@container" | "@card" | "@card>header" | "@card>price" | "@card>divider" | "@card>body" | "@card>body>item" | "@card>actions";
 interface iPricingCardConfig extends iBuilderConfig<PricingCardElementType> {

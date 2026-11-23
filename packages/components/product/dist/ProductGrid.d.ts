@@ -1,4 +1,4 @@
-import type { iBuilderConfig } from "@aio-ui/core/interface";
+import type { iBuilderConfig } from "@aio-ui/core";
 import { Builder } from "@aio-ui/base";
 import type { iProductCardConfig } from "./ProductCard";
 import type { ProductGridElementType } from "./ProductGrid.kit";

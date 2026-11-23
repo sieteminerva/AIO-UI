@@ -1,6 +1,6 @@
 {
   "name": "@aio-ui/input",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "type": "module",
   "files": [
     "dist",
@@ -16,37 +16,9 @@
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
-    "./modules": {
-      "types": "./dist/InputModules.d.ts",
-      "default": "./dist/InputModules.js"
-    },
-    "./InputRegistry": {
-      "types": "./dist/InputRegistry.d.ts",
-      "default": "./dist/InputRegistry.js"
-    },
-    "./InputModuleTypes": {
-      "types": "./dist/InputModuleTypes.d.ts",
-      "default": "./dist/InputModuleTypes.js"
-    },
-    "./Missing": {
-      "types": "./dist/Missing.d.ts",
-      "default": "./dist/Missing.js"
-    },
-    "./FieldTypes": {
-      "types": "./dist/FieldTypes.d.ts",
-      "default": "./dist/FieldTypes.js"
-    },
-    "./Attribute": {
-      "types": "./dist/Attribute.d.ts",
-      "default": "./dist/Attribute.js"
-    },
-    "./FormValues": {
-      "types": "./dist/FormValues.d.ts",
-      "default": "./dist/FormValues.js"
-    },
-    "./CalculationTypes": {
-      "types": "./dist/CalculationTypes.d.ts",
-      "default": "./dist/CalculationTypes.js"
+    "./input.css": {
+      "types": "./input.css.d.ts",
+      "default": "./input.css"
     },
     "./dropdown": {
       "types": "./dist/Dropdown/Dropdown.d.ts",
@@ -72,22 +44,6 @@
       "types": "./InputControls/inputControls.css.d.ts",
       "default": "./InputControls/inputControls.css"
     },
-    "./dropdown/module": {
-      "types": "./dist/Dropdown/Dropdown.InputModule.d.ts",
-      "default": "./dist/Dropdown/Dropdown.InputModule.js"
-    },
-    "./file-uploader/module": {
-      "types": "./dist/FileUploader/FileUploader.InputModule.d.ts",
-      "default": "./dist/FileUploader/FileUploader.InputModule.js"
-    },
-    "./controls/module": {
-      "types": "./dist/InputControls/InputControls.InputModule.d.ts",
-      "default": "./dist/InputControls/InputControls.InputModule.js"
-    },
-    "./popover/module": {
-      "types": "./dist/Popover.InputModule.d.ts",
-      "default": "./dist/Popover.InputModule.js"
-    },
     "./picker": {
       "types": "./dist/InputPicker/InputPicker.d.ts",
       "default": "./dist/InputPicker/InputPicker.js"
@@ -95,14 +51,6 @@
     "./picker.css": {
       "types": "./InputPicker/InputPicker.css.d.ts",
       "default": "./InputPicker/InputPicker.css"
-    },
-    "./picker/module": {
-      "types": "./dist/InputPicker/InputPicker.inputModules.d.ts",
-      "default": "./dist/InputPicker/InputPicker.inputModules.js"
-    },
-    "./input.css": {
-      "types": "./input.css.d.ts",
-      "default": "./input.css"
     }
   },
   "scripts": {
@@ -110,9 +58,9 @@
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "@aio-ui/base": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.4/aio-ui-base-0.2.4.tgz",
-    "@aio-ui/core": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.4/aio-ui-core-0.2.4.tgz",
-    "@aio-ui/module-loader": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.4/aio-ui-module-loader-0.2.4.tgz",
-    "@aio-ui/utilities": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.4/aio-ui-utilities-0.2.4.tgz"
+    "@aio-ui/base": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.5/aio-ui-base-0.2.5.tgz",
+    "@aio-ui/core": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.5/aio-ui-core-0.2.5.tgz",
+    "@aio-ui/module-loader": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.5/aio-ui-module-loader-0.2.5.tgz",
+    "@aio-ui/utilities": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.5/aio-ui-utilities-0.2.5.tgz"
   }
 }

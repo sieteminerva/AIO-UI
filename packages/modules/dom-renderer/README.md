@@ -3,6 +3,16 @@
 The renderer **alone**. No `@aio-ui/*` import, one generated file — for projects that want the
 tree-to-DOM engine without adopting the framework. It is the migration door for existing apps.
 
+<!-- install:begin -->
+## Install
+
+Version — `0.2.4` (tag `v0.2.4`)
+
+    npm install https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.4/aio-ui-dom-renderer-0.2.4.tgz
+
+CDN (ES module, no build step) — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.4/packages/modules/dom-renderer/dist/index.js`
+<!-- install:end -->
+
 ## Payload
 
 A plain nested object. The key is a selector token — `tag.class`, `tag#id`, or `@templateKey` —
@@ -42,8 +52,8 @@ are inlined so it imports nothing:
 
 | Seam               | In `@aio-ui/core`                  | Here                                       |
 | ------------------ | ---------------------------------- | ------------------------------------------ |
-| attribute helpers  | `@aio-ui/utilities/AttributeUtils` | inlined                                    |
-| metadata identity  | `@aio-ui/utilities/Metadata`       | inlined                                    |
+| attribute helpers  | `@aio-ui/utilities` | inlined                                    |
+| metadata identity  | `@aio-ui/utilities`       | inlined                                    |
 | template overrides | `TemplateRegistry` (core)          | a local `Map` with `register`/`unregister` |
 | dev warnings       | `import.meta.env?.DEV`             | `KIT_DEV = false`                          |
 

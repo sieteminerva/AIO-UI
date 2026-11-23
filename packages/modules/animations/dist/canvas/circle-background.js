@@ -1,4 +1,4 @@
-import { generateRandomColor, hexToRgba } from "@aio-ui/utilities/color.utils";
+import { generateRandomColor, hexToRgba } from "@aio-ui/utilities";
 export function BackgroundCircleAnimation(canvas) {
     /*--------------------
     Config

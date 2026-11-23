@@ -52,7 +52,7 @@ export interface iResolveModuleRefsOptions {
  *
  * @example
  * import { ModuleLoader, resolveModuleDefinitions } from "@aio-ui/module-loader";
- * import { FORM_ADAPTER_MANIFEST } from "@aio-ui/form/FormRegistry";
+ * import { FORM_ADAPTER_MANIFEST } from "@aio-ui/form";
  *
  * const definitions = await resolveModuleDefinitions(FORM_ADAPTER_MANIFEST);
  * const form = new FormBuilder({ modules: new ModuleLoader("form", definitions) });

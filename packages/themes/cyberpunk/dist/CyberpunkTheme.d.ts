@@ -1,4 +1,4 @@
-import type { iBasicNode, iBuilderRegistry, iThemeModule } from "@aio-ui/core/interface";
+import type { iBasicNode, iBuilderRegistry, iThemeModule } from "@aio-ui/core";
 export declare class CyberpunkTheme implements iThemeModule {
     readonly themeId = "cyberpunk";
     readonly name = "Cyberpunk";

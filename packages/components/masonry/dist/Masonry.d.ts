@@ -1,4 +1,4 @@
-import type { iBasicNode, iBuilderConfig, iBuilderRegistry, iContentContract } from "@aio-ui/core/interface";
+import type { iBasicNode, iBuilderConfig, iBuilderRegistry, iContentContract } from "@aio-ui/core";
 import { Builder } from "@aio-ui/base";
 export type MasonryElementType = "@container" | "@masonry" | "@masonry>filter" | "@masonry>filter>item" | "@masonry>filter>slider" | "@masonry>item" | "@masonry>item>image" | "@masonry>item>title" | "@masonry>item>desc" | "@masonry>item>actions" | "@masonry>modal" | "@masonry>modal>stage" | "@masonry>modal>image" | "@masonry>modal>caption" | "@masonry>modal>title" | "@masonry>modal>desc" | "@masonry>modal>close" | "@masonry>modal>next" | "@masonry>modal>previous" | "@masonry>spinner" | "@masonry>trigger" | "@masonry>sentinel";
 export interface iMasonryConfig extends iBuilderConfig<MasonryElementType> {

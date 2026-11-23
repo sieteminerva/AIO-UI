@@ -1,4 +1,4 @@
-import type { iBuilderConfig, iBuilderRegistry, iContentContract } from "@aio-ui/core/interface";
+import type { iBuilderConfig, iBuilderRegistry, iContentContract } from "@aio-ui/core";
 import { Builder } from "@aio-ui/base";
 export type CarouselElementType = "@container" | "@carousel" | "@carousel>control" | "@carousel>control>prev" | "@carousel>control>next" | "@carousel>navigations" | "@carousel>navigations>dot" | "@carousel>track" | "@carousel>track>slide" | "@carousel>track>slide>inner" | "@carousel>track>slide>caption" | "@carousel>track>slide>title" | "@carousel>track>slide>desc" | "@carousel>track>slide>image";
 export interface iCarouselConfig extends iBuilderConfig<CarouselElementType> {

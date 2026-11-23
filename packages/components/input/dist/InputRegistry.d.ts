@@ -5,12 +5,13 @@
  * field asks for them: a dropdown (a whole builder), the uploader (~1.8k lines), the
  * action button set, and popovers. This file declares them as **refs** (`InputModuleManifest`,
  * strings) and offers the helpers that walk a preset; the live definitions
- * (`INPUT_MODULE_DEFINITIONS`, `{ id, load }`) live in `./InputModules`, behind the
- * `@aio-ui/input/modules` subpath.
+ * (`INPUT_MODULE_DEFINITIONS`, `{ id, load }`) are re-exported from `./index`, which
+ * provides them from each component subpath.
  *
- * That split is deliberate: importing `@aio-ui/input` must not compile the four modules.
- * `scripts/bundle-probe.mjs` proves it against the parsed module graph — which is also why
- * no helper here may name a default preset: a default parameter is an import edge.
+ * The root pulls the four modules (one door), but they are also published beside their own
+ * component subpaths, so a bundler that only imports a field keeps the other builders out.
+ * No helper here may name a default preset: a default parameter is an import edge, and the
+ * helpers must stay usable without one.
  *
  * The helpers therefore take an **optional** preset and do nothing without one. There is
  * nothing to mount, read or offer when the host declared no modules — that is a capability,

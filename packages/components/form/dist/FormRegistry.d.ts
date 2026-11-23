@@ -7,7 +7,7 @@ import type { iFormModuleContext } from "./FormModuleTypes";
  * `FORM_ADAPTER_MANIFEST` is the stack as manifest `modules` refs, so a host can declare
  * it without importing classes and `ComponentRegistry` can resolve one entry at a time.
  * The live list (`FORM_ADAPTER_DEFINITIONS`, `{ id, load }`) lives in `./FormAdapters`,
- * behind the `@aio-ui/form/adapters` subpath, so that importing `@aio-ui/form` does not
+ * behind the `@aio-ui/form` subpath, so that importing `@aio-ui/form` does not
  * compile the five adapters. Keeping the refs here is what makes that split possible:
  * they are strings.
  *

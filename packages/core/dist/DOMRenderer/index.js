@@ -1,6 +1,6 @@
 import { getTemplates } from "../TemplateRegistry.js";
-import { applyAttrDictionary, applyAttributeList } from "@aio-ui/utilities/AttributeUtils";
-import { ensureMetadataIdentity, setMetadata } from "@aio-ui/utilities/Metadata";
+import { applyAttrDictionary, applyAttributeList } from "@aio-ui/utilities";
+import { ensureMetadataIdentity, setMetadata } from "@aio-ui/utilities";
 // @ts-ignore
 function isValidHTMLTag(tag) {
     // Browser otomatis mengembalikan HTMLUnknownElement jika tag tidak dikenali

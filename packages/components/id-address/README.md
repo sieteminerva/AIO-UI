@@ -13,6 +13,17 @@ already rendered, so its styling contract is the small set of state classes it t
 it a plain CSS library by construction: any markup carrying the same wrappers and state classes is
 styled identically, and the base field look stays with the component that rendered the field.
 
+<!-- install:begin -->
+## Install
+
+Version — `0.2.4` (tag `v0.2.4`)
+
+    npm install https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.4/aio-ui-id-address-0.2.4.tgz
+
+CDN (ES module, no build step) — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.4/packages/components/id-address/dist/index.js`
+Stylesheet — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.4/packages/components/id-address/dist/id-address.css`
+<!-- install:end -->
+
 ## Payload
 
 The engine takes no `content` payload. Its input is the query it sends to a data source:
@@ -194,9 +205,9 @@ await schema.select(data.find((row) => row.kota_id === value));
 | Entry                                                                | What it gives you                                                           |
 | -------------------------------------------------------------------- | --------------------------------------------------------------------------- |
 | `@aio-ui/id-address`                                                 | `IdAddressBuilder` and the config/detail types                              |
-| `@aio-ui/id-address/adapter`                                         | the adapter interface and the bundled adapters                              |
-| `@aio-ui/id-address/adapter.native`, `/adapter.aio`, `/adapter.base` | one adapter each                                                            |
-| `@aio-ui/id-address/form`                                            | `idAddressFormAdapter`; needs `@aio-ui/form`, which is an **optional peer** |
+| `@aio-ui/id-address`                                         | the adapter interface and the bundled adapters                              |
+| `@aio-ui/id-address`, `/adapter.aio`, `/adapter.base` | one adapter each                                                            |
+| `@aio-ui/id-address`                                            | `idAddressFormAdapter`; needs `@aio-ui/form`, which is an **optional peer** |
 | `@aio-ui/id-address/id-address.css`                                  | state styling (`loading`, `error`) for the controls it decorates            |
 
 ### Quick start

@@ -8,7 +8,7 @@
  */
 
 import type { iModuleDefinition } from "@aio-ui/module-loader";
-import type { iBuilderConfig } from "@aio-ui/core/interface";
+import type { iBuilderConfig } from "@aio-ui/core";
 import type { iBasicInputNode } from "./Input";
 
 /** Stable ids for input sub-modules. */

@@ -1,4 +1,4 @@
-import type { iElementProperty, iBasicNode, iBuilderConfig, iBuilderRegistry, iContentContract } from "@aio-ui/core/interface";
+import type { iElementProperty, iBasicNode, iBuilderConfig, iBuilderRegistry, iContentContract } from "@aio-ui/core";
 import { Builder } from "@aio-ui/base";
 export type FabPosition = "top-left" | "top-right" | "bottom-left" | "bottom-right" | "middle";
 export type FabMenuElementType = "@fab" | "@fab>panel" | "@fab>panel>title" | "@fab>panel>item" | "@fab>panel>trigger";

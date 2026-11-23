@@ -1,5 +1,5 @@
 /**
- * Public surface of the app entry (`@aio-ui/core/app`).
+ * Public surface of the app entry (`@aio-ui/core`).
  *
  * `AioApp` is the framework entry: one class that owns routing, preload, render,
  * lifecycle and teardown. `iApp` is its contract; `iAppConfig`, `iAppSource`,

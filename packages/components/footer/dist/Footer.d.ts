@@ -1,4 +1,4 @@
-import type { iBuilderConfig, iBuilderRegistry, iContentContract } from "@aio-ui/core/interface";
+import type { iBuilderConfig, iBuilderRegistry, iContentContract } from "@aio-ui/core";
 import { Builder } from "@aio-ui/base";
 export type FooterElementType = "@footer" | "@footer>row" | "@footer>row>column" | "@footer>row>column>header" | "@footer>row>column>desc" | "@footer>row>column>list" | "@footer>row>column>list>item" | "@footer>copyright";
 /**

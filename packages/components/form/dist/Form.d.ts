@@ -1,8 +1,8 @@
-import type { iBuilderConfig, iBuilderRegistry, iContentContract } from "@aio-ui/core/interface";
+import type { iBuilderConfig, iBuilderRegistry, iContentContract } from "@aio-ui/core";
 import { Builder } from "@aio-ui/base";
 import type { iCascadeEventDetail } from "./FormModuleTypes";
 import type { iFormModuleContext } from "./FormModuleTypes";
-import type { InputModulePreset } from "@aio-ui/input/InputModuleTypes";
+import type { InputModulePreset } from "@aio-ui/input";
 import { ModuleLoader } from "@aio-ui/module-loader";
 import type { HttpService } from "@aio-ui/http-service";
 import type { iFormMessages } from "./FormMessages";
@@ -106,12 +106,13 @@ export interface iFormConfig extends iBuilderConfig<FormElementType> {
         useAdapter?: string | null;
     } | null;
     /**
-     * Loader that supplies the Form's own sub-modules — **required to render a field**.
+     * Loader that supplies the Form's own sub-modules.
      *
-     * Since `0.2.2` the adapters are no longer compiled into `@aio-ui/form`: pass
-     * `new ModuleLoader("form", FORM_ADAPTER_DEFINITIONS)` from `@aio-ui/form/adapters`
-     * (or a subset, or your own). A builder with no modules throws on the first
-     * `create()` instead of failing one field at a time.
+     * **Optional.** Leave it out and the form runs on the floor it cannot do without:
+     * `inputFormAdapter` (exported by `@aio-ui/form`). Pass
+     * `new ModuleLoader("form", FORM_ADAPTER_DEFINITIONS)` for the whole stack, a subset,
+     * or your own. Passing an **empty** loader is still an error — a form with no adapter
+     * cannot render one field.
      *
      * A manifest host does not pass this: `provideModules()` hands the resolved stack over.
      */
@@ -119,11 +120,10 @@ export interface iFormConfig extends iBuilderConfig<FormElementType> {
     /**
      * The **field-level** adapter set: dropdown, uploader, controls, popover.
      *
-     * Leave it `null` and every field is a plain labelled control — the modules are an
-     * enhancement, never a precondition. Pass `INPUT_MODULE_DEFINITIONS` from
-     * `@aio-ui/input/modules` for the full layer, or a subset you actually use. A manifest
-     * host fills this in through `provideModules()` (`scope: "input"` refs), which wins
-     * over this option.
+     * Defaults to `[dropdownInputModule]`, so `type: "dropdown"` works out of the box.
+     * Pass `INPUT_MODULE_DEFINITIONS` from `@aio-ui/input/modules` for the full layer, or
+     * a subset you actually use; a declared module with the same id replaces the default.
+     * A manifest host fills this in through `provideModules()` (`scope: "input"` refs).
      */
     inputModules?: InputModulePreset | null;
 }

@@ -5,8 +5,8 @@ import { ProductGridBuilder } from "./ProductGrid.js";
 /** The sub-modules this component owns. Hosts pass this to `register`. */
 export function productModules() {
     return [
-        { id: "grid", scope: "grid", path: "@aio-ui/product", export: "ProductGridBuilder", stylesheet: "@aio-ui/product/ProductGrid.css" },
-        { id: "detail", scope: "detail", path: "@aio-ui/product", export: "ProductDetailBuilder", stylesheet: "@aio-ui/product/ProductDetail.css" },
+        { id: "grid", scope: "grid", path: "@aio-ui/product", export: "ProductGridBuilder", stylesheet: "@aio-ui/product/index.css" },
+        { id: "detail", scope: "detail", path: "@aio-ui/product", export: "ProductDetailBuilder", stylesheet: "@aio-ui/product/index.css" },
     ];
 }
 export class ProductBuilder extends Builder {

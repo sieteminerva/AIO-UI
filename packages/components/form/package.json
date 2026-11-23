@@ -1,6 +1,6 @@
 {
   "name": "@aio-ui/form",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "type": "module",
   "files": [
     "dist",
@@ -9,46 +9,26 @@
     "adapters"
   ],
   "dependencies": {
-    "@aio-ui/input": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.4/aio-ui-input-0.2.4.tgz",
-    "@aio-ui/base": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.4/aio-ui-base-0.2.4.tgz",
-    "@aio-ui/core": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.4/aio-ui-core-0.2.4.tgz",
-    "@aio-ui/http-service": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.4/aio-ui-http-service-0.2.4.tgz",
-    "@aio-ui/message": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.4/aio-ui-message-0.2.4.tgz",
-    "@aio-ui/module-loader": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.4/aio-ui-module-loader-0.2.4.tgz",
-    "@aio-ui/utilities": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.4/aio-ui-utilities-0.2.4.tgz"
+    "@aio-ui/input": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.5/aio-ui-input-0.2.5.tgz",
+    "@aio-ui/base": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.5/aio-ui-base-0.2.5.tgz",
+    "@aio-ui/core": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.5/aio-ui-core-0.2.5.tgz",
+    "@aio-ui/http-service": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.5/aio-ui-http-service-0.2.5.tgz",
+    "@aio-ui/message": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.5/aio-ui-message-0.2.5.tgz",
+    "@aio-ui/module-loader": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.5/aio-ui-module-loader-0.2.5.tgz",
+    "@aio-ui/utilities": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.5/aio-ui-utilities-0.2.5.tgz"
   },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
-    "./adapters": {
-      "types": "./dist/FormAdapters.d.ts",
-      "default": "./dist/FormAdapters.js"
-    },
     "./Form.css": {
       "types": "./Form.css.d.ts",
       "default": "./Form.css"
     },
-    "./FormLayout": {
-      "types": "./dist/FormLayout.d.ts",
-      "default": "./dist/FormLayout.js"
-    },
     "./FormMessages": {
       "types": "./dist/FormMessages.d.ts",
       "default": "./dist/FormMessages.js"
-    },
-    "./FormModuleTypes": {
-      "types": "./dist/FormModuleTypes.d.ts",
-      "default": "./dist/FormModuleTypes.js"
-    },
-    "./FormRegistry": {
-      "types": "./dist/FormRegistry.d.ts",
-      "default": "./dist/FormRegistry.js"
-    },
-    "./Input.FormAdapter": {
-      "types": "./dist/Input.FormAdapter.d.ts",
-      "default": "./dist/Input.FormAdapter.js"
     },
     "./calculation-adapter": {
       "types": "./dist/adapters/Calculation.d.ts",

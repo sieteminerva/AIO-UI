@@ -1,4 +1,4 @@
-import type { iBuilderConfig, iContentContract } from "@aio-ui/core/interface";
+import type { iBuilderConfig, iContentContract } from "@aio-ui/core";
 import { Builder } from "@aio-ui/base";
 import type { SectionElementType } from "./Section.kit";
 /**

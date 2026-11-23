@@ -1,4 +1,4 @@
-import { createImageError } from "@aio-ui/utilities/DomUtils";
+import { createImageError } from "@aio-ui/utilities";
 import { Builder } from "@aio-ui/base";
 import { Skeleton } from "@aio-ui/skeleton";
 /**

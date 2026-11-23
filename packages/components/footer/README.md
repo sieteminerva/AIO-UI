@@ -10,6 +10,17 @@ nesting and class names written by hand are styled identically. Customise it by 
 selector, or retheme it without touching markup by redeclaring a `--app-*` token on an ancestor
 (or one `--footer-*` token for this component only).
 
+<!-- install:begin -->
+## Install
+
+Version — `0.2.4` (tag `v0.2.4`)
+
+    npm install https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.4/aio-ui-footer-0.2.4.tgz
+
+CDN (ES module, no build step) — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.4/packages/components/footer/dist/index.js`
+Stylesheet — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.4/packages/components/footer/dist/Footer.css`
+<!-- install:end -->
+
 ## Payload
 
 ```ts

@@ -1,5 +1,5 @@
 import type { iModuleDefinition } from "@aio-ui/module-loader";
-import type { iFormModuleContext } from "@aio-ui/form/FormModuleTypes";
+import type { iFormModuleContext } from "@aio-ui/form";
 /**
  * Address picker adapter.
  *

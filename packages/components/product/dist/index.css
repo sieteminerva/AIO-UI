@@ -1,0 +1,9 @@
+/* One published sheet for `@aio-ui/product`.
+ *
+ * The three builders keep their own sheets (each one owns its region); this file is the
+ * single specifier a host links, in mount order. `scripts/build-bundle.mjs` lists the
+ * imported sheets instead of this one, so the bundle never carries a duplicated copy.
+ */
+@import "./ProductCard.css";
+@import "./ProductDetail.css";
+@import "./ProductGrid.css";

@@ -6,6 +6,6 @@ export { generateRandomColor, hexToRgb, hexToRgba } from "./color.utils";
 export { createImageError } from "./DomUtils";
 export { mergeInputConfig, numberToText, toBeString, truncateText } from "./helper";
 export { buildNamespace, ensureMetadataIdentity, setMetadata } from "./Metadata";
-export { EMPTY_TABLE, detectDelimiter, parseTableRecords, parseTableText, splitCsvRows } from "./parseTableFile";
+export { EMPTY_TABLE, detectDelimiter, parseTableFile, parseTableRecords, parseTableText, splitCsvRows } from "./parseTableFile";
 export type { iParsedTableFile } from "./parseTableFile";
 export { selectorToTree } from "./SelectorToTree";

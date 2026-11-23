@@ -13,8 +13,10 @@
  * `#selected` is the single source of truth; `#paint()` pushes it into the DOM. Every
  * write goes through `#paint()` so a caller, a filter and a click can never disagree.
  */
-import type { iBuilderConfig } from "@aio-ui/core/interface";
+import type { iBuilderConfig } from "@aio-ui/core";
 import { Builder } from "@aio-ui/base";
+import type { iModuleDefinition } from "@aio-ui/module-loader";
+import { type iInputAdapter, type iInputModuleContext } from "../InputModuleTypes";
 /** Every node this component can render. Order is documentation, not behaviour. */
 export declare const PICKER_KEYS: readonly ["@picker", "@picker>trigger", "@picker>trigger>preview", "@picker>trigger>label", "@picker>panel", "@picker>panel>search", "@picker>panel>grid", "@picker>panel>grid>option", "@picker>panel>grid>option>preview", "@picker>panel>grid>option>name", "@picker>panel>empty", "@picker>value", "@picker>visual>icon", "@picker>visual>image", "@picker>visual>swatch"];
 export type PickerElementType = (typeof PICKER_KEYS)[number];
@@ -39,6 +41,8 @@ export interface iPickerPayload {
     placeholder?: string;
     value?: string | string[] | null;
     options?: Array<iPickerOption | string>;
+    /** Several cells at once. Content, not config: one field, one schema object. */
+    multiple?: boolean;
 }
 export interface iPickerConfig extends iBuilderConfig<PickerElementType> {
     /** What a cell previews: an icon class, an image, or a colour chip. */
@@ -49,8 +53,6 @@ export interface iPickerConfig extends iBuilderConfig<PickerElementType> {
     searchable?: boolean;
     /** Grid columns. */
     columns?: number;
-    /** Lets the visitor pick more than one cell. */
-    isMultiple?: boolean;
     placeholder?: string;
 }
 /** Default shape per key; a theme overrides it through `config.selectors`. */
@@ -75,4 +77,14 @@ export declare class PickerBuilder extends Builder<PickerElementType, iPickerCon
     /** Closes the popover panel. No-op in the expanded look. */
     close(): void;
 }
+/** Field-level settings are not DOM attributes; keep them out of the attribute pass. */
+export declare const PICKER_SETTING_KEYS: readonly string[];
+/**
+ * Picker module definition.
+ *
+ * @example
+ * // registered by INPUT_MODULE_DEFINITIONS; omit it from a custom preset and a
+ * // `picker` field degrades to a native select over the same options.
+ */
+export declare const pickerInputModule: iModuleDefinition<iInputModuleContext, iInputAdapter>;
 //# sourceMappingURL=InputPicker.d.ts.map

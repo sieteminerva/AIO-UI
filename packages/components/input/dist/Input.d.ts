@@ -1,5 +1,6 @@
-import type { iElementProperty, iBuilderConfig, iBuilderRegistry, iContentContract } from "@aio-ui/core/interface";
+import type { iElementProperty, iBuilderConfig, iBuilderRegistry, iContentContract } from "@aio-ui/core";
 import { Builder } from "@aio-ui/base";
+import type { iModuleDefinition } from "@aio-ui/module-loader";
 import { ModuleLoader } from "@aio-ui/module-loader";
 import { type iInputAdapter, type iInputModuleContext, type InputModulePreset } from "./InputRegistry";
 import type { iCalculationFormula } from "./CalculationTypes";
@@ -42,10 +43,15 @@ export interface iBasicInputConfig {
     style?: string;
     field?: string;
     className?: string;
+    /**
+     * @deprecated Choices belong to the field: write `content.options`. Kept so a sheet that
+     * still says `config.options` keeps rendering; nothing inside the layer reads this bag
+     * for options any more.
+     */
     options?: Array<string | iBasicSelectOption>;
     position?: "left" | "right";
     icon?: string;
-    content?: string | Record<string, unknown>;
+    textContent?: string | Record<string, unknown>;
     /**
      * Buttons for this set.
      *
@@ -102,6 +108,13 @@ export interface iBasicInputNode extends iBuilderConfig<InputElementType> {
     title?: string;
     /** Alternatif `title` untuk teks label; dipakai lebih dulu bila ada. */
     label?: string;
+    /**
+     * Choices for `select`, `dropdown`, `picker` and a `radio`/`checkbox` group.
+     *
+     * One spelling for every chooser: a string is `{ value, label }`, and `multiple`
+     * (also at this level) decides single or many. The config bag no longer carries options.
+     */
+    options?: Array<string | iBasicSelectOption>;
     placeholder?: string;
     value?: any;
     /** Numeric increment; defaults to "any" so decimal values pass native validation. */
@@ -128,7 +141,7 @@ export interface iInputConfig extends iBuilderConfig<InputElementType> {
      *
      * Leave it `null` and the field is a plain labelled control: the modules are an
      * enhancement, never a precondition. Pass `INPUT_MODULE_DEFINITIONS` from
-     * `@aio-ui/input/modules` for the full layer, a subset, or your own module. Since
+     * `@aio-ui/input` (the `INPUT_MODULE_DEFINITIONS` export) for the full layer, a subset, or your own module. Since
      * `0.3.0` nothing is compiled into the package root, so an omitted option costs no
      * bytes rather than silently shipping all four.
      *
@@ -157,6 +170,17 @@ export declare class InputBuilder extends Builder<InputElementType, iInputConfig
     protected template(typeKey: InputElementType, el: HTMLElement, payload?: any): void;
     initialize(_el?: HTMLElement, _payload?: any, _context?: any): void;
     /**
+     * A `radio`/`checkbox` field given `options` is a group: one control per option, all on
+     * the field's `name`. `radio` is exclusive by nature, `checkbox` takes several — the
+     * field type decides, exactly the way `select` decides through its own type.
+     *
+     * The caption above the group names it, and every control owns a
+     * `<label class="choice-item">`, so the text next to a dot is clickable too.
+     */
+    private renderChoices;
+    /** The chosen values of a choice group: an array, a comma string, or one scalar. */
+    private choiceValues;
+    /**
      * Applies a schema to a live control.
      *
      * The registry decides what a type may carry: an attribute that means nothing for the
@@ -167,4 +191,11 @@ export declare class InputBuilder extends Builder<InputElementType, iInputConfig
     private applyAttributes;
     private _sanitizeId;
 }
+/**
+ * Popover module definition.
+ *
+ * @example
+ * // registered by INPUT_MODULE_DEFINITIONS; drop it and `config.popover` is ignored
+ */
+export declare const popoverInputModule: iModuleDefinition<iInputModuleContext, iInputAdapter>;
 //# sourceMappingURL=Input.d.ts.map

@@ -1,4 +1,4 @@
-import type { iBuilderConfig, iBuilderRegistry, iContentContract } from "@aio-ui/core/interface";
+import type { iBuilderConfig, iBuilderRegistry, iContentContract } from "@aio-ui/core";
 import { Builder } from "@aio-ui/base";
 export type MessageElementType = "@message" | "@message>close" | "@message>content" | "@message>content>header" | "@message>content>desc" | "@message>content>icon";
 export interface iMessageContent {

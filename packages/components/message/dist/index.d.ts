@@ -1,4 +1,5 @@
 /** Public surface of `@aio-ui/message` — curated, never `export *`. */
 export { MessageBuilder } from "./Message";
 export type { iMessageConfig, iMessageContent } from "./Message";
+export { messageFormAdapter } from "./adapters/FormAdapter";
 //# sourceMappingURL=index.d.ts.map

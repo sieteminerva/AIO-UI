@@ -29,6 +29,17 @@ nesting and class names written by hand are styled identically. Customise it by 
 selector, or retheme it without touching markup by redeclaring a `--app-*` token on an ancestor
 (or one `--skeleton-*` token for this component only).
 
+<!-- install:begin -->
+## Install
+
+Version — `0.2.4` (tag `v0.2.4`)
+
+    npm install https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.4/aio-ui-skeleton-0.2.4.tgz
+
+CDN (ES module, no build step) — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.4/packages/components/skeleton/dist/index.js`
+Stylesheet — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.4/packages/components/skeleton/dist/Skeleton.css`
+<!-- install:end -->
+
 ## Payload
 
 The registry face (`SkeletonBuilder`) takes one spec, merged over `config.spec`:
@@ -73,7 +84,7 @@ microtask, so an `"auto"` placeholder is never painted and the component appears
 loading state at all. `"auto"` stays available for a host that measures the sheet itself.
 
 `Skeleton.create` writes the number as `data-skeleton-duration`; the hold in
-`@aio-ui/base/BaseAdapters/Hydration` is the only reader, and it joins that floor with the
+`@aio-ui/base` is the only reader, and it joins that floor with the
 stylesheet promise (`Promise.all`). A skeleton never hides anything itself, and a warm sheet never
 builds one. The pulse _speed_ is a different knob: `--skeleton-pulse` in this package's layer.
 

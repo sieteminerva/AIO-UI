@@ -7,9 +7,9 @@ import { normalize } from "./BaseAdapters/ContentContract.js";
 import { holdUntilStyled } from "./BaseAdapters/Hydration.js";
 import { setBuilderAdapter } from "@aio-ui/core";
 import { getTemplates } from "@aio-ui/core";
-import { buildNamespace, setMetadata } from "@aio-ui/utilities/Metadata";
-import { selectorToTree } from "@aio-ui/utilities/SelectorToTree";
-import { applyAttrDictionary, applyAttributeList } from "@aio-ui/utilities/AttributeUtils";
+import { buildNamespace, setMetadata } from "@aio-ui/utilities";
+import { selectorToTree } from "@aio-ui/utilities";
+import { applyAttrDictionary, applyAttributeList } from "@aio-ui/utilities";
 export const GLOBAL_INSTANCE_COUNTER = new Map();
 export class Builder {
     /**  THE BUILDER CURRENTLY MATERIALIZING — `create()` pins itself here for

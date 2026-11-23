@@ -17,7 +17,7 @@
  *
  * The anti-FOUC *hold* is deliberately absent: hiding an unstyled root is a lifecycle
  * detail of `Builder.create()` (which knows its own `loading()` mockup), so it lives next
- * to the builder in `@aio-ui/base/BaseAdapters/Hydration`. This module only answers "is
+ * to the builder in `@aio-ui/base`. This module only answers "is
  * the sheet there" and "give me the sheet".
  */
 /** Lazy loader for one stylesheet, returning its text (`?inline` import). */

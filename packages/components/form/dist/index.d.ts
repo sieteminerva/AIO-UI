@@ -6,23 +6,26 @@ export type { iFormConfig, iFormMessage, iFormMessageCategory, iFormMessageCompo
  *
  * `FORM_ADAPTER_MANIFEST` is the stack as manifest refs (`{ id, path, export }`) for an AST
  * that lets `ComponentRegistry` resolve them. The live list a `ModuleLoader` takes
- * (`FORM_ADAPTER_DEFINITIONS`, `{ id, load }`) lives in `@aio-ui/form/adapters`, so that a
+ * (`FORM_ADAPTER_DEFINITIONS`, `{ id, load }`) lives in `@aio-ui/form`, so that a
  * project which never imports that subpath never compiles the five adapters — proved by
  * `scripts/bundle-probe.mjs` against the parsed module graph:
  *
  * ```ts
  * import { FormBuilder } from "@aio-ui/form";
- * import { FORM_ADAPTER_DEFINITIONS } from "@aio-ui/form/adapters";
+ * import { FORM_ADAPTER_DEFINITIONS } from "@aio-ui/form";
  * import { ModuleLoader } from "@aio-ui/module-loader";
  *
  * new FormBuilder({ modules: new ModuleLoader("form", FORM_ADAPTER_DEFINITIONS), schema });
  * ```
  *
  * For one engine only, import the individual adapter from its own subpath
- * (`@aio-ui/form/validation-adapter`, `@aio-ui/form/Input.FormAdapter`, …).
+ * (`@aio-ui/form/validation-adapter`, `@aio-ui/form`, …).
  */
 export { FORM_ADAPTER_MANIFEST } from "./FormRegistry";
 export type { FormModuleDefinition } from "./FormRegistry";
 export { FORM_MODULE_IDS } from "./FormModuleTypes";
 export type { iFormModuleContext, iFormAdapter, FormModulePhase } from "./FormModuleTypes";
+export type { iFormCondition, iCascadeEventDetail, iCascadeState, FormCascadeMode, CascadeBlockedInfo, FormCascadeHost, FormModuleId, iFormTableTarget, iFormMessageTarget, } from "./FormModuleTypes";
+export { FORM_ADAPTER_DEFINITIONS, FORM_ADAPTER_IDS } from "./FormAdapters";
+export { inputFormAdapter } from "./Input.FormAdapter";
 //# sourceMappingURL=index.d.ts.map

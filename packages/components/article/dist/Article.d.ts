@@ -1,4 +1,4 @@
-import type { iElementProperty, iBuilderConfig, iBuilderRegistry, iContentContract } from "@aio-ui/core/interface";
+import type { iElementProperty, iBuilderConfig, iBuilderRegistry, iContentContract } from "@aio-ui/core";
 import { Builder } from "@aio-ui/base";
 export type ArticleElementType = "@container" | "@article>list" | "@article>pagination" | "@article>figure" | "@article>header" | "@article>header>title" | "@article>header>meta" | "@article>item" | "@article>item>caption" | "@article>aside" | "@article>aside>title" | "@article>aside>block" | "@article>aside>item" | "@article>controls" | "@article>controls>back" | "@article>controls>next" | "@article>controls>pagination" | "@article>controls>pagination>item" | "@article>controls>filter" | "@article>controls>view" | "@article>detail" | "@article>detail>header" | "@article>detail>body";
 export interface iArticleViewSpec {

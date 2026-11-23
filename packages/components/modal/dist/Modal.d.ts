@@ -1,4 +1,4 @@
-import type { iBuilderConfig, iBuilderRegistry, iContentContract } from "@aio-ui/core/interface";
+import type { iBuilderConfig, iBuilderRegistry, iContentContract } from "@aio-ui/core";
 import { Builder } from "@aio-ui/base";
 export type ModalElementType = "@container" | "@modal" | "@modal>header" | "@modal>closeBtn";
 export interface iModalConfig extends iBuilderConfig<ModalElementType> {

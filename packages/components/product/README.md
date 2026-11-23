@@ -9,6 +9,17 @@ own markup and its own sheet (`ProductCard.css`, `ProductDetail.css`, `ProductGr
 plain CSS library, that sheet targets the class names below, and you can override any selector or
 redeclare a `--app-*` token on an ancestor to retheme a view without touching its markup.
 
+<!-- install:begin -->
+## Install
+
+Version — `0.2.4` (tag `v0.2.4`)
+
+    npm install https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.4/aio-ui-product-0.2.4.tgz
+
+CDN (ES module, no build step) — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.4/packages/components/product/dist/index.js`
+Stylesheet — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.4/packages/components/product/dist/index.css`
+<!-- install:end -->
+
 ## Payload
 
 The shape of the content decides the first view:
@@ -141,5 +152,5 @@ once someone designs that layer; on a light theme the card currently renders on 
 
 1. Add `"product"` to `iBuilderRegistry` in `packages/core/src/types/registry.ts`.
 2. Register with the sub-modules: `registry.register("product", () => ({ path: "@aio-ui/product", export: "ProductBuilder", modules: productModules() }))`.
-3. Add asset-map loaders for `@aio-ui/product/ProductGrid.css` and `@aio-ui/product/ProductDetail.css`.
+3. Add asset-map loaders for `@aio-ui/product/index.css` and `@aio-ui/product/index.css`.
 4. List it in the host's route plan: `registerModule(components, [{ route, components: ["product"] }])` — a builder called inside `onCreated` is invisible to `collect(nodes)`.

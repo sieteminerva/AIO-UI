@@ -19,7 +19,7 @@
  * counts are declared per real component (`ProductCard` mirrors its display/swatches/
  * caption/button rhythm, `Table` mirrors its header and row height).
  */
-import type { iBuilderConfig, iBuilderRegistry, iContentContract } from "@aio-ui/core/interface";
+import type { iBuilderConfig, iBuilderRegistry, iContentContract } from "@aio-ui/core";
 import { Builder } from "@aio-ui/base";
 /** The shapes the sheet knows how to skin. */
 export type SkeletonShape = "stack" | "row" | "line" | "bone" | "circle";

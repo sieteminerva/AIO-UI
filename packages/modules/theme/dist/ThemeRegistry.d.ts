@@ -1,4 +1,4 @@
-import type { iThemeModule } from "@aio-ui/core/page";
+import type { iThemeModule } from "@aio-ui/core";
 /**
  * Theme store.
  *

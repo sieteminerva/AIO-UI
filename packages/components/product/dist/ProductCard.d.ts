@@ -1,4 +1,4 @@
-import type { iBuilderConfig, iBuilderRegistry } from "@aio-ui/core/interface";
+import type { iBuilderConfig, iBuilderRegistry } from "@aio-ui/core";
 import { Builder } from "@aio-ui/base";
 export type ProductCardElementType = "@product" | "@product>display" | "@product>display>image" | "@product>options" | "@product>options>item" | "@product>caption" | "@product>caption>title" | "@product>caption>desc" | "@product>price" | "@product>checkout";
 export interface iProductCardConfig extends iBuilderConfig<ProductCardElementType> {

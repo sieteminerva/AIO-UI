@@ -11,6 +11,17 @@ nesting and class names written by hand are styled identically. Customise it by 
 selector, or retheme it without touching markup by redeclaring a `--app-*` token on an ancestor
 (or one `--section-*` token for this component only).
 
+<!-- install:begin -->
+## Install
+
+Version — `0.2.4` (tag `v0.2.4`)
+
+    npm install https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.4/aio-ui-section-0.2.4.tgz
+
+CDN (ES module, no build step) — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.4/packages/components/section/dist/index.js`
+Stylesheet — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.4/packages/components/section/dist/Section.css`
+<!-- install:end -->
+
 ## Payload
 
 The payload **is** the column list — `content` appears only in the node wrapper. A column owns its

@@ -1,4 +1,4 @@
-import type { iBuilderRegistry, iBuilderConfig, iContentContract, iContentIssue, iElementProperty, iNodeRecordItem, iNodeRecordRelations } from "@aio-ui/core/interface";
+import type { iBuilderRegistry, iBuilderConfig, iContentContract, iContentIssue, iElementProperty, iNodeRecordItem, iNodeRecordRelations } from "@aio-ui/core";
 // import { TemplateRegistry } from "@aio-ui/template-registry";
 // import { ElementCreatedEventBus } from "../Services/EventBus";
 import { Binding } from "./BaseAdapters/Binding";
@@ -7,9 +7,9 @@ import { normalize } from "./BaseAdapters/ContentContract";
 import { holdUntilStyled } from "./BaseAdapters/Hydration";
 import { setBuilderAdapter } from "@aio-ui/core";
 import { getTemplates } from "@aio-ui/core";
-import { buildNamespace, setMetadata } from "@aio-ui/utilities/Metadata";
-import { selectorToTree } from "@aio-ui/utilities/SelectorToTree";
-import { applyAttrDictionary, applyAttributeList } from "@aio-ui/utilities/AttributeUtils";
+import { buildNamespace, setMetadata } from "@aio-ui/utilities";
+import { selectorToTree } from "@aio-ui/utilities";
+import { applyAttrDictionary, applyAttributeList } from "@aio-ui/utilities";
 
 export const GLOBAL_INSTANCE_COUNTER = new Map<string, number>();
 

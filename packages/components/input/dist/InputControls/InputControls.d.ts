@@ -12,8 +12,10 @@
  * a control set that can delete or clone the whole form is a footgun, not a feature.
  */
 import type { iActionType, iBasicInputNode, iInputActionContext, iInputActionDefinition } from "../Input";
-import type { iBuilderConfig, iElementProperty } from "@aio-ui/core/interface";
+import type { iBuilderConfig, iElementProperty } from "@aio-ui/core";
 import { Builder } from "@aio-ui/base";
+import type { iModuleDefinition } from "@aio-ui/module-loader";
+import { type iInputAdapter, type iInputModuleContext } from "../InputModuleTypes";
 export type InputControlsElementType = "@controls" | "@controls>add" | "@controls>delete" | "@controls>save" | "@controls>edit" | "@controls>copy" | "@controls>search" | "@controls>custom";
 /** Payload handed to the controls builder by whoever owns the scope. */
 export interface iInputControlsConfig {
@@ -86,4 +88,24 @@ export declare class InputControlsBuilder extends Builder<InputControlsElementTy
      */
     private _unlock;
 }
+/**
+ * Accepts both action shapes — an array (mixed names and objects) or `{ [type]: definition }`.
+ *
+ * @param configured - Declared actions.
+ * @returns Array form, with composite presets expanded and `type` filled in.
+ *
+ * @example
+ * normaliseActions(["editor", { type: "copy", label: "Copy", onClick }])
+ * // → edit, save, copy
+ */
+export declare function normaliseActions(configured: any): Array<Record<string, any> & {
+    type: string;
+}>;
+/**
+ * Action controls module definition.
+ *
+ * @example
+ * // registered by INPUT_MODULE_DEFINITIONS; drop it and `config.actions` silently renders nothing
+ */
+export declare const inputControlsInputModule: iModuleDefinition<iInputModuleContext, iInputAdapter>;
 //# sourceMappingURL=InputControls.d.ts.map

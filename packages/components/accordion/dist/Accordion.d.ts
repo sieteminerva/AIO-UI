@@ -1,4 +1,4 @@
-import type { iBasicNode, iBuilderConfig, iContentContract } from "@aio-ui/core/interface";
+import type { iBasicNode, iBuilderConfig, iContentContract } from "@aio-ui/core";
 import { Builder } from "@aio-ui/base";
 export type AccordionElementType = "@accordion" | "@accordion>section" | "@accordion>section>title" | "@accordion>section>content";
 export interface iAccordionConfig extends iBuilderConfig<AccordionElementType> {

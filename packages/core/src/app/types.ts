@@ -231,7 +231,10 @@ export interface iPageReadyContext {
   route: string;
   /** The page that ended up rendered — from `source.pages` or from `onPrepare`. */
   page: iPageContent;
-  /** Mounted root: the page itself, or the wrapper when menu/footer slots exist. */
+  /**
+   * The mount point (the shell): menu, page and footer are painted as its direct children,
+   * so the class `aio-shell` marks the host element instead of a wrapper around it.
+   */
   shell: HTMLElement;
   /** Menu element, only when the source declares a menu slot. */
   menu: HTMLElement | null;

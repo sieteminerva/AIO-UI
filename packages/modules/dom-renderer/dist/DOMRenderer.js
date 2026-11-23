@@ -13,7 +13,7 @@ const getTemplates = () => ({
     register: (themeId, key, handler) => templates.set(`${themeId}:${key}`, handler),
     unregister: (themeId, key) => templates.delete(`${themeId}:${key}`),
 });
-// ---- inlined from @aio-ui/utilities/Metadata.ts -----------------------------
+// ---- inlined from @aio-ui/utilities.ts -----------------------------
 function ensureMetadataIdentity(selector, scopeId = "", childSuffix = "", templateKey) {
     const cleanScope = scopeId || "";
     const cleanLocalKey = `${selector}${childSuffix ? "-" + childSuffix : ""}`;

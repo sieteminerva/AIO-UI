@@ -1,25 +1,43 @@
-/** Public surface of `@aio-ui/input` — curated, never `export *`. */
-export { InputBuilder } from "./Input.js";
 /**
- * The input layer's own sub-modules **as data** — the root stays free of the implementations.
+ * Public surface of `@aio-ui/input` — curated, never `export *`.
  *
- * `INPUT_MODULE_MANIFEST` is the stack as manifest refs (`{ id, path, export }`) for an AST
- * that lets `ComponentRegistry` resolve them; `mountInputModules()` / `inputFilesOf()` walk
- * whatever preset a host hands them and do nothing without one. The live list a
- * `ModuleLoader` takes (`INPUT_MODULE_DEFINITIONS`, `{ id, load }`) lives in
- * `@aio-ui/input/modules`, so an app that only needs text fields never compiles the
- * dropdown builder, the uploader, the control set or the popover — proved by
- * `scripts/bundle-probe.mjs` against the parsed module graph:
+ * One door: the builder, the field-type matrix, the module stack and the helpers all come
+ * from the root. The module *implementations* ship beside their own component subpath
+ * (`@aio-ui/input/dropdown`, `@aio-ui/input/picker`, …) as well, so a tree-shaking
+ * bundler can still drop the dropdown builder for a text-only form — but a host never
+ * needs a second specifier to register one.
+ */
+import { dropdownInputModule } from "./Dropdown/Dropdown.js";
+import { fileUploaderInputModule } from "./FileUploader/FileUploader.js";
+import { inputControlsInputModule } from "./InputControls/InputControls.js";
+import { pickerInputModule } from "./InputPicker/InputPicker.js";
+import { popoverInputModule } from "./Input.js";
+export { InputBuilder, popoverInputModule } from "./Input.js";
+/**
+ * The input layer's default sub-module stack, as data a `ModuleLoader` takes.
+ *
+ * Registration order is decorate order, so `controls` (the action set) runs before
+ * `popover`, which anchors to a wrapper the controls may have changed. Nothing is
+ * instantiated until a field, a form or a helper asks for it, so a host that omits the
+ * stack still renders plain labelled controls.
  *
  * ```ts
- * import { InputBuilder } from "@aio-ui/input";
- * import { INPUT_MODULE_DEFINITIONS } from "@aio-ui/input/modules";
- *
+ * import { InputBuilder, INPUT_MODULE_DEFINITIONS } from "@aio-ui/input";
  * new InputBuilder({ modules: INPUT_MODULE_DEFINITIONS, type: "dropdown", options });
  * ```
- *
- * For one module only, import it from its own subpath (`@aio-ui/input/dropdown/module`, …).
- * Order in the full stack is decorate order (`controls` before `popover`).
  */
-export { INPUT_MODULE_IDS, INPUT_MODULE_MANIFEST, inputFilesOf, mountInputModules, } from "./InputRegistry.js";
+export const INPUT_MODULE_DEFINITIONS = [
+    dropdownInputModule,
+    pickerInputModule,
+    fileUploaderInputModule,
+    inputControlsInputModule,
+    popoverInputModule,
+];
+/** Ids of the definitions above, so a test can pin the two shapes together. */
+export const INPUT_MODULE_DEFINITION_IDS = INPUT_MODULE_DEFINITIONS.map((definition) => String(definition.id));
+export { INPUT_MODULE_IDS, INPUT_MODULE_MANIFEST, inputFilesOf, mountInputModules, mountControls, } from "./InputRegistry.js";
+export { INPUT_STRUCTURAL_KEYS, INPUT_TYPE_REGISTRY, inputTypeOf, isInputAttributeAllowed, scanInputAttributes, } from "./FieldTypes.js";
+export { reportMissing } from "./Missing.js";
+export { collectFormValues } from "./FormValues.js";
+export { InputAttributeBuilder } from "./Attribute.js";
 //# sourceMappingURL=index.js.map

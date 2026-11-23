@@ -1,4 +1,4 @@
-import type { iNodeRecordItem } from "@aio-ui/core/interface";
+import type { iNodeRecordItem } from "@aio-ui/core";
 /**
    * 👑 THE SOVEREIGN SELECTOR GRAPH PARSER (SIHIR KILAT HASIL IDE DEWA ANDA!)
    * Membedah kamus selectors kaku milik anak komponen menggunakan split(">") JIT di RAM,

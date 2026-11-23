@@ -40,6 +40,14 @@ export class TabBuilder extends Builder {
     #items = [];
     // STATE MANAGEMENT INTERNAL
     currentTabIndex = 0;
+    /**
+     * One id stem per instance.
+     *
+     * Nested tabs used to share the literal `gen`, so `aria-controls`/`tabpanel-*` ids
+     * collided and a nested panel answered to the outer menu. The stem comes from
+     * `config.name` (random per instance) and never from the document.
+     */
+    uid;
     _listenersTabChanged = [];
     _listenersContentLoaded = [];
     _boundKeyDownHandler;
@@ -91,6 +99,7 @@ export class TabBuilder extends Builder {
             emit: () => { }
         };
         this.config = this.resolveConfig(defaultConfig, config);
+        this.uid = this.config.name;
     }
     // SETTER PUSAT: Mengamankan data dari manipulasi pihak ketiga
     set items(newItems) {
@@ -104,9 +113,8 @@ export class TabBuilder extends Builder {
             return Object.freeze({ ...item });
         });
     }
-    /** Local DOM lookup for the tab root. Named `tabRoot` because `rootElement`
-     *  is already the slot-host field declared by `Builder`. */
-    get tabRoot() { return this.load("@tab"); }
+    /** Local DOM lookup for the tab root. The root's own `id` is stamped by `@tab`; ids that
+     *  must not collide with a nested tab come from `uid`, never from the document. */
     // private get footerElement(): HTMLElement | null { return this.load("@tab>footer") as HTMLElement; }
     prepare(data, _config) {
         if (_config)
@@ -194,7 +202,7 @@ export class TabBuilder extends Builder {
             }
             case "@tab>menu>item": {
                 const { meta, idx } = payload;
-                const rootId = this.tabRoot?.id || 'gen';
+                const rootId = this.uid;
                 el.setAttribute("role", "tab");
                 el.setAttribute("aria-selected", "false");
                 el.setAttribute("tabindex", "-1");
@@ -229,7 +237,7 @@ export class TabBuilder extends Builder {
             }
             case "@tab>panel": {
                 const { item, idx } = payload;
-                const rootId = this.tabRoot?.id || 'gen';
+                const rootId = this.uid;
                 el.setAttribute("role", "tabpanel");
                 el.setAttribute("aria-labelledby", `tabbtn-${rootId}-${idx}`);
                 if (item?.id)
@@ -325,7 +333,7 @@ export class TabBuilder extends Builder {
     _handleChange(index) {
         // Jemput seluruh pasukan elemen hidup secara adil dan bersih menggunakan tanda "all"
         const buttons = this.buttons();
-        const panels = Array.from(this.load("@tab>body")?.querySelectorAll(".panel") ?? []);
+        const panels = this.panels();
         // ====================================================
         // 🫗 FASE 1: LIKUIDASI KONDISI AKTIF PADA TAB SEBELUMNYA
         // ====================================================
@@ -393,8 +401,31 @@ export class TabBuilder extends Builder {
                 root.style.setProperty("--tab-anim-out", animation.out);
         }
     }
+    /**
+     * This instance's menu items — direct children of its own menu, never descendants.
+     *
+     * A nested tab renders its menu inside this tab's panel; a descendant query would put
+     * the child's buttons into the parent's list and clicking a child tab would move the
+     * parent.
+     */
     buttons() {
-        return Array.from(this.load("@tab>menu")?.querySelectorAll("button") ?? []);
+        const menu = this.load("@tab>menu");
+        if (!menu)
+            return [];
+        return Array.from(menu.children).filter((child) => child instanceof HTMLElement && child.getAttribute("role") === "tab");
+    }
+    /**
+     * This instance's panels — direct children of its own body, never descendants.
+     *
+     * Same trap as `buttons()`: `querySelectorAll(".panel")` also collects every panel of
+     * a tab nested in a panel, so index 1 of a two-tab parent pointed at the child's first
+     * panel and the parent's own second panel never opened.
+     */
+    panels() {
+        const body = this.load("@tab>body");
+        if (!body)
+            return [];
+        return Array.from(body.children).filter((child) => child instanceof HTMLElement && child.classList.contains("panel"));
     }
     /** A number is an index; a string is matched against the button id, the panel it controls,
      *  then its label and title — so `active` accepts whichever the caller already has. */

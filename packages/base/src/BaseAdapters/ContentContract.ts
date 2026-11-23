@@ -14,7 +14,7 @@
  * - **Non-destructive.** Unknown fields are reported as warnings and kept, never dropped.
  *   A component may read a field a previous contract revision did not know about.
  */
-import type { iContentContract, iContentIssue, iContentSpec } from "@aio-ui/core/interface";
+import type { iContentContract, iContentIssue, iContentSpec } from "@aio-ui/core";
 
 export interface iNormalizedContent {
   /** The payload the builder should see: legacy spellings resolved, lists coerced. */

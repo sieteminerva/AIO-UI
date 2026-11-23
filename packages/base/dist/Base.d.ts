@@ -1,4 +1,4 @@
-import type { iBuilderRegistry, iBuilderConfig, iContentContract, iContentIssue, iElementProperty, iNodeRecordItem, iNodeRecordRelations } from "@aio-ui/core/interface";
+import type { iBuilderRegistry, iBuilderConfig, iContentContract, iContentIssue, iElementProperty, iNodeRecordItem, iNodeRecordRelations } from "@aio-ui/core";
 import { BuilderProxy } from "./BaseAdapters/BuilderProxy";
 export declare const GLOBAL_INSTANCE_COUNTER: Map<string, number>;
 /**

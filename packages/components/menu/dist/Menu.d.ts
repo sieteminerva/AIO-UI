@@ -1,4 +1,4 @@
-import type { iElementProperty, iBasicNode, iBuilderConfig, iContentContract } from "@aio-ui/core/interface";
+import type { iElementProperty, iBasicNode, iBuilderConfig, iContentContract } from "@aio-ui/core";
 import { Builder } from "@aio-ui/base";
 import type { MenuElementType } from "./Menu.kit";
 type MenuPositionType = "top" | "top sticky" | "left" | "left sticky" | "right" | "right sticky" | "bottom" | "bottom sticky";

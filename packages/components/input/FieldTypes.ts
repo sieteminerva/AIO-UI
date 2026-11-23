@@ -79,7 +79,10 @@ export const INPUT_STRUCTURAL_KEYS: readonly string[] = [
   "editable",
   "actions",
   "popover",
+  // The chooser contract, identical for select/dropdown/picker/radio/checkbox: the list
+  // and the single-vs-many flag live on the field, so neither is scanned as an attribute.
   "options",
+  "multiple",
   "steps",
   "step",
   "isLast",

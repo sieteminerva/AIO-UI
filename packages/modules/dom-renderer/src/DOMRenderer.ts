@@ -62,7 +62,7 @@ const getTemplates = () => ({
   unregister: (themeId: string, key: string) => templates.delete(`${themeId}:${key}`),
 });
 
-// ---- inlined from @aio-ui/utilities/Metadata.ts -----------------------------
+// ---- inlined from @aio-ui/utilities.ts -----------------------------
 function ensureMetadataIdentity(
   selector: string,
   scopeId: string = "",
@@ -238,7 +238,7 @@ function buildNamespace(content: any, config: any) {
 }
 export { buildNamespace };
 
-// ---- inlined from @aio-ui/utilities/AttributeUtils.ts -----------------------
+// ---- inlined from @aio-ui/utilities.ts -----------------------
 /**
  * 🧱 ATTRIBUTE UTILS — shared element-attribute stamping helpers.
  *

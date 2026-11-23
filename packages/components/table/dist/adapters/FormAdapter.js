@@ -1,5 +1,5 @@
-import { FORM_MODULE_IDS } from "@aio-ui/form/FormModuleTypes";
-import { parseTableFile } from "@aio-ui/utilities/parseTableFile";
+import { FORM_MODULE_IDS } from "@aio-ui/form";
+import { parseTableFile } from "@aio-ui/utilities";
 import { TableBuilder } from "../Table.js";
 /**
  * Table adapter.

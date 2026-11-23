@@ -31,7 +31,7 @@
  *
  * @example
  * // A field fell back to a native select, so say it once.
- * reportMissing({ capability: "dropdown", module: "dropdown", fix: "@aio-ui/input/dropdown/module (dropdownInputModule)", consequence: "the field falls back to a native select with the same options", severity: "warn" }, { seen });
+ * reportMissing({ capability: "dropdown", module: "dropdown", fix: "@aio-ui/input/dropdown (dropdownInputModule)", consequence: "the field falls back to a native select with the same options", severity: "warn" }, { seen });
  */
 export function reportMissing(report, options = {}) {
     const { owner = "InputBuilder", seen, emit = null } = options;

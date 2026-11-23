@@ -985,6 +985,39 @@ select:focus-visible {
       }
     }
   }
+
+  /* --- Choice group: a `radio`/`checkbox` field given `options` ---------------------
+     One control per option, as rows. The caption above names the group, so it keeps the
+     label look but is not a `<label>` any more; each option owns its own `<label>`, and
+     the native dot/box is restored — the shared text-field skin would box it. */
+  &:is(.choice) {
+    display: grid;
+    gap: 0.35em;
+    & > label[data-position="top"] {
+      margin-bottom: 0.25em;
+    }
+    & > .choice-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5em;
+      margin-bottom: 0;
+      color: var(--input-text-color);
+      font-size: var(--input-font-size);
+      font-weight: 400;
+      cursor: pointer;
+    }
+    & > .choice-item > input {
+      display: inline-block;
+      flex: none;
+      width: auto;
+      min-height: 0;
+      margin: 0;
+      padding: 0;
+      border: 0;
+      background: none;
+      accent-color: var(--input-primary-color);
+    }
+  }
 }
 
 @starting-style {

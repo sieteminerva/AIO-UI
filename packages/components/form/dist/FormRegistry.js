@@ -1,4 +1,4 @@
-import { INPUT_MODULE_MANIFEST } from "@aio-ui/input/InputRegistry";
+import { INPUT_MODULE_MANIFEST } from "@aio-ui/input";
 /**
  * The stack as manifest refs, plus the input sub-modules a form normally wants.
  *
@@ -13,7 +13,7 @@ export const FORM_ADAPTER_MANIFEST = [
     { id: "cascade", path: "@aio-ui/form/cascade-adapter", export: "cascadeFormAdapter", scope: "form" },
     { id: "multistep", path: "@aio-ui/form/multistep-adapter", export: "multistepFormAdapter", scope: "form" },
     { id: "calculation", path: "@aio-ui/form/calculation-adapter", export: "calculationFormAdapter", scope: "form" },
-    { id: "input", path: "@aio-ui/form/Input.FormAdapter", export: "inputFormAdapter", scope: "form" },
+    { id: "input", path: "@aio-ui/form", export: "inputFormAdapter", scope: "form" },
     // The input layer's own manifest, labelled with the layer it belongs to. Re-declaring
     // the four entries here by hand is how the two lists would drift apart.
     ...INPUT_MODULE_MANIFEST.map((ref) => ({ ...ref, scope: "input" })),

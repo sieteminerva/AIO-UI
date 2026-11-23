@@ -7,7 +7,7 @@
  *
  * Not published: `index.ts` is the only entry and does not mention this file.
  */
-import type { iBuilderSelectorsConfig } from "@aio-ui/core/interface";
+import type { iBuilderSelectorsConfig } from "@aio-ui/core";
 
 export const ELEMENT_KEYS = ["@product"] as const;
 

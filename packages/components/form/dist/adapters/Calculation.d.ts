@@ -2,8 +2,8 @@ import type { iModuleDefinition } from "@aio-ui/module-loader";
 import type { iFormModuleContext } from "../FormModuleTypes";
 import type { iMessageContent } from "@aio-ui/message";
 import type { iFormMessages } from "../FormMessages";
-import type { CalculationPrimitive, CalculationValues, iCalculationFormula, iCalculationLineItem } from "@aio-ui/input/CalculationTypes";
-export type { CalculationPrimitive, CalculationValues, iCalculationContext, iCalculationFormula, iCalculationLineItem, } from "@aio-ui/input/CalculationTypes";
+import type { CalculationPrimitive, CalculationValues, iCalculationFormula, iCalculationLineItem } from "@aio-ui/input";
+export type { CalculationPrimitive, CalculationValues, iCalculationContext, iCalculationFormula, iCalculationLineItem, } from "@aio-ui/input";
 export interface iCalculationStrategies {
     formula: Array<iCalculationFormula<any>>;
 }

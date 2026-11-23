@@ -25,7 +25,7 @@
  */
 /** Storage key of the persisted theme id. Kept identical to the legacy key. */
 const THEME_STORAGE_KEY = "active_theme";
-/** Class added to the wrapper the shell creates when it owns menu/footer slots. */
+/** Class the mount point carries while the source owns menu/footer slots. */
 const SHELL_CLASS = "aio-shell";
 /** Placeholder entry-file fallback. */
 const DEFAULT_ROUTE = "home";
@@ -91,24 +91,6 @@ function resolveContainer(target) {
         throw new Error(`[AioApp] Container not found: ${String(target)}`);
     }
     return element;
-}
-/**
- * Wraps the page in a shell, but only when the source declares menu/footer slots.
- *
- * A LITE page tree usually carries its own nav and footer, so the page itself stays the
- * root and the authored DOM remains byte-identical.
- */
-function assembleShell(menu, page, footer) {
-    if (!menu && !footer)
-        return page;
-    const shell = document.createElement("div");
-    shell.className = SHELL_CLASS;
-    if (menu)
-        shell.appendChild(menu);
-    shell.appendChild(page);
-    if (footer)
-        shell.appendChild(footer);
-    return shell;
 }
 /** What `ctx.http` is when no data module was registered: a failure with a hint, not a crash. */
 const NO_HTTP = {
@@ -199,7 +181,15 @@ export class AioApp {
         return this.#ports.get("http") ?? NO_HTTP;
     }
     #container = null;
+    /** Root element of the mounted page (not the shell). `shell` getter publishes it. */
     #root = null;
+    /**
+     * Every element the last pass painted, in mount order: menu, page, footer.
+     *
+     * The mount point is the shell, so there is no wrapper to remember; the list exists so
+     * `releaseBuilders` can be handed each painted root in turn.
+     */
+    #frame = [];
     #route = "";
     #theme;
     #fragment = "";
@@ -451,7 +441,11 @@ export class AioApp {
         this.#events?.emit("destroyed", { route: this.#route });
         // Reverse creation order: a module created last is released first.
         this.#releasePorts([...this.#ports.keys()].reverse());
-        this.#root?.remove();
+        // The mount point outlives `destroy()` — it belongs to the host — so only its children
+        // (menu, page, footer) and the shell class are removed here.
+        this.#container?.replaceChildren();
+        this.#container?.classList.remove(SHELL_CLASS);
+        this.#frame = [];
         this.#root = null;
         this.#container = null;
         this.#controllers.clear();
@@ -558,22 +552,23 @@ export class AioApp {
                 await this.#registry.load(known, nodes);
             if (sequence !== this.#sequence)
                 return this.#supersede(target, sequence);
-            const pageEl = this.#renderNode(pageNode);
-            if (!pageEl)
+            const pageEls = this.#renderPage(themed, pageNode);
+            if (!pageEls.length)
                 throw new Error(`[AioApp] Renderer returned no element for route "${target}"`);
             const menuEl = menuNode ? this.#renderNode(menuNode) : null;
             const footerEl = footerNode ? this.#renderNode(footerNode) : null;
-            const tree = assembleShell(menuEl, pageEl, footerEl);
             // `#paint` consumes `#fragment`, so route state is settled before the swap.
             this.#route = target;
             this.#fragment = fragment || "";
-            this.#paint(tree, themed);
+            this.#paint(pageEls, menuEl, footerEl, themed);
             if (sequence !== this.#sequence)
                 return this.#supersede(target, sequence);
             // `ready` carries the element map, so it is emitted after `#ready()` has built it
             // and activated the theme — "attached" means the page is usable, not merely painted.
-            const blocks = this.#ready(target, themed, tree, controller, menuEl, footerEl);
-            this.#events?.emit("ready", { route: target, shell: tree, elements: blocks, sequence });
+            /** The mount point is the shell: every painted root hangs directly off it. */
+            const shell = this.#container;
+            const blocks = this.#ready(target, themed, shell, controller, menuEl, footerEl);
+            this.#events?.emit("ready", { route: target, shell, elements: blocks, sequence });
             this.#log("render:done", { route: target, sequence });
         }
         catch (error) {
@@ -729,9 +724,10 @@ export class AioApp {
     #release() {
         const controller = this.#active;
         this.#active = null;
-        if (this.#root) {
+        // Deactivate on the element `activate` received: the mount point, which is the shell.
+        if (this.#container && this.#root) {
             try {
-                this.#themes?.deactivate?.(this.#root);
+                this.#themes?.deactivate?.(this.#container);
             }
             catch (error) {
                 console.error("[AioApp] theme deactivate failed:", error);
@@ -762,30 +758,58 @@ export class AioApp {
         return renderer.render(node, renderFn, buildFn, { scopeId: this.#route });
     }
     /**
-     * Builds the tree and paints it.
+     * Renders a page as the roots it declares.
+     *
+     * The renderer answers one node. A page tree may declare **siblings** (`main` + `footer`),
+     * and rendering them as one object would make the renderer wrap them in a bare `div` — an
+     * element the author never wrote. Each top-level entry is therefore its own render call,
+     * and the mount point receives exactly the declared roots.
+     *
+     * A page document is one block list by definition, so it keeps the single-root path.
+     */
+    #renderPage(page, node) {
+        if (isPageDocument(page)) {
+            const element = this.#renderNode(node);
+            return element ? [element] : [];
+        }
+        return Object.entries(node)
+            .map(([key, value]) => this.#renderNode({ [key]: value }))
+            .filter((element) => element !== null);
+    }
+    /**
+     * Paints one pass: release the outgoing builders, swap the mount point's children, then
+     * finish the side effects that belong to "this route is now on screen".
      *
      * These steps are never used apart — replace the children, set the title, release any
      * scroll lock a previous route left, animate, honour a deep link — so they live in one
      * place instead of a chain of one-call helpers.
+     *
+     * The mount point **is** the shell. Menu, page and footer are painted as its direct
+     * children, so the app never creates an element the author did not declare: the class
+     * `aio-shell` marks the mount point instead of a wrapper. A page tree that carries its
+     * own nav/footer paints exactly as authored.
      */
-    #paint(tree, page) {
+    #paint(page, menu, footer, content) {
         const container = this.#container;
         if (!container)
             return;
-        // The outgoing shell is discarded on the next line, so this is the last moment its
+        // The outgoing roots are discarded on the next line, so this is the last moment their
         // builders can be told to stop (`Carousel.destroy()`, `Masonry.destroy()`,
         // `Dropdown`'s open-state listeners). It happens here — after the new tree exists —
         // so a failed pass never tears down a page that is still on screen.
-        if (this.#root)
-            this.#registry?.releaseBuilders?.(this.#root);
-        container.replaceChildren(tree);
-        this.#root = tree;
+        for (const root of this.#frame)
+            this.#registry?.releaseBuilders?.(root);
+        const painted = [...(menu ? [menu] : []), ...page, ...(footer ? [footer] : [])];
+        container.classList.toggle(SHELL_CLASS, !!menu || !!footer);
+        container.replaceChildren(...painted);
+        this.#frame = painted;
+        this.#root = page[0] ?? null;
         // A route that opened a modal or overlay must not leave the page frozen.
         document.body.style.overflow = "";
-        const title = isPageDocument(page) ? page.title : undefined;
+        const title = isPageDocument(content) ? content.title : undefined;
         if (title)
             document.title = title;
-        this.#animation?.init(tree);
+        this.#animation?.init(container);
         const fragment = this.#fragment;
         this.#fragment = "";
         if (!fragment || typeof requestAnimationFrame !== "function")

@@ -5,7 +5,7 @@
  *
  * Not published: `index.ts` is the only entry and does not mention this file.
  */
-import type { iElementProperty } from "@aio-ui/core/interface";
+import type { iElementProperty } from "@aio-ui/core";
 import type { iMenuSplit } from "./Menu";
 
 

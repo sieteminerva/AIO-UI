@@ -4,6 +4,16 @@ The `theme` slot — the **engine**, not a theme. Themes are separate packages
 (`@aio-ui/theme-default`, `-horizontal`, `-cyberpunk`) so a project installs exactly the ones
 it ships.
 
+<!-- install:begin -->
+## Install
+
+Version — `0.2.4` (tag `v0.2.4`)
+
+    npm install https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.4/aio-ui-theme-0.2.4.tgz
+
+CDN (ES module, no build step) — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.4/packages/modules/theme/dist/index.js`
+<!-- install:end -->
+
 ## Payload
 
 None. Themes are supplied through config, and the active id comes from the router.

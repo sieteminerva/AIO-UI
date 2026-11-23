@@ -1,4 +1,4 @@
-import type { iMetadataContext } from "@aio-ui/core/interface";
+import type { iMetadataContext } from "@aio-ui/core";
 
 
 export function ensureMetadataIdentity(

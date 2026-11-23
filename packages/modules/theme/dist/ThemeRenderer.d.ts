@@ -1,4 +1,4 @@
-import type { iThemeModule } from "@aio-ui/core/interface";
+import type { iThemeModule } from "@aio-ui/core";
 /** Config of `ThemeRenderer`, passed as the second argument of `registerModule`. */
 export interface iThemeConfig {
     /** Themes this app ships. The first one is used when no theme id is known. */

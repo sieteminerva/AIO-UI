@@ -1,4 +1,4 @@
-import { FORM_MODULE_IDS } from "@aio-ui/form/FormModuleTypes";
+import { FORM_MODULE_IDS } from "@aio-ui/form";
 import { composeMessage, messageDraft, resolveStyle } from "@aio-ui/form/FormMessages";
 import { MessageBuilder } from "../Message.js";
 /**

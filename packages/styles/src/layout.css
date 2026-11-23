@@ -10,6 +10,7 @@
   margin-right: auto;
   padding-left: var(--app-padding-layout);
   padding-right: var(--app-padding-layout);
+  box-sizing: border-box;
 }
 
 .shell {
@@ -17,6 +18,7 @@
   max-width: 1040px;
   margin-left: auto;
   margin-right: auto;
+  box-sizing: border-box;
 }
 
 .row {
@@ -25,11 +27,13 @@
   gap: var(--app-gap);
   align-items: center;
   width: 100%;
+  box-sizing: border-box;
 }
 
 .column {
   flex: 1 1 0%;
   min-width: 0;
+  box-sizing: border-box;
 }
 
 .half {
@@ -47,6 +51,7 @@
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
   gap: var(--app-gap);
   width: 100%;
+  box-sizing: border-box;
 }
 
 @media (max-width: 768px) {

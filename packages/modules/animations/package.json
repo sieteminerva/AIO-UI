@@ -1,6 +1,6 @@
 {
   "name": "@aio-ui/animations",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "type": "module",
   "files": [
     "dist",
@@ -17,10 +17,6 @@
       "types": "./Animations.css.d.ts",
       "default": "./Animations.css"
     },
-    "./behaviours": {
-      "types": "./dist/behaviours/registry.d.ts",
-      "default": "./dist/behaviours/registry.js"
-    },
     "./behaviours/*": {
       "types": "./dist/behaviours/*.d.ts",
       "default": "./dist/behaviours/*.js"
@@ -35,7 +31,7 @@
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "@aio-ui/core": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.4/aio-ui-core-0.2.4.tgz",
-    "@aio-ui/utilities": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.4/aio-ui-utilities-0.2.4.tgz"
+    "@aio-ui/core": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.5/aio-ui-core-0.2.5.tgz",
+    "@aio-ui/utilities": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.5/aio-ui-utilities-0.2.5.tgz"
   }
 }

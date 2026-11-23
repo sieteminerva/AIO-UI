@@ -1,4 +1,4 @@
-import type { iBuilderConfig, iBuilderRegistry, iContentContract } from "@aio-ui/core/interface";
+import type { iBuilderConfig, iBuilderRegistry, iContentContract } from "@aio-ui/core";
 import { Builder } from "@aio-ui/base";
 import { Skeleton } from "@aio-ui/skeleton";
 import type { iMessageContent } from "@aio-ui/message";
@@ -9,11 +9,13 @@ import type { FormValidationHandler } from "./adapters/Validation";
 import { FORM_MODULE_IDS } from "./FormModuleTypes";
 import type { FormModulePhase, iFormAdapter, iFormModuleContext } from "./FormModuleTypes";
 import type { FormModuleDefinition } from "./FormRegistry";
-import { INPUT_MODULE_IDS } from "@aio-ui/input/InputRegistry";
-import type { InputModuleItem, InputModulePreset } from "@aio-ui/input/InputModuleTypes";
+import { INPUT_MODULE_IDS } from "@aio-ui/input";
+import type { InputModuleItem, InputModulePreset } from "@aio-ui/input";
 import { ModuleLoader } from "@aio-ui/module-loader";
+import { inputFormAdapter } from "./Input.FormAdapter";
+import { dropdownInputModule } from "@aio-ui/input/dropdown";
 import { applyRowColumns, applyRowSpan, childSpanOf, columnsOf } from "./FormLayout";
-import { collectFormValues } from "@aio-ui/input/FormValues";
+import { collectFormValues } from "@aio-ui/input";
 import type { HttpService } from "@aio-ui/http-service";
 import type { iFormMessages } from "./FormMessages";
 
@@ -146,12 +148,13 @@ export interface iFormConfig extends iBuilderConfig<FormElementType> {
     useAdapter?: string | null;
   } | null;
   /**
-   * Loader that supplies the Form's own sub-modules — **required to render a field**.
+   * Loader that supplies the Form's own sub-modules.
    *
-   * Since `0.2.2` the adapters are no longer compiled into `@aio-ui/form`: pass
-   * `new ModuleLoader("form", FORM_ADAPTER_DEFINITIONS)` from `@aio-ui/form/adapters`
-   * (or a subset, or your own). A builder with no modules throws on the first
-   * `create()` instead of failing one field at a time.
+   * **Optional.** Leave it out and the form runs on the floor it cannot do without:
+   * `inputFormAdapter` (exported by `@aio-ui/form`). Pass
+   * `new ModuleLoader("form", FORM_ADAPTER_DEFINITIONS)` for the whole stack, a subset,
+   * or your own. Passing an **empty** loader is still an error — a form with no adapter
+   * cannot render one field.
    *
    * A manifest host does not pass this: `provideModules()` hands the resolved stack over.
    */
@@ -159,13 +162,50 @@ export interface iFormConfig extends iBuilderConfig<FormElementType> {
   /**
    * The **field-level** adapter set: dropdown, uploader, controls, popover.
    *
-   * Leave it `null` and every field is a plain labelled control — the modules are an
-   * enhancement, never a precondition. Pass `INPUT_MODULE_DEFINITIONS` from
-   * `@aio-ui/input/modules` for the full layer, or a subset you actually use. A manifest
-   * host fills this in through `provideModules()` (`scope: "input"` refs), which wins
-   * over this option.
+   * Defaults to `[dropdownInputModule]`, so `type: "dropdown"` works out of the box.
+   * Pass `INPUT_MODULE_DEFINITIONS` from `@aio-ui/input/modules` for the full layer, or
+   * a subset you actually use; a declared module with the same id replaces the default.
+   * A manifest host fills this in through `provideModules()` (`scope: "input"` refs).
    */
   inputModules?: InputModulePreset | null;
+}
+
+/**
+ * Whether one schema entry can become a control, a group, a row or markup.
+ *
+ * @param value - One entry of the field list.
+ * @returns `false` for an empty object, `null`, a scalar or any record that names no
+ *   shape at all — those are the entries that used to render a blank field.
+ */
+function isFieldNode(value: unknown): boolean {
+  if (typeof value === "string") return true;
+  if (typeof HTMLElement !== "undefined" && value instanceof HTMLElement) return true;
+  if (!value || typeof value !== "object") return false;
+  const node = value as Record<string, unknown>;
+  if ("group" in node || "row" in node) return true;
+  return typeof node.type === "string" && node.type.trim().length > 0;
+}
+
+/**
+ * The field module a form always carries, whatever the host declares.
+ *
+ * @summary `dropdown` is first in every schema people write, so making it opt-in
+ * turned "a form renders" into "a form renders if you remembered four specifiers".
+ * A declared module with the same id always wins (its position and options stay),
+ * so this is a floor, never an override.
+ */
+const DEFAULT_INPUT_MODULES: InputModuleItem[] = [dropdownInputModule];
+
+/**
+ * Appends the default field modules a set does not already declare.
+ *
+ * @param items - The declared or provided field preset.
+ * @returns A new array: declared items first, in their own order.
+ */
+function withDefaultInputModules(items: InputModuleItem[]): InputModuleItem[] {
+  const ids = new Set(items.map((item) => String((item as any).id)));
+  const missing = DEFAULT_INPUT_MODULES.filter((item) => !ids.has(String((item as any).id)));
+  return missing.length ? [...items, ...missing] : items;
 }
 
 export class FormBuilder extends Builder<FormElementType, iFormConfig> {
@@ -247,7 +287,7 @@ export class FormBuilder extends Builder<FormElementType, iFormConfig> {
    * dimuat — kecuali satu hal: id milik `INPUT_MODULE_IDS` dilewati. Id itu bukan
    * perilaku form, melainkan preset sebuah field, dan `#routeInputModules()` yang
    * menyerahkannya ke lapisan input. Tanpa aturan ini
-   * `@aio-ui/form/adapters` (stack penuh) akan memuat dropdown sebagai fitur form.
+   * `@aio-ui/form` (stack penuh) akan memuat dropdown sebagai fitur form.
    */
   #resolved(context: iFormModuleContext): iFormAdapter[] {
     return [...this.#loadFeatures(context), ...this.#providedLive.values()] as iFormAdapter[];
@@ -304,6 +344,9 @@ export class FormBuilder extends Builder<FormElementType, iFormConfig> {
     }
 
     if (routed.length) this.#inputModules = [...this.#inputModules, ...routed];
+
+    // Floor, after every declared set: a form must render a dropdown out of the box.
+    this.#inputModules = withDefaultInputModules(this.#inputModules);
   }
 
   /**
@@ -435,15 +478,17 @@ export class FormBuilder extends Builder<FormElementType, iFormConfig> {
     };
     this.config = this.resolveConfig(defaultConfig, config);
 
-    // Step 1: Loader efektif — hanya dari consumer/manifest. Preset bawaan sengaja
-    // kosong: definisi adapter hidup di `@aio-ui/form/adapters`, di luar graf modul
-    // root, jadi builder ini tidak boleh menyebutnya sama sekali. `prepare()` menolak
-    // jalan tanpa modul, dan pesan errornya menyebut subpath yang harus diimpor.
-    this.#loader = this.config.modules ?? new ModuleLoader<iFormModuleContext, any>("form", []);
+    // Step 1: Loader efektif. Default = satu adapter yang tidak bisa digantikan,
+    // `inputFormAdapter`; tanpa itu tidak ada satu pun field yang bisa dibuat. A host
+    // that passes `modules` (or a manifest through `provideModules()`) wins, so the
+    // stack stays opt-in above this floor.
+    this.#loader =
+      this.config.modules ?? new ModuleLoader<iFormModuleContext, any>("form", [inputFormAdapter]);
 
     // Lapisan field bisa dideklarasikan di constructor; manifest menimpanya lewat
-    // `provideModules()` karena di sanalah `scope: "input"` dipetakan.
-    this.#inputModules = [...(this.config.inputModules ?? [])];
+    // `provideModules()` karena di sanalah `scope: "input"` dipetakan. `dropdown`
+    // selalu ada: schema paling pertama yang orang tulis memakai `type: "dropdown"`.
+    this.#inputModules = withDefaultInputModules([...(this.config.inputModules ?? [])]);
   }
 
   /**
@@ -455,15 +500,26 @@ export class FormBuilder extends Builder<FormElementType, iFormConfig> {
     // Naming the subpath here is the whole point: the fix is one import, not a bug hunt.
     if (!this.#activeLoader.ids().length && !this.#providedLive.size) {
       throw new Error(
-        "[FormBuilder] No modules configured, so not one field can be rendered. " +
-        'Pass the stack: new ModuleLoader("form", FORM_ADAPTER_DEFINITIONS) — those definitions are ' +
-        "exported by @aio-ui/form/adapters — or, at minimum, [inputFormAdapter], " +
-        "exported by @aio-ui/form/Input.FormAdapter."
+        "[FormBuilder] An explicitly empty module loader leaves no adapter that can render a field. " +
+        "Omit `modules` to use the built-in floor (`inputFormAdapter`), or pass the stack: " +
+        'new ModuleLoader("form", FORM_ADAPTER_DEFINITIONS) — those definitions are exported by ' +
+        "@aio-ui/form."
       );
     }
 
     // The registry hands the field list directly; there is no `{ content }` envelope to unwrap.
-    this.#inputs = Array.isArray(inputs) ? inputs : [inputs];
+    // Empty or malformed input is the **absence** of fields, never a phantom one: an entry
+    // that names no type, group, row, markup or element used to reach the final else and
+    // render one blank control, which looked like a deliberately declared empty field.
+    const declared = Array.isArray(inputs) ? inputs : [inputs];
+    this.#inputs = declared.filter(isFieldNode);
+    if (this.#inputs.length !== declared.length) {
+      const dropped = declared.length - this.#inputs.length;
+      console.warn(
+        `[FormBuilder] ${dropped} schema entr${dropped === 1 ? "y" : "ies"} named no field type, ` +
+        "group, row or markup, so nothing was rendered for them."
+      );
+    }
 
     // 🧩 Satu impor, seluruh stack: definisi lapisan field yang ikut di loader dipindah
     // ke preset field sebelum siklus render dimulai.

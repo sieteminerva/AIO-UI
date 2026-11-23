@@ -5,8 +5,10 @@
  * - `style: "select"` (default) renders a popover menu (`.menu[popover]`) anchored to the control.
  * - `style: "datalist"` renders a native `<datalist>`.
  */
-import type { iBuilderConfig, iBuilderRegistry } from "@aio-ui/core/interface";
+import type { iBuilderConfig, iBuilderRegistry } from "@aio-ui/core";
 import { Builder } from "@aio-ui/base";
+import type { iModuleDefinition } from "@aio-ui/module-loader";
+import { type iInputAdapter, type iInputModuleContext } from "../InputModuleTypes";
 export type DropdownElementType = "@dropdown" | "@dropdown>label" | "@dropdown>input" | "@dropdown>hidden" | "@dropdown>list" | "@dropdown>list>option" | "@dropdown>menu" | "@dropdown>menu>item" | "@dropdown>menu>empty" | "@dropdown>tags" | "@dropdown>tags>item";
 export interface iDropdownOption {
     id: string | number;
@@ -23,7 +25,6 @@ export interface iDropdownConfig extends iBuilderConfig<DropdownElementType> {
     onSelect?: (value: string, id: string | null) => void;
     min?: number;
     max?: number;
-    isMultiple?: boolean;
     onMultiChange?: (items: iDropdownOption[]) => void;
 }
 export interface iDropdownContent {
@@ -31,6 +32,8 @@ export interface iDropdownContent {
     name?: string;
     title?: string;
     placeholder?: string;
+    /** Several picks at once. Content, not config: one field, one schema object. */
+    multiple?: boolean;
     value?: string | number | null;
     options?: iDropdownOption[];
     attributes?: Array<{
@@ -53,6 +56,8 @@ export declare class DropdownBuilder extends Builder<DropdownElementType, iDropd
     private listId;
     private debounceTimeout;
     private abortController;
+    /** Set from `content.multiple` on every prepare: one field, one schema object. */
+    private multiple;
     constructor(config: Partial<iDropdownConfig>);
     protected template(typeKey: DropdownElementType, el: HTMLElement, payload?: any): void;
     prepare(content: any, _config?: Required<iDropdownConfig> | undefined): HTMLElement;
@@ -84,4 +89,11 @@ export declare class DropdownBuilder extends Builder<DropdownElementType, iDropd
     destroy(typeKey?: DropdownElementType): void;
     private applyAttributes;
 }
+/**
+ * Dropdown module definition.
+ *
+ * @example
+ * // registered by INPUT_MODULE_DEFINITIONS; omit it from a custom preset to drop the builder
+ */
+export declare const dropdownInputModule: iModuleDefinition<iInputModuleContext, iInputAdapter>;
 //# sourceMappingURL=Dropdown.d.ts.map

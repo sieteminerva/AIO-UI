@@ -15,7 +15,7 @@
  * component events without a cast.
  */
 import type { iComponentEvents } from "./registry";
-/** Re-exported so a consumer needs one specifier (`@aio-ui/core/events`) for both layers. */
+/** Re-exported so a consumer needs one specifier (`@aio-ui/core`) for both layers. */
 export type { iComponentEvents };
 /** Which stage of a render pass failed. */
 export type iPagePhase = "prepare" | "preload" | "render" | "ready";

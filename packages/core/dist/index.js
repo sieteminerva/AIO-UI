@@ -6,18 +6,19 @@
  * - **runtime** — the renderer, the registry kernel, the stylesheet injector, the builder
  *   port and the template registry. Components and modules use these; nothing else.
  * - **contracts** — the type modules (`iBasicNode`, `iComponentEvents`, …) are also
- *   published as types-only subpaths (`@aio-ui/core/interface`, `/node`, `/page`, …) for
+ *   published as types-only subpaths (`@aio-ui/core`, `/node`, `/page`, …) for
  *   hosts that want one module of types without the runtime. Those subpaths contain types
  *   only, which is why they are allowed to stay.
  */
 // ---- runtime -------------------------------------------------------------
 export { ComponentRegistry, mergeBuildConfig } from "./ComponentRegistry.js";
 export { AioApp, AppStorage, blockToNode, isPageDocument, normalizeRoute, pageToNode } from "./app/index.js";
-export { DOMRenderer } from "./DOMRenderer.js";
+export { DOMRenderer } from "./DOMRenderer/index.js";
 export { inspectPage } from "./Inspect.js";
 export { getBuilderAdapter, setBuilderAdapter } from "./BuilderPort.js";
 export { ensureStylesheet, injectLazyCss, isStyleInjected, isStylesheetPending, normalizeStylesheetPath, replaceLazyCss, styleTagId, useStylesheetAssets, } from "./Stylesheets.js";
 export { releaseBuilders } from "./Registry/BuilderInstances.js";
 export { TemplateRegistry, getTemplates, setTemplates } from "./TemplateRegistry.js";
 export { DEFAULT_REGISTRY_SCOPE, Registry, RegistryError, assertValidId, assertValidScope, qualifyId, splitQualifiedId, } from "./Registry/index.js";
+export { GLOBAL_DISPLAY_LOG } from "./types/renderer.js";
 //# sourceMappingURL=index.js.map

@@ -7,7 +7,7 @@ import {
   parseTableRecords,
   parseTableText,
   splitCsvRows,
-} from "@aio-ui/utilities/parseTableFile";
+} from "@aio-ui/utilities";
 
 /**
  * Pure text in, plain object out — no DOM, no form, no uploader. That is the point of

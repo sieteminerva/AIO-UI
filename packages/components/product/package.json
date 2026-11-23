@@ -1,6 +1,6 @@
 {
   "name": "@aio-ui/product",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "type": "module",
   "files": [
     "dist",
@@ -12,17 +12,9 @@
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
-    "./ProductCard.css": {
-      "types": "./ProductCard.css.d.ts",
-      "default": "./ProductCard.css"
-    },
-    "./ProductDetail.css": {
-      "types": "./ProductDetail.css.d.ts",
-      "default": "./ProductDetail.css"
-    },
-    "./ProductGrid.css": {
-      "types": "./ProductGrid.css.d.ts",
-      "default": "./ProductGrid.css"
+    "./index.css": {
+      "types": "./index.css.d.ts",
+      "default": "./index.css"
     }
   },
   "scripts": {
@@ -30,7 +22,7 @@
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "@aio-ui/base": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.4/aio-ui-base-0.2.4.tgz",
-    "@aio-ui/core": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.4/aio-ui-core-0.2.4.tgz"
+    "@aio-ui/base": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.5/aio-ui-base-0.2.5.tgz",
+    "@aio-ui/core": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.5/aio-ui-core-0.2.5.tgz"
   }
 }

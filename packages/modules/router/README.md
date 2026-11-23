@@ -3,6 +3,16 @@
 The `router` slot. Hash routing for a single-page app: one grammar for route, fragment and
 theme, and a redirect instead of a blank screen when the hash names a route nobody registered.
 
+<!-- install:begin -->
+## Install
+
+Version — `0.2.4` (tag `v0.2.4`)
+
+    npm install https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.4/aio-ui-router-0.2.4.tgz
+
+CDN (ES module, no build step) — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.4/packages/modules/router/dist/index.js`
+<!-- install:end -->
+
 ## Payload
 
 None. A route change is reported through `onRouteChanged` (or the app's render pass), never

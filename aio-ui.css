@@ -506,6 +506,7 @@ footer {
   margin-right: auto;
   padding-left: var(--app-padding-layout);
   padding-right: var(--app-padding-layout);
+  box-sizing: border-box;
 }
 
 .shell {
@@ -513,6 +514,7 @@ footer {
   max-width: 1040px;
   margin-left: auto;
   margin-right: auto;
+  box-sizing: border-box;
 }
 
 .row {
@@ -521,11 +523,13 @@ footer {
   gap: var(--app-gap);
   align-items: center;
   width: 100%;
+  box-sizing: border-box;
 }
 
 .column {
   flex: 1 1 0%;
   min-width: 0;
+  box-sizing: border-box;
 }
 
 .half {
@@ -543,6 +547,7 @@ footer {
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
   gap: var(--app-gap);
   width: 100%;
+  box-sizing: border-box;
 }
 
 @media (max-width: 768px) {
@@ -2264,122 +2269,6 @@ section:is(.article) {
   visibility: visible;
 }
 
-/* ==========================================================================
-   Code Block (.code-block)
-   One dark "paper" panel per source snippet: a caption, then `pre > code`.
-
-   The two base colours are deliberately LITERAL in both light and dark mode. A code
-   block is paper with ink of its own — it is not a surface of the page — so it does not
-   derive from `--app-surface-*`; doing so would invert it with the theme and turn it
-   into a second card. Only the corner radius joins the app contract.
-   ========================================================================== */
-
-:root,
-[data-theme] {
-  --code-block-background: #14100c;
-  --code-block-text-color: #e9e2d8;
-  --code-block-label-color: rgba(233, 226, 216, 0.62);
-  --code-block-radius: var(--app-component-border-radius, 1rem);
-  --code-block-padding: 0.9rem 1rem;
-  --code-block-font-family: ui-monospace, monospace;
-  --code-block-font-size: 0.72rem;
-  --code-block-line-height: 1.5;
-  --code-block-label-font-size: 0.68rem;
-  --code-block-label-letter-spacing: 0.08em;
-  --code-block-gap: 0.5rem;
-  --code-block-label-gap: 0.35rem;
-  --code-block-action-color: rgba(233, 226, 216, 0.7);
-  --code-block-action-hover-color: #e9e2d8;
-  --code-block-action-background: rgba(233, 226, 216, 0.08);
-  --code-block-action-hover-background: rgba(233, 226, 216, 0.16);
-  --code-block-action-padding: 0.3rem 0.6rem;
-  --code-block-action-gap: 0.35rem;
-  --code-block-action-radius: calc(var(--code-block-radius) * 0.5);
-  --code-block-edit-outline: 1px solid rgba(233, 226, 216, 0.45);
-}
-
-/* Several labelled blocks in one call: they stack, they do not touch. */
-.code-block {
-  display: grid;
-  gap: var(--code-block-gap);
-  margin: 0;
-
-  /* One labelled panel. A Markdown fence is a single panel, so it is the root AND its own
-     frame (`figure.code-block.frame`) instead of nesting one more wrapper. */
-  & .frame,
-  &.frame {
-    display: grid;
-    gap: var(--code-block-label-gap);
-    margin: 0;
-  }
-
-  & .label {
-    font-family: var(--code-block-font-family);
-    font-size: clamp(0.64rem, 0.6rem + 0.15vw, var(--code-block-label-font-size));
-    letter-spacing: var(--code-block-label-letter-spacing);
-    text-transform: uppercase;
-    color: var(--code-block-label-color);
-  }
-
-  & .paper {
-    margin: 0;
-    padding: var(--code-block-padding);
-    background: var(--code-block-background);
-    color: var(--code-block-text-color);
-    border-radius: var(--code-block-radius);
-    font-family: var(--code-block-font-family);
-    font-size: var(--code-block-font-size);
-    line-height: var(--code-block-line-height);
-    overflow-x: auto;
-
-    /* `code` carries no look of its own here: the panel owns the type, the element is
-       the hook a highlighter would decorate. */
-    & .body {
-      font: inherit;
-      color: inherit;
-      white-space: pre;
-    }
-
-    /* In edit mode the panel itself is the editor: no outline of the browser's own. */
-    & [contenteditable="true"] {
-      outline: none;
-      cursor: text;
-    }
-  }
-
-  /* Action row. Only rendered when the caller configures `actions`, so a read-only block
-     keeps the exact DOM it always had. */
-  & .actions {
-    display: flex;
-    gap: var(--code-block-action-gap);
-    justify-content: flex-end;
-  }
-
-  & .actions button {
-    padding: var(--code-block-action-padding);
-    border: 0;
-    border-radius: var(--code-block-action-radius);
-    background: var(--code-block-action-background);
-    color: var(--code-block-action-color);
-    font-family: var(--code-block-font-family);
-    font-size: var(--code-block-label-font-size);
-    letter-spacing: var(--code-block-label-letter-spacing);
-    text-transform: uppercase;
-    cursor: pointer;
-
-    &:hover,
-    &:focus-visible {
-      background: var(--code-block-action-hover-background);
-      color: var(--code-block-action-hover-color);
-    }
-  }
-
-  /* The panel being edited: a hairline so it reads as a field, not as paper. */
-  & .frame.editing .paper {
-    outline: var(--code-block-edit-outline);
-    outline-offset: 2px;
-  }
-}
 /* Component token layer. The popover used to be a white card with a fixed accent, so a
    docked widget painted the live theme on the page while the panel it sat in stayed light.
    Every value here derives from an `--app-*` token, so an app overrides a fab by
@@ -4050,566 +3939,6 @@ fieldset.inline-style .field:has(input[type="file"]),
 }
 
 /* ==========================================================================
-   Input controls — the action set that sits beside (or above) a field.
-
-   Owned by @aio-ui/input: a control set is a field-level thing, so nothing here
-   is scoped under `.form` any more (it was, which meant a set rendered outside a
-   form got no styling at all). The glue between an input and its buttons lives
-   here too — `Form.css` carried a second, drifted copy of these rules; it is
-   gone, so `.field.actions` now has exactly one owner.
-   ========================================================================== */
-
-/* 1. A field that carries an action set: the label takes its own line and the
-      input + buttons read as one composite control. */
-.field:is(.actions) {
-  display: flex !important;
-  flex-wrap: wrap;
-  align-items: stretch;
-  margin-bottom: 1em;
-
-  & label {
-    flex: 0 0 100%;
-    margin-bottom: 0.35em;
-  }
-
-  &:has(.controls) {
-    & input,
-    & select,
-    & .dropdown,
-    & textarea {
-      flex: 1;
-      outline: none;
-      border-width: 1px;
-      border-style: solid;
-      border-color: var(--input-border-color);
-    }
-
-    & input:hover,
-    & select:hover,
-    & .dropdown:hover,
-    & textarea:hover {
-      outline: none;
-      border-right-color: transparent;
-    }
-  }
-
-  /* A lone `button.controls` (no `.controls` wrapper) is the button itself. */
-  &:has(.controls:is(button)) {
-    & input,
-    & select,
-    & .dropdown,
-    & textarea {
-      border-top-right-radius: 0;
-      border-bottom-right-radius: 0;
-      border-right-color: transparent;
-
-      &:hover {
-        & ~ button {
-          border: 1px solid var(--input-primary-color);
-        }
-        border-right-color: transparent;
-      }
-    }
-
-    &:has(button:hover) input,
-    &:has(button:hover) select,
-    &:has(button:hover) .dropdown,
-    &:has(button:hover) textarea {
-      border: 1px solid var(--input-primary-color);
-      border-right-color: transparent;
-    }
-
-    & .controls:is(button) {
-      padding: 6px 1em;
-      border-top-right-radius: var(--input-border-radius, 4px);
-      border-bottom-right-radius: var(--input-border-radius, 4px);
-    }
-  }
-
-  /* Position modifiers: `data-position` is the newer spelling, `position` stays so
-     the markup written before it keeps working. */
-  &:has(.controls[position="right"]),
-  &:has(.controls[data-position="right"]) {
-    & > select,
-    & > input,
-    & > .dropdown,
-    & > textarea {
-      border-top-right-radius: 0;
-      border-bottom-right-radius: 0;
-    }
-  }
-
-  &:has(.controls[position="left"]),
-  &:has(.controls[data-position="left"]) {
-    flex-direction: row-reverse;
-    & > select,
-    & > input,
-    & > .dropdown,
-    & > textarea {
-      border-top-left-radius: 0;
-      border-bottom-left-radius: 0;
-    }
-  }
-
-  &:has(> .controls[position="left"], > .controls[position="right"]),
-  &:has(> .controls[data-position="left"], > .controls[data-position="right"]) {
-    & > select,
-    & > input,
-    & > .dropdown,
-    & > textarea {
-      border-radius: 0 !important;
-    }
-  }
-}
-
-/* 2. The set itself. */
-.field:is(.actions) {
-  & .controls,
-  & > button.controls {
-    display: inline-flex;
-    align-items: stretch;
-    float: none;
-    position: static;
-
-    &[position="right"],
-    &[data-position="right"] {
-      & button:last-child {
-        border-top-right-radius: var(--input-border-radius, 4px);
-        border-bottom-right-radius: var(--input-border-radius, 4px);
-      }
-
-      & button:not(:last-child) {
-        border-right: none;
-      }
-    }
-
-    &[position="left"],
-    &[data-position="left"] {
-      & button:first-child {
-        border-top-left-radius: var(--input-border-radius, 4px);
-        border-bottom-left-radius: var(--input-border-radius, 4px);
-      }
-
-      & button:not(:first-child) {
-        border-left: none;
-      }
-    }
-
-    &:is(button),
-    & button {
-      padding: 6px 1em;
-      font-size: var(--input-font-size, 0.75rem);
-      font-weight: 400;
-      cursor: pointer;
-      transition:
-        background-color 200ms,
-        transform 100ms;
-      white-space: nowrap;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.35em;
-      border-radius: 0; /* Reset default radius */
-
-      color: color-mix(in srgb, var(--input-text-color) 20%, white 70%);
-      border: 1px solid var(--input-accent-color);
-      background-color: color-mix(in srgb, var(--input-accent-color) 90%, var(--input-primary-color) 5%);
-
-      &:hover {
-        color: color-mix(in srgb, var(--input-accent-color) 15%, var(--input-paper));
-        background-color: color-mix(in srgb, var(--input-accent-color) 90%, var(--input-paper-soft));
-        border: 1px solid var(--input-primary-color) !important;
-      }
-
-      &:active {
-        transform: scale(98.5%);
-      }
-
-      /* The unavailable half of an edit/save pair. */
-      &:disabled {
-        cursor: not-allowed;
-        opacity: 0.45;
-      }
-    }
-  }
-}
-
-/* 3. A group (fieldset) or a row owns a set too: the buttons sit in the header
-      corner so the fields keep their full width. Their colours are restated
-      because a container-level button is not glued to an input — it needs a
-      solid surface to stay legible on the card rather than inheriting the
-      translucent input fill.
-
-      The corner is out of the flow, so the content has to make room for it —
-      otherwise the set lands on the first field's label and input (measured:
-      the buttons covered the right half of the first input). The reserved band
-      is a padding, not a margin: a fieldset's own padding is what the first
-      field starts from. */
-fieldset.form-group,
-.field:is(.group) {
-  position: relative;
-
-  &:has(> .controls) {
-    padding-top: 3em;
-  }
-
-  & > .controls {
-    position: absolute;
-    top: 0.6em;
-    right: 0.6em;
-    z-index: 1;
-    display: inline-flex;
-
-    & button {
-      color: var(--input-text-on-primary);
-      background-color: var(--input-primary-color);
-      border-color: var(--input-primary-color);
-
-      &:hover {
-        color: var(--input-text-on-primary);
-        background-color: color-mix(in srgb, var(--input-primary-color) 80%, black 20%);
-      }
-    }
-  }
-}
-
-/* 4. States a control set owns. `locked` is the resting state of a record viewer
-      (`data-locked`), `searching` is an in-flight search. */
-[data-locked="true"] {
-  & input,
-  & select,
-  & textarea {
-    cursor: default;
-  }
-}
-
-.searching .controls button.search {
-  cursor: progress;
-  opacity: 0.65;
-}
-
-/* ==========================================================================
-   InputPicker — a grid of choices behind one control.
-
-   Same family as the rest of the field layer: the tokens below are the only
-   picker-private values, and every one of them derives from an `--input-*`
-   token, so a theme retunes the field and the picker follows. The sheet has one
-   root selector (`.field .picker[data-kind]`); every rule nests under it with `&`.
-   `[data-kind]` is not decoration: `ColorTheme` already uses `.field .picker` for a
-   `input[type=color]`, and this sheet must not restyle it.
-   ========================================================================== */
-
-:root,
-[data-theme] {
-  --picker-gap: 0.35rem;
-  --picker-panel-max-height: 16rem;
-  --picker-surface: var(--input-picker-background, #ffffff);
-  --picker-border-color: var(--input-border-color, currentColor);
-  --picker-accent-color: var(--input-primary-color, currentColor);
-  --picker-text-color: var(--input-text-color, currentColor);
-  --picker-muted-color: var(--input-placeholder-color, grey);
-  --picker-radius: var(--input-border-radius, 0.55em);
-  --picker-duration: var(--input-popup-duration, 150ms);
-}
-
-.field .picker[data-kind] {
-  /* Fix it should be under field as our conventions */
-  position: relative;
-  display: block;
-  inline-size: 100%;
-  font-size: var(--input-font-size);
-  color: var(--picker-text-color);
-
-  /* ---- trigger ------------------------------------------------------- */
-  & .trigger {
-    box-sizing: border-box;
-    display: flex;
-    align-items: center;
-    gap: 0.5em;
-    inline-size: 100%;
-    margin: 0;
-    padding: 0.5em 0.75em;
-    font: inherit;
-    text-align: start;
-    color: inherit;
-    background: var(--input-background-color);
-    border: 1px solid var(--picker-border-color);
-    border-radius: var(--picker-radius);
-    cursor: pointer;
-    transition:
-      border-color var(--picker-duration) ease,
-      background var(--picker-duration) ease;
-
-    &:hover {
-      border-color: var(--picker-accent-color);
-    }
-
-    &:focus-visible {
-      outline: 2px solid var(--picker-accent-color);
-      outline-offset: 2px;
-    }
-
-    &[aria-expanded="true"] {
-      border-color: var(--picker-accent-color);
-    }
-  }
-
-  & .trigger .preview {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex: none;
-    inline-size: 1.75rem;
-    block-size: 1.75rem;
-
-    &:empty {
-      display: none;
-    }
-  }
-
-  & .trigger .label {
-    flex: 1 1 auto;
-    min-inline-size: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-
-    &.is-placeholder {
-      color: var(--picker-muted-color);
-    }
-  }
-
-  /* ---- panel --------------------------------------------------------- */
-  & .panel {
-    display: none;
-    box-sizing: border-box;
-    position: fixed;
-    inset: auto;
-    margin: 0;
-    padding: 0.5rem;
-    inline-size: min(22rem, calc(100vw - 2rem));
-    background: var(--picker-surface);
-    border: 1px solid var(--picker-border-color);
-    border-radius: var(--picker-radius);
-    box-shadow: 0 18px 38px -18px rgb(0 0 0 / 0.45);
-
-    &[data-open="true"] {
-      display: block;
-    }
-  }
-
-  /* Inline look: the grid belongs to the page, so the panel becomes a framed box — a
-     header row with the filter at the end, then a scrolling grid of quiet cells. Active
-     keeps the accent border, the way the reference icon picker does. */
-  &[data-expanded="true"] .panel {
-    position: static;
-    display: block;
-    inline-size: 100%;
-    padding: 0.5rem;
-    background: var(--picker-surface);
-    border: 1px solid color-mix(in srgb, var(--picker-border-color) 30%, transparent);
-    border-radius: calc(var(--picker-radius) * 0.9);
-    box-shadow: none;
-    overflow: hidden;
-    scrollbar-gutter: stable;
-  }
-
-  &[data-expanded="true"] .search {
-    inline-size: 50%;
-    margin: 0 0 0.5rem auto;
-    padding: 0.25em 0.5em;
-    font-size: 0.75em;
-  }
-
-  &[data-expanded="true"] .grid {
-    gap: 0.35rem;
-    max-block-size: 9.4rem;
-    padding-right: 0.5em;
-  }
-
-  &[data-expanded="true"] .cell {
-    display: flex;
-    background: color-mix(in srgb, var(--picker-surface) 94%, var(--picker-text-color));
-    border-color: transparent;
-    border-radius: calc(var(--picker-radius) * 0.65);
-    aspect-ratio: 1/1;
-    align-items: center;
-    justify-content: center;
-
-    &:hover {
-      background: color-mix(in srgb, var(--picker-surface) 88%, var(--picker-text-color));
-      border-color: transparent;
-      transform: none;
-    }
-
-    &[aria-selected="true"] {
-      border-color: var(--picker-accent-color);
-      background: color-mix(in srgb, var(--picker-accent-color) 10%, var(--picker-surface));
-      box-shadow: none;
-    }
-  }
-
-  /* ---- filter -------------------------------------------------------- */
-  & .search {
-    box-sizing: border-box;
-    inline-size: 100%;
-    margin: 0 0 0.5rem auto;
-    padding: 0.4em 0.6em;
-    font: inherit;
-    color: inherit;
-    background: var(--input-background-color);
-    border: 1px solid var(--picker-border-color);
-    border-radius: calc(var(--picker-radius) * 0.8);
-
-    &:focus-visible {
-      outline: 2px solid var(--picker-accent-color);
-      outline-offset: 1px;
-    }
-  }
-
-  /* ---- grid ---------------------------------------------------------- */
-  & .grid {
-    display: grid;
-    grid-template-columns: repeat(var(--picker-columns, 6), minmax(0, 1fr));
-    gap: var(--picker-gap);
-    max-block-size: var(--picker-panel-max-height);
-    overflow: auto;
-  }
-
-  & .cell {
-    box-sizing: border-box;
-    display: grid;
-    justify-items: center;
-    align-items: center;
-    gap: 0.15rem;
-    padding: 0.4rem 0.25rem;
-    font: inherit;
-    color: inherit;
-    background: var(--picker-surface);
-    border: 1px solid var(--picker-border-color);
-    border-radius: calc(var(--picker-radius) * 0.7);
-    cursor: pointer;
-    transition:
-      border-color var(--picker-duration) ease,
-      background var(--picker-duration) ease,
-      transform var(--picker-duration) ease;
-
-    &:hover {
-      border-color: var(--picker-accent-color);
-      transform: translateY(-1px);
-    }
-
-    &:focus-visible {
-      outline: 2px solid var(--picker-accent-color);
-      outline-offset: 1px;
-    }
-
-    &[hidden] {
-      display: none;
-    }
-
-    &[aria-selected="true"] {
-      border-color: var(--picker-accent-color);
-      background: color-mix(in srgb, var(--picker-accent-color) 10%, transparent);
-      box-shadow: inset 0 0 0 1px var(--picker-accent-color);
-    }
-
-    & .preview {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      inline-size: 1.75rem;
-      block-size: 1.75rem;
-    }
-
-    & .name {
-      max-inline-size: 100%;
-      font-size: 0.7em;
-      line-height: 1.2;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-  }
-
-  /* An icon grid is self-evident: the caption would only shrink the glyphs. */
-  &[data-kind="icon"] .cell .name {
-    display: none;
-  }
-
-  /* ---- visuals ------------------------------------------------------- */
-  & .icon {
-    --icon-size: 24px;
-    color: var(--picker-accent-color);
-  }
-
-  & .image {
-    display: block;
-    inline-size: 100%;
-    block-size: 100%;
-    object-fit: cover;
-    border-radius: calc(var(--picker-radius) * 0.5);
-  }
-
-  & .swatch {
-    display: block;
-    inline-size: 100%;
-    block-size: 100%;
-    border-radius: calc(var(--picker-radius) * 0.5);
-    background: var(--picker-swatch, currentColor);
-    box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.15);
-  }
-
-  & .letter {
-    display: grid;
-    place-items: center;
-    inline-size: 1.75rem;
-    block-size: 1.75rem;
-    font-weight: 600;
-    border-radius: calc(var(--picker-radius) * 0.5);
-    background: color-mix(in srgb, var(--picker-accent-color) 14%, transparent);
-  }
-
-  /* ---- empty state --------------------------------------------------- */
-  & .empty {
-    margin: 0.5rem 0;
-    font-size: 0.85em;
-    text-align: center;
-    color: var(--picker-muted-color);
-
-    &[hidden] {
-      display: none;
-    }
-  }
-
-  /* The hidden input carries the value; it is never a visible box. */
-  & .value {
-    display: none;
-  }
-}
-
-/* Anchor the popover to the trigger where the platform understands anchors; without
-   them the panel is a fixed box and the host's own layout decides where it lands. */
-@supports (anchor-name: --picker) {
-  .field .picker[data-kind] .panel {
-    inset-block-start: anchor(bottom);
-    inset-inline-start: anchor(left);
-    inline-size: anchor-size(width);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .field .picker[data-kind] .trigger,
-  .field .picker[data-kind] .cell {
-    transition: none;
-  }
-
-  .field .picker[data-kind] .cell:hover {
-    transform: none;
-  }
-}
-
-/* ==========================================================================
    Input layer — field wrapper, labels, controls, toggle shell.
 
    Owned by @aio-ui/input: a field is a field with or without a form around it,
@@ -5596,6 +4925,39 @@ select:focus-visible {
       }
     }
   }
+
+  /* --- Choice group: a `radio`/`checkbox` field given `options` ---------------------
+     One control per option, as rows. The caption above names the group, so it keeps the
+     label look but is not a `<label>` any more; each option owns its own `<label>`, and
+     the native dot/box is restored — the shared text-field skin would box it. */
+  &:is(.choice) {
+    display: grid;
+    gap: 0.35em;
+    & > label[data-position="top"] {
+      margin-bottom: 0.25em;
+    }
+    & > .choice-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5em;
+      margin-bottom: 0;
+      color: var(--input-text-color);
+      font-size: var(--input-font-size);
+      font-weight: 400;
+      cursor: pointer;
+    }
+    & > .choice-item > input {
+      display: inline-block;
+      flex: none;
+      width: auto;
+      min-height: 0;
+      margin: 0;
+      padding: 0;
+      border: 0;
+      background: none;
+      accent-color: var(--input-primary-color);
+    }
+  }
 }
 
 @starting-style {
@@ -5611,11 +4973,687 @@ select:focus-visible {
 }
 
 /* ==========================================================================
+   Input controls — the action set that sits beside (or above) a field.
+
+   Owned by @aio-ui/input: a control set is a field-level thing, so nothing here
+   is scoped under `.form` any more (it was, which meant a set rendered outside a
+   form got no styling at all). The glue between an input and its buttons lives
+   here too — `Form.css` carried a second, drifted copy of these rules; it is
+   gone, so `.field.actions` now has exactly one owner.
+   ========================================================================== */
+
+/* 1. A field that carries an action set: the label takes its own line and the
+      input + buttons read as one composite control. */
+.field:is(.actions) {
+  display: flex !important;
+  flex-wrap: wrap;
+  align-items: stretch;
+  margin-bottom: 1em;
+
+  & label {
+    flex: 0 0 100%;
+    margin-bottom: 0.35em;
+  }
+
+  &:has(.controls) {
+    & input,
+    & select,
+    & .dropdown,
+    & textarea {
+      flex: 1;
+      outline: none;
+      border-width: 1px;
+      border-style: solid;
+      border-color: var(--input-border-color);
+    }
+
+    & input:hover,
+    & select:hover,
+    & .dropdown:hover,
+    & textarea:hover {
+      outline: none;
+      border-right-color: transparent;
+    }
+  }
+
+  /* A lone `button.controls` (no `.controls` wrapper) is the button itself. */
+  &:has(.controls:is(button)) {
+    & input,
+    & select,
+    & .dropdown,
+    & textarea {
+      border-top-right-radius: 0;
+      border-bottom-right-radius: 0;
+      border-right-color: transparent;
+
+      &:hover {
+        & ~ button {
+          border: 1px solid var(--input-primary-color);
+        }
+        border-right-color: transparent;
+      }
+    }
+
+    &:has(button:hover) input,
+    &:has(button:hover) select,
+    &:has(button:hover) .dropdown,
+    &:has(button:hover) textarea {
+      border: 1px solid var(--input-primary-color);
+      border-right-color: transparent;
+    }
+
+    & .controls:is(button) {
+      padding: 6px 1em;
+      border-top-right-radius: var(--input-border-radius, 4px);
+      border-bottom-right-radius: var(--input-border-radius, 4px);
+    }
+  }
+
+  /* Position modifiers: `data-position` is the newer spelling, `position` stays so
+     the markup written before it keeps working. */
+  &:has(.controls[position="right"]),
+  &:has(.controls[data-position="right"]) {
+    & > select,
+    & > input,
+    & > .dropdown,
+    & > textarea {
+      border-top-right-radius: 0;
+      border-bottom-right-radius: 0;
+    }
+  }
+
+  &:has(.controls[position="left"]),
+  &:has(.controls[data-position="left"]) {
+    flex-direction: row-reverse;
+    & > select,
+    & > input,
+    & > .dropdown,
+    & > textarea {
+      border-top-left-radius: 0;
+      border-bottom-left-radius: 0;
+    }
+  }
+
+  &:has(> .controls[position="left"], > .controls[position="right"]),
+  &:has(> .controls[data-position="left"], > .controls[data-position="right"]) {
+    & > select,
+    & > input,
+    & > .dropdown,
+    & > textarea {
+      border-radius: 0 !important;
+    }
+  }
+}
+
+/* 2. The set itself. */
+.field:is(.actions) {
+  & .controls,
+  & > button.controls {
+    display: inline-flex;
+    align-items: stretch;
+    float: none;
+    position: static;
+
+    &[position="right"],
+    &[data-position="right"] {
+      & button:last-child {
+        border-top-right-radius: var(--input-border-radius, 4px);
+        border-bottom-right-radius: var(--input-border-radius, 4px);
+      }
+
+      & button:not(:last-child) {
+        border-right: none;
+      }
+    }
+
+    &[position="left"],
+    &[data-position="left"] {
+      & button:first-child {
+        border-top-left-radius: var(--input-border-radius, 4px);
+        border-bottom-left-radius: var(--input-border-radius, 4px);
+      }
+
+      & button:not(:first-child) {
+        border-left: none;
+      }
+    }
+
+    &:is(button),
+    & button {
+      padding: 6px 1em;
+      font-size: var(--input-font-size, 0.75rem);
+      font-weight: 400;
+      cursor: pointer;
+      transition:
+        background-color 200ms,
+        transform 100ms;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.35em;
+      border-radius: 0; /* Reset default radius */
+
+      color: color-mix(in srgb, var(--input-text-color) 20%, white 70%);
+      border: 1px solid var(--input-accent-color);
+      background-color: color-mix(in srgb, var(--input-accent-color) 90%, var(--input-primary-color) 5%);
+
+      &:hover {
+        color: color-mix(in srgb, var(--input-accent-color) 15%, var(--input-paper));
+        background-color: color-mix(in srgb, var(--input-accent-color) 90%, var(--input-paper-soft));
+        border: 1px solid var(--input-primary-color) !important;
+      }
+
+      &:active {
+        transform: scale(98.5%);
+      }
+
+      /* The unavailable half of an edit/save pair. */
+      &:disabled {
+        cursor: not-allowed;
+        opacity: 0.45;
+      }
+    }
+  }
+}
+
+/* 3. A group (fieldset) or a row owns a set too: the buttons sit in the header
+      corner so the fields keep their full width. Their colours are restated
+      because a container-level button is not glued to an input — it needs a
+      solid surface to stay legible on the card rather than inheriting the
+      translucent input fill.
+
+      The corner is out of the flow, so the content has to make room for it —
+      otherwise the set lands on the first field's label and input (measured:
+      the buttons covered the right half of the first input). The reserved band
+      is a padding, not a margin: a fieldset's own padding is what the first
+      field starts from. */
+fieldset.form-group,
+.field:is(.group) {
+  position: relative;
+
+  &:has(> .controls) {
+    padding-top: 3em;
+  }
+
+  & > .controls {
+    position: absolute;
+    top: 0.6em;
+    right: 0.6em;
+    z-index: 1;
+    display: inline-flex;
+
+    & button {
+      color: var(--input-text-on-primary);
+      background-color: var(--input-primary-color);
+      border-color: var(--input-primary-color);
+
+      &:hover {
+        color: var(--input-text-on-primary);
+        background-color: color-mix(in srgb, var(--input-primary-color) 80%, black 20%);
+      }
+    }
+  }
+}
+
+/* 4. States a control set owns. `locked` is the resting state of a record viewer
+      (`data-locked`), `searching` is an in-flight search. */
+[data-locked="true"] {
+  & input,
+  & select,
+  & textarea {
+    cursor: default;
+  }
+}
+
+.searching .controls button.search {
+  cursor: progress;
+  opacity: 0.65;
+}
+
+/* ==========================================================================
+   InputPicker — a grid of choices behind one control.
+
+   Same family as the rest of the field layer: the tokens below are the only
+   picker-private values, and every one of them derives from an `--input-*`
+   token, so a theme retunes the field and the picker follows. The sheet has one
+   root selector (`.field .picker[data-kind]`); every rule nests under it with `&`.
+   `[data-kind]` is not decoration: `ColorTheme` already uses `.field .picker` for a
+   `input[type=color]`, and this sheet must not restyle it.
+   ========================================================================== */
+
+:root,
+[data-theme] {
+  --picker-gap: 0.35rem;
+  --picker-panel-max-height: 16rem;
+  --picker-surface: var(--input-picker-background, #ffffff);
+  --picker-border-color: var(--input-border-color, currentColor);
+  --picker-accent-color: var(--input-primary-color, currentColor);
+  --picker-text-color: var(--input-text-color, currentColor);
+  --picker-muted-color: var(--input-placeholder-color, grey);
+  --picker-radius: var(--input-border-radius, 0.55em);
+  --picker-duration: var(--input-popup-duration, 150ms);
+}
+
+.field .picker[data-kind] {
+  /* Fix it should be under field as our conventions */
+  position: relative;
+  display: block;
+  inline-size: 100%;
+  font-size: var(--input-font-size);
+  color: var(--picker-text-color);
+
+  /* ---- trigger ------------------------------------------------------- */
+  & .trigger {
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    inline-size: 100%;
+    margin: 0;
+    padding: 0.5em 0.75em;
+    font: inherit;
+    text-align: start;
+    color: inherit;
+    background: var(--input-background-color);
+    border: 1px solid var(--picker-border-color);
+    border-radius: var(--picker-radius);
+    cursor: pointer;
+    transition:
+      border-color var(--picker-duration) ease,
+      background var(--picker-duration) ease;
+
+    &:hover {
+      border-color: var(--picker-accent-color);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--picker-accent-color);
+      outline-offset: 2px;
+    }
+
+    &[aria-expanded="true"] {
+      border-color: var(--picker-accent-color);
+    }
+  }
+
+  & .trigger .preview {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    inline-size: 1.75rem;
+    block-size: 1.75rem;
+
+    &:empty {
+      display: none;
+    }
+  }
+
+  & .trigger .label {
+    flex: 1 1 auto;
+    min-inline-size: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    &.is-placeholder {
+      color: var(--picker-muted-color);
+    }
+  }
+
+  /* ---- panel --------------------------------------------------------- */
+  & .panel {
+    display: none;
+    box-sizing: border-box;
+    position: fixed;
+    inset: auto;
+    margin: 0;
+    padding: 0.5rem;
+    inline-size: min(22rem, calc(100vw - 2rem));
+    background: var(--picker-surface);
+    border: 1px solid var(--picker-border-color);
+    border-radius: var(--picker-radius);
+    box-shadow: 0 18px 38px -18px rgb(0 0 0 / 0.45);
+
+    &[data-open="true"] {
+      display: block;
+    }
+  }
+
+  /* Inline look: the grid belongs to the page, so the panel becomes a framed box — a
+     header row with the filter at the end, then a scrolling grid of quiet cells. Active
+     keeps the accent border, the way the reference icon picker does. */
+  &[data-expanded="true"] .panel {
+    position: static;
+    display: block;
+    inline-size: 100%;
+    padding: 0.5rem;
+    background: var(--picker-surface);
+    border: 1px solid color-mix(in srgb, var(--picker-border-color) 30%, transparent);
+    border-radius: calc(var(--picker-radius) * 0.9);
+    box-shadow: none;
+    overflow: hidden;
+    scrollbar-gutter: stable;
+  }
+
+  &[data-expanded="true"] .search {
+    inline-size: 50%;
+    margin: 0 0 0.5rem auto;
+    padding: 0.25em 0.5em;
+    font-size: 0.75em;
+  }
+
+  &[data-expanded="true"] .grid {
+    gap: 0.35rem;
+    max-block-size: 9.4rem;
+    padding-right: 0.5em;
+  }
+
+  &[data-expanded="true"] .cell {
+    display: flex;
+    background: color-mix(in srgb, var(--picker-surface) 94%, var(--picker-text-color));
+    border-color: transparent;
+    border-radius: calc(var(--picker-radius) * 0.65);
+    aspect-ratio: 1/1;
+    align-items: center;
+    justify-content: center;
+
+    &:hover {
+      background: color-mix(in srgb, var(--picker-surface) 88%, var(--picker-text-color));
+      border-color: transparent;
+      transform: none;
+    }
+
+    &[aria-selected="true"] {
+      border-color: var(--picker-accent-color);
+      background: color-mix(in srgb, var(--picker-accent-color) 10%, var(--picker-surface));
+      box-shadow: none;
+    }
+  }
+
+  /* ---- filter -------------------------------------------------------- */
+  & .search {
+    box-sizing: border-box;
+    inline-size: 100%;
+    margin: 0 0 0.5rem auto;
+    padding: 0.4em 0.6em;
+    font: inherit;
+    color: inherit;
+    background: var(--input-background-color);
+    border: 1px solid var(--picker-border-color);
+    border-radius: calc(var(--picker-radius) * 0.8);
+
+    &:focus-visible {
+      outline: 2px solid var(--picker-accent-color);
+      outline-offset: 1px;
+    }
+  }
+
+  /* ---- grid ---------------------------------------------------------- */
+  & .grid {
+    display: grid;
+    grid-template-columns: repeat(var(--picker-columns, 6), minmax(0, 1fr));
+    gap: var(--picker-gap);
+    max-block-size: var(--picker-panel-max-height);
+    overflow: auto;
+  }
+
+  & .cell {
+    box-sizing: border-box;
+    display: grid;
+    justify-items: center;
+    align-items: center;
+    gap: 0.15rem;
+    padding: 0.4rem 0.25rem;
+    font: inherit;
+    color: inherit;
+    background: var(--picker-surface);
+    border: 1px solid var(--picker-border-color);
+    border-radius: calc(var(--picker-radius) * 0.7);
+    cursor: pointer;
+    transition:
+      border-color var(--picker-duration) ease,
+      background var(--picker-duration) ease,
+      transform var(--picker-duration) ease;
+
+    &:hover {
+      border-color: var(--picker-accent-color);
+      transform: translateY(-1px);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--picker-accent-color);
+      outline-offset: 1px;
+    }
+
+    &[hidden] {
+      display: none;
+    }
+
+    &[aria-selected="true"] {
+      border-color: var(--picker-accent-color);
+      background: color-mix(in srgb, var(--picker-accent-color) 10%, transparent);
+      box-shadow: inset 0 0 0 1px var(--picker-accent-color);
+    }
+
+    & .preview {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      inline-size: 1.75rem;
+      block-size: 1.75rem;
+    }
+
+    & .name {
+      max-inline-size: 100%;
+      font-size: 0.7em;
+      line-height: 1.2;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+
+  /* An icon grid is self-evident: the caption would only shrink the glyphs. */
+  &[data-kind="icon"] .cell .name {
+    display: none;
+  }
+
+  /* ---- visuals ------------------------------------------------------- */
+  & .icon {
+    --icon-size: 24px;
+    color: var(--picker-accent-color);
+  }
+
+  & .image {
+    display: block;
+    inline-size: 100%;
+    block-size: 100%;
+    object-fit: cover;
+    border-radius: calc(var(--picker-radius) * 0.5);
+  }
+
+  & .swatch {
+    display: block;
+    inline-size: 100%;
+    block-size: 100%;
+    border-radius: calc(var(--picker-radius) * 0.5);
+    background: var(--picker-swatch, currentColor);
+    box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.15);
+  }
+
+  & .letter {
+    display: grid;
+    place-items: center;
+    inline-size: 1.75rem;
+    block-size: 1.75rem;
+    font-weight: 600;
+    border-radius: calc(var(--picker-radius) * 0.5);
+    background: color-mix(in srgb, var(--picker-accent-color) 14%, transparent);
+  }
+
+  /* ---- empty state --------------------------------------------------- */
+  & .empty {
+    margin: 0.5rem 0;
+    font-size: 0.85em;
+    text-align: center;
+    color: var(--picker-muted-color);
+
+    &[hidden] {
+      display: none;
+    }
+  }
+
+  /* The hidden input carries the value; it is never a visible box. */
+  & .value {
+    display: none;
+  }
+}
+
+/* Anchor the popover to the trigger where the platform understands anchors; without
+   them the panel is a fixed box and the host's own layout decides where it lands. */
+@supports (anchor-name: --picker) {
+  .field .picker[data-kind] .panel {
+    inset-block-start: anchor(bottom);
+    inset-inline-start: anchor(left);
+    inline-size: anchor-size(width);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .field .picker[data-kind] .trigger,
+  .field .picker[data-kind] .cell {
+    transition: none;
+  }
+
+  .field .picker[data-kind] .cell:hover {
+    transform: none;
+  }
+}
+
+/* ==========================================================================
    Markdown (article.markdown)
    A rendered document: headings, paragraphs, lists, tables, quotes, and fenced
    code panels that reuse the code-block sheet either side of this file.
    ========================================================================== */
 
+/* ==========================================================================
+   Code Block (.code-block)
+   One dark "paper" panel per source snippet: a caption, then `pre > code`.
+
+   The two base colours are deliberately LITERAL in both light and dark mode. A code
+   block is paper with ink of its own — it is not a surface of the page — so it does not
+   derive from `--app-surface-*`; doing so would invert it with the theme and turn it
+   into a second card. Only the corner radius joins the app contract.
+   ========================================================================== */
+
+:root,
+[data-theme] {
+  --code-block-background: #14100c;
+  --code-block-text-color: #e9e2d8;
+  --code-block-label-color: rgba(233, 226, 216, 0.62);
+  --code-block-radius: var(--app-component-border-radius, 1rem);
+  --code-block-padding: 0.9rem 1rem;
+  --code-block-font-family: ui-monospace, monospace;
+  --code-block-font-size: 0.72rem;
+  --code-block-line-height: 1.5;
+  --code-block-label-font-size: 0.68rem;
+  --code-block-label-letter-spacing: 0.08em;
+  --code-block-gap: 0.5rem;
+  --code-block-label-gap: 0.35rem;
+  --code-block-action-color: rgba(233, 226, 216, 0.7);
+  --code-block-action-hover-color: #e9e2d8;
+  --code-block-action-background: rgba(233, 226, 216, 0.08);
+  --code-block-action-hover-background: rgba(233, 226, 216, 0.16);
+  --code-block-action-padding: 0.3rem 0.6rem;
+  --code-block-action-gap: 0.35rem;
+  --code-block-action-radius: calc(var(--code-block-radius) * 0.5);
+  --code-block-edit-outline: 1px solid rgba(233, 226, 216, 0.45);
+}
+
+/* Several labelled blocks in one call: they stack, they do not touch. */
+.code-block {
+  display: grid;
+  gap: var(--code-block-gap);
+  margin: 0;
+
+  /* One labelled panel. A Markdown fence is a single panel, so it is the root AND its own
+     frame (`figure.code-block.frame`) instead of nesting one more wrapper. */
+  & .frame,
+  &.frame {
+    display: grid;
+    gap: var(--code-block-label-gap);
+    margin: 0;
+  }
+
+  & .label {
+    font-family: var(--code-block-font-family);
+    font-size: clamp(0.64rem, 0.6rem + 0.15vw, var(--code-block-label-font-size));
+    letter-spacing: var(--code-block-label-letter-spacing);
+    text-transform: uppercase;
+    color: var(--code-block-label-color);
+  }
+
+  & .paper {
+    margin: 0;
+    padding: var(--code-block-padding);
+    background: var(--code-block-background);
+    color: var(--code-block-text-color);
+    border-radius: var(--code-block-radius);
+    font-family: var(--code-block-font-family);
+    font-size: var(--code-block-font-size);
+    line-height: var(--code-block-line-height);
+    overflow-x: auto;
+
+    /* `code` carries no look of its own here: the panel owns the type, the element is
+       the hook a highlighter would decorate. */
+    & .body {
+      font: inherit;
+      color: inherit;
+      white-space: pre;
+    }
+
+    /* In edit mode the panel itself is the editor: no outline of the browser's own. */
+    & [contenteditable="true"] {
+      outline: none;
+      cursor: text;
+    }
+  }
+
+  /* Action row. Only rendered when the caller configures `actions`, so a read-only block
+     keeps the exact DOM it always had. */
+  & .actions {
+    display: flex;
+    gap: var(--code-block-action-gap);
+    justify-content: flex-end;
+  }
+
+  & .actions button {
+    padding: var(--code-block-action-padding);
+    border: 0;
+    border-radius: var(--code-block-action-radius);
+    background: var(--code-block-action-background);
+    color: var(--code-block-action-color);
+    font-family: var(--code-block-font-family);
+    font-size: var(--code-block-label-font-size);
+    letter-spacing: var(--code-block-label-letter-spacing);
+    text-transform: uppercase;
+    cursor: pointer;
+
+    &:hover,
+    &:focus-visible {
+      background: var(--code-block-action-hover-background);
+      color: var(--code-block-action-hover-color);
+    }
+  }
+
+  /* The panel being edited: a hairline so it reads as a field, not as paper. */
+  & .frame.editing .paper {
+    outline: var(--code-block-edit-outline);
+    outline-offset: 2px;
+  }
+}
 :root,
 [data-theme] {
   --markdown-gap: 0.85rem;
@@ -7011,6 +7049,13 @@ aside:has(> .nav[data-position*="sticky"]) {
   }
 }
 
+/* One published sheet for `@aio-ui/product`.
+ *
+ * The three builders keep their own sheets (each one owns its region); this file is the
+ * single specifier a host links, in mount order. `scripts/build-bundle.mjs` lists the
+ * imported sheets instead of this one, so the bundle never carries a duplicated copy.
+ */
+
 /* ==========================================================================
    PRODUCT CARD — one item of the product grid
    ========================================================================== */
@@ -7392,42 +7437,6 @@ aside:has(> .nav[data-position*="sticky"]) {
   }
 }
 
-/* 🪐 Vektor Bintang (Star SVG Asset Managed inside CSS) */
-.star-icon {
-  display: inline-block;
-  width: 24px; /* 🟢 TINGGAL GANTI DISINI UNTUK PERBESAR UKURAN BINTANG! */
-  height: 24px;
-  background-repeat: no-repeat;
-  background-size: contain;
-  transition: transform 0.2s ease;
-}
-.star-icon:hover {
-  transform: scale(1.2);
-}
-
-/* 🌟 Bintang Terisi Penuh (Menggunakan URL Data-URI SVG Star Murni) */
-.star-icon.star-full {
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://w3.org' viewBox='0 0 24 24' fill='%23ffcc00'><path d='M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z'/></svg>");
-}
-
-/* 🌗 Bintang Setengah (Gunakan warna fill oranye dengan kliping/masking) */
-.star-icon.star-half {
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://w3.org' viewBox='0 0 24 24'><defs><linearGradient id='grad'><stop offset='50%25' stop-color='%23ffcc00'/><stop offset='50%25' stop-color='%23e0e0e0'/></linearGradient></defs><path fill='url(%23grad)' d='M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z'/></svg>");
-}
-
-/* 🫙 Bintang Kosong (Warna Abu-Abu Netral) */
-.star-icon.star-empty {
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://w3.org' viewBox='0 0 24 24' fill='%23e0e0e0'><path d='M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z'/></svg>");
-}
-
-/* ====================================================
-   🎨 TIPS WARNAI ULANG SECARA LIVE DARI TEMA LUAR
-   Karena SVG berada di CSS background, ganti warnanya secepat kilat 
-   murni memanfaatkan kekuatan filter hue-rotate / brightness CSS!
-   ==================================================== */
-.theme-cyberpunk .star-icon.star-full {
-  filter: drop-shadow(0 0 4px #ff007f) brightness(1.2) hue-rotate(120deg); /* Bermetamorfosis jadi neon pink otomatis! */
-}
 /* ==========================================================================
    SECTION — one row, 2–3 content columns
    Each column stacks: image → eyebrow → title → description → actions.
@@ -9209,7 +9218,7 @@ table.table:is(.stacked),
 /* =========================================================================
    4. MODULE: HYDRATION HOLD — data-hydrating + --is-loading (O(1), ROOT-ONLY)
    ONE seam owns this whole protocol: `holdUntilStyled(root, specifier, mockup?)`
-   in `@aio-ui/base/BaseAdapters/Hydration`, called at the end of `Builder.create()`.
+   in `@aio-ui/base`, called at the end of `Builder.create()`.
    This section is the FALLBACK skin: a builder that implements `loading()` shows
    its own `@aio-ui/skeleton` mockup instead and never sets `data-hydrating`.
    • HOLD    — only while THAT component's own sheet is missing (asked before

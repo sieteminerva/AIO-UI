@@ -1,4 +1,4 @@
-import { generateRandomColor, hexToRgba } from "@aio-ui/utilities/color.utils";
+import { generateRandomColor, hexToRgba } from "@aio-ui/utilities";
 
 /** Handle returned by `BackgroundCircleAnimation`, so a host can stop the loop. */
 export interface CircleAnimationHandle {

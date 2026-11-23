@@ -1,4 +1,4 @@
-import type { iBuilderConfig, iBuilderRegistry, iContentContract } from "@aio-ui/core/interface";
+import type { iBuilderConfig, iBuilderRegistry, iContentContract } from "@aio-ui/core";
 import { Builder } from "@aio-ui/base";
 export type ModeSwitcherElementType = "@mode-switcher" | "@mode-switcher>toggle" | "@mode-switcher>track" | "@mode-switcher>thumb" | "@mode-switcher>label";
 export interface iModeSwitcherConfig extends iBuilderConfig<ModeSwitcherElementType> {

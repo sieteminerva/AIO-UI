@@ -1,6 +1,6 @@
 {
   "name": "@aio-ui/utilities",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "type": "module",
   "files": [
     "dist",
@@ -10,34 +10,6 @@
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
-    },
-    "./Metadata": {
-      "types": "./dist/Metadata.d.ts",
-      "default": "./dist/Metadata.js"
-    },
-    "./SelectorToTree": {
-      "types": "./dist/SelectorToTree.d.ts",
-      "default": "./dist/SelectorToTree.js"
-    },
-    "./AttributeUtils": {
-      "types": "./dist/AttributeUtils.d.ts",
-      "default": "./dist/AttributeUtils.js"
-    },
-    "./DomUtils": {
-      "types": "./dist/DomUtils.d.ts",
-      "default": "./dist/DomUtils.js"
-    },
-    "./color.utils": {
-      "types": "./dist/color.utils.d.ts",
-      "default": "./dist/color.utils.js"
-    },
-    "./helper": {
-      "types": "./dist/helper.d.ts",
-      "default": "./dist/helper.js"
-    },
-    "./parseTableFile": {
-      "types": "./dist/parseTableFile.d.ts",
-      "default": "./dist/parseTableFile.js"
     }
   },
   "scripts": {
@@ -45,6 +17,6 @@
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "@aio-ui/core": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.4/aio-ui-core-0.2.4.tgz"
+    "@aio-ui/core": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.5/aio-ui-core-0.2.5.tgz"
   }
 }

@@ -1,4 +1,4 @@
-import type { iBasicNode, iBuilderConfig, iBuilderRegistry, iContentContract, iElementAnimation } from "@aio-ui/core/interface";
+import type { iBasicNode, iBuilderConfig, iBuilderRegistry, iContentContract, iElementAnimation } from "@aio-ui/core";
 import { Builder } from "@aio-ui/base";
 export type TabElementType = "@container" | "@tab" | "@tab>menu" | "@tab>menu>item" | "@tab>menu>item>label" | "@tab>menu>item>title" | "@tab>body" | "@tab>panel" | "@tab>panel>content" | "@tab>panel>content>eyebrow" | "@tab>panel>content>title" | "@tab>panel>content>desc" | "@tab>footer" | "@tab>spinner";
 export interface iTabConfig extends iBuilderConfig<TabElementType> {
@@ -57,6 +57,14 @@ export declare class TabBuilder extends Builder<TabElementType, iTabConfig> {
     readonly stylesheet: string;
     static readonly contract: iContentContract;
     private currentTabIndex;
+    /**
+     * One id stem per instance.
+     *
+     * Nested tabs used to share the literal `gen`, so `aria-controls`/`tabpanel-*` ids
+     * collided and a nested panel answered to the outer menu. The stem comes from
+     * `config.name` (random per instance) and never from the document.
+     */
+    private readonly uid;
     private _listenersTabChanged;
     private _listenersContentLoaded;
     private _boundKeyDownHandler?;
@@ -68,9 +76,8 @@ export declare class TabBuilder extends Builder<TabElementType, iTabConfig> {
     protected loading(): HTMLElement;
     constructor(config?: Partial<iTabConfig>);
     private set items(value);
-    /** Local DOM lookup for the tab root. Named `tabRoot` because `rootElement`
-     *  is already the slot-host field declared by `Builder`. */
-    private get tabRoot();
+    /** Local DOM lookup for the tab root. The root's own `id` is stamped by `@tab`; ids that
+     *  must not collide with a nested tab come from `uid`, never from the document. */
     prepare(data: any, _config?: Partial<iTabConfig>): HTMLElement;
     protected template(typeKey: TabElementType, el: HTMLElement, payload?: any): void;
     initialize(): void;
@@ -83,7 +90,22 @@ export declare class TabBuilder extends Builder<TabElementType, iTabConfig> {
     /** `animation: false` disables panel motion, `true` keeps the default fade, and an object
      *  carries `@keyframes` names the sheet reads through two custom properties. */
     private applyAnimation;
+    /**
+     * This instance's menu items — direct children of its own menu, never descendants.
+     *
+     * A nested tab renders its menu inside this tab's panel; a descendant query would put
+     * the child's buttons into the parent's list and clicking a child tab would move the
+     * parent.
+     */
     private buttons;
+    /**
+     * This instance's panels — direct children of its own body, never descendants.
+     *
+     * Same trap as `buttons()`: `querySelectorAll(".panel")` also collects every panel of
+     * a tab nested in a panel, so index 1 of a two-tab parent pointed at the child's first
+     * panel and the parent's own second panel never opened.
+     */
+    private panels;
     /** A number is an index; a string is matched against the button id, the panel it controls,
      *  then its label and title — so `active` accepts whichever the caller already has. */
     private resolve;

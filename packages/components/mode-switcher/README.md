@@ -10,6 +10,17 @@ nesting and class names written by hand are styled identically. Customise it by 
 selector, or retheme it without touching markup by redeclaring a `--app-*` token on an ancestor
 (or one `--mode-switcher-*` token for this component only).
 
+<!-- install:begin -->
+## Install
+
+Version — `0.2.4` (tag `v0.2.4`)
+
+    npm install https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.4/aio-ui-mode-switcher-0.2.4.tgz
+
+CDN (ES module, no build step) — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.4/packages/components/mode-switcher/dist/index.js`
+Stylesheet — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.4/packages/components/mode-switcher/dist/ModeSwitcher.css`
+<!-- install:end -->
+
 ## Payload
 
 None. The component is self-contained; anything passed is ignored.

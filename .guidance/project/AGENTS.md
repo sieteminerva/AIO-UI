@@ -8,6 +8,7 @@
 
 | Agent       | Band      | Task                                                          | Write scope                                                                                                                               | Started    | Checkpoint                    | State   |
 | ----------- | --------- | ------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- | ---------- | ----------------------------- | ------- |
+| `copilot b60-b62` | Tooling | Release automation — session opt-in, release-doc generator, README install blocks | `scripts/session.mjs`, `scripts/release-doc.mjs`, `scripts/README.md`, `templates/release/**`, `docs/releases/v0.2.4.md`, `packages/**/README.md`, `docs/framework/catalogue.json`, `package.json` | 2026-11-24 | `/memories/session/release-automation.md` | active |
 
 ## Row shape
 

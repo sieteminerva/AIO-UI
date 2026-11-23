@@ -15,8 +15,10 @@
  *   node scripts/session.mjs end       # §14 — the pre-compact handoff, all nine steps
  *   node scripts/session.mjs --help
  *
- * Interactive by default: it prompts for the free-text fields and falls back to the flags when
- * stdin is not a TTY, so the same command works from a terminal and from an agent with `--args`.
+ * Prompting is **opt-in**: `--interactive` (or `AIO_SESSION_INTERACTIVE=1`) asks for the free-text
+ * fields; without it the flags and placeholders are used and the process never reads stdin. That
+ * keeps a winpty/agent invocation deterministic — the `winpty` alias allocates a console, so
+ * `process.stdin.isTTY` is true even when nobody is at the keyboard.
  *
  * Read-only by design. It never edits a file: writing the handoff is the agent's last decision,
  * and a script that silently rewrote the logbook would be the one thing nobody could review.
@@ -47,11 +49,13 @@ AIO session ritual runner — read-only, no flags required.
   node scripts/session.mjs end       §14: the pre-compact handoff, all nine steps, plus the
                                      report, the memory skeleton and the logbook skeleton
 
-Fields are prompted when stdin is a TTY; pass them as flags otherwise:
+Fields come from flags, or from prompts when --interactive is set:
 
+  --interactive      ask for the free-text fields (also AIO_SESSION_INTERACTIVE=1); without it
+                     the command is non-interactive and never reads stdin
   --band --changed --proved --next --blocks --n         (cp)
   --gate --doc --task --proved --unproved --next        (end)
-  --no-prompt        never prompt, print the skeleton with placeholders
+  --no-prompt        never prompt even with --interactive; print placeholders
   --ignore-dirty     do not treat uncommitted work as a blocker
   --committed        the batch is committed even though the tree is dirty
 `;
@@ -151,18 +155,35 @@ function claimRows() {
     .map((line) => line.trim());
 }
 
-/** Free-text answer: the flag when given, else a prompt, else the fallback. */
+/**
+ * Free-text answer: the flag when given, else a prompt, else the fallback.
+ *
+ * A prompt on a non-TTY stdin gets a 2 s `AbortSignal` so a redirected/agent run can never hang;
+ * when it aborts, or the answer is empty, the fallback is returned. A real terminal is left open
+ * so a human can take their time.
+ */
 async function ask(rl, question, flagName, fallback = "") {
   const fromFlag = valueOf(flagName);
   if (fromFlag !== undefined) return fromFlag;
   if (!rl) return fallback;
-  const answer = (await rl.question(`  ${question}${fallback ? dim(` [${fallback}]`) : ""} `)).trim();
-  return answer || fallback;
+  const prompt = `  ${question}${fallback ? dim(` [${fallback}]`) : ""} `;
+  try {
+    const options = process.stdin.isTTY ? undefined : { signal: AbortSignal.timeout(2000) };
+    const answer = (await rl.question(prompt, options)).trim();
+    return answer || fallback;
+  } catch {
+    return fallback;
+  }
 }
 
-/** Opens a readline only when the session is interactive. */
+/**
+ * Opens a readline only when prompting was explicitly requested. Never inferred from `isTTY`:
+ * the `winpty` alias makes stdin report a TTY for a caller that cannot answer a question.
+ */
 function openPrompt() {
-  if (!process.stdin.isTTY || flag("--no-prompt")) return null;
+  if (flag("--no-prompt")) return null;
+  const interactive = flag("--interactive") || process.env.AIO_SESSION_INTERACTIVE === "1";
+  if (!interactive) return null;
   return createInterface({ input: process.stdin, output: process.stdout });
 }
 
@@ -274,26 +295,29 @@ async function end(f, rl) {
 
   const dirty = f.dirty && !flag("--ignore-dirty");
   const step = (n, title, state) => say(`${String(n).padStart(2)}. ${title} — ${state}`);
+  // A field whose answer comes from a prompt shows `awaiting answer`; with no prompt (or a flag)
+  // the step line reflects the flag, or `NOT RECORDED` when it will stay empty.
+  const pending = (given) => (given ?? (rl ? "awaiting answer" : "NOT RECORDED"));
+  const gateFlag = valueOf("--gate");
+  const docFlag = valueOf("--doc");
+  const taskFlag = valueOf("--task");
 
+  // Print all nine steps BEFORE the first question, so a human reads the checklist in order
+  // instead of seeing step 1, then a prompt, then steps 3–9.
   step(1, "Stop clean", dirty ? `${f.changed.length} uncommitted change(s)` : "nothing in flight");
   if (dirty) for (const line of f.changed) say(`      ${line}`);
-
-  const gate = await ask(rl, "2. Gate result (or `md-only`):", "--gate", "");
-  step(2, "Gate", gate || "NOT RECORDED");
-
+  step(2, "Gate", pending(gateFlag) || "NOT RECORDED");
   step(3, "Commit", dirty && !flag("--committed") ? "UNCOMMITTED — an uncommitted batch does not survive" : "committed");
-
-  const doc = await ask(rl, "4. Detail doc path (TASKS.md / TASK-*.md):", "--doc", "");
-  step(4, "Detail doc", doc ? `${doc} — needs Status: and ## Next` : "not named");
-
-  const task = await ask(rl, "5. Session memory file (/memories/session/<task>.md):", "--task", "");
-  step(5, "Memory", task ? `${task} — task path + 2 lines + last 3 CPs` : "no memory file");
-
+  step(4, "Detail doc", docFlag ? `${docFlag} — needs Status: and ## Next` : pending(docFlag));
+  step(5, "Memory", taskFlag ? `${taskFlag} — task path + 2 lines + last 3 CPs` : pending(taskFlag));
   step(6, "Logbook", `${f.cards.length} card(s) in ${STATUS.replace(/\\/g, "/")} — rewrite, newest on top`);
   step(7, "Band file", "## Active row state; a ## Next line if the next step changed");
   step(8, "Report", "four things, in the chat language");
   step(9, "Claim row", f.claims.length ? "LIVE — drop it" : "already empty");
 
+  const gate = await ask(rl, "2. Gate result (or `md-only`):", "--gate", "");
+  const doc = await ask(rl, "4. Detail doc path (TASKS.md / TASK-*.md):", "--doc", "");
+  const task = await ask(rl, "5. Session memory file (/memories/session/<task>.md):", "--task", "");
   const proved = await ask(rl, "PROVED → <command> → <number>:", "--proved", gate);
   const unproved = await ask(rl, "NOT PROVED:", "--unproved", "nothing outstanding");
   const next = await ask(rl, "NEXT → <single action>:", "--next", "");
@@ -359,5 +383,8 @@ try {
     process.exitCode = 1;
   }
 } finally {
+  // Close the interface AND release the stream: `close()` alone leaves stdin paused-or-flowing
+  // depending on the caller, which is the "close is not enough" class of hang.
   rl?.close();
+  process.stdin.pause();
 }

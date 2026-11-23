@@ -29,7 +29,14 @@ import { compare, next, parse } from "./semver.mjs";
 const ROOT = process.cwd();
 const SCOPE = "@aio-ui/";
 const DEP_FIELDS = ["dependencies", "peerDependencies", "optionalDependencies"];
-const SECTIONS = ["packages/components", "packages/modules", "packages/themes", "packages/kits", "packages/utilities", "packages/styles"];
+const SECTIONS = [
+  "packages/components",
+  "packages/modules",
+  "packages/themes",
+  "packages/kits",
+  "packages/utilities",
+  "packages/styles",
+];
 
 const args = process.argv.slice(2);
 const flag = (name) => args.includes(name);
@@ -121,7 +128,10 @@ function released() {
   return readdirSync(dir, { withFileTypes: true })
     .filter((entry) => entry.isDirectory() && parse(entry.name.slice(1)))
     .filter((entry) => existsSync(join(dir, entry.name, "registry.json")))
-    .map((entry) => ({ tag: entry.name.slice(1), registry: JSON.parse(readFileSync(join(dir, entry.name, "registry.json"), "utf8")) }))
+    .map((entry) => ({
+      tag: entry.name.slice(1),
+      registry: JSON.parse(readFileSync(join(dir, entry.name, "registry.json"), "utf8")),
+    }))
     .sort((one, two) => compare(one.tag, two.tag));
 }
 const latest = released().at(-1);
@@ -184,7 +194,10 @@ function report() {
     const version = String(entry.manifest.version ?? "0.0.0");
     groups.set(version, [...(groups.get(version) ?? []), entry.manifest.name]);
   }
-  console.log(`[version] ${packages.length} package(s) · tag ${rootManifest.version}` + (latest ? ` · released ${latest.tag}` : " · no released registry"));
+  console.log(
+    `[version] ${packages.length} package(s) · tag ${rootManifest.version}` +
+      (latest ? ` · released ${latest.tag}` : " · no released registry"),
+  );
   for (const [version, names] of [...groups].sort((one, two) => compare(two[0], one[0]))) {
     const sample = names.length <= 6 ? ` — ${names.join(", ")}` : "";
     console.log(`  ${version}: ${names.length} package(s)${sample}`);

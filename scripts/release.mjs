@@ -44,7 +44,17 @@
  */
 import { execSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { copyFileSync, cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
+import {
+  copyFileSync,
+  cpSync,
+  existsSync,
+  mkdirSync,
+  readdirSync,
+  readFileSync,
+  rmSync,
+  statSync,
+  writeFileSync,
+} from "node:fs";
 import { join, relative, sep } from "node:path";
 import { gzipSync } from "node:zlib";
 import { ensureWorktree } from "./releases-worktree.mjs";
@@ -305,16 +315,28 @@ if (decreased.length) {
 
 const unbumped = plan.filter((item) => item.sourceChanged && item.beforeVersion === item.packageVersion);
 if (unbumped.length) {
-  console.error(`[release] ${unbumped.length} package(s) changed without a version bump${strict ? " — strict, refusing" : " (warning)"}:`);
-  unbumped.slice(0, 8).forEach((item) => console.error(`  - ${item.name}@${item.packageVersion} — run: node scripts/version.mjs --apply --bump ${item.name} --tag <x.y.z>`));
+  console.error(
+    `[release] ${unbumped.length} package(s) changed without a version bump${strict ? " — strict, refusing" : " (warning)"}:`,
+  );
+  unbumped
+    .slice(0, 8)
+    .forEach((item) =>
+      console.error(
+        `  - ${item.name}@${item.packageVersion} — run: node scripts/version.mjs --apply --bump ${item.name} --tag <x.y.z>`,
+      ),
+    );
   if (strict) process.exit(1);
 }
 
 if (!apply) {
   const reuse = plan.filter((item) => item.reusable).length;
-  console.log(`[release] previous ${previous ? `v${previous.tag}` : "none"} · reuse ${reuse} · repack ${plan.length - reuse}`);
+  console.log(
+    `[release] previous ${previous ? `v${previous.tag}` : "none"} · reuse ${reuse} · repack ${plan.length - reuse}`,
+  );
   for (const item of plan.slice(0, 5)) {
-    console.log(`  ${item.name}@${item.packageVersion} → ${relative(ROOT, item.entry.dir)}${item.reusable ? " (copied)" : ""}`);
+    console.log(
+      `  ${item.name}@${item.packageVersion} → ${relative(ROOT, item.entry.dir)}${item.reusable ? " (copied)" : ""}`,
+    );
   }
   if (plan.length > 5) console.log(`  … ${plan.length - 5} more`);
   console.log(`[release] dry run — pass --apply to write ${relative(ROOT, outDir)}`);

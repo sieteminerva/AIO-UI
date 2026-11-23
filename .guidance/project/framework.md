@@ -8,15 +8,16 @@ Why / stages: `.guidance/plan-framework.md`. Engineering rules:
 
 | #   | Task                     | State       | Gate                                                                                                    |
 | --- | ------------------------ | ----------- | ------------------------------------------------------------------------------------------------------- |
-| 1   | Theme console view (fab) | in progress | `examples/demo/src/ThemeConsole/TASKS.md` — view composed, gate green; open: page-only popover sections |
-| 2   | Inspect surface (b43)    | in progress | `inspect()` + `inspectPage()` green; open: dead relay removal, `#cleanupMap` reset                      |
-| 3   | Release automation (b44) | next        | `docs/framework/TASK-release-automation.md` — `session.mjs end` hang fix, then `release-doc.mjs`        |
+| 1   | Release automation (b60) | next        | `docs/framework/TASK-release-automation.md` §Next — b60 `session.mjs --interactive`, b61 `release-doc.mjs`, b62 `## install` per README |
+| 2   | Theme console view (fab) | in progress | `examples/demo/src/ThemeConsole/TASKS.md` — view composed, gate green; open: page-only popover sections |
+| 3   | Inspect surface (b43)    | in progress | `inspect()` + `inspectPage()` green; open: dead relay removal, `#cleanupMap` reset                      |
 
 ## Next
 
-- **Release automation** — make `session.mjs end` prompts opt-in (the winpty `node` alias makes
-  `isTTY` true and blocks agents), then build `scripts/release-doc.mjs` so every release note
-  generates and probes its CDN table. → `docs/framework/TASK-release-automation.md`
+- **Release automation — b60 first** (`scripts/session.mjs` `openPrompt()`), then b61
+  `scripts/release-doc.mjs` (marker-bounded note blocks + `check:live` probe), then b62 the
+  `## install` block in every package README (+ `catalogue.mjs --apply`). CDN stays **versioned**
+  (owner, 2026-11-24; versionless cancelled). → `docs/framework/TASK-release-automation.md`
 - **Publish — owner's order: LAST.** The post-refactor 37-package tree is regenerated and not
   published; it is worked on only after the orchestrator band is finished, or when the owner asks.
   Do not raise it unprompted (STATUS card #3). The official release also waits for the `store` /

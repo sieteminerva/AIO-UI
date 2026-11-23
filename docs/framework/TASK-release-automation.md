@@ -3,7 +3,11 @@
 Recorded 2026-11-21 (batch 44). Band: **Tooling** (`scripts/**` + `docs/`).
 Prior art: `packages/TASKS.md`, `docs/live-cdn-repo.md` §9.
 
-**Status:** open — nothing implemented yet. Two jobs, in this order.
+**Status:** open (2026-11-24) — nothing implemented yet. Scope agreed as three separate batches,
+in this order: **b60** job 1 (§1), **b61** `release-doc.mjs` (§2), **b62** `## install` blocks in
+every package README (new, §3). §2.1 (aggregate tarballs) stays parked behind Q5/Q6.
+Owner decision 2026-11-24 supersedes Q7: **the CDN stays versioned** (`@v<x>`), no versionless
+alias — breaking changes are expected, so a silent moving alias is the bigger risk.
 
 ## 1. `session.mjs end` blocks forever under the winpty alias
 
@@ -182,15 +186,61 @@ files plus both tarballs, and `npm i <url>/aio-ui-bundle-0.2.4.tgz` in a scratch
    (an `export *` needs the duplicate-name handling `build-bundle.mjs` already has)
 6. Are the unversioned aliases (`aio-ui-bundle.tgz`, `aio-ui-iife.tgz` at the branch root) part of
    the first implementation, or versioned filenames only until the naming settles?
-7. **The CDN must not be versioned** (owner, 2026-11-23). Every generated import map and
-   `CDN_BASE` currently pin `@v0.2.4/`, so a consumer only moves when the emitter is changed. The
-   decided rule is one **versionless** URL that a patch rides automatically, and a version tag only
-   for pinning/rollback. To settle here: which alias (`@releases` branch vs a `@latest` tag the
-   publish moves), where the alias is written (`registry.base`, `injectLayout`, the emitted import
-   map), and how a breaking change is announced — a **new major** tag and a note, never a silent
-   move of the alias. Until then `publish-cdn.mjs` keeps moving the version tag and the
-   orchestrator keeps pinning it, which is the mismatch behind "update the CDN, but the app still
-   points at the old one".
+7. ~~**The CDN must not be versioned**~~ — **REVERSED by the owner on 2026-11-24.** Many breaking
+   changes are expected, so a versionless alias would silently move consumers; the CDN stays on
+   the version tag (`@v0.2.4`) and `publish-cdn.mjs` keeps moving that tag. Every generated URL
+   (import map, `CDN_BASE`, the `## install` block) prints `registry.base` **as it is** — the
+   generator never composes a versionless URL, so re-deciding later is one `--apply`.
+
+## 3. `## install` in every package README (owner addition, 2026-11-24)
+
+A package README never shows how to get the package: the tarball URL and the CDN paths already
+exist in `registry.json`, they are just never printed where a reader looks.
+
+Shape — idempotent, marker-bounded, one block per README:
+
+```md
+<!-- install:begin -->
+## Install
+
+    npm install <registry.packages[name].tarball>
+
+CDN (ES module, no build step) — `<registry.base><entry.dir>/<entry.subpaths["."]>`
+Stylesheet — `<registry.base><entry.dir>/<stylesheet subpath>`
+<!-- install:end -->
+```
+
+Rules:
+
+- **Placement.** After the lead paragraph, before the first hand-written `##`, so `## Install` is
+  the first section of every package README and re-running the generator never moves it.
+- **Source of truth.** Only `releases/v<x>/registry.json`. Every URL is copied from
+  `registry.base`, `entry.dir`, `entry.subpaths` and `entry.tarball`; the generator never composes
+  a base (that is what makes the versioned-CDN decision a one-line change).
+- **Non-builder packages** (`core`, `base`, `utilities`, `styles`, `themes`, `kits/*`) print their
+  tarball plus the CDN URL of the map a host actually loads (`layout.json` / `index.css`), never a
+  fake `import`.
+- **Accepted cost (owner, 2026-11-24):** 37 READMEs change on every release, so
+  `docs/framework/catalogue.json` must be regenerated (`node scripts/catalogue.mjs --apply`) or
+  `check:catalogue` fails. Versioned URLs are the reason; a versionless CDN was rejected.
+- **Gate.** `npm run check` plus a diff assertion that only text between `install:begin/end`
+  changed (a hand-written section must never be touched).
+
+## Next — start here (cold)
+
+1. **b60** — `scripts/session.mjs`: `openPrompt()` (:164) becomes opt-in through `--interactive`
+   or `AIO_SESSION_INTERACTIVE=1`; `end()` prints steps 1–9 before the first `ask()`; `finally`
+   runs `rl?.close(); process.stdin.pause();`. Accept the four probes in §1; document the flag in
+   the `scripts/README.md` row.
+2. **b61** — `scripts/release-doc.mjs` + `templates/release/note.md.tpl`: write only the blocks
+   between `<!-- cdn-paths:begin/end -->` and `<!-- artefacts:begin/end -->` in
+   `docs/releases/v0.2.4.md` (markers placed by hand once); must reproduce the 76 package rows and
+   the four _Bundled pair_ rows byte-identically.
+3. **b62** — `release-doc.mjs --readme` writes the `install:begin/end` block of §3 into every
+   `packages/**/README.md`, then `node scripts/catalogue.mjs --apply`.
+4. **Probe** — `npm run check:live` (separate gate, callable any time) fetches `registry.json`, the
+   four loose bundle files, one package tarball, and both aggregate tarballs once §2.1 lands.
+5. **Parked** — §2.1 aggregate tarballs (`@aio-ui/bundle`, `@aio-ui/iife`) wait for Q5/Q6.
 
 ## Done =
 
@@ -198,6 +248,9 @@ files plus both tarballs, and `npm i <url>/aio-ui-bundle-0.2.4.tgz` in a scratch
 - `release-doc.mjs` regenerates `docs/releases/v0.2.4.md`'s CDN section byte-identically (same 76
   package rows + 4 loose bundle rows), and `--probe` reports 200 for the registry, the four loose
   files, both aggregate tarballs and one package tarball.
+- Every `packages/**/README.md` carries an `install:begin/end` block naming its tarball and its
+  CDN paths, `node scripts/catalogue.mjs --check` is green after the rewrite, and a second
+  `--apply` changes no byte.
 - A scratch consumer run of `npm i <url>/aio-ui-bundle-0.2.4.tgz` produces
   `node_modules/@aio-ui/bundle`, `node_modules/@aio-ui/iife` and the 37 hoisted packages.
 - `docs/live-cdn-repo.md` §9's release-note line points at the generator instead of a `node -e`.

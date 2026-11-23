@@ -8,7 +8,6 @@
 
 | Agent       | Band      | Task                                                          | Write scope                                                                                                                               | Started    | Checkpoint                    | State   |
 | ----------- | --------- | ------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- | ---------- | ----------------------------- | ------- |
-| copilot b59 | Framework | tab nesting · message root export · options/multiple contract | `packages/components/tab/**`, `packages/components/message/**`, `packages/components/input/**`, `examples/gallery/src/registry.assets.ts` | 2026-11-24 | `.guidance/project/STATUS.md` | handoff |
 
 ## Row shape
 

@@ -4,6 +4,10 @@
 > **only** after the user picks it — never "to orient" (`AGENT_RULES.md` §13). Rewritten each
 > session, newest on top. One card = one line + one pointer.
 >
+> Batch 59 (2026-11-24): **framework seams** — tab lookups scoped to own menu/body + per-instance
+> id stem (nested tab no longer drives its parent), `messageFormAdapter` pinned from the package
+> root + gallery module map, and `options`/`multiple` moved onto the field for
+> select/dropdown/picker/radio/checkbox (radio group renders `.choice` rows).
 > Batch 53 (2026-11-23): **Apps Script entry** — `orchestrator/apps-script/` serves `ask`
 > (Gemini/DeepSeek) and `sheet` (template copy); the wizard still calls the mock until the client
 > half lands.
@@ -27,36 +31,40 @@
 > 76 rows, 39 → 37 packages; `@aio-ui/rating` + `@aio-ui/modules` kit deleted; `v0.2.4` release
 > artefact regenerated locally (76 rows) but **not published**. Batch 43: `v0.2.4` published, mode B.
 
-### 1. Rajutan app — published site — next
+### 1. Release automation — next (tooling band)
+
+`docs/framework/TASK-release-automation.md` §Next is the checklist from cold: **b60**
+`session.mjs end` becomes opt-in-interactive (no more winpty hang), **b61** `release-doc.mjs`
+regenerates only the marker-bounded blocks of `docs/releases/v<x>.md` (76 rows + 4 bundle rows),
+**b62** `release-doc.mjs --readme` writes a `## Install` block (tarball + CDN paths) into every
+package README, then `catalogue.mjs --apply`. Probe becomes `npm run check:live`.
+**Owner decision (2026-11-24): the CDN stays versioned** — versionless alias is cancelled, so
+every generated URL copies `registry.base` verbatim.
+Open: aggregate tarballs (`@aio-ui/bundle`, `@aio-ui/iife`) parked behind Q5/Q6.
+→ `docs/framework/TASK-release-automation.md` §3 · `.guidance/project/framework.md` §Next
+
+### 2. Rajutan app — published site
 
 Batch 57 landed **hosting**: `action:"deploy"` (`orchestrator/apps-script/Deploy.js`) commits the
 emitted files to GitHub and enables Pages, so a job returns a **hosted** `data.live` and a
 `data.repo`. Proof: real job (deepseek, 1 model call) → sheet `kriya-b57` +
-`https://sieteminerva.github.io/test_site_rajutan/` serving `Kriya B57`; `#/result` shows Live,
-Sheets and GitHub rows. Also proved: the Test deployment was pinned (`@2`) and every earlier `push`
-was inert until `clasp update-deployment` moved it to `@4`.
-Next: per-site repos (token with Administration) + `data[].endpoint`; then auth.
+`https://sieteminerva.github.io/test_site_rajutan/` serving `Kriya B57`. Also proved: the Test
+deployment was pinned (`@2`) and every earlier `push` was inert until `clasp update-deployment`
+moved it to `@4`. Next: per-site repos (token with Administration) + `data[].endpoint`; then auth.
 Open: `/exec` is unauthenticated (`CLIENT_TOKEN` unset, `public/sw.js` never registered).
-**Mechanism + proposal (decided next): `orchestrator/mechanism.md`** — §1–§11 = what works and how;
-`# Proposal` = dataRef/inline decision, sheet contract, phases P0–P5 (owner to choose).
-→ `.guidance/project/generator.md` §Next · memory `/memories/session/rajutan-app.md`
-
-### 2. Generator — tarball install probe
-
-b48/b49 landed `answers.ts` and `retry.ts`. Next: prove the published tree is consumable —
-`npm i <tarball>` in a clean bundler folder plus a Node ESM import — then `layout.json` inside
-the release workflow.
-→ `.guidance/project/generator.md`
+Mechanism + proposal: `orchestrator/mechanism.md` §1–§11 + `# Proposal` (phases P0–P5).
+→ `.guidance/project/generator.md` §Next
 
 ### 3. Release — publish is LAST (deferred by the owner)
 
 `releases/v0.2.4` was regenerated locally after the surface refactor (37 packages / 76 rows) and is
-**not committed or published**; `@v0.2.4` still serves the 39-package tree.
-**Owner decision (2026-11-22): publish sits at the END of the task order — it is worked on only
-after the orchestrator band is finished, or when the owner asks for it. Do not raise it, do not
-propose it, do not ask about publishing before one of those two conditions is true.**
-The official release also waits for the `store`, `profile`, `blog` reference apps.
-→ `docs/releases/v0.2.4.md` · `docs/live-cdn-repo.md` §9
+**not committed or published**; the checked-in `releases/v0.2.4/registry.json` still describes the
+39-package tree. **Owner decision (2026-11-22): publish sits at the END of the task order — only
+after the orchestrator band is finished, or when the owner asks. Do not raise it, do not propose
+it, do not ask about publishing before one of those two conditions is true.** The official release
+also waits for the `store`, `profile`, `blog` reference apps.
+Open: generator's tarball-consumption probe (`npm i <tarball>` + Node ESM import) rides on b62.
+→ `docs/releases/v0.2.4.md` · `docs/live-cdn-repo.md` §9 · `.guidance/project/generator.md`
 
 ## Map
 

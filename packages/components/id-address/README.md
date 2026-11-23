@@ -13,6 +13,15 @@ already rendered, so its styling contract is the small set of state classes it t
 it a plain CSS library by construction: any markup carrying the same wrappers and state classes is
 styled identically, and the base field look stays with the component that rendered the field.
 
+<!-- install:begin -->
+## Install
+
+    npm install https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.4/aio-ui-id-address-0.2.4.tgz
+
+CDN (ES module, no build step) — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.4/packages/components/id-address/dist/index.js`
+Stylesheet — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.4/packages/components/id-address/dist/id-address.css`
+<!-- install:end -->
+
 ## Payload
 
 The engine takes no `content` payload. Its input is the query it sends to a data source:

@@ -18,6 +18,15 @@ class names written by hand are styled identically. Customise it by overriding a
 retheme it without touching markup by redeclaring a `--app-*` token on an ancestor (or one
 `--input-*` token for this component only). Nothing here is scoped under `.form`.
 
+<!-- install:begin -->
+## Install
+
+    npm install https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.4/aio-ui-input-0.2.4.tgz
+
+CDN (ES module, no build step) — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.4/packages/components/input/dist/index.js`
+Stylesheet — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.4/packages/components/input/dist/input.css`
+<!-- install:end -->
+
 ## Payload
 
 ```ts

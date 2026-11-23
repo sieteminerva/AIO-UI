@@ -29,6 +29,15 @@ nesting and class names written by hand are styled identically. Customise it by 
 selector, or retheme it without touching markup by redeclaring a `--app-*` token on an ancestor
 (or one `--skeleton-*` token for this component only).
 
+<!-- install:begin -->
+## Install
+
+    npm install https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.4/aio-ui-skeleton-0.2.4.tgz
+
+CDN (ES module, no build step) — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.4/packages/components/skeleton/dist/index.js`
+Stylesheet — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.4/packages/components/skeleton/dist/Skeleton.css`
+<!-- install:end -->
+
 ## Payload
 
 The registry face (`SkeletonBuilder`) takes one spec, merged over `config.spec`:

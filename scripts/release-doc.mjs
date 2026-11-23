@@ -18,6 +18,10 @@
  *   node scripts/release-doc.mjs --version 0.2.4            # dry run: print both tables + counts
  *   node scripts/release-doc.mjs --version 0.2.4 --apply    # rewrite the two blocks in place
  *   node scripts/release-doc.mjs --version 0.2.4 --probe    # live check (npm run check:live)
+ *   node scripts/release-doc.mjs --version 0.2.4 --readme [--apply]
+ *                                                           # write the `install` block of every
+ *                                                           # package README, then run
+ *                                                           # `node scripts/catalogue.mjs --apply`
  *
  * Every URL is copied from `registry.base` verbatim. The generator never composes a base, so the
  * versioned-CDN decision stays a data decision: change `registry.base`, re-run `--apply`.
@@ -43,6 +47,7 @@ const valueOf = (name) => {
 const version = valueOf("--version");
 const apply = flag("--apply");
 const probe = flag("--probe");
+const readme = flag("--readme");
 
 // The probe reads whatever version the root manifest names; the note generator demands --version so
 // it can never overwrite an older note by accident.
@@ -130,6 +135,68 @@ function replaceBlock(doc, name, content) {
   return `${doc.slice(0, from + begin.length)}\n${content}\n${doc.slice(to)}`;
 }
 
+// ---- README install blocks --------------------------------------------------
+
+/** The package's main stylesheet: the CSS subpath named after the package, else the first one. */
+function pickStylesheet(name, entry) {
+  const keys = Object.keys(entry.subpaths ?? {}).filter((key) => key.endsWith(".css")).sort();
+  if (!keys.length) return undefined;
+  const short = name.slice(name.lastIndexOf("/") + 1).replace(/-/g, "").toLowerCase();
+  const match = keys.find((key) => {
+    const base = key.slice(key.lastIndexOf("/") + 1).replace(/\.css$/, "").replace(/-/g, "").toLowerCase();
+    return base === short;
+  });
+  return match ?? keys[0];
+}
+
+/** The `## Install` block body — tarball, the CDN URL a host loads, and its stylesheet. */
+function installInner(name, entry) {
+  const url = (subpath) => `${base}${entry.dir}/${subpath}`;
+  const root = entry.subpaths?.["."];
+  const css = pickStylesheet(name, entry);
+  const lines = ["## Install", "", `    npm install ${entry.tarball}`, ""];
+
+  if (root && root.endsWith(".js")) {
+    // A real ES module: the URL the import map points at.
+    lines.push(`CDN (ES module, no build step) — \`${url(root)}\``);
+    if (css) lines.push(`Stylesheet — \`${url(entry.subpaths[css])}\``);
+  } else if (css) {
+    // No JS root (e.g. `styles`): the map a host actually loads, never a fake `import`.
+    lines.push(`CDN (no build step) — \`${url(entry.subpaths[css])}\``);
+  }
+  return lines.join("\n");
+}
+
+/** Replaces the block in place, or inserts it before the first hand-written `##`. */
+function placeInstallBlock(doc, inner) {
+  if (doc.includes("<!-- install:begin -->") && doc.includes("<!-- install:end -->")) {
+    return replaceBlock(doc, "install", inner);
+  }
+  const block = `<!-- install:begin -->\n${inner}\n<!-- install:end -->`;
+  const index = doc.indexOf("\n## ");
+  if (index === -1) return `${doc.replace(/\s*$/, "")}\n\n${block}\n`;
+  const head = doc.slice(0, index).replace(/\s*$/, "");
+  const tail = doc.slice(index); // starts with "\n## "
+  return `${head}\n\n${block}\n${tail}`;
+}
+
+function runReadme() {
+  const names = Object.keys(packages).sort((a, b) => a.localeCompare(b));
+  const touched = [];
+  for (const name of names) {
+    const entry = packages[name];
+    const readmePath = join(ROOT, entry.dir, "README.md");
+    if (!existsSync(readmePath)) continue;
+    const inner = installInner(name, entry);
+    if (apply) writeFileSync(readmePath, placeInstallBlock(readFileSync(readmePath, "utf8"), inner), "utf8");
+    touched.push(entry.dir);
+  }
+  const verb = apply ? "wrote" : "would write";
+  console.log(`[readme] ${verb} install block in ${touched.length} package README(s)`);
+  if (apply) console.log("[readme] now run: node scripts/catalogue.mjs --apply");
+  return touched.length;
+}
+
 // ---- probe ------------------------------------------------------------------
 
 async function runProbe() {
@@ -164,6 +231,8 @@ async function runProbe() {
 
 if (probe) {
   process.exitCode = await runProbe();
+} else if (readme) {
+  runReadme();
 } else {
   const artefactRows = bundleFiles.length;
   if (!apply) {

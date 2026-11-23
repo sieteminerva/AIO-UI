@@ -4,6 +4,14 @@ The `events` slot — one synchronous bus for two layers: component events (`ele
 `elementChanged`, `elementRemoved`) and page events (`pageChanged`, `beforeRender`, `ready`,
 `superseded`, `themeChanged`, `error`, `destroyed`).
 
+<!-- install:begin -->
+## Install
+
+    npm install https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.4/aio-ui-event-emitter-0.2.4.tgz
+
+CDN (ES module, no build step) — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.4/packages/modules/event-emitter/dist/index.js`
+<!-- install:end -->
+
 ## Payload
 
 None. The app registers the instance; the shell wires it into the registry once

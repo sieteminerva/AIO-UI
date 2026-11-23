@@ -10,6 +10,15 @@ class names written by hand are styled identically. Customise it by overriding a
 retheme it without touching markup by redeclaring a `--app-*` token on an ancestor (or one
 `--tab-*` token for this component only).
 
+<!-- install:begin -->
+## Install
+
+    npm install https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.4/aio-ui-tab-0.2.4.tgz
+
+CDN (ES module, no build step) — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.4/packages/components/tab/dist/index.js`
+Stylesheet — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.4/packages/components/tab/dist/Tab.css`
+<!-- install:end -->
+
 ## Payload
 
 ```ts

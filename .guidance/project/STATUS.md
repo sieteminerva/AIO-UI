@@ -4,27 +4,25 @@
 > **only** after the user picks it — never "to orient" (`AGENT_RULES.md` §13). Rewritten each
 > session, newest on top. One card = one line + one pointer.
 >
-> Recent batches (newest first): **b84** UI-safe stroke · **b83** inline-code chip ·
-> **b82** text contrast · **b81** popup flip + form footer · **b80** repeater
-> `removable`/`hideOnSource` · **b79** `wide` is a percentage of the row · **b78** a container
-> honours the share (group + cascade) · **b76** core drops the input node types
-> · **b74** stage 3.3: form schema = input schema, examples migrated
-> · **b73** input schema stage 3 (strict module keys + legacy door
-> gone) · **b72** input schema stage 2 (per-type union +`create()` wiring) ·
-> **b71** input schema split (stage 1 grouping) ·
-> **b70** control set: idle edit/save half rebuilt + repeater delete floor ·
-> **b69** v0.2.5 published to CDN · **b68** the eight missing package
-> READMEs · **b67** publish-side followers · **b65–b66** per-package versions · **b64** registry regen to 37
-> packages · **b63** this task doc · **b60–b62** session prompt opt-in, `release-doc.mjs`, `## Install`
-> in every package README · **b57** Apps Script hosting · **b52–b59** shell mount point, tab seams.
+> Recent batches (newest first): **b91** select rests on the input border hue · **b90** picker
+> stops guessing its side · **b89** one source for popup + field box · **b88** popup = one sheet ·
+> **b87** form ink 4.5:1 + theme-aware code paper · **b86** one `light-dark()` root ·
+> **b84** UI-safe stroke · **b83** inline-code chip · **b82** text contrast · **b81** popup flip +
+> form footer · **b80** repeater `removable`/`hideOnSource` · **b79** `wide` is a percentage of the
+> row · **b78** a container honours the share (group + cascade) · **b76** core drops the input node
+> types · **b74** stage 3.3: form schema = input schema, examples migrated · **b73** input schema
+> stage 3 (strict module keys + legacy door gone) · **b72** input schema stage 2 (per-type union
+> +`create()` wiring) · **b71** input schema split (stage 1 grouping) · **b70** control set: idle
+> edit/save half rebuilt + repeater delete floor · **b69** v0.2.5 published to CDN · **b68** the
+> eight missing package READMEs · **b67** publish-side followers · **b65–b66** per-package versions.
 > Older history: `git log --oneline`.
 
 ### 1. Colour tokens — top priority before v0.2.6 (framework band)
 
-Root + per-component colour is being rebuilt so light / dark / colour-theme all read: one
-`light-dark()` root, a UI-stroke strength (`--app-primary-ui` / `--app-accent-ui`), ink-derived
-chips. Landed b82–b84 (text cap, inline-code chip, 3:1 stroke). **Open:** T1 root rewrite, T2 form
-path, T3 Article/Table/Message, T4 theme `data-mode`, T5 literal lint. Restore checkpoint: tag
+T1 (one `light-dark()` root + mask spinner + derived skeleton) and T2 (form path ink/border,
+theme-aware code paper, popup = one sheet with the control) landed b86–b91. **Open:** T3
+Article/Table/Message/Carousel/Tab palettes, T4 theme `data-mode`, T5 literal lint, plus the
+stale spinner snippet in `masonry/README.md`. Restore checkpoint: tag
 `color-pre-full-2026-11-25` / branch `color-restore-pre-full` (547973e).
 → `docs/framework/TASK-color-tokens.md`
 

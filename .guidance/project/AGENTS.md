@@ -6,9 +6,7 @@
 
 ## Live claims
 
-| Agent       | Band      | Task                                                    | Write scope                                                                                                                                                                                                                                           | Started    | Checkpoint                          | State  |
-| ----------- | --------- | ------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- | ----------------------------------- | ------ |
-| copilot b86 | Framework | Colour tokens before v0.2.6 — T2 form path + deep panel | `packages/styles/src/variables.css`, `packages/components/input/{Input.css,InputControls/InputControls.css,Dropdown/Dropdown.css,FileUploader/FileUploader.css}`, `packages/components/form/Form.css`, `packages/components/code-block/CodeBlock.css` | 2026-11-25 | `/memories/session/color-tokens.md` | active |
+_No live writer._
 
 ## Row shape
 

@@ -10,12 +10,13 @@ Why / stages: `.guidance/plan-framework.md`. Engineering rules:
 | --- | ------------------------ | ----------- | ------------------------------------------------------------------------------------------------------- |
 | 1   | Theme console view (fab) | in progress | `examples/demo/src/ThemeConsole/TASKS.md` — view composed, gate green; open: page-only popover sections |
 | 2   | Inspect surface (b43)    | in progress | `inspect()` + `inspectPage()` green; open: dead relay removal, `#cleanupMap` reset                      |
-| 3   | Colour tokens (b82–b84)  | in progress | priority before v0.2.6 → `docs/framework/TASK-color-tokens.md`; T1 root rewrite next           |
+| 3   | Colour tokens (b82–b91)  | in progress | priority before v0.2.6 → `docs/framework/TASK-color-tokens.md`; T1+T2 landed, T3 next |
 
 ## Next
 
-- **Colour tokens before v0.2.6** — execute T1–T5 in `docs/framework/TASK-color-tokens.md`.
-  Root rewrite first, then the form path. Restore tag `color-pre-full-2026-11-25` (547973e).
+- **Colour tokens before v0.2.6** — T1 + T2 landed (b86–b91). Next: **T3** (Article, Table,
+  Message, Carousel, Tab palettes), then T4 (`activate()` sets `data-mode`) and T5 (literal lint).
+  Restore tag `color-pre-full-2026-11-25` (547973e). → `docs/framework/TASK-color-tokens.md`
 
 - **Release the input breaking change.** b76 removed `iBasicInputNode`, `iFormGroupNode` and
   `InputBuilderConfigOptions` from `@aio-ui/core` (type-only, but public), b79 removed `span` from

@@ -1,6 +1,7 @@
 # TASK — colour tokens before v0.2.6
 
-**Status:** in progress. Priority: **colouring is the top blocker before the v0.2.6 release.**
+**Status:** T1 done, T2 done, plus the dropdown/picker seam work the owner asked for mid-task.
+Priority: **colouring is the top blocker before the v0.2.6 release.**
 **Owner direction:** the agent executes the stages; the owner then reviews each component and
 points at the colour it wants changed. Do not wait for per-component approval to start the root.
 
@@ -44,8 +45,9 @@ git reset --hard color-pre-full-2026-11-25   # then: git push --force-with-lease
 | # | Stage | Files | State |
 | - | ----- | ----- | ----- |
 | T0 | This doc | `docs/framework/TASK-color-tokens.md` | done |
-| T1 | Root `light-dark()` rewrite + spinner mask + skeleton derive | `packages/styles/src/variables.css`, `packages/components/{input/input.css,form/Form.css}` spinner, `examples/demo/src/style.css` spinner | **not started** |
-| T2 | Form path text/border tokens | `packages/components/input/{input.css,InputControls/InputControls.css,Dropdown/Dropdown.css,FileUploader/FileUploader.css}`, `form/Form.css` | **partly** (input resting border done) |
+| T1 | Root `light-dark()` rewrite + spinner mask + skeleton derive | `packages/styles/src/variables.css`, spinner consumers (`Dropdown.css`, `Masonry.css`, `Tab.css`, `examples/demo/src/style.css`) | **done (b86)** |
+| T2 | Form path text/border tokens | `packages/components/input/{Input.css,InputControls,FileUploader,Dropdown}`, `form/Form.css` | **done (b87, b91)** |
+| T2b | Popup = one sheet with the control (owner request) | `input/Input.css`, `input/Dropdown/{Dropdown.css,Dropdown.ts}`, `form/Form.css` | **done (b88–b91)** |
 | T3 | Hardcoded-palette components | `article/Article.css`, `table/Table.css`, `message/Message.css`, `carousel/Carousel.css`, `tab/Tab.css` | **not started** |
 | T4 | Theme packages set the mode | `packages/themes/{cyberpunk,horizontal}/src/*.ts` (`activate()` → `shell.dataset.mode = "dark"`, `shell.style.colorScheme = "dark"`) | **not started** |
 | T5 | CSS lint test | new `packages/components/__tests__/colour-literals.test.ts` (no raw literal except the allowlist above) | **not started** |
@@ -107,3 +109,34 @@ that touches a package TypeScript file, an `exports` map, or a README still runs
 - **b83** `7e1e224` — inline-code chip derives from the ink (14% fill / 32% hairline).
 - **b84** `547973e` — `--app-primary-ui` / `--app-accent-ui` (3:1 floor) + report measures them;
   input resting border adopts it.
+- **b86** `12daf52` — `variables.css` is ONE `:root` of `light-dark()` pairs + `color-scheme`,
+  `[data-mode]` pins, a dark branch for the three non-colours, `--app-skeleton-bg` derived from
+  the brand, and `--app-spinner-content` as a white mask (4 consumers repainted with
+  `background-color`).
+- **b87** `5138546` — input token layer is mode-neutral (no `white|black|grey|#fff`); field ink
+  10.25/11.91, labels 7.27/8.92; `--app-surface-deep` + `--app-text-on-deep` make the code panel
+  follow the colour theme; `Dropdown.css` re-written nested.
+- **b88** `2865cae` — popup is one sheet with the control (attached, 1px overlap), seam mirrored
+  through `data-placement`, entrance unrolls from the seam.
+- **b89** `150f625` — one source for the popup values (`--input-popup-*` tokens) and for the
+  field box (`Input.css`); `Dropdown.css` keeps only datalist-specific rules.
+- **b90** `a2d1af7` — native picker no longer guesses its side.
+- **b91** `5605022` — native picker mirrors from its REAL height
+  (`getComputedStyle(select, "::picker(select)").height`); `select:not(:open)` rests on
+  `--input-border-color` like every other control.
+
+## Next (cold start)
+
+1. **T3** — `article/Article.css`, `table/Table.css`, `message/Message.css`, `carousel/Carousel.css`,
+   `tab/Tab.css`: replace the literal palettes with `--app-*` or `color-mix()` of them. Keep the
+   intentional overlays (modal backdrop, lightbox) and mark them.
+2. **T4** — `packages/themes/{cyberpunk,horizontal}/src/*.ts` `activate()` must set
+   `shell.dataset.mode` + `shell.style.colorScheme`.
+3. **T5** — `packages/components/__tests__/colour-literals.test.ts` with the allowlist from
+   contract §4.
+4. **Leftover**: `packages/components/masonry/README.md` + `docs/framework/catalogue.json` still
+   show the pre-b86 `background-image: var(--app-spinner-content)` snippet (the catalogue snippet
+   is curated, not generated from source).
+5. **Verify when a tab is visible**: the native picker's upward seam (`data-placement` from the
+   real picker height) was only proved with the page backgrounded — re-check by opening a
+   `<select>` near the viewport bottom.

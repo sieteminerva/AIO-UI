@@ -95,9 +95,7 @@
   --input-popup-shadow: var(--app-shadow-soft, 0 12px 35px -8px rgba(92, 60, 20, 0.12));
   --input-popup-max-height: calc((var(--input-min-height) * 4) + 10px);
   --input-popup-item-padding: 0.31em 0.5em;
-  /* Entrance: the sheet unrolls out of the seam. One pair of values for both surfaces. */
-  --input-popup-enter: scaleY(0);
-  --input-popup-open: scaleY(1);
+  /* The custom menu's entrance (the select keeps its own, authored in `& select`). */
   --input-popup-enter-origin: top;
 
   /* error state — derived from the app layer so a theme can retheme it */
@@ -373,7 +371,6 @@ select:focus-visible {
 
   /* Open Select Special Rounding Layer Override */
   & select:open,
-
   &:has(select:active) select:open::picker(select),
   &:has(select:focus) select:open::picker(select) {
     transition:
@@ -417,7 +414,31 @@ select:focus-visible {
     &:open::picker(select) {
       opacity: 1;
       transition-delay: var(--input-dropdown-transition-delay, 30ms);
-      transform: var(--input-popup-open);
+      /* KEEP: the select's own entrance, as authored — the platform picker grows and
+         slides in one motion. The custom `.menu` unrolls instead (see `& > .menu`). */
+      transform: translateY(0) scaleY(1) scaleX(1);
+      outline: none;
+      box-shadow: var(--input-popup-shadow);
+      /* scrollbar-gutter: stable; */
+      scrollbar-width: thin;
+      overflow-x: hidden;
+    }
+
+scrollbar-width: thin;
+      overflow-x: hidden;
+    }
+
+    /* Native picker: the PLATFORM decides whether it opens up or down, and it exposes no
+       event/box to read that afterwards. So it must not depend on the side at all — a full
+       outline with all four corners rounded, sitting flush (1px overlap). Guessing the side
+       from an estimated height was wrong at exactly the heights where the guess disagreed
+       with the platform. The custom `.menu` below keeps the mirrored seam because JS owns
+       its placement. */
+    &:open::picker(select) {
+      opacity: 1;
+      transition-delay: var(--input-dropdown-transition-delay, 30ms);
+      /* KEEP: the select's own entrance, as authored. */
+      transform: translateY(0) scaleY(1) scaleX(1);
       outline: none;
       box-shadow: var(--input-popup-shadow);
       /* scrollbar-gutter: stable; */
@@ -427,141 +448,142 @@ select:focus-visible {
 
     &:open {
       border-color: var(--input-border-color);
-      border-bottom-left-radius: 0;
-      border-bottom-right-radius: 0;
     }
-  }
+}
 
-  /* ------------------------------------------------------------------
+/* ------------------------------------------------------------------
       5.2 SHARED POPUP SURFACE — `::picker(select)` and `.menu` are ONE sheet.
       Every value they share comes from a `--input-popup-*` token (token layer, top of
       this file), so retuning the surface is one edit and the two can never drift or
       override each other. Only the DOM shape, `position: fixed`, the flip mirror and the
       platform picker's own entrance live in their own rules below.
     ------------------------------------------------------------------ */
-  & select::picker(select),
-  & .dropdown[data-style] > .menu {
-    box-sizing: border-box;
-    padding: 0;
-    margin: 0;
-    scrollbar-width: thin;
-    scrollbar-color: var(--input-accent-color)
-      color-mix(in srgb, var(--app-text-accent-color) 10%, var(--input-accent-color) 5%);
-    background-color: var(--input-popup-background);
-    color: var(--input-popup-color);
-    backdrop-filter: blur(12px);
-    inset: auto;
-    left: anchor(left);
-    width: anchor-size(width);
-    /* ATTACHED: the sheet sits flush on the control, and the edge they share belongs to
-       the control — no border there, corners squared on that side, 1px overlap so the
-       doubled line never shows. `[data-placement="above"]` mirrors every edge. */
-    top: calc(anchor(bottom) - 1px);
-    border: var(--input-popup-border);
-    border-block-start: var(--input-popup-seam);
-    border-start-start-radius: 0;
-    border-start-end-radius: 0;
-    border-end-start-radius: var(--input-popup-radius);
-    border-end-end-radius: var(--input-popup-radius);
-    transform-origin: var(--input-popup-enter-origin);
-    box-shadow: var(--input-popup-shadow);
-    max-height: var(--input-popup-max-height);
-    opacity: 0;
-    transition-behavior: allow-discrete;
-    white-space: nowrap;
-    overflow-x: hidden;
-    text-overflow: ellipsis;
-    outline: none;
-    position-try-fallbacks: --flip-top, flip-block;
+& select::picker(select),
+& .dropdown[data-style] > .menu {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+  scrollbar-width: thin;
+  scrollbar-color: var(--input-accent-color)
+    color-mix(in srgb, var(--app-text-accent-color) 10%, var(--input-accent-color) 5%);
+  background-color: var(--input-popup-background);
+  color: var(--input-popup-color);
+  backdrop-filter: blur(12px);
+  inset: auto;
+  left: anchor(left);
+  width: anchor-size(width);
+  /* Flush with the control (attached, 1px overlap). Which border edge is dropped and
+       which corners are squared depends on the side the sheet lands on, so that part is
+       NOT here: it is the menu-only rules below, where the side is known. The native
+       picker keeps this full outline and its four corners — the platform picks its side
+       and tells nobody, so a guess would be wrong at exactly the flip heights. */
+  top: calc(anchor(bottom) - 1px);
+  border: var(--input-popup-border);
+  border-radius: var(--input-popup-radius);
+  transform-origin: var(--input-popup-enter-origin);
+  box-shadow: var(--input-popup-shadow);
+  max-height: var(--input-popup-max-height);
+  opacity: 0;
+  transition-behavior: allow-discrete;
+  white-space: nowrap;
+  overflow-x: hidden;
+  text-overflow: ellipsis;
+  outline: none;
+  position-try-fallbacks: --flip-top, flip-block;
+}
+
+/* MENU-ONLY seam (dropdown below): drop the shared border edge and square the corners on
+     that side, so menu + control read as one box. */
+& .dropdown[data-style] > .menu {
+  border-block-start: var(--input-popup-seam);
+  border-start-start-radius: 0;
+  border-start-end-radius: 0;
+}
+
+/* Opened upward: mirror the seam (square bottom corners, no bottom border) and keep the
+     outer top edge closed. Only `.menu` can do this — `Dropdown` writes `data-placement`
+     from the space it measured, and nothing else is allowed to move it. */
+& .dropdown[data-style] > .menu[data-placement="above"] {
+  top: auto;
+  bottom: calc(anchor(top) - 1px);
+  position-try-fallbacks: none;
+  border-block-start: var(--input-popup-border);
+  border-block-end: var(--input-popup-seam);
+  border-start-start-radius: var(--input-popup-radius);
+  border-start-end-radius: var(--input-popup-radius);
+  border-end-start-radius: 0;
+  border-end-end-radius: 0;
+  /* grows upward out of the seam it shares with the control's top edge */
+  transform-origin: bottom;
+}
+& select option,
+& .dropdown[data-style] > .menu > .item {
+  color: var(--input-text-color);
+  transition: all 100ms;
+  white-space: nowrap;
+  overflow-x: hidden;
+  text-overflow: ellipsis;
+  display: block;
+  outline: none;
+  line-height: var(--input-line-height);
+  padding: 0.31em 0.5em;
+  border: none;
+  width: auto;
+  cursor: pointer;
+  text-transform: capitalize;
+
+  &:hover {
+    color: color-mix(in srgb, var(--app-text-accent-color) 30%, var(--input-text-color) 35%);
+    background-color: color-mix(in srgb, var(--input-primary-color) 10%, var(--input-accent-color) 5%);
   }
+}
 
-  /* Opened upward: mirror the seam (square bottom corners, no bottom border) and keep the
-     outer top edge closed. `.menu` carries `data-placement` written by `Dropdown`; the
-     native `::picker(select)` has no such hook, so it keeps the downward seam and lets
-     `--flip-top` move it (the platform picker rarely flips). */
-  & .dropdown[data-style] > .menu[data-placement="above"] {
-    top: auto;
-    bottom: calc(anchor(top) - 1px);
-    position-try-fallbacks: none;
-    border-block-start: var(--input-popup-border);
-    border-block-end: var(--input-popup-seam);
-    border-start-start-radius: var(--input-popup-radius);
-    border-start-end-radius: var(--input-popup-radius);
-    border-end-start-radius: 0;
-    border-end-end-radius: 0;
-    /* grows upward out of the seam it shares with the control's top edge */
-    transform-origin: bottom;
+& select option:checked,
+& select::part(selectedcontent),
+& .dropdown[data-style] > .menu > .item:is(.selected) {
+  color: color-mix(in srgb, var(--input-accent-color) 15%, var(--input-paper));
+  background-color: color-mix(in srgb, var(--input-primary-color) 80%, var(--input-paper-soft));
+}
+
+& .dropdown[data-style] > .menu > .item {
+  display: flex;
+  align-items: center;
+  min-height: var(--input-min-height);
+
+  &:is(.selected) {
+    font-weight: 600;
   }
+}
 
-  & select option,
-  & .dropdown[data-style] > .menu > .item {
-    color: var(--input-text-color);
-    transition: all 100ms;
-    white-space: nowrap;
-    overflow-x: hidden;
-    text-overflow: ellipsis;
-    display: block;
-    outline: none;
-    line-height: var(--input-line-height);
-    padding: 0.31em 0.5em;
-    border: none;
-    width: auto;
-    cursor: pointer;
-    text-transform: capitalize;
-
-    &:hover {
-      color: color-mix(in srgb, var(--app-text-accent-color) 30%, var(--input-text-color) 35%);
-      background-color: color-mix(in srgb, var(--input-primary-color) 10%, var(--input-accent-color) 5%);
-    }
+/* 9. Validation Error States */
+&:has(.error) {
+  & label {
+    color: var(--input-error-text-color);
   }
-
-  & select option:checked,
-  & select::part(selectedcontent),
-  & .dropdown[data-style] > .menu > .item:is(.selected) {
-    color: color-mix(in srgb, var(--input-accent-color) 15%, var(--input-paper));
-    background-color: color-mix(in srgb, var(--input-primary-color) 80%, var(--input-paper-soft));
+  & input,
+  & select {
+    border: 1px solid var(--input-error-color);
+    color: var(--input-error-color);
+    box-shadow: none;
   }
-
-  & .dropdown[data-style] > .menu > .item {
-    display: flex;
-    align-items: center;
-    min-height: var(--input-min-height);
-
-    &:is(.selected) {
-      font-weight: 600;
-    }
-  }
-
-  /* 9. Validation Error States */
-  &:has(.error) {
-    & label {
-      color: var(--input-error-text-color);
-    }
-    & input,
-    & select {
-      border: 1px solid var(--input-error-color);
-      color: var(--input-error-color);
-      box-shadow: none;
-    }
-    /* border kini utuh di semua sisi (shared popup surface §5.2), jadi tidak ada
+  /* border kini utuh di semua sisi (shared popup surface §5.2), jadi tidak ada
          "border-top: none" yang perlu ditekan ulang */
-    & select:open::picker(select) {
-      border: 1px solid var(--input-error-color);
-      color: var(--input-error-color);
-      box-shadow: none;
-    }
-    & input::placeholder,
-    & select option {
-      border: none;
-      color: var(--input-error-color);
-    }
-    & select option:first-child:checked,
-    & select option[value=""]:checked,
-    & select option.placeholder:checked {
-      border: 1px solid var(--input-error-color);
-      color: var(--input-error-background-color);
-      background-color: var(--input-error-color);
-    }
+  & select:open::picker(select) {
+    border: 1px solid var(--input-error-color);
+    color: var(--input-error-color);
+    box-shadow: none;
+  }
+  & input::placeholder,
+  & select option {
+    border: none;
+    color: var(--input-error-color);
+  }
+  & select option:first-child:checked,
+  & select option[value=""]:checked,
+  & select option.placeholder:checked {
+    border: 1px solid var(--input-error-color);
+    color: var(--input-error-background-color);
+    background-color: var(--input-error-color);
   }
 }
 
@@ -1128,9 +1150,8 @@ select:focus-visible {
     & > select:open::picker(select) {
       display: block;
       opacity: 0;
-      /* the picker unrolls from the seam (§5.2: `transform-origin: top`) instead of
-         sliding: an attached sheet cannot move without showing a gap. */
-      transform: scaleY(0);
+      /* KEEP: the select's own entrance, as authored. */
+      transform: translateY(calc(var(--input-popup-distance, 4px) * -1)) scaleY(0%) scaleX(99.7%);
     }
   }
 }

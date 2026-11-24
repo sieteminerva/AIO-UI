@@ -208,11 +208,7 @@ files, 996 passed, 1 skipped; `npm run build:demo` green. Committed as `bf5b40c`
 
 ## Next
 
-Nothing in this task. The remaining work sits in two other places:
-
-1. **Rajutan commit** — `examples/rajutan` is its own repository; `src/content/wizard.ts` and
-   `src/Components/form-editor/FormEditor.ts` hold the migrated shapes uncommitted, and
-   `npx tsc --noEmit -p examples/rajutan/tsconfig.json` is clean. Commit there, not here.
-2. **Follow-ups the migration surfaced** (not started, no owner): `Attribute.ts` still exposes a
-   `range` property that is not part of any schema block (it lands in `config.attributes`), and
-   `InputControls`/`FormEditor` no longer receive `disableDefault` — a key nothing reads since b72.
+Nothing left in this task. The seams the refactor left outside itself are written down, with
+file:line evidence and the release decision they need, in **`docs/framework/TASK-INPUT-LEGACY.md`**:
+the rajutan commit, the four stale `config.options` doc stops, core's `iBasicInputNode` /
+`iFormGroupNode` duplicate, and where `range` should live.

@@ -15,15 +15,16 @@
 > in every package README · **b57** Apps Script hosting · **b52–b59** shell mount point, tab seams.
 > Older history: `git log --oneline`.
 
-### 1. Input schema refactor — done (stages 1–3.3)
+### 1. Input legacy sweep — not started; three items written down (framework band)
 
-b74 (2026-11-24): stage 3.3 landed — the form field node **is** the input schema `{ content,
-config }` (+ form-owned `condition`/`then`), the adapter splits nothing, and `@aio-ui/form`
-publishes `FormField`/`FormNode` so a stale key is a compile error. Demo, gallery and the
-rajutan app migrated; `typecheck:examples` joined `check`; `iBasicSelectOption.color` added.
-Gate: check + verify green (996 pass, 1 skip); `build:demo` green.
-**Open:** nothing here; the rajutan commit itself, then a release card if ordered.
-→ `docs/framework/TASK-INPUT-SCHEMA.md`
+b74 (2026-11-24) closed the refactor itself: the form field node **is** the input schema `{ content,
+config }`, the adapter splits nothing, `@aio-ui/form` publishes `FormField`/`FormNode`. Gate: check +
+verify green (996 pass, 1 skip), `build:demo` green. What it left outside is now a doc, not a chat
+message: **Item 0** commit the rajutan app (its own repo, `tsc` clean) · **Item 1** four stale
+`config.options` doc stops (`API.md`, `FIELD-TYPES.md`) · **Item 2** retire core's `iBasicInputNode`
++ duplicate `iFormGroupNode` (**needs a decision: A remove / B deprecate, and which release**) ·
+**Item 3** decide where `range` lives after reading `orchestrator/`.
+→ `docs/framework/TASK-INPUT-LEGACY.md` · `docs/framework/TASK-INPUT-SCHEMA.md` (done)
 
 ### 2. Release v0.2.5 — published (tooling band)
 

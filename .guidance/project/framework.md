@@ -10,12 +10,14 @@ Why / stages: `.guidance/plan-framework.md`. Engineering rules:
 | --- | ------------------------ | ----------- | ------------------------------------------------------------------------------------------------------- |
 | 1   | Theme console view (fab) | in progress | `examples/demo/src/ThemeConsole/TASKS.md` — view composed, gate green; open: page-only popover sections |
 | 2   | Inspect surface (b43)    | in progress | `inspect()` + `inspectPage()` green; open: dead relay removal, `#cleanupMap` reset                      |
-| 3   | Input schema split (b74) | done        | stages 1–3.3 landed (`86124cd`, `9d79f9f`, `bf5b40c`); form field node = input schema `{ content, config }`; gate `check` + `verify` 996 pass / 1 skip → `docs/framework/TASK-INPUT-SCHEMA.md` |
+| 3   | Input legacy sweep           | not started | open: commit `examples/rajutan` (own repo), 4 stale `config.options` docs, core `iBasicInputNode` (A/B decision), `range` home → `docs/framework/TASK-INPUT-LEGACY.md` |
 
 ## Next
 
-- **Rajutan app commit** — `examples/rajutan` (its own repo) carries the migrated wizard +
-  `FormEditor` uncommitted; `tsc -p examples/rajutan/tsconfig.json` is clean. Commit there.
+- **Input legacy sweep — start at Item 0.** `examples/rajutan` (own repo) holds the migrated
+  wizard + `FormEditor` uncommitted (`tsc` clean). Then four stale `config.options` doc stops, then
+  core's `iBasicInputNode` / `iFormGroupNode` duplicate (needs an A/B + release decision), then the
+  home of `range`. → `docs/framework/TASK-INPUT-LEGACY.md`
 - **Release v0.2.5 — published (b69, 2026-11-24).** Branch `releases` + tag `v0.2.5` pushed and
   probed 6/6 → 200; CDN stays **versioned**. Only the optional GitHub Release asset upload
   (`GITHUB_TOKEN`) remains → `docs/releases/v0.2.5.md`. The official release still waits for the
@@ -27,6 +29,12 @@ Why / stages: `.guidance/plan-framework.md`. Engineering rules:
 
 ## Landed (newest first)
 
+- **Batch 74 (2026-11-24)** — one schema shape for input and form: a form field node is the input
+  schema `{ content, config }` (form-owned `condition`/`then` beside the blocks); the adapter's
+  flat split is gone and `config.selectors` is lifted into the field's own builder. `@aio-ui/form`
+  publishes `FormField`/`FormNode`, so a stale key is a compile error; demo, gallery and the
+  rajutan app migrated, `typecheck:examples` joined `check`. Proof: `verify` 996 pass / 1 skip,
+  `build:demo` green, render test in `FormModules.test.ts`. Commit `bf5b40c`.
 - **Batch 69 (2026-11-24)** — v0.2.5 published: 37 packages at `0.2.5`, branch `releases` + tag
   `v0.2.5` pushed, `check:live` 6/6 → 200; every package README carries an install block; the
   release-automation task doc deleted (§13). Proof: `verify:pkgs` 956 pass / 17 skip, `check`

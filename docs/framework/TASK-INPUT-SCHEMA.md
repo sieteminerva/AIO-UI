@@ -71,6 +71,7 @@ a text field still accepts `actions` + `popover`.
   `label`, constraints sit in `config`.
 
 ## Stage 3.3 — done (b74)
+
 **One shape, everywhere.** The form field node is now the input schema itself —
 `{ content, config }` — plus the form's own `condition` / `then` beside the two blocks. The adapter
 no longer splits a flat node (`splitField()` and its two key lists are gone); it reads the blocks

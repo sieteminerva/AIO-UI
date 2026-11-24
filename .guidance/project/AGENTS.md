@@ -6,7 +6,9 @@
 
 ## Live claims
 
-_No live writer._
+| Agent         | Band      | Task                                                                | Write scope                                                                                                                                  | Started    | Checkpoint                          | State  |
+| ------------- | --------- | ------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | ---------- | ----------------------------------- | ------ |
+| `copilot b76` | Framework | input legacy sweep — items 1–3 to the end (item 0 = rajutan commit) | `docs/framework/*.md`, `examples/rajutan/src/**`, `packages/core/src/types/**`, `packages/core/src/index.ts`, `packages/components/input/**` | 2026-11-24 | `/memories/session/input-legacy.md` | active |
 
 ## Row shape
 

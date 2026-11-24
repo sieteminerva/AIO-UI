@@ -3,13 +3,7 @@
  */
 
 import type { iBasicNode } from "./node";
-import type {
-  iBasicInputNode,
-  iBuilderContent,
-  iCardProperty,
-  iFormGroupNode,
-  iHeaderProperty,
-} from "./content";
+import type { iBuilderContent, iCardProperty, iHeaderProperty } from "./content";
 
 /**
  * Events a builder reports while it assembles or mutates its own nodes.
@@ -46,7 +40,8 @@ export interface iBuilderRegistry {
   "pricing-card": iCardProperty[];
   masonry: iBuilderContent[];
   section: iBuilderContent[];
-  form: Array<iBasicInputNode | iFormGroupNode | HTMLElement | string>;
+  /** `FormNode[]` from `@aio-ui/form`; core cannot import a component package, so the concrete shape is enforced at that package's door. */
+  form: any[];
   menu: iBasicNode;
   footer: iBasicNode;
   "fab-menu": iBasicNode;
@@ -63,10 +58,13 @@ export interface iBuilderRegistry {
   product: iBasicNode | iBuilderContent[];
   "product-card-grid": any;
   "product-detail": any;
-  "input-controls": Array<iBasicInputNode>;
+  /** `FormField[]` from `@aio-ui/form` — same door rule as `input`. */
+  "input-controls": any[];
   table: any[];
-  dropdown: iBasicInputNode;
-  "input-picker": iBasicInputNode;
+  /** `InputSchema<"dropdown">` from `@aio-ui/input` — same door rule as `input`. */
+  dropdown: any;
+  /** `InputSchema<"picker">` from `@aio-ui/input` — same door rule as `input`. */
+  "input-picker": any;
   "color-theme": iBasicNode;
   /** Host chrome that owns a `color-theme` builder: the generator's slide panels. */
   "theme-console": iBasicNode;

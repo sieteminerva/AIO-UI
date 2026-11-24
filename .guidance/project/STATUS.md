@@ -4,7 +4,8 @@
 > **only** after the user picks it — never "to orient" (`AGENT_RULES.md` §13). Rewritten each
 > session, newest on top. One card = one line + one pointer.
 >
-> Recent batches (newest first): **b74** stage 3.3: form schema = input schema, examples migrated
+> Recent batches (newest first): **b76** core drops the input node types + docs say `content.options`
+> · **b74** stage 3.3: form schema = input schema, examples migrated
 > · **b73** input schema stage 3 (strict module keys + legacy door
 > gone) · **b72** input schema stage 2 (per-type union +`create()` wiring) ·
 > **b71** input schema split (stage 1 grouping) ·
@@ -15,16 +16,16 @@
 > in every package README · **b57** Apps Script hosting · **b52–b59** shell mount point, tab seams.
 > Older history: `git log --oneline`.
 
-### 1. Input legacy sweep — not started; three items written down (framework band)
+### 1. Input schema + legacy sweep — done, one release note owed (framework band)
 
-b74 (2026-11-24) closed the refactor itself: the form field node **is** the input schema `{ content,
-config }`, the adapter splits nothing, `@aio-ui/form` publishes `FormField`/`FormNode`. Gate: check +
-verify green (996 pass, 1 skip), `build:demo` green. What it left outside is now a doc, not a chat
-message: **Item 0** commit the rajutan app (its own repo, `tsc` clean) · **Item 1** four stale
-`config.options` doc stops (`API.md`, `FIELD-TYPES.md`) · **Item 2** retire core's `iBasicInputNode`
-+ duplicate `iFormGroupNode` (**needs a decision: A remove / B deprecate, and which release**) ·
-**Item 3** decide where `range` lives after reading `orchestrator/`.
-→ `docs/framework/TASK-INPUT-LEGACY.md` · `docs/framework/TASK-INPUT-SCHEMA.md` (done)
+b74 (`bf5b40c`) made a form field node the input schema `{ content, config }`; b76 closed the seams
+it left: rajutan committed in its own repo (`1008e4f`), `API.md`/`FIELD-TYPES.md` now say
+`content.options`, and `@aio-ui/core` no longer declares a field node — `iBasicInputNode`, its
+duplicate `iFormGroupNode` and `InputBuilderConfigOptions` are gone, the four registry payloads
+following the existing `input: any` door rule. `range` stays an attribute, pinned by
+`FieldTypes.test.ts`. Gate: check + verify green (92 files, 997 pass, 1 skip).
+**Open:** the three removed types were public — the next minor release note must list them.
+→ `docs/framework/TASK-INPUT-LEGACY.md` · `docs/framework/TASK-INPUT-SCHEMA.md`
 
 ### 2. Release v0.2.5 — published (tooling band)
 

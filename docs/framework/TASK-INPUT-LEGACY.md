@@ -1,7 +1,21 @@
 # TASK — input legacy sweep (core type · stale docs · `range`)
 
-**Band:** Framework · **Claim:** board row `copilot b75` until the first code edit, then its own row ·
-**Brief:** this file · **Status:** not started — a cold session can begin at Item 0.
+**Band:** Framework · **Claim:** board row `copilot b76` · **Brief:** this file
+**Status:** done (b76, 2026-11-24) — items 0–3 all landed; the only thing left is a release note for
+the type removal. A cold session needs nothing from this file.
+
+## Result
+
+| Item | Outcome |
+| ---- | ------- |
+| 0 | `examples/rajutan` committed in its own repo — `1008e4f refactor(app): make every form field the input schema the framework ships` (271+/205−, tree clean). |
+| 1 | `API.md` + `FIELD-TYPES.md` now say `content.options`; `range` is documented as echoed onto the control, not resolved. Only history still names the old bag (this file, the two TASK records, and `input/README.md` saying the bag is gone). |
+| 2 | **Option A taken.** `iBasicInputNode`, core's duplicate `iFormGroupNode` and `InputBuilderConfigOptions` deleted; `registry.ts` payloads (`form`, `input-controls`, `dropdown`, `input-picker`) follow the existing `input: any` door rule. `grep -rn iBasicInputNode packages docs examples` → only this doc. |
+| 3 | **Kept as an attribute.** `orchestrator`'s `range` is `engine.range` (an engine version range) and `NATIVE_FIELD_TYPES` lists `range` as a **type** — neither is the property. Nothing reads it, so no schema key was invented; `FieldTypes.test.ts` pins `range` out of `INPUT_STRUCTURAL_KEYS` and through the attribute scan. |
+
+Gate: `npm run check` green (api-map + catalogue regenerated) and `npm run verify` green —
+92 files, 997 passed, 1 skipped. **Breaking for consumers:** the three removed types were exported
+from `@aio-ui/core`; the next minor release note must list them.
 
 ## Why this file exists
 
@@ -34,18 +48,20 @@ Commit there with its own message; nothing about it belongs in an AIO-UI commit.
 `attrConfig.options`, and line ~224 passes `attrConfig` as `content` — so since b72 the list lands
 in **`content.options`**. Three places still claim otherwise:
 
-| File                                | Line | Says                                                    |
-| ----------------------------------- | ---- | ------------------------------------------------------- |
-| `docs/framework/API.md`             | 51   | `` `range` is echoed … resolved into `config.options` `` |
-| `docs/framework/FIELD-TYPES.md`     | 38   | `range?: "SegmentRange", // … resolved into config.options` |
-| `docs/framework/FIELD-TYPES.md`     | 60   | table row: `range` … whose values become `config.options` |
-| `docs/framework/FIELD-TYPES.md`     | 62   | table row: `config.options` — resolved option list       |
+| File                            | Line | Says                                                        |
+| ------------------------------- | ---- | ----------------------------------------------------------- |
+| `docs/framework/API.md`         | 51   | `` `range` is echoed … resolved into `config.options` ``    |
+| `docs/framework/FIELD-TYPES.md` | 38   | `range?: "SegmentRange", // … resolved into config.options` |
+| `docs/framework/FIELD-TYPES.md` | 60   | table row: `range` … whose values become `config.options`   |
+| `docs/framework/FIELD-TYPES.md` | 62   | table row: `config.options` — resolved option list          |
 
 **Do.** Rewrite those four spots to `content.options`; keep the `range` wording (Item 3 decides
 where `range` itself lives — do not pre-empt it, just say the list lands beside the field's data).
 
-**Acceptance.** `grep -rn "config.options" docs packages --include=*.md` matches only the one
-historical sentence in `packages/components/input/README.md:70` (which says the bag is *gone*).
+**Acceptance.** No doc *prescribes* `config.options`: after the edit, `grep -rn "config.options" docs
+packages --include=*.md` still matches the historical records (this file, `TASK-INPUT-SCHEMA.md`) and
+`packages/components/input/README.md:70`, which says the bag is gone — none of them tells a reader to
+write it.
 Gate: `md-only` — no build.
 
 ## Item 2 — retire `iBasicInputNode` from `@aio-ui/core` (API change — decide first)
@@ -80,7 +96,7 @@ door"). The same argument applies to every field payload.
 is empty outside this task file; `node scripts/api.mjs --write` + `node scripts/catalogue.mjs
 --apply` regenerated; `npm run check` green; `npm run verify` green once.
 
-**Traps.** `iNodeContent.group` is the *page* node shape — check who passes form fields into it
+**Traps.** `iNodeContent.group` is the _page_ node shape — check who passes form fields into it
 (`examples/demo`, gallery) before changing its type, or an example breaks in the browser while the
 compiler stays quiet. Core never imports a component package: keep the `any` + reason comment.
 

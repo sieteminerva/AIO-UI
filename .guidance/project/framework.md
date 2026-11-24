@@ -6,18 +6,17 @@ Why / stages: `.guidance/plan-framework.md`. Engineering rules:
 
 ## Active (max 3)
 
-| #   | Task                     | State       | Gate                                                                                                    |
-| --- | ------------------------ | ----------- | ------------------------------------------------------------------------------------------------------- |
-| 1   | Theme console view (fab) | in progress | `examples/demo/src/ThemeConsole/TASKS.md` — view composed, gate green; open: page-only popover sections |
-| 2   | Inspect surface (b43)    | in progress | `inspect()` + `inspectPage()` green; open: dead relay removal, `#cleanupMap` reset                      |
-| 3   | Input legacy sweep           | not started | open: commit `examples/rajutan` (own repo), 4 stale `config.options` docs, core `iBasicInputNode` (A/B decision), `range` home → `docs/framework/TASK-INPUT-LEGACY.md` |
+| #   | Task                     | State       | Gate                                                                                                                                                                   |
+| --- | ------------------------ | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Theme console view (fab) | in progress | `examples/demo/src/ThemeConsole/TASKS.md` — view composed, gate green; open: page-only popover sections                                                                |
+| 2   | Inspect surface (b43)    | in progress | `inspect()` + `inspectPage()` green; open: dead relay removal, `#cleanupMap` reset                                                                                     |
+| 3   | Input schema + legacy sweep | done        | b74 (`bf5b40c`) form field = input schema; b76 (`c4d1b5c`+next) core `iBasicInputNode`/`iFormGroupNode`/`InputBuilderConfigOptions` removed, docs say `content.options`, `range` pinned as an attribute; `verify` 997 pass / 1 skip |
 
 ## Next
 
-- **Input legacy sweep — start at Item 0.** `examples/rajutan` (own repo) holds the migrated
-  wizard + `FormEditor` uncommitted (`tsc` clean). Then four stale `config.options` doc stops, then
-  core's `iBasicInputNode` / `iFormGroupNode` duplicate (needs an A/B + release decision), then the
-  home of `range`. → `docs/framework/TASK-INPUT-LEGACY.md`
+- **Release the input breaking change.** b76 removed `iBasicInputNode`, `iFormGroupNode` and
+  `InputBuilderConfigOptions` from `@aio-ui/core` — type-only, no runtime change, but a public
+  removal: the next minor (0.3.0 line) must say so. Owner orders the release.
 - **Release v0.2.5 — published (b69, 2026-11-24).** Branch `releases` + tag `v0.2.5` pushed and
   probed 6/6 → 200; CDN stays **versioned**. Only the optional GitHub Release asset upload
   (`GITHUB_TOKEN`) remains → `docs/releases/v0.2.5.md`. The official release still waits for the
@@ -29,6 +28,13 @@ Why / stages: `.guidance/plan-framework.md`. Engineering rules:
 
 ## Landed (newest first)
 
+- **Batch 76 (2026-11-24)** — input legacy sweep closed. `@aio-ui/core` no longer declares a field
+  node: `iBasicInputNode`, its duplicate `iFormGroupNode` and `InputBuilderConfigOptions` are gone,
+  and the four registry payloads follow the existing `input: any` door rule. Docs stop claiming
+  `config.options` (`API.md`, `FIELD-TYPES.md`) and state that `range` is echoed as a control
+  attribute. `FieldTypes.test.ts` pins that decision. Rajutan committed in its own repo
+  (`1008e4f`). Proof: `check` green (api-map + catalogue refreshed), `verify` 92 files / 997 pass /
+  1 skip.
 - **Batch 74 (2026-11-24)** — one schema shape for input and form: a form field node is the input
   schema `{ content, config }` (form-owned `condition`/`then` beside the blocks); the adapter's
   flat split is gone and `config.selectors` is lifted into the field's own builder. `@aio-ui/form`

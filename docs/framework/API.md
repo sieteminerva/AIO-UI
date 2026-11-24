@@ -48,7 +48,8 @@ Observed properties of the schema:
 
 - `title` keeps the original header text; record keys are a separate normalisation.
 - `required` is sometimes `false`, sometimes absent — treat both as "not required".
-- `range` is echoed from the note and also resolved into `config.options`.
+- `range` is echoed from the note onto the control as an attribute; nothing in the renderer resolves it
+  into a field key (a sheet consumer may read it back from the DOM).
 - `config.skipped` marks a column hidden from the generated form. It is **not** a privacy
   flag: skipped columns are still returned in `data` by design.
 - `config.sheet` / `config.cell` are storage addresses and should not be shipped to a

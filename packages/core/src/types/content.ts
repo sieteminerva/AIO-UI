@@ -63,16 +63,6 @@ export interface iCardProperty extends iElementProperty {
   action?: iElementProperty;
 }
 
-// Skema untuk Form Builder
-export interface iFormGroupNode {
-  legend?: string;
-  title?: string;
-  description?: string;
-  className?: string;
-  submitButton?: boolean;
-  group: Array<iBasicInputNode | HTMLElement | string>;
-}
-
 export interface iElementAnimation {
   in?: string;
   out?: string;
@@ -111,48 +101,6 @@ export interface InputBuilderSelectorOption {
   value?: string;
   label?: string;
   icon?: string;
-}
-
-export interface InputBuilderConfigOptions {
-  attributes?: Array<{ name: string; value: string }>;
-  style?: string;
-  field?: string;
-  className?: string;
-  options?: Array<string | InputBuilderSelectorOption>;
-  position?: "left" | "right";
-  icon?: string;
-  content?: string | Record<string, unknown>;
-  action?: { mode?: string } | null;
-  wide?: number | null;
-  useLabel?: boolean;
-  view?: string;
-  thumbnail?: boolean;
-  maxUpload?: number;
-  maxFileSize?: number;
-  groupUnallowed?: boolean;
-  createEventListener?: boolean;
-  display?: "block" | "inline";
-}
-
-export interface iBasicInputNode {
-  type?: InputType;
-  id?: string;
-  name?: string;
-  title?: string;
-  placeholder?: string;
-  value?: string | number | boolean;
-  rows?: number;
-  cols?: number;
-  multiple?: boolean;
-  disabled?: boolean;
-  readonly?: boolean;
-  required?: boolean;
-  checked?: boolean;
-  range?: string;
-  info?: string;
-  accept?: string;
-  config?: Partial<InputBuilderConfigOptions>;
-  [key: string]: unknown;
 }
 
 // =========================================

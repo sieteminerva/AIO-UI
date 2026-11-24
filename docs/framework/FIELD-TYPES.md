@@ -35,7 +35,7 @@ That is why header text is safe to change and why no separate schema store is ne
   type: "file",                 // form vocabulary — authoritative
   placeholder?: string,
   required?: boolean,
-  range?: "SegmentRange",       // named range, resolved into config.options
+  range?: "SegmentRange",       // named range, echoed onto the control as an attribute
   hasTranslation?: boolean,
   config: {
     sheet: number | string,     // storage detail — never sent to the public payload
@@ -57,9 +57,9 @@ only place the original header text survives.
 | `type`                        | field type | observed | authoritative form type; defaults to `text`           |
 | `placeholder`                 | string     | observed | input placeholder                                     |
 | `required`                    | boolean    | observed | value must be filled                                  |
-| `range`                       | string     | observed | named range whose values become `config.options`      |
+| `range`                       | string     | observed | named range; echoed as a control attribute, never a key |
 | `config.skipped`              | boolean    | observed | hidden from forms; the value stays in `data`          |
-| `config.options`              | string[]   | observed | resolved option list for `select`                     |
+| `options`                     | string[]   | observed | resolved choice list — a **content** key of `select`   |
 | `config.sheet`, `config.cell` | storage    | observed | address of the column; GAS-only                       |
 | `maxlength`                   | number     | observed | maximum character length                              |
 

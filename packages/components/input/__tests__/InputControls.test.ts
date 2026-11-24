@@ -280,7 +280,8 @@ describe("mountControls", () => {
 
     const node = mountControls(fieldset, editSave(), "right", [inputControlsInputModule]);
 
-    expect(node?.querySelectorAll("button")).toHaveLength(2);
+    // Only the `edit` half is in the row: `save` is built when Edit is pressed.
+    expect(node?.querySelectorAll("button")).toHaveLength(1);
     expect(name.readOnly).toBe(true);
   });
 
@@ -289,7 +290,7 @@ describe("mountControls", () => {
     const node = mountControls(fieldset, editSave(), "right", [inputControlsInputModule]);
 
     const types = [...(node?.querySelectorAll("button") ?? [])].map((button) => (button as HTMLButtonElement).type);
-    expect(types).toEqual(["button", "button"]);
+    expect(types).toEqual(["button"]);
   });
 });
 
@@ -312,12 +313,29 @@ describe("action presets", () => {
     const { fieldset, name, tier } = group();
     const node = mountControls(fieldset, ["editor"], "right", [inputControlsInputModule]);
 
-    expect([...(node?.querySelectorAll("button") ?? [])].map((b) => b.textContent?.trim())).toEqual(["Edit", "Save"]);
+    expect([...(node?.querySelectorAll("button") ?? [])].map((b) => b.textContent?.trim())).toEqual(["Edit"]);
     expect(name.readOnly).toBe(true);
     expect(tier.disabled).toBe(true);
 
     (node?.querySelector("button.edit") as HTMLButtonElement).click();
     expect(name.readOnly).toBe(false);
+  });
+
+  it("keeps only the half of the pair the scope is offering in the DOM", () => {
+    const { fieldset } = group();
+    const node = mountControls(fieldset, ["editor"], "right", [inputControlsInputModule])!;
+
+    // Locked scope: Edit is the only button in the row.
+    expect(node.querySelector("button.edit")).not.toBeNull();
+    expect(node.querySelector("button.save")).toBeNull();
+
+    (node.querySelector("button.edit") as HTMLButtonElement).click();
+    expect(node.querySelector("button.edit")).toBeNull();
+    expect(node.querySelector("button.save")).not.toBeNull();
+
+    (node.querySelector("button.save") as HTMLButtonElement).click();
+    expect(node.querySelector("button.edit")).not.toBeNull();
+    expect(node.querySelector("button.save")).toBeNull();
   });
 });
 
@@ -383,5 +401,82 @@ describe("repeated scope", () => {
 
     expect((clone.querySelector("#note-1") as HTMLInputElement).readOnly).toBe(false);
     expect((clone.querySelector("#total-1") as HTMLInputElement).readOnly).toBe(true);
+  });
+});
+
+describe("repeater delete floor", () => {
+  const repeater = (deleteAction: Record<string, any> = { type: "delete", label: "Hapus", onClick: () => undefined }) => [
+    { type: "add", label: "Tambah", onClick: () => undefined },
+    deleteAction,
+  ];
+
+  it("keeps the last item and brings the survivor's button back when a copy arrives", () => {
+    const { fieldset } = group();
+    const node = controls(fieldset, repeater());
+    const add = node.querySelector("button.add") as HTMLButtonElement;
+    const del = node.querySelector("button.delete") as HTMLButtonElement;
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+
+    add.click();
+    const clone = document.querySelectorAll("fieldset.form-group")[1] as HTMLElement;
+    expect(document.querySelectorAll("fieldset.form-group")).toHaveLength(2);
+    expect(del.disabled).toBe(false);
+    expect((clone.querySelector("button.delete") as HTMLButtonElement).disabled).toBe(false);
+
+    (clone.querySelector("button.delete") as HTMLButtonElement).click();
+    expect(document.querySelectorAll("fieldset.form-group")).toHaveLength(1);
+    expect(del.disabled).toBe(true);
+    expect(warn).toHaveBeenCalled();
+
+    warn.mockRestore();
+  });
+
+  it("still refuses a stale button, and says why", () => {
+    const { fieldset } = group();
+    controls(fieldset, repeater());
+    (fieldset.querySelector("button.add") as HTMLButtonElement).click();
+
+    // The copy vanishes without the set's bookkeeping, so the survivor's button is stale.
+    (document.querySelectorAll("fieldset.form-group")[1] as HTMLElement).remove();
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+
+    (fieldset.querySelector("button.delete") as HTMLButtonElement).click();
+
+    expect(document.querySelectorAll("fieldset.form-group")).toHaveLength(1);
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining("minItems: 0"));
+    warn.mockRestore();
+  });
+
+  it("lets a repeater be emptied when the action says minItems: 0", () => {
+    const { fieldset } = group();
+    controls(fieldset, repeater({ type: "delete", label: "Hapus", minItems: 0, onClick: () => undefined }));
+
+    (fieldset.querySelector("button.delete") as HTMLButtonElement).click();
+
+    expect(document.querySelector("fieldset.form-group")).toBeNull();
+  });
+
+  it("hides the delete button at the floor when atMin asks for it", () => {
+    const { fieldset } = group();
+    controls(fieldset, repeater({ type: "delete", label: "Hapus", atMin: "hide", onClick: () => undefined }));
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+
+    (fieldset.querySelector("button.add") as HTMLButtonElement).click();
+    const clone = document.querySelectorAll("fieldset.form-group")[1] as HTMLElement;
+    (clone.querySelector("button.delete") as HTMLButtonElement).click();
+
+    const survivor = fieldset.querySelector("button.delete") as HTMLButtonElement;
+    expect(survivor.hidden).toBe(true);
+    expect(survivor.disabled).toBe(true);
+    warn.mockRestore();
+  });
+
+  it("leaves a lone delete alone: there is no family to count", () => {
+    const { fieldset } = group();
+    controls(fieldset, [{ type: "delete", label: "Hapus", minItems: 1, onClick: () => undefined }]);
+
+    (fieldset.querySelector("button.delete") as HTMLButtonElement).click();
+
+    expect(document.querySelector("fieldset.form-group")).toBeNull();
   });
 });

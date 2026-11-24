@@ -43,7 +43,7 @@ config: {
 | `save`              | Locks the scope again, then dispatches `change` on each control so engines re-evaluate.                                |
 | `copy`              | Writes the scope's values to the clipboard: the value of a one-control scope, otherwise the collected payload as JSON. |
 | `add`               | Clones the whole scope with fresh ids/names (`rec-1` → `rec-1-1`), empty values, and its own working buttons.          |
-| `delete` / `remove` | Removes the scope. Never the form.                                                                                     |
+| `delete` / `remove` | Removes the scope. Never the form. In a repeater it stops at the family's floor (see below).                           |
 | `search`            | Reads the scope (see below).                                                                                           |
 | `custom`            | Nothing but `onClick`.                                                                                                 |
 
@@ -79,8 +79,9 @@ copy; `editable: true` fields stay writable in the clone as well.
 per-control snapshot), never by inspecting `readOnly`/`disabled`: those properties reflect
 to attributes, so an author's intent and an earlier lock look identical in the DOM.
 
-When both `edit` and `save` are declared they behave as a pair — exactly one of them is
-enabled at a time instead of a second button being appended.
+When both `edit` and `save` are declared they behave as a pair, and the idle half is **not
+in the DOM at all**: a locked scope shows Edit only, an editing scope shows Save only. Each
+swap rebuilds the button from its declaration, so its label, icon and `onClick` survive.
 
 ### `editable: true` outranks the lock
 
@@ -93,6 +94,32 @@ with `edit`/`save` can still expose one field that is always live (a comment box
 quantity). `InputBuilder` writes the marker as `data-editable="true"` on the field wrapper,
 and the set skips any control whose ancestor carries it, so it also works per field inside
 a locked group. `config.editable` is accepted as well as the node-level key.
+
+## The repeater floor
+
+A set is a **repeater** when it declares `add` _and_ `delete`. Removing the last item is
+usually a mistake, so `delete` stops at `minItems` (default `1`) and the buttons of the
+whole family agree on the count: after an `add` or a `delete`, every sibling's delete
+button is refreshed.
+
+```ts
+config: {
+  actions: ["add", { type: "delete", label: "Hapus", minItems: 0 }];
+}
+```
+
+| Option     | Default   | Meaning                                                                       |
+| ---------- | --------- | ----------------------------------------------------------------------------- |
+| `minItems` | `1`       | How many items must survive. `0` allows emptying the repeater completely.     |
+| `atMin`    | `disable` | `disable` keeps the button visible but inert; `hide` takes it out of the row. |
+
+A family is the set of sibling scopes carrying the same `data-repeat` signature
+(`tag.class…`, written before the host adds its state classes and copied to every clone).
+Two repeaters of the same shape directly under one parent are therefore one family.
+
+The floor only exists inside a repeater: a lone `delete` (no `add`) ignores `minItems` and
+removes its scope whatever the count. A stale button — a sibling removed outside the set —
+still hits the guard, which logs once and re-refreshes the family instead of deleting.
 
 ## `search`
 

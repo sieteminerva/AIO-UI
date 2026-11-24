@@ -4,7 +4,8 @@
 > **only** after the user picks it — never "to orient" (`AGENT_RULES.md` §13). Rewritten each
 > session, newest on top. One card = one line + one pointer.
 >
-> Recent batches (newest first): **b69** v0.2.5 published to CDN · **b68** the eight missing package
+> Recent batches (newest first): **b70** control set: idle edit/save half rebuilt + repeater delete floor ·
+> **b69** v0.2.5 published to CDN · **b68** the eight missing package
 > READMEs · **b67** publish-side followers · **b65–b66** per-package versions · **b64** registry regen to 37
 > packages · **b63** this task doc · **b60–b62** session prompt opt-in, `release-doc.mjs`, `## Install`
 > in every package README · **b57** Apps Script hosting · **b52–b59** shell mount point, tab seams.

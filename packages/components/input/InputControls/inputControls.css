@@ -130,24 +130,26 @@
 
     &[position="right"],
     &[data-position="right"] {
-      & button:last-child {
+      /* "Last" means last *visible*: a hidden member (`atMin: "hide"`) is still a DOM
+         child, and it must not hand its radius to a node that has left the row. */
+      & button:not([hidden]):not(:has(~ button:not([hidden]))) {
         border-top-right-radius: var(--input-border-radius, 4px);
         border-bottom-right-radius: var(--input-border-radius, 4px);
       }
 
-      & button:not(:last-child) {
+      & button:not([hidden]):has(~ button:not([hidden])) {
         border-right: none;
       }
     }
 
     &[position="left"],
     &[data-position="left"] {
-      & button:first-child {
+      & button:not([hidden]):first-child {
         border-top-left-radius: var(--input-border-radius, 4px);
         border-bottom-left-radius: var(--input-border-radius, 4px);
       }
 
-      & button:not(:first-child) {
+      & button:not([hidden]):not(:first-child) {
         border-left: none;
       }
     }
@@ -186,6 +188,12 @@
       &:disabled {
         cursor: not-allowed;
         opacity: 0.45;
+      }
+
+      /* A `atMin: "hide"` delete must really leave the row: the author `display: inline-flex`
+         above would otherwise beat the browser's `[hidden]` rule. */
+      &[hidden] {
+        display: none;
       }
     }
   }

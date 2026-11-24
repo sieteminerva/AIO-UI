@@ -98,6 +98,20 @@ export interface iInputActionDefinition {
   selector?: Record<string, iElementProperty>;
   label?: string;
   icon?: string;
+  /**
+   * `delete` only: how many items of a repeater family must survive.
+   *
+   * Read only when the set is a repeater (it also declares `add`); a lone `delete` keeps
+   * removing its scope whatever the count. The default is `1`; write `0` to let the
+   * repeater be emptied completely.
+   */
+  minItems?: number;
+  /**
+   * `delete` only: what the button becomes once the family sits at `minItems`.
+   *
+   * `disable` (default) keeps it visible but inert; `hide` takes it out of the row.
+   */
+  atMin?: "hide" | "disable";
   onClick: iInputActionHandler;
 }
 

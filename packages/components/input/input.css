@@ -123,6 +123,11 @@ select:focus-visible {
    2. Input Wrapper & Display Layouts
    ========================================================================== */
 .field {
+  /* One anchor name for every field control, scoped to the field: a dropdown, a native
+     `select` picker and a picker panel on one page never compete, and no id has to be
+     generated. */
+  anchor-scope: --field-dropdown-anchor;
+
   &:is([hidden]) {
     visibility: hidden !important;
   }
@@ -437,7 +442,7 @@ select:focus-visible {
     overflow-x: hidden;
     text-overflow: ellipsis;
     outline: none;
-    position-try-fallbacks: none;
+    position-try-fallbacks: --flip-top, flip-block;
   }
 
   & select::picker(select),
@@ -1070,4 +1075,19 @@ select:focus-visible {
       transform: translateY(calc(var(--input-popup-distance, 4px) * -1)) scaleY(0%) scaleX(99.7%);
     }
   }
+}
+
+/* ------------------------------------------------------------------
+   Flip-to-top. `position-try-fallbacks` on the shared surface asks the
+   platform to try this arrangement first; `flip-block` is the built-in
+   safety net. A try rule may only carry placing/sizing declarations, so the
+   mirror is purely geometric: same inset, same anchor edges, same width.
+   Chromium 125+ / Firefox 132+ / Safari 18+; older engines ignore both and
+   keep the absolute fallback the surface already declares.
+------------------------------------------------------------------ */
+@position-try --flip-top {
+  inset: auto;
+  left: anchor(left);
+  width: anchor-size(width);
+  bottom: calc(anchor(top) - 1px);
 }

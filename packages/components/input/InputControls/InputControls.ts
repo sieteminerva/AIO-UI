@@ -461,9 +461,9 @@ export class InputControlsBuilder extends Builder<InputControlsElementType> {
    * container the visitor is filling in.
    *
    * A **repeater** (a set that declares `add` too) has one **source** instance — the row
-   * the first Add was clicked from, index 0 of the family. It is what the clones copy, so it
-   * is never deletable; `removable: false` extends that to the clones. Outside a repeater
-   * the old remove-the-scope behaviour stays: there is no family to protect.
+   * the first Add was clicked from, index 0 of the family. It carries the record the clones
+   * copy, so `removable: false` locks it. Clones are always free; the flag never applies to
+   * them. Outside a repeater the old remove-the-scope behaviour stays.
    */
   protected delete(scope: HTMLElement, action?: iInputActionDefinition): boolean {
     if (scope.tagName === "FORM") return false;
@@ -477,12 +477,8 @@ export class InputControlsBuilder extends Builder<InputControlsElementType> {
 
       // A stale button (a sibling removed outside the set) still reaches this guard, which
       // is why the warning lives here and not only in the refresh.
-      if (isSource || !removable) {
-        console.warn(
-          isSource
-            ? "[input-controls] delete refused: the source row of a repeater stays."
-            : "[input-controls] delete refused: this repeater declares removable: false."
-        );
+      if (isSource && !removable) {
+        console.warn("[input-controls] delete refused: this repeater's source row declares removable: false.");
         this.#refreshDelete(family);
         return false;
       }
@@ -831,13 +827,12 @@ export class InputControlsBuilder extends Builder<InputControlsElementType> {
       const action = button.__payload?.action as iInputActionDefinition | undefined;
       const repeat = Boolean(member.dataset.repeat);
       const isSource = repeat && member === family[0];
-      const removable = action?.removable ?? true;
-      const blocked = repeat && (isSource || !removable);
+      const locked = isSource && action?.removable === false;
 
-      button.hidden = blocked && isSource && (action?.hideOnSource ?? false);
-      button.disabled = blocked;
-      button.title = blocked
-        ? (isSource ? "The source row cannot be deleted" : "This repeater keeps every row")
+      button.hidden = isSource && (action?.hideOnSource ?? false);
+      button.disabled = locked;
+      button.title = locked
+        ? "The source row is locked (removable: false)"
         : `Click to ${action?.label ?? "delete"}`;
     }
   }

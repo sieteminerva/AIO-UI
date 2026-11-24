@@ -816,4 +816,6 @@ export const layoutConfig = {
   title: "Layout & tokens",
   description: "Judul dan deskripsi form, lalu satu grup dua kolom yang bisa dijatuhkan ke grid.",
   buttonText: "Simpan",
+  // `footer` is the quiet note line under the actions (`@form>footer` → `.form-footer`).
+  footer: "Dengan mengirim, kamu setuju pada ketentuan pemesanan.",
 };

@@ -527,6 +527,18 @@ describe("input sheet", () => {
     expect(sheet).toContain("& > .error {");
     expect(sheet).toContain("color: var(--input-error-color);");
   });
+
+  it("flips the popup above the trigger when there is no room below", () => {
+    // The surface used to say `position-try-fallbacks: none`, which clipped the list at
+    // the viewport edge. A try rule may only place and size, never restyle.
+    expect(sheet).toContain("position-try-fallbacks: --flip-top, flip-block;");
+    expect(sheet).toMatch(/@position-try --flip-top \{/);
+    expect(sheet).toContain("bottom: calc(anchor(top) - 1px);");
+  });
+
+  it("scopes the anchor to the field, so no id has to be generated", () => {
+    expect(sheet).toContain("anchor-scope: --field-dropdown-anchor;");
+  });
 });
 
 describe("InputBuilder help text (info)", () => {

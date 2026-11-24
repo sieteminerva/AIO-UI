@@ -57,7 +57,7 @@ the value (`value`, `checked`) and the choices (`options`, on a chooser only).
 
 `config` — constraints (`required`, `min`/`max`/`step`, `minlength`/`maxlength`, `pattern`,
 `accept`, `inputmode`, `rows`/`cols`, `multiple`), state (`disabled`, `readonly`, `editable`,
-`loading`, `error`), layout (`position`, `useLabel`, `display`, `wide`, `span`, `attributes`,
+`loading`, `error`), layout (`position`, `useLabel`, `display`, `wide`, `attributes`,
 `view`, `shape`, `column`), callbacks (`onFileSelected`, `calculator`) and module settings
 (`actions`, `popover`, `apiUrl`, `debounceDelay`, `onSelect`, `onMultiChange`, `expanded`,
 `searchable`, `thumbnail`, `maxUpload`, `maxFileSize`, `groupUnallowed`, `csv`).
@@ -232,6 +232,22 @@ The control element follows `type`; `label`, the control, the `small.error` line
 ```
 
 ## Tokens
+
+### Popup placement
+
+`select::picker(select)`, `.dropdown > .menu` and the picker panel share one surface that is
+placed by **CSS Anchor Positioning** and shown by the **Native Popover API** — so they escape
+any `overflow: hidden` ancestor and follow the field on scroll and resize without a JS
+position calculator. The anchor is the field-scoped name `--field-dropdown-anchor`
+(`anchor-scope` on `.field`), never a generated id.
+
+`position-try-fallbacks: --flip-top, flip-block` opens the surface **upward** when there is
+no room below; a `@position-try` rule may only carry placing/sizing declarations, so the
+mirror is geometric. Anchor positioning and the fallback need Chromium 125+ / Firefox 132+ /
+Safari 18+; older engines keep the absolute fallback the surface already declares. The
+trigger's own border does not mirror the flip (it is the anchor, not an anchored element, so
+it cannot query the chosen fallback); the menu overlaps the trigger by 1px, so the seam
+reads as one line in both directions.
 
 Every token is declared **once**, on `:root, [data-theme]`, in `input.css`. `[data-theme]`
 is required: a theme puts `--app-*` on the shell element, and a custom property is

@@ -291,4 +291,10 @@ describe("form sheet reads the resolved span", () => {
   it("carries no Sass-style suffix the build would drop", () => {
     expect(sheet).not.toMatch(/&-[a-z]/i);
   });
+
+  it("gives the footer the note-line rule it never had", () => {
+    expect(sheet).toMatch(/^\.form > \.form-footer \{/m);
+    expect(sheet).toMatch(/\.form > \.form-footer \{[\s\S]*?border-top: 1px solid var\(--form-footer-border\)/);
+    expect(sheet).toMatch(/--form-footer-border: var\(--app-border-color\)/);
+  });
 });

@@ -192,7 +192,8 @@ export class PickerBuilder extends Builder<PickerElementType, iPickerConfig> {
       // Manual popover: the trigger owns open/close, so no light-dismiss fight with the
       // filter box. Anchored to the trigger when the platform has anchor positioning.
       panel.setAttribute("popover", "manual");
-      const anchor = `--picker-${Math.random().toString(36).slice(2, 8)}`;
+      // The shared, field-scoped anchor name (see `.field` in Input.css).
+      const anchor = "--field-dropdown-anchor";
       this.#trigger.style.setProperty("anchor-name", anchor);
       panel.style.setProperty("position-anchor", anchor);
     }

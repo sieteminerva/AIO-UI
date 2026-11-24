@@ -231,6 +231,10 @@ describe("picker sheet", () => {
     expect(sheet).toMatch(/\[data-expanded="true"\]\s*\.panel/);
   });
 
+  it("flips the panel when the trigger sits near the viewport edge", () => {
+    expect(sheet).toContain("position-try-fallbacks: --flip-top, flip-block;");
+  });
+
   it("drops the motion when the user asks for reduced motion", () => {
     expect(sheet).toMatch(/@media \(prefers-reduced-motion: reduce\)/);
   });

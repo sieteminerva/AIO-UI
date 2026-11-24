@@ -107,15 +107,15 @@ export interface iInputActionDefinition {
   label?: string;
   icon?: string;
   /**
-   * `delete` only: whether a **clone** of a repeater can be removed. Default `true`.
+   * `delete` only, on a repeater's **source** row (index 0). Default `true`.
    *
-   * The source instance — the one the first Add was clicked from, index 0 of the family —
-   * is never deletable: it carries the record every clone copies. Write `false` to keep the
-   * clones as well.
+   * `false` locks that row: the record the clones copy stays. Clones are always free to
+   * go — this flag never applies to them.
    */
   removable?: boolean;
   /**
-   * `delete` only: hide the button on the source instead of leaving it disabled.
+   * `delete` only: hide the source's button (a `removable: false` lock is what makes it
+   * inert; hiding is a look, not a rule).
    */
   hideOnSource?: boolean;
   onClick: iInputActionHandler;
@@ -846,7 +846,8 @@ class PopoverInputModule implements iInputAdapter {
 
     if (!popover.hasAttribute("popover")) popover.setAttribute("popover", "manual");
 
-    const anchor = control.id ? `--anchor-${control.id}` : null;
+    // Same shared, field-scoped anchor name the CSS expects (see `.field` in Input.css).
+    const anchor = "--field-dropdown-anchor";
     if (anchor) {
       control.style.setProperty("anchor-name", anchor);
       popover.style.setProperty("position-anchor", anchor);

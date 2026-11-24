@@ -1,8 +1,8 @@
 # TASK — input & form polish before the next release
 
 **Band:** Framework · **Claim:** none yet — take a row before the first edit · **Brief:** this file
-**Status:** A **done (b78, revised in b79)**. Order matters: **B → C, then the release** (the
-release also owes the note for the three types `@aio-ui/core` stopped exporting in b76).
+**Status:** A (b78/b79), **B and C landed in b81**. Only the release is left (it also owes the
+note for the three types `@aio-ui/core` stopped exporting in b76).
 
 Three defects the owner reported after the b74/b76 refactor. Each one is a "looks wired, does not
 work" case, so each needs a measurement, not an eyeball (`AGENT_RULES.md` §16).
@@ -51,7 +51,19 @@ rounded to `1 / 1 / 1`).
 - `#form/input` `row-record` (row with a control set): fields 323 / 323 then 646; the control set
   takes its own full-width line instead of a cell.
 
-## B — `config.footer` is appended but unstyled
+## B — `config.footer` — **landed (b81)**
+
+The footer is a **note line** (terms, a help link, a build stamp), not a second action bar.
+`Form.css` now has `.form > .form-footer { display:flex; justify-content:flex-end; gap:.5em;
+margin-top:1em; padding-top:.75em; border-top:1px solid var(--form-footer-border); … }`,
+with `--form-footer-border` / `--form-footer-text` declared on `.form` from
+`--app-border-color` / `--app-text-accent-color`.
+
+**Measured (browser, `#form/layout`, footer added to `layoutConfig`):** `.form-footer` 704px,
+x 41 (aligned with the form), `border-top: 1px` at 30% alpha, `justify-content: flex-end`.
+`FormRow.test.ts` pins the rule and the token derivation.
+
+**Original brief.**
 
 **Symptom.** `config.footer` renders (a string becomes `@form>footer`), and then nothing styles it.
 
@@ -68,7 +80,28 @@ the footer is for (submit row? message line?) — the style should follow that, 
 test pins the rule's presence/side effect (`getComputedStyle` in happy-dom is thin — prefer asserting
 the class + a browser measurement from the demo's `#form` route).
 
-## C — `select` / `dropdown` popup clipped near the viewport or inside `overflow: hidden`
+## C — popup clipping — **landed (b81)**
+
+Anchor positioning and the Native Popover API were already in place; the clip came from
+`position-try-fallbacks: none`. Now:
+
+- `.field { anchor-scope: --field-dropdown-anchor }` and **one shared anchor name** — the
+generated `--anchor-<id>` / `--picker-xxxxxx` names are gone (`Dropdown.ts`, `Input.ts`,
+`InputPicker.ts`).
+- `position-try-fallbacks: --flip-top, flip-block` on the shared surface **and** on the picker
+panel; `@position-try --flip-top` mirrors the inset, width and anchor edges.
+- A try rule may only carry placing/sizing declarations, so the trigger border cannot be
+mirrored from inside it; and `@container anchored(fallback: …)` does **not** match for the
+anchor element itself (probe on Chromium 148: neither the trigger nor the menu picked the
+query styles up). The seam is handled geometrically instead — the surface overlaps the
+trigger by 1px — and `input/README.md` says so.
+
+**Measured (browser, fixed `.field` 24px above the viewport bottom, Chromium 148):** menu
+`bottom` 435 vs trigger `top` 434 → opens **upward**, stays inside the viewport with
+`position-try-fallbacks: --flip-top` alone (no `flip-block`); `anchor-name` and
+`anchor-scope` both report `--field-dropdown-anchor`.
+
+**Original brief.**
 
 **Symptom.** The choice list is cut off when the trigger sits near the viewport edge or inside a
 scrolling/overflow container.

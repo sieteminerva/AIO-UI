@@ -4,10 +4,9 @@
 > **only** after the user picks it — never "to orient" (`AGENT_RULES.md` §13). Rewritten each
 > session, newest on top. One card = one line + one pointer.
 >
-> Recent batches (newest first): **b80** repeater `removable`/`hideOnSource` (source row) ·
-> **b79** `wide` is a percentage of the row (span retired, `column`
-> = line cap) · **b78** a container honours `wide`/`span` (group + cascade) ·
-> **b76** core drops the input node types + docs say `content.options`
+> Recent batches (newest first): **b81** popup flip + form footer · **b80** repeater
+> `removable`/`hideOnSource` · **b79** `wide` is a percentage of the row · **b78** a container
+> honours the share (group + cascade) · **b76** core drops the input node types
 > · **b74** stage 3.3: form schema = input schema, examples migrated
 > · **b73** input schema stage 3 (strict module keys + legacy door
 > gone) · **b72** input schema stage 2 (per-type union +`create()` wiring) ·
@@ -19,7 +18,7 @@
 > in every package README · **b57** Apps Script hosting · **b52–b59** shell mount point, tab seams.
 > Older history: `git log --oneline`.
 
-### 1. Input & form polish — A done; B (footer) and C (popup) before the release (framework band)
+### 1. Input & form polish — done (b78–b81); the release is next (framework band)
 
 Owner-reported after b74/b76. **(A) layout — landed b78, contract revised in b79**: `wide` is now a
 **percentage of the row** (the only width knob; integer `span` and the 16-grid retired), absent =
@@ -27,11 +26,11 @@ full row, and `column` is only the **line cap** (4th child of `column: 3` starts
 A share that would pass 100 wraps instead of creating implicit tracks. Measured on the demo: layout
 row 704px → 352/352/704/352/352; calc group 700px → 323/323/646; `types-choice` (no `wide`) full
 lines. **(B)** `config.footer` is appended (`Form.ts:661-666`) and no rule styles it. **(C)** the
-`select`/`dropdown` popup is clipped near the viewport edge or inside `overflow: hidden` — fix by CSS
-Anchor Positioning + Native Popover (`input.css` §5.2 `:440`, §10.3 `:1067`, `Dropdown/Dropdown.ts`),
-keeping `::picker(select)` and `.menu` visually identical. Each item needs a measurement.
-**Open:** B and C not started; the release waits for both. Repeater config landed in b80
-(`minItems`→`removable`, `atMin`→`hideOnSource`).
+`select`/`dropdown` popup is clipped (C) — **b81** gave the footer its note-line rule and made the
+surface flip upward (`position-try-fallbacks: --flip-top, flip-block`, one `anchor-scope`d name)
+via CSS Anchor Positioning + Native Popover. Repeater config landed in b80. Measurements and the
+one honest limitation (the trigger border cannot mirror the flip) sit in the task doc.
+**Open:** nothing on this card; the next release must ship it plus the b76 type removals.
 → `docs/framework/TASK-INPUT-POLISH.md`
 
 ### 2. Input schema + legacy sweep — done, one release note owed (framework band)

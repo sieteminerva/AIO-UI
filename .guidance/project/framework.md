@@ -6,11 +6,11 @@ Why / stages: `.guidance/plan-framework.md`. Engineering rules:
 
 ## Active (max 3)
 
-| #   | Task                     | State       | Gate                                                                                                                                                                                            |
-| --- | ------------------------ | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | Theme console view (fab) | in progress | `examples/demo/src/ThemeConsole/TASKS.md` — view composed, gate green; open: page-only popover sections                                                                                         |
-| 2   | Inspect surface (b43)    | in progress | `inspect()` + `inspectPage()` green; open: dead relay removal, `#cleanupMap` reset                                                                                                              |
-| 3   | Input & form polish         | in progress | A layout **done (b78, contract revised b79)**, measured on the demo; open: B `config.footer` styling, C clipped `select`/`dropdown` popup → `docs/framework/TASK-INPUT-POLISH.md` |
+| #   | Task                     | State       | Gate                                                                                                                                                                              |
+| --- | ------------------------ | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Theme console view (fab) | in progress | `examples/demo/src/ThemeConsole/TASKS.md` — view composed, gate green; open: page-only popover sections                                                                           |
+| 2   | Inspect surface (b43)    | in progress | `inspect()` + `inspectPage()` green; open: dead relay removal, `#cleanupMap` reset                                                                                                |
+| 3   | Input & form polish         | done        | A layout (b79), B footer + C popup flip (b81), repeater source (b80); only the release is left → `docs/framework/TASK-INPUT-POLISH.md` |
 
 ## Next
 
@@ -31,6 +31,14 @@ Why / stages: `.guidance/plan-framework.md`. Engineering rules:
 
 ## Landed (newest first)
 
+- **Batch 81 (2026-11-24)** — the two remaining owner-reported defects. **Footer:**
+  `.form > .form-footer` gets the note-line rule it never had (`--form-footer-*` from the app
+  layer), measured 704px right-aligned under `#form/layout`. **Popup:** `position-try-fallbacks:
+  none` → `--flip-top, flip-block` (surface + picker panel), one `--field-dropdown-anchor` with
+  `anchor-scope` on `.field` (generated anchor ids gone), and a probe proving the menu opens
+  upward and stays inside the viewport. The trigger-border mirror is not reachable (try rules
+  take placing/sizing only; `anchored()` does not match the anchor), documented instead. `span`
+  leaves `iInputLayout`. Proof: `check` (api-map + catalogue refreshed) + `verify` green.
 - **Batch 80 (2026-11-24)** — a repeater's first row is its **source** and is never deletable
   (it carries the record the clones copy); clones follow `removable` (default `true`) and
   `hideOnSource` hides the source's button instead of leaving it disabled. `minItems`/`atMin`

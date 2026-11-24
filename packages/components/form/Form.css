@@ -129,6 +129,36 @@
   display: none !important;
 }
 
+/* ==========================================================================
+   8. Footer (`.form-footer`)
+   --------------------------------------------------------------------------
+   `config.footer` appends `@form>footer` after the submit button. It is a note
+   line — terms, a help link, a build stamp — not a second action bar, so it is
+   quiet, right-aligned, and separated by a hairline from the actions above.
+   Component tokens stay `--form-*` and derive from the app layer.
+   ========================================================================== */
+.form {
+  --form-footer-border: var(--app-border-color);
+  --form-footer-text: var(--app-text-accent-color);
+}
+
+.form > .form-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5em;
+  margin-top: 1em;
+  padding-top: 0.75em;
+  border-top: 1px solid var(--form-footer-border);
+  color: var(--form-footer-text);
+  font-size: calc(var(--input-font-size) * 0.9);
+
+  & a {
+    color: var(--input-accent-color);
+  }
+}
+
 /* An action set (`Edit/Save/Add/Delete`…) is owned by `@aio-ui/input`: the layout that
    glues a field to its buttons lives in `inputControls.css`, together with the buttons.
    It used to be duplicated here, and the copies had already drifted apart. */

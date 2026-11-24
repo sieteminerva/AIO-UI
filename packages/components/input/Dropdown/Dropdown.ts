@@ -346,10 +346,9 @@ export class DropdownBuilder extends Builder<DropdownElementType, iDropdownConfi
     input.setAttribute("aria-haspopup", "listbox");
     input.setAttribute("aria-expanded", "false");
 
-    // Anchor positioning unik per-instans (meniru pola Input.ts:492-499).
-    // Nama anchor unik di-generate dari id input, agar beberapa dropdown di
-    // halaman yang sama tidak saling berebut anchor `--ddown` generik.
-    const anchorName = `--anchor-${input.id || this.listId}`;
+    // One anchor name, scoped by `.field` (`anchor-scope`): two dropdowns on a page never
+    // compete and no id is generated. The CSS owns where it lands.
+    const anchorName = "--field-dropdown-anchor";
     const control = input.closest(".dropdown") as HTMLElement | null;
     (control || input).style.setProperty("anchor-name", anchorName);
     menu.style.setProperty("position-anchor", anchorName);

@@ -213,8 +213,8 @@ export interface iInputLayout {
   position?: "top" | "left" | "right" | "bottom";
   useLabel?: boolean;
   display?: "block" | "inline";
+  /** Share of the row, in percent of it — the only width knob (see `@aio-ui/form`). */
   wide?: number | string | null;
-  span?: number | string | null;
   attributes?: Array<{ name: string; value: string }>;
   /**
    * Visual variant. Each value belongs to one owner (see the named types above); the

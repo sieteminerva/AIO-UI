@@ -98,20 +98,20 @@ a locked group. `config.editable` is accepted as well as the node-level key.
 ## The repeater source
 
 A set is a **repeater** when it declares `add` _and_ `delete`. The first item — the row the
-first Add was clicked from, index 0 of the family — is the **source**: it carries the record
-every clone copies, so it is never deletable. Clones are, by default; every sibling's button
-is refreshed whenever one arrives or leaves.
+first Add was clicked from, index 0 of the family — is the **source**. It carries the record
+the clones copy, so `removable: false` locks it; the clones are always free to go. Every
+sibling's button is refreshed whenever one arrives or leaves.
 
 ```ts
 config: {
-  actions: ["add", { type: "delete", label: "Hapus", hideOnSource: true }];
+  actions: ["add", { type: "delete", label: "Hapus", removable: false, hideOnSource: true }];
 }
 ```
 
-| Option         | Default | Meaning                                                                |
-| -------------- | ------- | ---------------------------------------------------------------------- |
-| `removable`    | `true`  | Whether a **clone** may be removed. `false` keeps every clone as well. |
-| `hideOnSource` | `false` | Hide the source's button instead of leaving it disabled.               |
+| Option         | Default | Meaning                                                                        |
+| -------------- | ------- | ------------------------------------------------------------------------------ |
+| `removable`    | `true`  | Whether the **source** row may be deleted. `false` locks it; clones stay free.  |
+| `hideOnSource` | `false` | Hide the source's button (a look; `removable: false` is what makes it inert).   |
 
 A family is the set of sibling scopes carrying the same `data-repeat` signature
 (`tag.class…`, written before the host adds its state classes and copied to every clone).

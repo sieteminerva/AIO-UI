@@ -410,21 +410,18 @@ describe("repeater source", () => {
     deleteAction,
   ];
 
-  it("keeps the source row and lets a clone go", () => {
+  it("lets the source go by default, and a clone too", () => {
     const { fieldset } = group();
     const node = controls(fieldset, repeater());
     const add = node.querySelector("button.add") as HTMLButtonElement;
     const sourceDelete = node.querySelector("button.delete") as HTMLButtonElement;
 
-    // The source carries the record the clones copy: inert from the first render.
-    expect(sourceDelete.disabled).toBe(true);
-    expect(sourceDelete.hidden).toBe(false);
+    expect(sourceDelete.disabled).toBe(false);
 
     add.click();
     const clone = document.querySelectorAll("fieldset.form-group")[1] as HTMLElement;
     const cloneDelete = clone.querySelector("button.delete") as HTMLButtonElement;
     expect(cloneDelete.disabled).toBe(false);
-    expect(sourceDelete.disabled).toBe(true);
 
     cloneDelete.click();
     expect(document.querySelectorAll("fieldset.form-group")).toHaveLength(1);
@@ -436,26 +433,32 @@ describe("repeater source", () => {
     const sourceDelete = node.querySelector("button.delete") as HTMLButtonElement;
 
     expect(sourceDelete.hidden).toBe(true);
-    expect(sourceDelete.disabled).toBe(true);
+    // Hiding is a look, not a rule: the row is still removable until it says otherwise.
+    expect(sourceDelete.disabled).toBe(false);
   });
 
-  it("keeps every clone when the action says removable: false", () => {
+  it("locks the source with removable: false and leaves the clones free", () => {
     const { fieldset } = group();
     const node = controls(fieldset, repeater({ type: "delete", label: "Hapus", removable: false, onClick: () => undefined }));
-    (node.querySelector("button.add") as HTMLButtonElement).click();
-
-    const clone = document.querySelectorAll("fieldset.form-group")[1] as HTMLElement;
-    expect((clone.querySelector("button.delete") as HTMLButtonElement).disabled).toBe(true);
-    expect((node.querySelector("button.delete") as HTMLButtonElement).disabled).toBe(true);
-  });
-
-  it("titles explain why the source cannot go", () => {
-    const { fieldset } = group();
-    const node = controls(fieldset, repeater());
     const sourceDelete = node.querySelector("button.delete") as HTMLButtonElement;
 
-    expect(sourceDelete.title).toBe("The source row cannot be deleted");
-    expect(node.querySelector("button.add") as HTMLButtonElement).not.toBeNull();
+    expect(sourceDelete.disabled).toBe(true);
+
+    (node.querySelector("button.add") as HTMLButtonElement).click();
+    const clone = document.querySelectorAll("fieldset.form-group")[1] as HTMLElement;
+    const cloneDelete = clone.querySelector("button.delete") as HTMLButtonElement;
+    expect(cloneDelete.disabled).toBe(false);
+
+    cloneDelete.click();
+    expect(document.querySelectorAll("fieldset.form-group")).toHaveLength(1);
+  });
+
+  it("titles explain why the source is locked", () => {
+    const { fieldset } = group();
+    const node = controls(fieldset, repeater({ type: "delete", label: "Hapus", removable: false, onClick: () => undefined }));
+    const sourceDelete = node.querySelector("button.delete") as HTMLButtonElement;
+
+    expect(sourceDelete.title).toBe("The source row is locked (removable: false)");
   });
 
   it("leaves a lone delete alone: there is no family", () => {

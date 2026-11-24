@@ -299,12 +299,14 @@
 }
 
 /* Anchor the popover to the trigger where the platform understands anchors; without
-   them the panel is a fixed box and the host's own layout decides where it lands. */
+   them the panel is a fixed box and the host's own layout decides where it lands.
+   The flip names live in `Input.css` (`@position-try --flip-top`). */
 @supports (anchor-name: --picker) {
   .field .picker[data-kind] .panel {
     inset-block-start: anchor(bottom);
     inset-inline-start: anchor(left);
     inline-size: anchor-size(width);
+    position-try-fallbacks: --flip-top, flip-block;
   }
 }
 

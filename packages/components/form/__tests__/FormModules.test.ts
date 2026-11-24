@@ -96,7 +96,7 @@ describe("form adapter manifest", () => {
     const loader = new ModuleLoader("form", FORM_ADAPTER_DEFINITIONS);
     const form = new FormBuilder({ modules: loader });
 
-    const el = form.create({ content: [{ type: "text", id: "routed-field", label: "Field" }] }) as HTMLElement;
+    const el = form.create({ content: [{ content: { type: "text", id: "routed-field", label: "Field" } }] }) as HTMLElement;
     document.body.appendChild(el);
 
     const loaded = loader.loadedIds();
@@ -114,7 +114,7 @@ describe("Form.provideModules", () => {
     const form = stack();
     form.provideModules({ [INPUT_MODULE_IDS.dropdown]: adapter });
 
-    const el = form.create({ content: [{ type: "text", id: "inherited-field", label: "Field" }] }) as HTMLElement;
+    const el = form.create({ content: [{ content: { type: "text", id: "inherited-field", label: "Field" } }] }) as HTMLElement;
     document.body.appendChild(el);
 
     const input = el.querySelector<HTMLInputElement>("#inherited-field");
@@ -125,7 +125,7 @@ describe("Form.provideModules", () => {
   it("renders a plain field when no input module was provided", () => {
     const form = stack();
 
-    const el = form.create({ content: [{ type: "text", id: "default-field", label: "Field" }] }) as HTMLElement;
+    const el = form.create({ content: [{ content: { type: "text", id: "default-field", label: "Field" } }] }) as HTMLElement;
     document.body.appendChild(el);
 
     const input = el.querySelector<HTMLInputElement>("#default-field");
@@ -140,15 +140,17 @@ describe("Form.provideModules", () => {
 
     const el = form.create({
       content: [
-        { type: "text", id: "floor-text", label: "Field" },
+        { content: { type: "text", id: "floor-text", label: "Field" } },
         {
-          type: "dropdown",
-          id: "floor-dropdown",
-          label: "Pilih",
-          options: [
-            { value: "a", label: "A" },
-            { value: "b", label: "B" },
-          ],
+          content: {
+            type: "dropdown",
+            id: "floor-dropdown",
+            label: "Pilih",
+            options: [
+              { value: "a", label: "A" },
+              { value: "b", label: "B" },
+            ]
+          }
         },
       ],
     }) as HTMLElement;
@@ -164,7 +166,7 @@ describe("Form.provideModules", () => {
     // replaced, so the form says why instead of failing one field at a time.
     const form = new FormBuilder({ modules: new ModuleLoader("form", []) });
 
-    expect(() => form.create({ content: [{ type: "text", id: "orphan", label: "Field" }] })).toThrow(
+    expect(() => form.create({ content: [{ content: { type: "text", id: "orphan", label: "Field" } }] })).toThrow(
       /inputFormAdapter/
     );
   });
@@ -189,7 +191,7 @@ describe("Form.provideModules", () => {
       },
     } as any);
 
-    const el = form.create({ content: [{ type: "text", id: "probe-field", label: "Field" }] }) as HTMLElement;
+    const el = form.create({ content: [{ content: { type: "text", id: "probe-field", label: "Field" } }] }) as HTMLElement;
     document.body.appendChild(el);
 
     expect(phases).toEqual(["initialize"]);
@@ -212,7 +214,7 @@ describe("hand-wired modules (no registry, no shell)", () => {
     const loader = new ModuleLoader("form", [inputFormAdapter]);
     const form = new FormBuilder({ modules: loader });
 
-    const el = form.create({ content: [{ type: "text", id: "picked-field", label: "Field" }] }) as HTMLElement;
+    const el = form.create({ content: [{ content: { type: "text", id: "picked-field", label: "Field" } }] }) as HTMLElement;
     document.body.appendChild(el);
 
     const input = el.querySelector<HTMLInputElement>("#picked-field");
@@ -231,7 +233,7 @@ describe("hand-wired modules (no registry, no shell)", () => {
 
     const el = form.create({
       content: [
-        { type: "dropdown", id: "pick", label: "Pick", options: [{ value: "a", label: "A" }] },
+        { content: { type: "dropdown", id: "pick", label: "Pick", options: [{ value: "a", label: "A" }] } },
       ],
     }) as HTMLElement;
     document.body.appendChild(el);
@@ -254,7 +256,7 @@ describe("hand-wired modules (no registry, no shell)", () => {
     expect(() =>
       form.create({
         content: [
-          { id: "group", title: "Group", actions: ["editor"], group: [{ type: "text", id: "in-group", label: "Field" }] },
+          { id: "group", title: "Group", actions: ["editor"], group: [{ content: { type: "text", id: "in-group", label: "Field" } }] },
         ],
       })
     ).toThrow(/"controls" module is not in this builder's set/);
@@ -287,7 +289,7 @@ describe("hand-wired modules (no registry, no shell)", () => {
     const form = new FormBuilder({
       modules: new ModuleLoader<iFormModuleContext, any>("form", definitions),
     });
-    const el = form.create({ content: [{ type: "text", id: "resolved-field", label: "Field" }] }) as HTMLElement;
+    const el = form.create({ content: [{ content: { type: "text", id: "resolved-field", label: "Field" } }] }) as HTMLElement;
     document.body.appendChild(el);
 
     expect(el.querySelector<HTMLInputElement>("#resolved-field")).not.toBeNull();
@@ -300,9 +302,46 @@ describe("hand-wired modules (no registry, no shell)", () => {
     const form = stack();
     form.provideModules(Object.fromEntries(definitions.map((definition) => [String(definition.id), definition])));
 
-    const el = form.create({ content: [{ type: "text", id: "routed-field", label: "Field" }] }) as HTMLElement;
+    const el = form.create({ content: [{ content: { type: "text", id: "routed-field", label: "Field" } }] }) as HTMLElement;
     document.body.appendChild(el);
 
     expect(el.querySelector<HTMLInputElement>("#routed-field")).not.toBeNull();
+  });
+});
+
+describe("field schema — one shape for input and form", () => {
+  it("renders caption, help text and choices from the split schema", () => {
+    // Proof of render: the form no longer reads a field's keys off its top level, so the
+    // caption has to come from `content.label` and the choices from `content.options`.
+    const form = stack();
+    const el = form.create({
+      content: [
+        {
+          content: { type: "select", id: "city", label: "Kota", options: ["Bandung", "Jakarta"] },
+          config: { required: true },
+        },
+      ],
+    }) as HTMLElement;
+    document.body.appendChild(el);
+
+    expect(el.querySelector("label")?.textContent?.trim()).toBe("Kota");
+    // Two declared choices, plus the empty placeholder option the select opens with.
+    const options = Array.from(el.querySelectorAll("option")).map((option) => option.textContent?.trim());
+    expect(options).toContain("Bandung");
+    expect(options).toContain("Jakarta");
+    expect(el.querySelector<HTMLSelectElement>("#city")?.required).toBe(true);
+  });
+
+  it("does not read a flat node as a field", () => {
+    // The flat spelling is gone: a node with `type` at the top level names no field, so it
+    // renders nothing — silently dropping it would be worse than a caption-less control.
+    const form = stack();
+    const el = form.create({
+      content: [{ type: "select", id: "flat", label: "Kota", options: ["Bandung"] } as any],
+    }) as HTMLElement;
+    document.body.appendChild(el);
+
+    expect(el.querySelector("#flat")).toBeNull();
+    expect(el.querySelector("label")).toBeNull();
   });
 });

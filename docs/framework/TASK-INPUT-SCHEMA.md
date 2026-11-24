@@ -5,15 +5,11 @@
 
 ## Handoff — read this first
 
-**State:** stages 1–3 are done and committed. b72 (stage 2) landed as `86124cd`; stage 3 lands
-as its own commit. The tree is clean. Last gate: `npm run verify` **green** (91 files,
-994 pass, 1 skip).
+**State:** stages 1–3.3 are done and committed. b72 (stage 2) landed as `86124cd`, stage 3 as
+`9d79f9f`, stage 3.3 as its own commit (b74). The tree is clean. Last gate: `npm run verify`
+**green** (91 files, 994 pass, 1 skip).
 
-**Remaining: §Stage 3.3 only** — migrate `examples/demo`, `examples/gallery`,
-`examples/rajutan` (outside `tsconfig`, so the compiler does not see them yet). They still
-write flat nodes with `title` and `config.options`; at runtime those render without a caption
-and without choices, which is exactly the breakage this refactor is meant to surface. One
-batch of its own.
+**Remaining:** nothing in this task. The next input work is a new card, not a continuation.
 
 **Traps proven in this batch (do not rediscover):**
 
@@ -71,6 +67,27 @@ a text field still accepts `actions` + `popover`.
 - Docs: `input/README.md` and `form/README.md` show the split shape; field captions are
   `label`, constraints sit in `config`.
 
+## Stage 3.3 — done (b74)
+
+**One shape, everywhere.** The form field node is now the input schema itself —
+`{ content, config }` — plus the form's own `condition` / `then` beside the two blocks. The adapter
+no longer splits a flat node (`splitField()` and its two key lists are gone); it reads the blocks
+and lifts `config.selectors` into the field's own `InputBuilder` constructor.
+
+- **Types:** `packages/components/form/FormSchema.ts` exports `FormField` (the input union
+  distributed per `content.type`, plus `config.selectors`, `condition`, `then`), `FormNode`,
+  `iFormGroupNode`, `iFormRowNode`, `iFormNodeLayout`. Exported from `@aio-ui/form`.
+- **Compiler proof:** `iFormTopicDemo.schema` is `readonly FormNode[]`; the demo schemas, both
+  wizards and the form test suites are annotated, so a stale key (`title`, `config.options`,
+  `style`) is a compile error. `npm run typecheck:examples` (demo + gallery) joined `check`.
+- **Input API:** `iBasicSelectOption.color` added — `PickerBuilder` already painted it.
+- **Examples migrated:** `examples/demo` (form schemas, action handlers, duplicate registry keys),
+  `examples/gallery` (wizard sets), `examples/rajutan` (wizard + `FormEditor`, which now builds
+  `{ content, config }` payloads; that repo carries its own commit).
+- **Render proof:** `FormModules.test.ts` — a split field renders caption, choices and `required`,
+  and a flat node renders no field at all.
+- Gate: `check` green (api-map + catalogue refreshed) and `verify` green — 91 files, 994 pass, 1 skip.
+
 ## Stage 3.3 — next (separate batch)
 
 `examples/demo/**`, `examples/gallery/**`, `examples/rajutan/**` are outside `tsconfig`, so the
@@ -113,10 +130,12 @@ the compiler, not a browser, proves the migration.
 - **`iBuilderRegistry.input`** (core, `packages/core/src/types/registry.ts`): type it `any` with a
   one-line comment. Core cannot import the input package; the concrete type is enforced at the
   input package boundary. Low risk — do not stall on it.
-- **Examples** (demo/gallery/rajutan) are NOT migrated in stages 1–3. `tsconfig` excludes
-  `examples`, so they compile nowhere and only break in the browser — which is why they are
-  stage 3.3. Since stage 3 there is no flat-node fallback at runtime, so an unmigrated example
-  loses its caption and its choices.
+- **A form field node is the input schema** (`{ content, config }`) with `condition` / `then`
+  beside the blocks. b74 replaced the temporary flat form node; there is one shape for both
+  layers, so an example never teaches two spellings.
+- **Examples** (demo/gallery/rajutan) are migrated in stage 3.3 and typechecked from then on:
+  `readonly FormNode[]` on a schema makes a stale key a compile error, and
+  `npm run typecheck:examples` keeps the demo and the gallery in the gate.
 
 ## Done (stage 2 — b72)
 
@@ -152,10 +171,10 @@ the compiler, not a browser, proves the migration.
    and `InputSchema<T extends InputType = InputType> = Extract<AnyInputSchema, { content: { type: T } }>`
    (`const T` is not allowed on a type alias — only on functions/classes).
 2. **`InputBuilder.create()`** (`Input.ts`): two overloads — typed `create<const T extends
-   InputType>(schema: InputSchema<T>)` and base-shaped `create(schema?: { content?: any;
-   config?: Partial<iInputConfig> })` (needed for assignability to `Builder.create`; the impl
+InputType>(schema: InputSchema<T>)` and base-shaped `create(schema?: { content?: any;
+config?: Partial<iInputConfig> })` (needed for assignability to `Builder.create`; the impl
    signature alone does not count). Impl folds to `super.create({ content: { ...content, config:
-   schema?.config ?? content?.config } })`.
+schema?.config ?? content?.config } })`.
 3. **Types:** `iBasicInputNode` / `iBasicInputConfig` replaced by `iInputField`; `index.ts`
    exports the union; `iBasicInputNode` gone from the public surface.
 4. **Wiring:** `Input.ts` reads `view` / `column` / `error` / `loading`; `className` gone from the

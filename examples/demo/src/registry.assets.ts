@@ -35,21 +35,17 @@ export const componentAssets = {
     "@aio-ui/form/cascade-adapter": () => import("@aio-ui/form/cascade-adapter"),
     "@aio-ui/form/multistep-adapter": () => import("@aio-ui/form/multistep-adapter"),
     "@aio-ui/form/calculation-adapter": () => import("@aio-ui/form/calculation-adapter"),
-    "@aio-ui/form": () => import("@aio-ui/form"),
     "@aio-ui/input/dropdown": () => import("@aio-ui/input/dropdown"),
     "@aio-ui/input/file-uploader": () => import("@aio-ui/input/file-uploader"),
     "@aio-ui/input/controls": () => import("@aio-ui/input/controls"),
     "@aio-ui/input/picker": () => import("@aio-ui/input/picker"),
-    // The opt-in stacks, for a host that wants the whole layer in one import instead of
-    // nine manifest refs. Every exact `exports` subpath is mapped here — a prefix cannot
-    // add `.js`, so a missing key is a runtime 404, not a slow path.
-    "@aio-ui/form": () => import("@aio-ui/form"),
-    // The whole input layer is one import; each module is also its own subpath above.
-    "@aio-ui/input": () => import("@aio-ui/input"),
+
+    // The opt-in stacks (`@aio-ui/form`, `@aio-ui/input`) and their whole-package imports are
+    // declared once, with the components above — a map key may appear once, so repeating them
+    // here used to be a duplicate-key error, not a second registration.
+
     // Adapters owned by other packages: the form never imports them, the host declares them.
     "@aio-ui/id-address": () => import("@aio-ui/id-address"),
-    "@aio-ui/table": () => import("@aio-ui/table"),
-    "@aio-ui/message": () => import("@aio-ui/message"),
   } as Record<string, () => Promise<unknown>>,
   styles: {
     "@aio-ui/accordion/Accordion.css": () => import("@aio-ui/accordion/Accordion.css?inline"),

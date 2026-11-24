@@ -32,8 +32,8 @@ const schema = [
     id: "company",
     title: "Perusahaan",
     group: [
-      { type: "text", id: "brand", label: "Nama brand" },
-      { type: "text", id: "address", label: "Alamat kantor", condition: { field: "brand", filled: true } },
+      { content: { type: "text", id: "brand", label: "Nama brand" } },
+      { content: { type: "text", id: "address", label: "Alamat kantor" }, condition: { field: "brand", filled: true } },
     ],
   },
 ];
@@ -109,8 +109,8 @@ describe("cascade in hidden mode", () => {
 
 describe("multistep gate", () => {
   const steps = [
-    { id: "s1", title: "Satu", group: [{ type: "email", id: "m-email", label: "Email", required: true }] },
-    { id: "s2", title: "Dua", group: [{ type: "text", id: "m-city", label: "Kota" }] },
+    { id: "s1", title: "Satu", group: [{ content: { type: "email", id: "m-email", label: "Email" }, config: { required: true } }] },
+    { id: "s2", title: "Dua", group: [{ content: { type: "text", id: "m-city", label: "Kota" } }] },
   ];
 
   function buildSteps(): HTMLFormElement {
@@ -152,8 +152,8 @@ describe("cascade and a repeated scope", () => {
       title: "Baris",
       actions: [{ type: "add", label: "Add", onClick: () => undefined }],
       group: [
-        { type: "text", id: "sku", label: "SKU" },
-        { type: "text", id: "note", label: "Catatan", condition: { field: "sku", filled: true } },
+        { content: { type: "text", id: "sku", label: "SKU" } },
+        { content: { type: "text", id: "note", label: "Catatan" }, condition: { field: "sku", filled: true } },
       ],
     },
   ];

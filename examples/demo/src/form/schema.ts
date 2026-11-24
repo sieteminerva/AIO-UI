@@ -1,6 +1,6 @@
 import type { iComponentModuleRef } from "@aio-ui/core";
 import { FORM_ADAPTER_MANIFEST } from "@aio-ui/form";
-import type { iBasicInputNode } from "@aio-ui/input";
+import type { FormNode, iFormGroupNode } from "@aio-ui/form";
 
 /**
  * The schemas the `#form` docs route builds — data only, no page wiring.
@@ -14,35 +14,37 @@ let isEditing = false;
 const selectors = { "@field>label": { tagName: "label", /* attrs: { "animation": "typewriter", "animation-chain": "true", "animated-once": "true" } */ } }
 
 // ID ADDRESS input sets
-export const AddressSet = {
+export const AddressSet: iFormGroupNode = {
   id: "address-set",
   legend: "Id Address Set",
   // condition: { field: "contact-company", filled: true },
   group: [
     {
-      type: "textarea",
-      id: "address-jalan",
-      // condition: { field: "logo", filled: true },
-      title: "Pusat workshop atau rumah tempat kerja mu ini beralamat di",
-      placeholder: "Tuliskan nama jalan, nomor rumah, atau ruko usahamu...",
+      content: {
+        type: "textarea",
+        id: "address-jalan",
+        // condition: { field: "logo", filled: true },
+        label: "Pusat workshop atau rumah tempat kerja mu ini beralamat di",
+        placeholder: "Tuliskan nama jalan, nomor rumah, atau ruko usahamu..."
+      },
       config: {
         selectors,
         attributes: [
           { name: "animation", value: "fade-in" },
           { name: "animation-chain", value: "true" },
           { name: "animated-once", value: "true" },
-        ],
+        ]
       }
     },
     {
-      type: "dropdown",
-      id: "address-propinsi",
-      title: "Tepatnya, wilayah tersebut berada di cakupan wilayah",
-      placeholder: "pilih provinsi",
-      // A `.dropdown` box rather than a bare `<select>`: it is searchable by typing, and
-      // the picker's `aio` adapter speaks exactly this markup.
+      content: {
+        type: "dropdown",
+        id: "address-propinsi",
+        label: "Tepatnya, wilayah tersebut berada di cakupan wilayah",
+        placeholder: "pilih provinsi"
+      },
       config: {
-        style: "select",
+        view: "select",
         min: 1,
         // A level can be large (61 districts in BANDUNG). `max` is the dropdown's render
         // cap, not a search limit — with the default 10 the list stayed short after typing.
@@ -50,18 +52,18 @@ export const AddressSet = {
         attributes: [{
           name: "data-level",
           value: "propinsi",
-        }],
-      },
+        }]
+      }
     },
     {
-      type: "dropdown",
-      id: "address-kota",
-      title: "pada wilayah administrasi daerah",
-      placeholder: "pilih kota/kabupaten",
-      // A `.dropdown` box rather than a bare `<select>`: it is searchable by typing, and
-      // the picker's `aio` adapter speaks exactly this markup.
+      content: {
+        type: "dropdown",
+        id: "address-kota",
+        label: "pada wilayah administrasi daerah",
+        placeholder: "pilih kota/kabupaten"
+      },
       config: {
-        style: "select",
+        view: "select",
         min: 1,
         // A level can be large (61 districts in BANDUNG). `max` is the dropdown's render
         // cap, not a search limit — with the default 10 the list stayed short after typing.
@@ -69,18 +71,18 @@ export const AddressSet = {
         attributes: [{
           name: "data-level",
           value: "kota",
-        }],
-      },
+        }]
+      }
     },
     {
-      type: "dropdown",
-      id: "address-kecamatan",
-      title: "meluas ke area wilayah tingkat",
-      placeholder: "pilih kecamatan",
-      // A `.dropdown` box rather than a bare `<select>`: it is searchable by typing, and
-      // the picker's `aio` adapter speaks exactly this markup.
+      content: {
+        type: "dropdown",
+        id: "address-kecamatan",
+        label: "meluas ke area wilayah tingkat",
+        placeholder: "pilih kecamatan"
+      },
       config: {
-        style: "select",
+        view: "select",
         min: 1,
         // A level can be large (61 districts in BANDUNG). `max` is the dropdown's render
         // cap, not a search limit — with the default 10 the list stayed short after typing.
@@ -88,18 +90,18 @@ export const AddressSet = {
         attributes: [{
           name: "data-level",
           value: "kecamatan",
-        }],
-      },
+        }]
+      }
     },
     {
-      type: "dropdown",
-      id: "address-kelurahan",
-      title: "hingga menyentuh batas terkecil di",
-      placeholder: "pilih kelurahan",
-      // A `.dropdown` box rather than a bare `<select>`: it is searchable by typing, and
-      // the picker's `aio` adapter speaks exactly this markup.
+      content: {
+        type: "dropdown",
+        id: "address-kelurahan",
+        label: "hingga menyentuh batas terkecil di",
+        placeholder: "pilih kelurahan"
+      },
       config: {
-        style: "select",
+        view: "select",
         min: 1,
         // A level can be large (61 districts in BANDUNG). `max` is the dropdown's render
         // cap, not a search limit — with the default 10 the list stayed short after typing.
@@ -107,15 +109,17 @@ export const AddressSet = {
         attributes: [{
           name: "data-level",
           value: "kelurahan",
-        }],
-      },
+        }]
+      }
     },
     {
-      type: "text",
-      id: "address-kodepos",
-      // condition: { field: "jalan", filled: true },
-      title: "dengan penguncian kode pos resmi",
-      placeholder: "kodepos",
+      content: {
+        type: "text",
+        id: "address-kodepos",
+        // condition: { field: "jalan", filled: true },
+        label: "dengan penguncian kode pos resmi",
+        placeholder: "kodepos"
+      },
       config: {
         selectors,
         attributes: [
@@ -130,91 +134,95 @@ export const AddressSet = {
 }
 
 // INPUT CONTROL Sets
-export const InputControlSet = {
+export const InputControlSet: iFormGroupNode = {
   id: "test-set",
   legend: "Input Controls",
   group: [
     {
-      type: "text",
-      id: "test-1",
-      title: "Test Text",
-      placeholder: "Isi apa aja",
-      editable: true,
+      content: {
+        type: "text",
+        id: "test-1",
+        label: "Test Text",
+        placeholder: "Isi apa aja"
+      },
       config: {
         actions: [
           {
             type: "copy",
             label: "copy",
-            onClick: (_e: Event, payload: any) => {
-              console.log("action!! COPY", payload)
+            onClick: (_parent, context) => {
+              console.log("action!! COPY", context)
             }
           },
           {
             type: "delete",
             label: "delete",
-            onClick: (_e: Event, payload: any) => {
-              console.log("action!! delete", payload)
+            onClick: (_parent, context) => {
+              console.log("action!! delete", context)
             }
           },
           {
             type: "add",
             label: "new",
-            onClick: (_e: Event, payload: any) => {
-              console.log("action!! ADD", payload)
+            onClick: (_parent, context) => {
+              console.log("action!! ADD", context)
             }
           },
           {
             type: "edit",
             label: "edit",
-            onClick: (_e: Event, payload: any) => {
+            onClick: (_parent, context) => {
               isEditing = !isEditing;
-              console.log("action!! EDIT", `isEditing: ${isEditing}`, payload)
+              console.log("action!! EDIT", `isEditing: ${isEditing}`, context)
             }
           }
-        ]
+        ],
+      editable: true
       }
     },
     {
-      type: "select",
-      id: "test-2",
-      title: "Test Text",
-      placeholder: "Pilih mana saja",
-      editable: true,
+      content: {
+        type: "select",
+        id: "test-2",
+        label: "Test Text",
+        placeholder: "Pilih mana saja",
+          options: [
+            "A", "B", "C", "D"
+          ]
+      },
       config: {
-        options: [
-          "A", "B", "C", "D"
-        ],
         actions: [
           {
             type: "copy",
             label: "",
-            onClick: (_e: Event, payload: any) => {
-              console.log("action!! COPY", payload)
+            onClick: (_parent, context) => {
+              console.log("action!! COPY", context)
             }
           },
           {
             type: "delete",
             label: "",
-            onClick: (_e: Event, payload: any) => {
-              console.log("action!! delete", payload)
+            onClick: (_parent, context) => {
+              console.log("action!! delete", context)
             }
           },
           {
             type: "add",
             label: "",
-            onClick: (_e: Event, payload: any) => {
-              console.log("action!! ADD", payload)
+            onClick: (_parent, context) => {
+              console.log("action!! ADD", context)
             }
           },
           {
             type: "edit",
             label: "edit",
-            onClick: (_e: Event, payload: any) => {
+            onClick: (_parent, context) => {
               isEditing = !isEditing;
-              console.log("action!! EDIT", `isEditing: ${isEditing}`, payload)
+              console.log("action!! EDIT", `isEditing: ${isEditing}`, context)
             }
           }
-        ]
+        ],
+      editable: true
       }
     },
     // A group is a scope for the control set: `search` reads the whole fieldset with the
@@ -226,9 +234,9 @@ export const InputControlSet = {
       // `search` reads the group; `copy` copies it. One word each — no callbacks needed.
       actions: ["search", "copy"],
       group: [
-        { type: "text", id: "lookup-invoice", title: "No. invoice", placeholder: "INV-…" },
-        { type: "select", id: "lookup-status", title: "Status", options: ["Baru", "Diproses", "Selesai"] },
-      ] as iBasicInputNode[],
+        { content: { type: "text", id: "lookup-invoice", label: "No. invoice", placeholder: "INV-…" } },
+        { content: { type: "select", id: "lookup-status", label: "Status", options: ["Baru", "Diproses", "Selesai"] } },
+      ],
     },
     // Two words replace four buttons: `editor` = edit+save, `repeater` = add+delete.
     {
@@ -237,11 +245,11 @@ export const InputControlSet = {
       actions: ["editor", "repeater"],
       group: [
         // `editable: true` keeps this one field writable while Edit/Save lock the group.
-        { type: "text", id: "customer-name", title: "Nama pelanggan", placeholder: "Belum diisi", editable: true },
-        { type: "select", id: "customer-tier", title: "Tier", options: ["Bronze", "Silver", "Gold"] },
+        { content: { type: "text", id: "customer-name", label: "Nama pelanggan", placeholder: "Belum diisi" }, config: { editable: true } },
+        { content: { type: "select", id: "customer-tier", label: "Tier", options: ["Bronze", "Silver", "Gold"] } },
         // A dropdown is part of the set's job too: locked as a unit (box + hidden value).
-        { type: "dropdown", id: "customer-city", title: "Kota", config: { style: "datalist", options: ["Bandung", "Jakarta", "Surabaya"] } },
-      ] as iBasicInputNode[],
+        { content: { type: "dropdown", id: "customer-city", label: "Kota", options: ["Bandung", "Jakarta", "Surabaya"] }, config: { view: "datalist" } },
+      ],
     },
 
     // A row is a scope as well, not only a fieldset: same `actions`, buttons in the corner.
@@ -251,76 +259,80 @@ export const InputControlSet = {
       column: 2,
       actions: ["editor", "repeater"],
       row: [
-        { type: "text", id: "row-sku", title: "SKU", config: { wide: 50 } },
-        { type: "text", id: "row-qty", title: "Qty", config: { wide: 50 } },
+        { content: { type: "text", id: "row-sku", label: "SKU" }, config: { wide: 50 } },
+        { content: { type: "text", id: "row-qty", label: "Qty" }, config: { wide: 50 } },
         // Cascade inside a locked scope: appears once SKU has a value, i.e. after Edit.
-        { type: "text", id: "row-note", title: "Catatan baris", condition: { field: "row-sku", filled: true } },
-      ] as iBasicInputNode[],
+        { content: { type: "text", id: "row-note", label: "Catatan baris" }, condition: { field: "row-sku", filled: true } },
+      ],
     },
 
   ]
 
 }
 
-export const DropdownSet = {
+export const DropdownSet: iFormGroupNode = {
   legend: "dropdown",
   group: [
     // ══ Test bed: Dropdown mode select (Semantic-UI style) ──────────────
     {
-      type: "dropdown",
-      id: "test-dropdown-single",
-      title: "Satu pilihan (style=select)",
-      placeholder: "Ketik atau pilih satu...",
+      content: {
+        type: "dropdown",
+        id: "test-dropdown-single",
+        label: "Satu pilihan (style=select)",
+        placeholder: "Ketik atau pilih satu...",
+          options: [
+            { value: "jakarta", label: "Jakarta" },
+            { value: "bandung", label: "Bandung" },
+            { value: "surabaya", label: "Surabaya" },
+            { value: "yogyakarta", label: "Yogyakarta" },
+            { value: "bali", label: "Bali" },
+            { value: "makassar", label: "Makassar" }
+          ]
+      },
       config: {
-        style: "select",
+        view: "select",
         min: 1,
         max: 6,
-        options: [
-          { value: "jakarta", label: "Jakarta" },
-          { value: "bandung", label: "Bandung" },
-          { value: "surabaya", label: "Surabaya" },
-          { value: "yogyakarta", label: "Yogyakarta" },
-          { value: "bali", label: "Bali" },
-          { value: "makassar", label: "Makassar" }
-        ],
         onSelect: (value: string, id: string | null) => {
           console.log("[Dropdown single] onSelect", { value, id });
         }
       }
     },
     {
-      type: "dropdown",
-      id: "test-dropdown-multi",
-      title: "Banyak pilihan (multiple)",
-      placeholder: "Ketik lalu pilih banyak...",
-      multiple: true,
-      options: [
-        "Kopi",
-        "Teh",
-        "Jus Alpukat",
-        "Kue Lapis",
-        "Klepon",
-        "Wajik",
-        "Sekoteng",
-        "Semar Mendem",
-        "Jenang",
-        "Nasi Liwet",
-        "Tengkleng"
-      ],
+      content: {
+        type: "dropdown",
+        id: "test-dropdown-multi",
+        label: "Banyak pilihan (multiple)",
+        placeholder: "Ketik lalu pilih banyak...",
+        options: [
+          "Kopi",
+          "Teh",
+          "Jus Alpukat",
+          "Kue Lapis",
+          "Klepon",
+          "Wajik",
+          "Sekoteng",
+          "Semar Mendem",
+          "Jenang",
+          "Nasi Liwet",
+          "Tengkleng"
+        ]
+      },
       config: {
-        style: "select",
+        view: "select",
         min: 1,
         max: 15,
         onMultiChange: (items: any[]) => {
           console.log("[Dropdown multi] onMultiChange", items);
-        }
+        },
+      multiple: true
       }
     },
   ]
 }
 
 /** The hub demo: one schema that exercises cascade, actions, rows, files and dropdowns. */
-export const orderSchema = [
+export const orderSchema: readonly FormNode[] = [
 
   InputControlSet,
 
@@ -328,30 +340,32 @@ export const orderSchema = [
     id: "order",
     title: "Detail pesanan",
     group: [
-      { type: "text", id: "name", title: "Nama", placeholder: "Nama lengkap" },
-      { type: "email", id: "email", title: "Email", placeholder: "nama@email.com" },
-      { type: "tel", id: "phone", title: "Telepon", placeholder: "+62…" },
-      { type: "select", id: "size", title: "Ukuran", options: ["S", "M", "L", "XL"] },
+      { content: { type: "text", id: "name", label: "Nama", placeholder: "Nama lengkap" } },
+      { content: { type: "email", id: "email", label: "Email", placeholder: "nama@email.com" } },
+      { content: { type: "tel", id: "phone", label: "Telepon", placeholder: "+62…" } },
+      { content: { type: "select", id: "size", label: "Ukuran", options: ["S", "M", "L", "XL"] } },
       // Dropdowns are a module, and their stylesheet arrives through the lazy seam —
       // nothing in the bundle imports `Dropdown.css`.
       {
-        type: "dropdown",
-        id: "material",
-        title: "Bahan",
-        options: ["Katun Combed 30s", "Katun Combed 24s", "Cvc", "Linen", "Rajut"],
-        config: {
-          style: "datalist",
+        content: {
+          type: "dropdown",
+          id: "material",
+          label: "Bahan",
+          options: ["Katun Combed 30s", "Katun Combed 24s", "Cvc", "Linen", "Rajut"]
         },
+        config: {
+          view: "datalist"
+        }
       },
-      { type: "number", id: "qty", title: "Jumlah", placeholder: "1" },
-      { type: "textarea", id: "notes", title: "Catatan", placeholder: "Warna, sablon, atau deadline" },
-      { type: "checkbox", id: "agree", position: "right", title: "Saya setuju dengan ketentuan pesanan" },
+      { content: { type: "number", id: "qty", label: "Jumlah", placeholder: "1" } },
+      { content: { type: "textarea", id: "notes", label: "Catatan", placeholder: "Warna, sablon, atau deadline" } },
+      { content: { type: "checkbox", id: "agree", label: "Saya setuju dengan ketentuan pesanan" }, config: { position: "right" } },
       // Radios sharing a name form one group; `style: "toggle"` asks for the switch shell.
-      { type: "radio", id: "pickup", name: "delivery", value: "pickup", title: "Ambil sendiri", config: { style: "toggle" } },
-      { type: "radio", id: "courier", name: "delivery", value: "courier", title: "Kirim kurir", checked: true, config: { style: "toggle" } },
+      { content: { type: "radio", id: "pickup", name: "delivery", value: "pickup", label: "Ambil sendiri" }, config: { view: "toggle" } },
+      { content: { type: "radio", id: "courier", name: "delivery", value: "courier", label: "Kirim kurir", checked: true }, config: { view: "toggle" } },
       // Cascade: this field only exists while the delivery radio says "courier".
-      { type: "text", id: "courierNote", title: "Catatan untuk kurir", condition: { field: "delivery", equals: "courier" } },
-    ] as iBasicInputNode[],
+      { content: { type: "text", id: "courierNote", label: "Catatan untuk kurir" }, condition: { field: "delivery", equals: "courier" } },
+    ],
   },
   // Inline row: `column` is the column count, `config.wide` the share a field takes
   // (50 = half, "auto" = full row). A row is layout, not a fieldset — `group` above.
@@ -362,19 +376,19 @@ export const orderSchema = [
     group: [
       // `config.csv` is a declaration, not a parser: it marks the file as tabular so the
       // table module previews it. The input layer still reports raw `File` objects.
-      { type: "file", id: "product-csv", title: "Impor produk (CSV)", config: { csv: true, accept: ".csv,text/csv" } },
-      { type: "file", id: "reference-photo", title: "Foto referensi", config: { view: "thumbnail" } },
-    ] as iBasicInputNode[],
+      { content: { type: "file", id: "product-csv", label: "Impor produk (CSV)" }, config: { csv: true, accept: ".csv,text/csv" } },
+      { content: { type: "file", id: "reference-photo", label: "Foto referensi" }, config: { view: "thumbnail" } },
+    ],
   },
   {
     id: "identity",
     label: "Identitas pemesan",
     column: 2,
     row: [
-      { type: "text", id: "first", title: "Nama depan", config: { wide: 50 } },
-      { type: "text", id: "last", title: "Nama belakang", config: { wide: 50 } },
-      { type: "textarea", id: "street", title: "Alamat lengkap", config: { wide: "auto" } },
-    ] as iBasicInputNode[],
+      { content: { type: "text", id: "first", label: "Nama depan" }, config: { wide: 50 } },
+      { content: { type: "text", id: "last", label: "Nama belakang" }, config: { wide: 50 } },
+      { content: { type: "textarea", id: "street", label: "Alamat lengkap" }, config: { wide: "auto" } },
+    ],
   },
   DropdownSet,
 ];
@@ -418,10 +432,10 @@ export const formConfig = {
 };
 
 /** Three steps, one per group — the engine owns the next/back set. */
-export const multiStepSchema = [
-  { id: "ms-contact", title: "Langkah 1 · Kontak", group: [{ type: "email", id: "ms-email", title: "Email", required: true }] },
-  { id: "ms-address", title: "Langkah 2 · Alamat", group: [{ type: "text", id: "ms-city", title: "Kota", required: true }] },
-  { id: "ms-confirm", title: "Langkah 3 · Konfirmasi", group: [{ type: "checkbox", id: "ms-agree", title: "Saya setuju" }] },
+export const multiStepSchema: readonly FormNode[] = [
+  { id: "ms-contact", title: "Langkah 1 · Kontak", group: [{ content: { type: "email", id: "ms-email", label: "Email" }, config: { required: true } }] },
+  { id: "ms-address", title: "Langkah 2 · Alamat", group: [{ content: { type: "text", id: "ms-city", label: "Kota" }, config: { required: true } }] },
+  { id: "ms-confirm", title: "Langkah 3 · Konfirmasi", group: [{ content: { type: "checkbox", id: "ms-agree", label: "Saya setuju" } }] },
 ] as any[];
 
 /** The multistep demo: one build per topic, so the step engine stays the subject. */
@@ -434,166 +448,170 @@ export const multiStepConfig = { id: "demo-multistep", multistep: true };
  * `actions` is not a type of its own there, it is `config.actions` on any node, which
  * `InputControlSet` above already shows.
  */
-export const fieldTypesSchema = [
+export const fieldTypesSchema: readonly FormNode[] = [
   {
     id: "types-text",
     title: "Teks & angka",
     column: 2,
     row: [
-      { type: "text", id: "t-text", title: "text", placeholder: "teks bebas", config: { wide: 50 } },
-      { type: "email", id: "t-email", title: "email", placeholder: "nama@email.com", config: { wide: 50 } },
-      { type: "password", id: "t-password", title: "password", config: { wide: 50 } },
-      { type: "url", id: "t-url", title: "url", placeholder: "https://…", config: { wide: 50 } },
-      { type: "tel", id: "t-tel", title: "tel", placeholder: "+62…", config: { wide: 50 } },
-      { type: "number", id: "t-number", title: "number", min: 0, max: 100, config: { wide: 50 } },
-      { type: "textarea", id: "t-textarea", title: "textarea", placeholder: "baris jamak", config: { wide: "auto" } },
-    ] as iBasicInputNode[],
+      { content: { type: "text", id: "t-text", label: "text", placeholder: "teks bebas" }, config: { wide: 50 } },
+      { content: { type: "email", id: "t-email", label: "email", placeholder: "nama@email.com" }, config: { wide: 50 } },
+      { content: { type: "password", id: "t-password", label: "password" }, config: { wide: 50 } },
+      { content: { type: "url", id: "t-url", label: "url", placeholder: "https://…" }, config: { wide: 50 } },
+      { content: { type: "tel", id: "t-tel", label: "tel", placeholder: "+62…" }, config: { wide: 50 } },
+      { content: { type: "number", id: "t-number", label: "number" }, config: { wide: 50, min: 0, max: 100 } },
+      { content: { type: "textarea", id: "t-textarea", label: "textarea", placeholder: "baris jamak" }, config: { wide: "auto" } },
+    ],
   },
   {
     id: "types-choice",
     title: "Pilihan",
     column: 2,
     group: [
-      { type: "select", id: "t-select", title: "select", options: ["A", "B", "C"] },
+      { content: { type: "select", id: "t-select", label: "select", options: ["A", "B", "C"] } },
       // `datalist` is the native picker; `select` asks for the Semantic-UI style box.
-      { type: "dropdown", id: "t-dropdown", title: "dropdown", config: { style: "datalist", options: ["Katun", "Linen", "Rajut"] } },
+      { content: { type: "dropdown", id: "t-dropdown", label: "dropdown", options: ["Katun", "Linen", "Rajut"] }, config: { view: "datalist" } },
       // A grid behind one control, configured flat: `style` picks the cell visual,
       // `column` the track count (same word the row layout uses), `expanded` prints the
       // grid inline instead of behind the trigger's popover.
       {
-        type: "picker",
-        id: "t-picker",
-        title: "picker (icon)",
-        value: "gear",
-        config: {
-          style: "icon",
-          column: 8,
-          expanded: true,
-          options: [
-            "gear", "hand swipe", "inbox", "user",
-            "user list", "user settings",
-            "checkmark circle",
-            "checkmark",
-            "cross circle",
-            "close",
-            "edit",
-            "plus",
-            "plus circle",
-            "plus square",
-            "trash",
-            "three dots framed",
-            "three dots horizontal",
-            "three dots square vertical",
-            "three dots vertical",
-            "hamburger",
-            "paper clip",
-            "search",
-            "arrow left",
-            "arrow right",
-            "arrow left circle",
-            "arrow right circle",
-            "double arrow left",
-            "double arrow right",
-            "expand arrow",
-            "bell warning",
-            "bell",
-            "error",
-            "info",
-            "notification",
-            "text edit",
-            "download file",
-            "add file circle",
-            "adobe illustrator file",
-            "adobe pdf file",
-            "adobe photoshop file",
-            "copy file round",
-            "copy file",
-            "css file",
-            "csv file",
-            "file sheets",
-            "doc file",
-            "edit file round",
-            "edit file",
-            "file edit",
-            "file outline dotted",
-            "file",
-            "add file",
-            "html file",
-            "javascript file",
-            "jpg file",
-            "json file",
-            "mp3 file",
-            "mp4 file",
-            "png file",
-            "svg file",
-            "txt file",
-            "xls file",
-            "zip file",
-            "add folder circle",
-            "add folder",
-            "folder",
-            "adobe illustrator logo",
-            "adobe photoshop logo",
-            "google logo",
-            "github logo",
-            "weburl",
-            "instagram logo",
-            "itunes logo",
-            "qrcode",
-            "scan qrcode",
-            "barcode",
-            "add cart",
-            "cart",
-            "expand",
-            "recycled",
-            "rotate",
-            "write mail",
-            "moon dark",
-            "moon sleep",
-            "moon sun",
-            "sunrise",
-          ]
+        content: {
+          type: "picker",
+          id: "t-picker",
+          label: "picker (icon)",
+          value: "gear",
+            options: [
+              "gear", "hand swipe", "inbox", "user",
+              "user list", "user settings",
+              "checkmark circle",
+              "checkmark",
+              "cross circle",
+              "close",
+              "edit",
+              "plus",
+              "plus circle",
+              "plus square",
+              "trash",
+              "three dots framed",
+              "three dots horizontal",
+              "three dots square vertical",
+              "three dots vertical",
+              "hamburger",
+              "paper clip",
+              "search",
+              "arrow left",
+              "arrow right",
+              "arrow left circle",
+              "arrow right circle",
+              "double arrow left",
+              "double arrow right",
+              "expand arrow",
+              "bell warning",
+              "bell",
+              "error",
+              "info",
+              "notification",
+              "text edit",
+              "download file",
+              "add file circle",
+              "adobe illustrator file",
+              "adobe pdf file",
+              "adobe photoshop file",
+              "copy file round",
+              "copy file",
+              "css file",
+              "csv file",
+              "file sheets",
+              "doc file",
+              "edit file round",
+              "edit file",
+              "file edit",
+              "file outline dotted",
+              "file",
+              "add file",
+              "html file",
+              "javascript file",
+              "jpg file",
+              "json file",
+              "mp3 file",
+              "mp4 file",
+              "png file",
+              "svg file",
+              "txt file",
+              "xls file",
+              "zip file",
+              "add folder circle",
+              "add folder",
+              "folder",
+              "adobe illustrator logo",
+              "adobe photoshop logo",
+              "google logo",
+              "github logo",
+              "weburl",
+              "instagram logo",
+              "itunes logo",
+              "qrcode",
+              "scan qrcode",
+              "barcode",
+              "add cart",
+              "cart",
+              "expand",
+              "recycled",
+              "rotate",
+              "write mail",
+              "moon dark",
+              "moon sleep",
+              "moon sun",
+              "sunrise",
+            ]
         },
+        config: {
+          view: "icon",
+          column: 8,
+          expanded: true
+        }
       },
       {
-        type: "picker",
-        id: "t-picker-swatch",
-        title: "picker (swatch, multiple)",
-        value: "#e5484d,#30a46c",
-        multiple: true,
-        options: [
-          { value: "#e5484d", label: "Merah", color: "#e5484d" },
-          { value: "#f5a524", label: "Amber", color: "#f5a524" },
-          { value: "#30a46c", label: "Hijau", color: "#30a46c" },
-          { value: "#3e63dd", label: "Biru", color: "#3e63dd" },
-          { value: "#8e4ec6", label: "Ungu", color: "#8e4ec6" },
-          { value: "#f3ede2", label: "Krem", color: "#f3ede2" },
-        ],
-        config: {
-          style: "swatch",
-          column: 8,
+        content: {
+          type: "picker",
+          id: "t-picker-swatch",
+          label: "picker (swatch, multiple)",
+          value: "#e5484d,#30a46c",
+          options: [
+            { value: "#e5484d", label: "Merah", color: "#e5484d" },
+            { value: "#f5a524", label: "Amber", color: "#f5a524" },
+            { value: "#30a46c", label: "Hijau", color: "#30a46c" },
+            { value: "#3e63dd", label: "Biru", color: "#3e63dd" },
+            { value: "#8e4ec6", label: "Ungu", color: "#8e4ec6" },
+            { value: "#f3ede2", label: "Krem", color: "#f3ede2" },
+          ]
         },
+        config: {
+          view: "swatch",
+          column: 8,
+        multiple: true
+        }
       },
-      { type: "checkbox", id: "t-checkbox", title: "checkbox", position: "right" },
+      { content: { type: "checkbox", id: "t-checkbox", label: "checkbox" }, config: { position: "right" } },
       // Radios that share `name` form one group; `toggle` asks for the switch shell.
-      { type: "radio", id: "t-radio-a", name: "t-radio", value: "a", title: "radio a", config: { style: "toggle" } },
-      { type: "radio", id: "t-radio-b", name: "t-radio", value: "b", title: "radio b", checked: true, config: { style: "toggle" } },
-    ] as iBasicInputNode[],
+      { content: { type: "radio", id: "t-radio-a", name: "t-radio", value: "a", label: "radio a" }, config: { view: "toggle" } },
+      { content: { type: "radio", id: "t-radio-b", name: "t-radio", value: "b", label: "radio b", checked: true }, config: { view: "toggle" } },
+    ],
   },
   {
     id: "types-data",
     title: "Nilai lain",
     column: 2,
     row: [
-      { type: "range", id: "t-range", title: "range", min: 0, max: 10, config: { wide: 50 } },
-      { type: "color", id: "t-color", title: "color", config: { wide: 50 } },
-      { type: "date", id: "t-date", title: "date", config: { wide: 50 } },
-      { type: "time", id: "t-time", title: "time", config: { wide: 50 } },
-      { type: "datetime-local", id: "t-datetime", title: "datetime-local", config: { wide: 50 } },
-      { type: "file", id: "t-file", title: "file", config: { wide: 50 } },
+      { content: { type: "range", id: "t-range", label: "range" }, config: { wide: 50, min: 0, max: 10 } },
+      { content: { type: "color", id: "t-color", label: "color" }, config: { wide: 50 } },
+      { content: { type: "date", id: "t-date", label: "date" }, config: { wide: 50 } },
+      { content: { type: "time", id: "t-time", label: "time" }, config: { wide: 50 } },
+      { content: { type: "datetime-local", id: "t-datetime", label: "datetime-local" }, config: { wide: 50 } },
+      { content: { type: "file", id: "t-file", label: "file" }, config: { wide: 50 } },
       // `hidden` is a registry type but has no control to look at, so it stays out of the
       // live demo — it is mentioned in the topic's limits instead.
-    ] as iBasicInputNode[],
+    ],
   },
 ];
 
@@ -604,26 +622,29 @@ export const fieldTypesSchema = [
  * `form/adapters/Validation.ts` at submit / `next`, and reported through `formValidation`.
  * `data-level` is deliberately absent: it marks an address picker level, not a rule.
  */
-export const validationSchema = [
+export const validationSchema: readonly FormNode[] = [
   {
     id: "val-native",
     title: "Aturan native",
     column: 2,
     group: [
-      { type: "text", id: "v-name", title: "Nama (required)", required: true, config: { wide: 50 } },
-      { type: "email", id: "v-email", title: "Email (required, type=email)", required: true, config: { wide: 50 } },
+      { content: { type: "text", id: "v-name", label: "Nama (required)" }, config: { wide: 50, required: true } },
+      { content: { type: "email", id: "v-email", label: "Email (required, type=email)" }, config: { wide: 50, required: true } },
       {
-        type: "text",
-        id: "v-invoice",
-        title: "Invoice (pattern INV-…)",
+        content: {
+          type: "text",
+          id: "v-invoice",
+          label: "Invoice (pattern INV-…)",
+          placeholder: "INV-001"
+        },
+        config: { wide: 50,
         required: true,
-        pattern: "INV-[0-9]+",
-        placeholder: "INV-001",
-        config: { wide: 50 },
+        pattern: "INV-[0-9]+"
+        }
       },
-      { type: "number", id: "v-qty", title: "Jumlah 1–10", required: true, min: 1, max: 10, config: { wide: 50 } },
-      { type: "textarea", id: "v-note", title: "Catatan (maks 40 karakter)", maxlength: 40, config: { wide: "auto" } },
-    ] as iBasicInputNode[],
+      { content: { type: "number", id: "v-qty", label: "Jumlah 1–10" }, config: { wide: 50, required: true, min: 1, max: 10 } },
+      { content: { type: "textarea", id: "v-note", label: "Catatan (maks 40 karakter)" }, config: { wide: "auto", maxlength: 40 } },
+    ],
   },
 ];
 
@@ -634,29 +655,33 @@ export const validationSchema = [
  * `cascadeMode: "hidden"` keeps the field in the DOM so another engine (an address picker)
  * can inject into it; the default `"template"` would hand it nothing.
  */
-export const cascadeSchema = [
+export const cascadeSchema: readonly FormNode[] = [
   {
     id: "cascade-delivery",
     title: "Metode pengiriman",
     group: [
-      { type: "radio", id: "cs-pickup", name: "delivery", value: "pickup", title: "Ambil di toko", checked: true },
-      { type: "radio", id: "cs-courier", name: "delivery", value: "courier", title: "Kirim kurir" },
+      { content: { type: "radio", id: "cs-pickup", name: "delivery", value: "pickup", label: "Ambil di toko", checked: true } },
+      { content: { type: "radio", id: "cs-courier", name: "delivery", value: "courier", label: "Kirim kurir" } },
       {
-        type: "text",
-        id: "cs-note",
-        title: "Catatan kurir",
-        placeholder: "Patokan alamat…",
-        condition: { field: "delivery", equals: "courier" },
+        content: {
+          type: "text",
+          id: "cs-note",
+          label: "Catatan kurir",
+          placeholder: "Patokan alamat…"
+        },
+        condition: { field: "delivery", equals: "courier" }
       },
-      { type: "text", id: "cs-invoice", title: "No. invoice", placeholder: "INV-…" },
+      { content: { type: "text", id: "cs-invoice", label: "No. invoice", placeholder: "INV-…" } },
       {
-        type: "text",
-        id: "cs-approval",
-        title: "Nama penyetuju",
+        content: {
+          type: "text",
+          id: "cs-approval",
+          label: "Nama penyetuju"
+        },
         // `message` is the guidance a multistep gate shows; on a single page it is inert.
-        condition: { field: "cs-invoice", filled: true },
+        condition: { field: "cs-invoice", filled: true }
       },
-    ] as iBasicInputNode[],
+    ],
   },
 ];
 
@@ -672,17 +697,18 @@ export const cascadeConfig = {
  * The formula travels with the field that carries the quantity: `config.calculator` names
  * the output field, and the engine re-runs it on every `input`/`change`.
  */
-export const calculationSchema = [
+export const calculationSchema: readonly FormNode[] = [
   {
     id: "calc-lines",
     title: "Satu baris pesanan",
     column: 2,
     group: [
       {
-        type: "number",
-        id: "calc-qty",
-        title: "Qty",
-        min: 0,
+        content: {
+          type: "number",
+          id: "calc-qty",
+          label: "Qty"
+        },
         config: {
           wide: 50,
           calculator: {
@@ -696,11 +722,12 @@ export const calculationSchema = [
               total: getNumber("calc-qty") * getNumber("calc-price"),
             }),
           },
-        },
+        min: 0
+        }
       },
-      { type: "number", id: "calc-price", title: "Harga satuan", min: 0, config: { wide: 50 } },
-      { type: "number", id: "calc-total", title: "Total (dihitung)", readonly: true, config: { wide: "auto" } },
-    ] as iBasicInputNode[],
+      { content: { type: "number", id: "calc-price", label: "Harga satuan" }, config: { wide: 50, min: 0 } },
+      { content: { type: "number", id: "calc-total", label: "Total (dihitung)" }, config: { wide: "auto", readonly: true } },
+    ],
   },
 ];
 
@@ -717,20 +744,20 @@ export const idAddressConfig = { id: "demo-id-address", address: addressSource }
  * `search` and `copy` are the controls module, `file` is the file adapter: every one of them
  * arrives through `FORM_ADAPTER_MANIFEST`, never through an import in this file.
  */
-export const modulesSchema = [
+export const modulesSchema: readonly FormNode[] = [
   {
     id: "modules-lookup",
     title: "Cari, lalu salin",
     actions: ["search", "copy"],
     group: [
-      { type: "text", id: "mod-invoice", title: "No. invoice", placeholder: "INV-…" },
-      { type: "select", id: "mod-status", title: "Status", options: ["Baru", "Diproses", "Selesai"] },
-    ] as iBasicInputNode[],
+      { content: { type: "text", id: "mod-invoice", label: "No. invoice", placeholder: "INV-…" } },
+      { content: { type: "select", id: "mod-status", label: "Status", options: ["Baru", "Diproses", "Selesai"] } },
+    ],
   },
   {
     id: "modules-files",
     title: "Lampiran",
-    group: [{ type: "file", id: "mod-file", title: "Berkas", config: { wide: "auto" } }] as iBasicInputNode[],
+    group: [{ content: { type: "file", id: "mod-file", label: "Berkas" }, config: { wide: "auto" } }],
   },
 ];
 
@@ -742,19 +769,19 @@ export const modulesConfig = { id: "demo-modules" };
  * `config.title` / `config.description` render above the first group; `column: 2` with
  * `config.wide: 50` splits a row, `"auto"` takes the rest.
  */
-export const layoutSchema = [
+export const layoutSchema: readonly FormNode[] = [
   {
     id: "layout-row",
     title: "Satu grup, dua kolom",
     description: "Baris membagi ruang: wide 50 = setengah, auto = sisa baris.",
     column: 2,
     row: [
-      { type: "text", id: "ly-name", title: "Nama", config: { wide: 50 } },
-      { type: "text", id: "ly-city", title: "Kota", config: { wide: 50 } },
-      { type: "text", id: "ly-address", title: "Alamat lengkap", config: { wide: "auto" } },
-      { type: "select", id: "ly-tier", title: "Tier", options: ["Bronze", "Silver", "Gold"], config: { wide: 50 } },
-      { type: "textarea", id: "ly-note", title: "Catatan", config: { wide: 50 } },
-    ] as iBasicInputNode[],
+      { content: { type: "text", id: "ly-name", label: "Nama" }, config: { wide: 50 } },
+      { content: { type: "text", id: "ly-city", label: "Kota" }, config: { wide: 50 } },
+      { content: { type: "text", id: "ly-address", label: "Alamat lengkap" }, config: { wide: "auto" } },
+      { content: { type: "select", id: "ly-tier", label: "Tier", options: ["Bronze", "Silver", "Gold"] }, config: { wide: 50 } },
+      { content: { type: "textarea", id: "ly-note", label: "Catatan" }, config: { wide: 50 } },
+    ],
   },
 ];
 

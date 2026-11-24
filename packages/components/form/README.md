@@ -16,6 +16,7 @@ retheme it without touching markup by redeclaring a `--app-*` token on an ancest
 `--form-*` token for this component only). A field's own markup belongs to `@aio-ui/input`.
 
 <!-- install:begin -->
+
 ## Install
 
 Version — `0.2.5` (tag `v0.2.5`)
@@ -24,6 +25,7 @@ Version — `0.2.5` (tag `v0.2.5`)
 
 CDN (ES module, no build step) — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.5/packages/components/form/dist/index.js`
 Stylesheet — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.5/packages/components/form/dist/Form.css`
+
 <!-- install:end -->
 
 ## Payload
@@ -34,7 +36,7 @@ Stylesheet — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.5/packages/
     id: "group-1",
     title: "Data pengiriman",
     description: "…",
-    group: [{ type: "text", id: "name", label: "Nama" }],
+    group: [{ content: { type: "text", id: "name", label: "Nama" } }],
   },
 ];
 ```
@@ -59,9 +61,10 @@ a field node is the input package's contract, not this one.
 | `actions`         | group, row | Action words rendered in the corner: `search`, `copy`, `editor`, `repeater` |
 | `actionsPosition` | group, row | Where those buttons sit (`config.position` is the older spelling)           |
 
-A field's own keys (`type`, `id`, `title`, `placeholder`, `editable`, `condition`,
-`config.wide`, `config.csv`, …) belong to `@aio-ui/input`; `config.wide` (`50` = half,
-`"auto"` = full row) is only read by the form when it lays a row out.
+A field node **is** the input schema — `{ content, config }` — so its keys (`content.type`,
+`content.label`, `config.required`, `config.wide`, `config.csv`, …) belong to `@aio-ui/input`;
+this package adds only the cascade rule `condition` beside the two blocks, and reads `config.wide`
+(`50` = half, `"auto"` = full row) when it lays a row out.
 
 <!-- part: id=config role=contract -->
 
@@ -220,9 +223,9 @@ const schema = [
     id: "order",
     title: "Order details",
     group: [
-      { type: "text", id: "name", label: "Name", config: { required: true } },
-      { type: "text", id: "invoice", label: "Invoice", config: { required: true, pattern: "INV-[0-9]+" } },
-      { type: "number", id: "qty", label: "Quantity", config: { min: 1, max: 10 } },
+      { content: { type: "text", id: "name", label: "Name" }, config: { required: true } },
+      { content: { type: "text", id: "invoice", label: "Invoice" }, config: { required: true, pattern: "INV-[0-9]+" } },
+      { content: { type: "number", id: "qty", label: "Quantity" }, config: { min: 1, max: 10 } },
     ],
   },
 ];
@@ -249,12 +252,14 @@ const schema = [
   {
     id: "delivery",
     group: [
-      { type: "radio", id: "pickup", name: "delivery", value: "pickup", label: "Pickup" },
-      { type: "radio", id: "courier", name: "delivery", value: "courier", label: "Courier" },
+      { content: { type: "radio", id: "pickup", name: "delivery", value: "pickup", label: "Pickup" } },
+      { content: { type: "radio", id: "courier", name: "delivery", value: "courier", label: "Courier" } },
       {
-        type: "text",
-        id: "courierNote",
-        label: "Note for the courier",
+        content: {
+          type: "text",
+          id: "courierNote",
+          label: "Note for the courier",
+        },
         condition: { field: "delivery", equals: "courier" },
       },
     ],
@@ -284,9 +289,11 @@ const schema = [
     id: "line",
     group: [
       {
-        type: "number",
-        id: "qty",
-        label: "Qty",
+        content: {
+          type: "number",
+          id: "qty",
+          label: "Qty",
+        },
         // The formula travels with the field that carries the quantity.
         config: {
           min: 0,
@@ -303,8 +310,8 @@ const schema = [
           },
         },
       },
-      { type: "number", id: "price", label: "Price", config: { min: 0 } },
-      { type: "number", id: "total", label: "Total", config: { readonly: true } },
+      { content: { type: "number", id: "price", label: "Price" }, config: { min: 0 } },
+      { content: { type: "number", id: "total", label: "Total" }, config: { readonly: true } },
     ],
   },
 ];
@@ -323,9 +330,17 @@ the one the user is on.
 
 ```ts
 const schema = [
-  { id: "contact", title: "Step 1 · Contact", group: [{ type: "email", id: "email", label: "Email", config: { required: true } }] },
-  { id: "address", title: "Step 2 · Address", group: [{ type: "text", id: "city", label: "City", config: { required: true } }] },
-  { id: "confirm", title: "Step 3 · Confirm", group: [{ type: "checkbox", id: "agree", label: "I agree" }] },
+  {
+    id: "contact",
+    title: "Step 1 · Contact",
+    group: [{ content: { type: "email", id: "email", label: "Email" }, config: { required: true } }],
+  },
+  {
+    id: "address",
+    title: "Step 2 · Address",
+    group: [{ content: { type: "text", id: "city", label: "City" }, config: { required: true } }],
+  },
+  { id: "confirm", title: "Step 3 · Confirm", group: [{ content: { type: "checkbox", id: "agree", label: "I agree" } }] },
 ];
 
 build("form", {

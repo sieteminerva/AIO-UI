@@ -1,55 +1,31 @@
 import type { iModuleDefinition } from "@aio-ui/module-loader";
 import type { iFormModuleContext } from "./FormModuleTypes";
 import { FORM_MODULE_IDS } from "./FormModuleTypes";
+import type { FormField } from "./FormSchema";
 import { InputBuilder } from "@aio-ui/input";
 import { inputFilesOf, mountControls, mountInputModules } from "@aio-ui/input";
 import { INPUT_MODULE_IDS } from "@aio-ui/input";
 import { reportMissing } from "@aio-ui/input";
 
-/**
- * Keys a form field carries as *instance data* — `InputBuilder` content.
- *
- * Everything else on a field node is behaviour: `required`, `wide`, `view`, a module
- * setting. `info` is here because it is text the visitor reads, not a rule.
- */
-const FIELD_CONTENT_KEYS: readonly string[] = [
-  "type", "id", "name", "label", "placeholder", "info", "value", "checked", "options",
-];
-
-/**
- * Keys the form engine owns and reads before a field is built.
- *
- * They must never reach the input schema: `condition`/`then` drive the cascade engine, and
- * a field that carried them would hand the input layer a rule it cannot evaluate.
- */
-const FORM_OWNED_KEYS: readonly string[] = ["condition", "then"];
-
-/** Field node split into the two blocks `InputBuilder.create()` takes. */
+/** The two blocks `InputBuilder.create()` takes, read from one field node. */
 interface iFieldSchema {
   content: Record<string, any>;
   config: Record<string, any>;
 }
 
 /**
- * Splits one form field node into `content` and `config`.
+ * Reads the two blocks of one field node.
  *
- * The form schema stays flat (one node, form-engine keys included); the split happens here,
- * at the one door that talks to `InputBuilder`.
+ * The node already carries `content` / `config` — it is the input schema, unchanged — so the
+ * adapter splits nothing and renames nothing. The form's own keys (`condition`, `then`) sit
+ * beside the blocks on the same node and are never handed over: the cascade engine has read
+ * them before a field is rendered.
  *
  * @param input - Field node from the form schema.
- * @returns `{ content, config }`, already stripped of the form-owned keys.
+ * @returns `{ content, config }`, both defaulted to an empty bag.
  */
-function splitField(input: any): iFieldSchema {
-  const content: Record<string, any> = {};
-  const config: Record<string, any> = {};
-
-  for (const [key, value] of Object.entries(input ?? {})) {
-    if (FORM_OWNED_KEYS.includes(key)) continue;
-    if (FIELD_CONTENT_KEYS.includes(key)) content[key] = value;
-    else config[key] = value;
-  }
-
-  return { content, config };
+function blocksOf(input: FormField): iFieldSchema {
+  return { content: input.content ?? {}, config: input.config ?? {} };
 }
 
 /**
@@ -100,11 +76,19 @@ class InputFormAdapter {
    * builder config comes along, so the field inherits `themeId`, `namespace` and `emit`
    * instead of starting blank — and so does its adapter set.
    */
-  public renderField(input: any, formId: string): HTMLElement {
-    const { content, config } = splitField(input);
+  public renderField(input: FormField, formId: string): HTMLElement {
+    const { content, config } = blocksOf(input);
+    // `selectors` is builder config, not field config: each field is its own builder
+    // instance, so a per-field skin is declared on the node and lifted here. `resolveConfig`
+    // merges it key by key, so a field that overrides one label keeps every other default.
+    const { selectors, ...fieldConfig } = config;
 
-    return new InputBuilder({ ...this.#context.builderConfig, formId, modules: this.#preset } as any)
-      .create({ content, config } as any);
+    return new InputBuilder({
+      ...this.#context.builderConfig,
+      formId,
+      modules: this.#preset,
+      ...(selectors ? { selectors } : {}),
+    } as any).create({ content, config: fieldConfig } as any);
   }
 
   /**

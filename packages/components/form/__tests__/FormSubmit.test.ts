@@ -21,10 +21,10 @@ const schema = [
     id: "order",
     title: "Order",
     group: [
-      { type: "text", id: "name", label: "Nama" },
-      { type: "checkbox", id: "agree", label: "Setuju" },
-      { type: "radio", id: "pickup", name: "delivery", value: "pickup", label: "Ambil", config: { view: "toggle" } },
-      { type: "radio", id: "courier", name: "delivery", value: "courier", label: "Kirim", checked: true, config: { view: "toggle" } },
+      { content: { type: "text", id: "name", label: "Nama" } },
+      { content: { type: "checkbox", id: "agree", label: "Setuju" } },
+      { content: { type: "radio", id: "pickup", name: "delivery", value: "pickup", label: "Ambil" }, config: { view: "toggle" } },
+      { content: { type: "radio", id: "courier", name: "delivery", value: "courier", label: "Kirim", checked: true }, config: { view: "toggle" } },
     ],
   },
 ];

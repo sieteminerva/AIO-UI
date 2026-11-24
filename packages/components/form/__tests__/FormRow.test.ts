@@ -22,9 +22,9 @@ describe("form rows", () => {
       label: "Identitas",
       column: 2,
       row: [
-        { type: "text", id: "first", label: "Nama depan", config: { wide: 50 } },
-        { type: "text", id: "last", label: "Nama belakang", config: { wide: "50" } },
-        { type: "textarea", id: "street", label: "Alamat", config: { wide: "auto" } },
+        { content: { type: "text", id: "first", label: "Nama depan" }, config: { wide: 50 } },
+        { content: { type: "text", id: "last", label: "Nama belakang" }, config: { wide: "50" } },
+        { content: { type: "textarea", id: "street", label: "Alamat" }, config: { wide: "auto" } },
       ],
     },
   ];
@@ -80,11 +80,11 @@ describe("form rows", () => {
             column: 1,
             wide: 50,
             row: [
-              { type: "text", id: "city", label: "Kota" },
-              { type: "text", id: "zip", label: "Kode pos" },
+              { content: { type: "text", id: "city", label: "Kota" } },
+              { content: { type: "text", id: "zip", label: "Kode pos" } },
             ],
           },
-          { type: "text", id: "province", label: "Provinsi" },
+          { content: { type: "text", id: "province", label: "Provinsi" } },
         ],
       },
     ];
@@ -100,7 +100,7 @@ describe("form rows", () => {
   });
 
   it("still lets a plain group render a fieldset", () => {
-    const form = renderForm([{ id: "plain", title: "Biasa", group: [{ type: "text", id: "x", label: "X" }] }]);
+    const form = renderForm([{ id: "plain", title: "Biasa", group: [{ content: { type: "text", id: "x", label: "X" } }] }]);
 
     expect(form.querySelector("fieldset.form-group")).not.toBeNull();
     expect(form.querySelector(".field.group[data-column]")).toBeNull();
@@ -117,8 +117,8 @@ describe("form rows", () => {
             id: "inner-row",
             column: 2,
             row: [
-              { type: "text", id: "sku", label: "SKU" },
-              { type: "text", id: "qty", label: "Qty" },
+              { content: { type: "text", id: "sku", label: "SKU" } },
+              { content: { type: "text", id: "qty", label: "Qty" } },
             ],
           },
         ],

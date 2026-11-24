@@ -61,7 +61,7 @@ describe("childSpanOf", () => {
   });
 
   it("returns one column for a child that says nothing", () => {
-    expect(childSpanOf({ type: "text" }, 3)).toBe(1);
+    expect(childSpanOf({ content: { type: "text" } }, 3)).toBe(1);
     expect(childSpanOf("raw html", 3)).toBe(1);
   });
 });

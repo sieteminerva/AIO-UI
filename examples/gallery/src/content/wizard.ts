@@ -3,6 +3,7 @@
 // ================================================================
 
 import type { iNodeContent } from "@aio-ui/core";
+import type { FormNode, iFormGroupNode } from "@aio-ui/form";
 
 // ======================================================================
 // BuildStore — jembatan data antar-halaman untuk alur pembangunan website.
@@ -78,16 +79,15 @@ function createPopover(content: { info: string, placeholder: string }) {
 
 const selectors = { "@field>label": { tagName: "label", attrs: { "animation": "typewriter", "animation-chain": "true", "animated-once": "true" } } }
 
-export const IntroSet = {
+export const IntroSet: iFormGroupNode = {
   id: "intro-set",
   group: [
     {
-      type: "select",
-      id: "web-type",
-      title: "Kategory website yang ingin kamu buat dan tunjukkan kepada dunia adalah website",
-      placeholder: "berjenis apa?",
-      config: {
-        selectors,
+      content: {
+        type: "select",
+        id: "web-type",
+        label: "Kategory website yang ingin kamu buat dan tunjukkan kepada dunia adalah website",
+        placeholder: "berjenis apa?",
         options: [
           { value: "blog", label: "Catatan Cerita / Blog" },
           { value: "ecommerce", label: "Toko Online / E-Commerce" },
@@ -95,7 +95,10 @@ export const IntroSet = {
           { value: "news", label: "Warta & Berita" },
           { value: "portfolio", label: "Portofolio" },
           { value: "gallery", label: "Galeri Visual" }
-        ],
+        ]
+      },
+      config: {
+        selectors,
         attributes: [
           { name: "animation", value: "fade-in" },
           { name: "animation-chain", value: "true" },
@@ -104,11 +107,12 @@ export const IntroSet = {
       }
     },
     {
-      type: "text",
-      id: "web-name",
-      condition: { field: "web-type", filled: true },
-      title: "Kamu akan meluncurkannya dengan alamat nama digital",
-      placeholder: "namapilihanmu.com",
+      content: {
+        type: "text",
+        id: "web-name",
+        label: "Kamu akan meluncurkannya dengan alamat nama digital",
+        placeholder: "namapilihanmu.com"
+      },
       config: {
         selectors,
         attributes: [
@@ -120,14 +124,16 @@ export const IntroSet = {
           info: "Alamat unik ini akan menjadi pintu gerbang utama orang-orang menemukan tokomu.",
           placeholder: "Contoh: rona-rajutan.com atau kriya-kayu.id"
         })
-      }
+      },
+      condition: { field: "web-type", filled: true }
     },
     {
-      type: "textarea",
-      id: "web-reason",
-      condition: { field: "web-name", filled: true },
-      title: "Apa alasan singkat dibalik kenapa kamu ingin membuat website ini, dan beritahu alasan kenapa orang lain harus mendatangi dan jangan sampai melewatkan website mu ini",
-      placeholder: "Ceritakan alasan atau mimpi besar di balik karyamu...",
+      content: {
+        type: "textarea",
+        id: "web-reason",
+        label: "Apa alasan singkat dibalik kenapa kamu ingin membuat website ini, dan beritahu alasan kenapa orang lain harus mendatangi dan jangan sampai melewatkan website mu ini",
+        placeholder: "Ceritakan alasan atau mimpi besar di balik karyamu..."
+      },
       config: {
         selectors,
         attributes: [
@@ -139,14 +145,16 @@ export const IntroSet = {
           info: "Tuliskan satu kalimat pemikat (Hero Headline) yang akan langsung dibaca pengunjung pertama kali.",
           placeholder: "Contoh: Membawa kehangatan anyaman tradisi ke ruang modern minimalis."
         })
-      }
+      },
+      condition: { field: "web-name", filled: true }
     },
     {
-      type: "text",
-      id: "web-author",
-      condition: { field: "web-reason", filled: true },
-      title: "Situs web ini dirancang secara personal, dan dirajut oleh",
-      placeholder: "dirimu..",
+      content: {
+        type: "text",
+        id: "web-author",
+        label: "Situs web ini dirancang secara personal, dan dirajut oleh",
+        placeholder: "dirimu.."
+      },
       config: {
         selectors,
         attributes: [
@@ -158,7 +166,8 @@ export const IntroSet = {
           info: "Kamu bebas menuliskan nama lengkapmu, nama panggilan, atau nama studio usahamu.",
           placeholder: "Beri tahu dunia siapa pemilik sah karya ini."
         })
-      }
+      },
+      condition: { field: "web-reason", filled: true }
     },
   ]
 }
@@ -183,40 +192,43 @@ function createDownloadLink(filename: string = "address.csv") {
 
 }
 
-export const DetailSetShop = {
+export const DetailSetShop: iFormGroupNode = {
   id: "ecommerce-detail-set",
   // condition: { field: "web-type", filled: true },
   group: [
     {
-      type: "file",
-      id: "detail-product",
-      // condition: { field: "web-name", filled: true },
-      title: "Untuk mengisi seluruh isi etalase data tokonya secara instan, silakan unggah baris berkas CSV",
-      placeholder: "Pilih file template .csv data...",
+      content: {
+        type: "file",
+        id: "detail-product",
+        // condition: { field: "web-name", filled: true },
+        label: "Untuk mengisi seluruh isi etalase data tokonya secara instan, silakan unggah baris berkas CSV",
+        placeholder: "Pilih file template .csv data..."
+      },
       config: {
         selectors,
         attributes: [
           { name: "animation", value: "fade-in" },
           { name: "animation-chain", value: "true" },
           { name: "animated-once", value: "true" },
-          { name: "data-max-upload", value: 1 },
+          { name: "data-max-upload", value: "1" },
           { name: "accept", value: ".csv, text/csv, .json, text/json" },
           { name: "data-uploader-csv", value: "true" }
-        ],
+        ]
       }
     },
     createDownloadLink()
   ]
 }
-export const ContactSet = {
+export const ContactSet: iFormGroupNode = {
   id: "contact-set",
   group: [
     {
-      type: "email",
-      id: "contact-email",
-      condition: { field: "detail-product", filled: true },
-      title: "Jika ada pengunjung atau calon pembeli yang ingin menyapa melalu surat elektronik mereka akan diterima di",
-      placeholder: "alamat email aktifmu",
+      content: {
+        type: "email",
+        id: "contact-email",
+        label: "Jika ada pengunjung atau calon pembeli yang ingin menyapa melalu surat elektronik mereka akan diterima di",
+        placeholder: "alamat email aktifmu"
+      },
       config: {
         selectors,
         attributes: [
@@ -228,14 +240,16 @@ export const ContactSet = {
           placeholder: "contoh ruang.karya@indonesia.com",
           info: "Alamat email akan dicantumkan sebagai contact di website."
         })
-      }
+      },
+      condition: { field: "detail-product", filled: true }
     },
     {
-      type: "text",
-      id: "contact-company",
-      condition: { field: "contact-email", filled: true },
-      title: "Seluruh hak cipta dan kepemilikan operasional website ini bernaung di bawah",
-      placeholder: "nama badan usaha / studionya",
+      content: {
+        type: "text",
+        id: "contact-company",
+        label: "Seluruh hak cipta dan kepemilikan operasional website ini bernaung di bawah",
+        placeholder: "nama badan usaha / studionya"
+      },
       config: {
         selectors,
         attributes: [
@@ -247,37 +261,42 @@ export const ContactSet = {
           placeholder: "contoh PT.Ruang Karya",
           info: "Nama perusahaan juga akan dicantumkan di website"
         })
-      }
+      },
+      condition: { field: "contact-email", filled: true }
     },
     {
-      type: "file",
-      id: "contact-logo",
-      condition: { field: "contact-company", filled: true },
-      title: "Dan sebagai penanda identitas visual yang khas, mari sematkan gambar logo usahamu",
-      placeholder: "unggah logo tokomu disini...",
+      content: {
+        type: "file",
+        id: "contact-logo",
+        label: "Dan sebagai penanda identitas visual yang khas, mari sematkan gambar logo usahamu",
+        placeholder: "unggah logo tokomu disini..."
+      },
       config: {
         selectors,
         attributes: [
           { name: "animation", value: "fade-in" },
           { name: "animation-chain", value: "true" },
           { name: "animated-once", value: "true" },
-          { name: "data-max-upload", value: 1 },
+          { name: "data-max-upload", value: "1" },
         ],
         view: "thumbnails"
-      }
+      },
+      condition: { field: "contact-company", filled: true }
     },
   ]
 }
-export const AddressSet = {
+export const AddressSet: iFormGroupNode = {
   id: "address-set",
   // condition: { field: "contact-company", filled: true },
   group: [
     {
-      type: "textarea",
-      id: "address-jalan",
-      // condition: { field: "logo", filled: true },
-      title: "Pusat workshop atau rumah tempat kerja mu ini beralamat di",
-      placeholder: "Tuliskan nama jalan, nomor rumah, atau ruko usahamu...",
+      content: {
+        type: "textarea",
+        id: "address-jalan",
+        // condition: { field: "logo", filled: true },
+        label: "Pusat workshop atau rumah tempat kerja mu ini beralamat di",
+        placeholder: "Tuliskan nama jalan, nomor rumah, atau ruko usahamu..."
+      },
       config: {
         selectors,
         attributes: [
@@ -292,13 +311,15 @@ export const AddressSet = {
       }
     },
     {
-      type: "select",
-      id: "address-propinsi",
-      // condition: { field: "jalan", filled: true },
-      title: "Tepatnya, wilayah tersebut berada di cakupan wilayah",
-      placeholder: "pilih provinsi   ",
+      content: {
+        type: "select",
+        id: "address-propinsi",
+        // condition: { field: "jalan", filled: true },
+        label: "Tepatnya, wilayah tersebut berada di cakupan wilayah",
+        placeholder: "pilih provinsi   "
+      },
       config: {
-        className: "loading",
+        loading: true,
         selectors,
         attributes: [
           { name: "data-level", value: "propinsi" },
@@ -309,11 +330,13 @@ export const AddressSet = {
       }
     },
     {
-      type: "select",
-      id: "address-kota",
-      // condition: { field: "jalan", filled: true },
-      title: "pada wilayah administrasi daerah",
-      placeholder: "pilih kota/kabupaten   ",
+      content: {
+        type: "select",
+        id: "address-kota",
+        // condition: { field: "jalan", filled: true },
+        label: "pada wilayah administrasi daerah",
+        placeholder: "pilih kota/kabupaten   "
+      },
       config: {
         selectors,
         attributes: [
@@ -326,11 +349,13 @@ export const AddressSet = {
     },
 
     {
-      type: "select",
-      id: "address-kecamatan",
-      // condition: { field: "jalan", filled: true },
-      title: "meluas ke area wilayah tingkat",
-      placeholder: "pilih kecamatan   ",
+      content: {
+        type: "select",
+        id: "address-kecamatan",
+        // condition: { field: "jalan", filled: true },
+        label: "meluas ke area wilayah tingkat",
+        placeholder: "pilih kecamatan   "
+      },
       config: {
         selectors,
         attributes: [
@@ -343,11 +368,13 @@ export const AddressSet = {
     },
 
     {
-      type: "select",
-      id: "address-kelurahan",
-      // condition: { field: "jalan", filled: true },
-      title: "hingga menyentuh batas terkecil di",
-      placeholder: "pilih kelurahan   ",
+      content: {
+        type: "select",
+        id: "address-kelurahan",
+        // condition: { field: "jalan", filled: true },
+        label: "hingga menyentuh batas terkecil di",
+        placeholder: "pilih kelurahan   "
+      },
       config: {
         selectors,
         attributes: [
@@ -360,11 +387,13 @@ export const AddressSet = {
     },
 
     {
-      type: "text",
-      id: "address-kodepos",
-      // condition: { field: "jalan", filled: true },
-      title: "dengan penguncian kode pos resmi",
-      placeholder: "kodepos",
+      content: {
+        type: "text",
+        id: "address-kodepos",
+        // condition: { field: "jalan", filled: true },
+        label: "dengan penguncian kode pos resmi",
+        placeholder: "kodepos"
+      },
       config: {
         selectors,
         attributes: [
@@ -377,7 +406,7 @@ export const AddressSet = {
     },
   ]
 }
-export const ConfirmationSet = {
+export const ConfirmationSet: iFormGroupNode = {
   id: "confirmation-set",
   group: [
 
@@ -416,11 +445,12 @@ export const ConfirmationSet = {
       </div><br>`
     ,
     {
-      type: "checkbox",
-      id: "confirmation",
-      // condition: { field: "kodepos", filled: true },
-      title: "Saya setuju dan bertanggung jawab sepenuhnya atas konten tersebut",
-      position: "left",
+      content: {
+        type: "checkbox",
+        id: "confirmation",
+        // condition: { field: "kodepos", filled: true },
+        label: "Saya setuju dan bertanggung jawab sepenuhnya atas konten tersebut"
+      },
       config: {
         selectors: {
           "@field": {
@@ -429,8 +459,8 @@ export const ConfirmationSet = {
             attrs: { "animation": "fade-in", "animation-chain": "true", "animetad-once": "true" }
           }
         },
-        style: "toggle",
-
+        view: "toggle",
+        position: "left"
       }
     }
   ]
@@ -451,7 +481,7 @@ const formConfig = {
   // submitButton: false,
 };
 
-const formContent = [
+const formContent: readonly FormNode[] = [
   IntroSet,
   DetailSetShop,
   ContactSet,

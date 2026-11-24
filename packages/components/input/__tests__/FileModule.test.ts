@@ -88,7 +88,7 @@ describe("file input module", () => {
     const emit = vi.fn();
     // No modules, no file capability: the field must be told which module it runs on.
     const adapter = inputFormAdapter.load({ builderConfig: { emit }, inputModules: [fileUploaderInputModule] } as any);
-    const field = adapter.renderField({ type: "file", id: "photo" }, "demo-form");
+    const field = adapter.renderField({ content: { type: "file", id: "photo" } }, "demo-form");
     const input = field.querySelector("input[type='file']") as HTMLInputElement;
 
     Object.defineProperty(input, "files", { value: [], configurable: true });

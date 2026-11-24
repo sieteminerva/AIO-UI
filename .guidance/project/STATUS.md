@@ -4,8 +4,9 @@
 > **only** after the user picks it — never "to orient" (`AGENT_RULES.md` §13). Rewritten each
 > session, newest on top. One card = one line + one pointer.
 >
-> Recent batches (newest first): **b73** input schema stage 3 (strict module keys + legacy door
-gone) · **b72** input schema stage 2 (per-type union +`create()` wiring) ·
+> Recent batches (newest first): **b74** stage 3.3: form schema = input schema, examples migrated
+> · **b73** input schema stage 3 (strict module keys + legacy door
+> gone) · **b72** input schema stage 2 (per-type union +`create()` wiring) ·
 > **b71** input schema split (stage 1 grouping) ·
 > **b70** control set: idle edit/save half rebuilt + repeater delete floor ·
 > **b69** v0.2.5 published to CDN · **b68** the eight missing package
@@ -14,15 +15,13 @@ gone) · **b72** input schema stage 2 (per-type union +`create()` wiring) ·
 > in every package README · **b57** Apps Script hosting · **b52–b59** shell mount point, tab seams.
 > Older history: `git log --oneline`.
 
-### 1. Input schema refactor — stages 1–3 done; stage 3.3 (examples) next (framework band)
+### 1. Input schema refactor — done (stages 1–3.3)
 
-b73 (2026-11-24): module settings split into per-owner types (`iInputFileSettings` /
-`Dropdown` / `Picker` / `Actions`, `actions`+`popover` left universal on the owner's word), and
-the legacy door is gone — the form adapter splits `content`/`config`, `Input.ts` dropped the
-`title` alias, the config mirror and the `config.options` lift, `iInputDiscardedKeys` deleted,
-`INPUT_STRUCTURAL_KEYS` pruned, input+form suites migrated. Gate: check + verify green
-(994 pass, 1 skip). Next: stage 3.3, the three example folders
-(outside `tsconfig`, so no compiler ever saw them).
+b74 (2026-11-24): stage 3.3 landed — the form field node **is** the input schema `{ content,
+config }` (+ form-owned `condition`/`then`), the adapter splits nothing, and `@aio-ui/form`
+publishes `FormField`/`FormNode` so a stale key is a compile error. Demo, gallery and the
+rajutan app migrated; `typecheck:examples` joined `check`; `iBasicSelectOption.color` added.
+Gate: check + verify green (994 pass, 1 skip). Rajutan carries its own commit in its repo.
 → `docs/framework/TASK-INPUT-SCHEMA.md`
 
 ### 2. Release v0.2.5 — published (tooling band)

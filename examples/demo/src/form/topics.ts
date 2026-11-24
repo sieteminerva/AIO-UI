@@ -18,6 +18,7 @@
  * be taken from a README is written here; if a topic needs prose that does not exist yet, the
  * README is the place to add it.
  */
+import type { FormNode } from "@aio-ui/form";
 import {
   DropdownSet,
   InputControlSet,
@@ -53,7 +54,8 @@ export const FORM_GROUPS: readonly iFormTopicGroup[] = [
 export interface iFormTopicDemo {
   /** Caption under the frame — a label, not documentation. */
   note: string;
-  schema: unknown[];
+  /** The schema the Display tab builds — typed, so a stale key cannot slip through. */
+  schema: readonly FormNode[];
   config: Record<string, unknown>;
 }
 

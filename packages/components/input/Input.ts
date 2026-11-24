@@ -71,6 +71,13 @@ export interface iBasicSelectOption {
   value?: string;
   label?: string;
   icon?: string;
+  /**
+   * Swatch colour for a `picker` in `view: "swatch"`.
+   *
+   * Read by `PickerBuilder` as `--picker-swatch` on the cell, so a swatch option can show a
+   * colour the label cannot say. Ignored by every other view and by a plain `<select>`.
+   */
+  color?: string;
 }
 
 export type InputElementType =

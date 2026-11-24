@@ -181,9 +181,11 @@ function isFieldNode(value: unknown): boolean {
   if (typeof value === "string") return true;
   if (typeof HTMLElement !== "undefined" && value instanceof HTMLElement) return true;
   if (!value || typeof value !== "object") return false;
-  const node = value as Record<string, unknown>;
+  const node = value as Record<string, any>;
   if ("group" in node || "row" in node) return true;
-  return typeof node.type === "string" && node.type.trim().length > 0;
+  // A field is the input schema: the discriminator lives in its `content` block.
+  const type = node.content?.type;
+  return typeof type === "string" && type.trim().length > 0;
 }
 
 /**

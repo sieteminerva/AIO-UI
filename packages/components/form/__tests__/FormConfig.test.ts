@@ -11,7 +11,7 @@ import { inputFormAdapter } from "../Input.FormAdapter";
  * accepted by the type and then silently ignored (`title`, `description`, `name`), plus the
  * two that were applied by string concatenation and could double up.
  */
-const schema = [{ id: "g", title: "Grup", group: [{ type: "text", id: "name", label: "Nama" }] }];
+const schema = [{ id: "g", title: "Grup", group: [{ content: { type: "text", id: "name", label: "Nama" } }] }];
 
 function build(config: Record<string, any>): HTMLFormElement {
   return new FormBuilder({ modules: new ModuleLoader("form", [inputFormAdapter]) }).create({ content: schema, config }) as HTMLFormElement;
@@ -92,7 +92,7 @@ describe("empty or malformed schema", () => {
   it("still renders the valid entries next to a bad one", () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => { });
 
-    const form = make([{}, { type: "text", id: "still-there", label: "Ada" }]);
+    const form = make([{}, { content: { type: "text", id: "still-there", label: "Ada" } }]);
 
     expect(form.querySelector("#still-there")).not.toBeNull();
     expect(form.querySelectorAll(".field")).toHaveLength(1);

@@ -4,15 +4,13 @@ Small, DOM-light helpers shared by builders, modules and the renderer. Curated e
 `export *` — a helper earns its place here only when more than one package needs it.
 
 <!-- install:begin -->
-
 ## Install
 
-Version — `0.2.4` (tag `v0.2.4`)
+Version — `0.2.5` (tag `v0.2.5`)
 
-    npm install https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.4/aio-ui-utilities-0.2.4.tgz
+    npm install https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.5/aio-ui-utilities-0.2.5.tgz
 
-CDN (ES module, no build step) — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.4/packages/utilities/dist/index.js`
-
+CDN (ES module, no build step) — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.5/packages/utilities/dist/index.js`
 <!-- install:end -->
 
 ## Exports

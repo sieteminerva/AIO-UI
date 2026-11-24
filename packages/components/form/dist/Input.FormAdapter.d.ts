@@ -1,5 +1,6 @@
 import type { iModuleDefinition } from "@aio-ui/module-loader";
 import type { iFormModuleContext } from "./FormModuleTypes";
+import type { FormField } from "./FormSchema";
 /**
  * Field rendering adapter.
  *
@@ -19,14 +20,17 @@ declare class InputFormAdapter {
     /**
      * Builds one field from the input schema.
      *
-     * @param input - Basic input node or raw descriptor.
+     * @param input - Field node from the form schema (identity and text, behaviour keys,
+     *   and the form-owned `condition` / `then`).
      * @param formId - Id of the owning form, forwarded to the field markup.
      * @returns The rendered field element.
      *
-     * @summary The host's builder config comes along, so the field inherits `themeId`,
-     * `namespace` and `emit` instead of starting blank — and so does its adapter set.
+     * @summary The node is split into the two blocks `InputBuilder.create()` takes, so the
+     * input layer never has to guess which key is data and which is behaviour. The host's
+     * builder config comes along, so the field inherits `themeId`, `namespace` and `emit`
+     * instead of starting blank — and so does its adapter set.
      */
-    renderField(input: any, formId: string): HTMLElement;
+    renderField(input: FormField, formId: string): HTMLElement;
     /**
      * Covers file inputs that bypass `InputBuilder` (raw HTML fields).
      *

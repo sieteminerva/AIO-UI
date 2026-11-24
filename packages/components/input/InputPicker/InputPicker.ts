@@ -192,7 +192,8 @@ export class PickerBuilder extends Builder<PickerElementType, iPickerConfig> {
       // Manual popover: the trigger owns open/close, so no light-dismiss fight with the
       // filter box. Anchored to the trigger when the platform has anchor positioning.
       panel.setAttribute("popover", "manual");
-      const anchor = `--picker-${Math.random().toString(36).slice(2, 8)}`;
+      // The shared, field-scoped anchor name (see `.field` in Input.css).
+      const anchor = "--field-dropdown-anchor";
       this.#trigger.style.setProperty("anchor-name", anchor);
       panel.style.setProperty("position-anchor", anchor);
     }
@@ -467,7 +468,7 @@ export class PickerBuilder extends Builder<PickerElementType, iPickerConfig> {
 
 /** Field-level settings and the builder key each one feeds. */
 const SETTINGS: Array<[string, keyof iPickerConfig]> = [
-  ["style", "kind"],
+  ["view", "kind"],
   ["column", "columns"],
   ["expanded", "expanded"],
   ["searchable", "searchable"],
@@ -484,7 +485,7 @@ const SETTINGS: Array<[string, keyof iPickerConfig]> = [
  * Settings live flat on the field's `config`, next to `options`, using the same vocabulary
  * the rest of the schema already speaks:
  *
- *   `style`     — `icon | image | media | swatch` (the cell visual)
+ *   `view`      — `icon | image | media | swatch` (the cell visual)
  *   `column`    — grid track count, like a row's `column`
  *   `expanded`  — print the grid inline instead of behind the trigger's popover
  *   `searchable`, `placeholder`
@@ -510,8 +511,7 @@ class PickerInputModule implements iInputAdapter {
     const cfg = field.config ?? {};
     const settings: Partial<iPickerConfig> = {};
 
-    // Flat only: `config.style` / `config.column` are the same words a row and a dropdown
-    // already use, so a schema copied from a sheet needs no second spelling.
+    // Settings the picker owns, read from the field's `config` bag.
     for (const [from, to] of SETTINGS) {
       const value = cfg[from];
       if (value !== undefined) (settings as Record<string, unknown>)[to] = value;
@@ -519,12 +519,12 @@ class PickerInputModule implements iInputAdapter {
 
     const payload: iPickerPayload = {
       id: field.id,
-      title: field.label ?? field.title,
+      title: field.label,
       name: field.name || field.id,
       placeholder: field.placeholder,
       value: field.value,
       options: field.options ?? [],
-      multiple: field.multiple === true,
+      multiple: cfg.multiple === true,
     };
 
     const builder = new PickerBuilder({

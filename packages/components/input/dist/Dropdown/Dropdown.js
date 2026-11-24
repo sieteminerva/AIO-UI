@@ -262,10 +262,9 @@ export class DropdownBuilder extends Builder {
         const box = () => menu.parentElement;
         input.setAttribute("aria-haspopup", "listbox");
         input.setAttribute("aria-expanded", "false");
-        // Anchor positioning unik per-instans (meniru pola Input.ts:492-499).
-        // Nama anchor unik di-generate dari id input, agar beberapa dropdown di
-        // halaman yang sama tidak saling berebut anchor `--ddown` generik.
-        const anchorName = `--anchor-${input.id || this.listId}`;
+        // One anchor name, scoped by `.field` (`anchor-scope`): two dropdowns on a page never
+        // compete and no id is generated. The CSS owns where it lands.
+        const anchorName = "--field-dropdown-anchor";
         const control = input.closest(".dropdown");
         (control || input).style.setProperty("anchor-name", anchorName);
         menu.style.setProperty("position-anchor", anchorName);
@@ -297,6 +296,30 @@ export class DropdownBuilder extends Builder {
             document.addEventListener("mousedown", onOutsideDown, { signal: this.abortController.signal });
             outsideBound = true;
         };
+        // 🧭 Placement has ONE source: this function. It reads the space around the control and
+        // writes `data-placement`; CSS derives every edge (which border is dropped, which
+        // corners are squared, which anchor edge is used) from that attribute alone. The
+        // platform fallbacks are off for `.menu`, so nothing else can move the sheet — that
+        // second arbiter was what made the seam "sometimes flush, sometimes shifted".
+        const place = () => {
+            const own = box()?.getBoundingClientRect();
+            if (!own)
+                return;
+            menu.dataset.placement = "below";
+            // `offsetHeight`, not a rect: the entrance transform is `scaleY(0)` at this moment, and
+            // a collapsed rect would report 0 height and decide "fits" for any space.
+            const need = menu.offsetHeight;
+            const spaceBelow = window.innerHeight - own.bottom;
+            menu.dataset.placement = spaceBelow < need && own.top > spaceBelow ? "above" : "below";
+        };
+        let placeBound = false;
+        const bindPlacement = () => {
+            if (placeBound)
+                return;
+            window.addEventListener("scroll", place, { capture: true, passive: true, signal: this.abortController.signal });
+            window.addEventListener("resize", place, { passive: true, signal: this.abortController.signal });
+            placeBound = true;
+        };
         const open = () => {
             if (hideTimer) {
                 window.clearTimeout(hideTimer);
@@ -304,8 +327,10 @@ export class DropdownBuilder extends Builder {
             }
             bindBoxClick();
             bindOutside();
+            bindPlacement();
             if (!menu.matches(":popover-open"))
                 menu.showPopover();
+            place();
             // Tambahkan .visible pada frame berikutnya agar animasi masuk terlihat
             requestAnimationFrame(() => menu.classList.add("visible"));
             input.setAttribute("aria-expanded", "true");
@@ -661,11 +686,12 @@ class DropdownInputModule {
         const options = (field.options || []).map((option) => typeof option === "string" ? { id: option, label: option } : { id: option.value, label: option.label });
         const payload = {
             id: field.id,
-            title: field.title,
+            title: field.label,
             placeholder: field.placeholder,
-            // Choices and multiplicity are the field's, never the config bag's.
+            // Choices and multiplicity: the choices are content, the single-vs-many flag is a
+            // constraint and lives in the config bag.
             options,
-            multiple: field.multiple === true,
+            multiple: cfg.multiple === true,
             value: field.value,
             name: field.name || field.id,
             attributes: cfg.attributes || [],
@@ -681,7 +707,8 @@ class DropdownInputModule {
             config: {
                 apiUrl: cfg.apiUrl || null,
                 debounceDelay: cfg.debounceDelay,
-                style: cfg.style || "select",
+                // `view` is the field's one visual word (dropdown: `select` | `datalist`).
+                style: cfg.view || "select",
                 min: cfg.min,
                 max: cfg.max,
                 onSelect: cfg.onSelect,

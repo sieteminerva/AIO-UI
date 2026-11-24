@@ -38,7 +38,7 @@ export class InputBuilder extends Builder {
     builderId = "input";
     name = "input";
     stylesheet = "./input.css";
-    /** One field node. The full field vocabulary belongs to `iBasicInputNode`, so it stays open. */
+    /** One field node. The vocabulary itself lives in `InputSchema.ts`; this stays open. */
     static contract = {
         schema: {
             t: "record",
@@ -47,15 +47,14 @@ export class InputBuilder extends Builder {
                 type: { t: "string" },
                 id: { t: "string" },
                 name: { t: "string" },
-                title: { t: "string" },
                 label: { t: "string" },
                 placeholder: { t: "string" },
                 required: { t: "boolean" },
             },
         },
-        example: { type: "text", id: "email", title: "Email address", placeholder: "you@example.com" },
+        example: { type: "text", id: "email", label: "Email address", placeholder: "you@example.com" },
     };
-    #input = {};
+    #input = { type: "text" };
     /** Owns the lifecycle of the input sub-modules: one resolve per prepare. */
     #loader;
     /** Adapters that arrived already live (host-owned); never loaded or disposed here. */
@@ -147,6 +146,7 @@ export class InputBuilder extends Builder {
             // Same switch shell for a radio: `config.style: "toggle"` opts into it.
             "@field>toggle": { tagName: "input", wrapper: ".switch.control" },
             "@field>file": { tagName: "input", type: "file" },
+            "@field>error": { tagName: "small", className: "error" },
             "@field>info": { tagName: "small", className: "info" }
         };
         const defaultConfig = {
@@ -176,48 +176,40 @@ export class InputBuilder extends Builder {
         }
         this.#declared = new Set(this.#loader?.ids() ?? []);
     }
-    resolvePayload(inputObj) {
-        // Generate ID unik generik untuk keperluan atribut 'id' dan 'for' pada label
-        const elementId = this._sanitizeId(inputObj.id || inputObj.title || `input-${Math.random().toString(36).slice(2, 10)}`);
-        const defaultPayload = {
+    resolvePayload(schema) {
+        const inputObj = (schema ?? {});
+        // 🆔 The label's `for` and the control's `id` share one value.
+        const elementId = this._sanitizeId(inputObj.id || `input-${Math.random().toString(36).slice(2, 10)}`);
+        // Content defaults only. Behaviour defaults live in the config bag, because that is the
+        // only place the schema writes them.
+        const payload = {
             type: "text",
-            id: elementId,
-            title: "",
             placeholder: "",
-            rows: 3,
-            multiple: false,
-            disabled: false,
-            readonly: false,
-            required: false,
-            checked: false,
-            config: {
-                attributes: [],
-                style: "",
-                className: "",
-                useLabel: true,
-                display: undefined,
-                createEventListener: false,
-                popover: undefined,
-                actions: undefined
-            }
+            ...inputObj,
+            id: elementId,
+            label: inputObj.label ?? "",
+            config: { attributes: [], useLabel: true, ...(inputObj.config ?? {}) },
         };
-        const inputPayload = { ...defaultPayload, ...inputObj, config: { ...defaultPayload.config, ...inputObj.config } };
-        if (!inputPayload.placeholder && inputPayload.title) {
-            inputPayload.placeholder = (inputPayload.type === "select" || inputPayload.type === "textarea") ? `Pilih ${inputPayload.title}` : `Isi ${inputPayload.title}`;
+        // 🧩 `options` accepts a bare string as `{ value, label }` — the declared content type
+        // says so, and the select template reads one shape. Choices live here and nowhere else.
+        if (Array.isArray(payload.options)) {
+            payload.options = payload.options.map((option) => typeof option === "string" ? { value: option, label: option } : option);
         }
-        // 🧩 `options` is the field's own list — the one place `select`, `dropdown`, `picker`
-        // and a `radio`/`checkbox` group read from. The legacy `config.options` spelling is
-        // still lifted onto the field so an older sheet keeps working, but nothing downstream
-        // ever reads the config bag for choices again.
-        const rawOptions = inputObj.options ?? inputObj.config?.options;
-        if (Array.isArray(rawOptions)) {
-            inputPayload.options = rawOptions.map((option) => typeof option === "string" ? { value: option, label: option } : option);
+        if (!payload.placeholder && payload.label) {
+            payload.placeholder = (payload.type === "select" || payload.type === "textarea")
+                ? `Pilih ${payload.label}`
+                : `Isi ${payload.label}`;
         }
-        return inputPayload;
+        return payload;
+    }
+    create(schema) {
+        const content = schema?.content;
+        const config = schema?.config;
+        return super.create({ content: { ...content, config } });
     }
     prepare(inputObj, _config) {
         this.#input = this.resolvePayload(inputObj);
-        const cfg = this.#input.config;
+        const cfg = this.#input.config ?? {};
         const definition = inputTypeOf(this.#input.type);
         // 🧩 Modules are resolved once per prepare, after the payload exists: a module decides
         // from the field what it wants to do, and `InputBuilder` never learns their names.
@@ -225,7 +217,7 @@ export class InputBuilder extends Builder {
         // 🚪 A declared action set is a promise of buttons. Without the controls module the
         // field itself would render perfectly and the buttons would simply never exist — that
         // is a hole, not a plainer control, so this one throws at the declaration site.
-        if (cfg?.actions && !this.#offers("renderActions")) {
+        if (cfg.actions && !this.#offers("renderActions")) {
             this.#missing("actions", INPUT_MODULE_IDS.controls, "@aio-ui/input/controls (inputControlsInputModule)", "the declared action buttons would never render.", "error");
         }
         const wrapper = this.render("@field", this.#input);
@@ -244,12 +236,11 @@ export class InputBuilder extends Builder {
         // no sensible "above the control" layout, so it defaults to `right`; without any
         // `data-position` its `:has(> label[…])` grid rules never match and the label stacks
         // on top of the switch.
-        const labelText = this.#input.label ?? this.#input.title;
+        const labelText = this.#input.label;
         const isToggle = this.#input.type === "checkbox" || this.#input.type === "radio";
-        const labelPosition = this.#input.config?.position
-            ?? this.#input.position
+        const labelPosition = cfg.position
             ?? (isToggle ? "right" : undefined);
-        const label = labelText && this.#input.config?.useLabel !== false
+        const label = labelText && cfg.useLabel !== false
             ? this.render("@field>label", {
                 text: labelText,
                 position: isChoiceGroup ? "top" : labelPosition,
@@ -275,10 +266,10 @@ export class InputBuilder extends Builder {
                 }
             }
         }
-        // A toggle renders the same switch shell a checkbox has. `style: "toggle"` is the
+        // A toggle renders the same switch shell a checkbox has. `view: "toggle"` is the
         // opt-in for a radio, whose default is the native dot: a group of options should not
         // turn into a wall of switches unless the schema asks for it.
-        const controlKey = !isChoiceGroup && this.#input.type === "radio" && this.#isToggleStyle()
+        const controlKey = !isChoiceGroup && this.#input.type === "radio" && this.#isToggleView()
             ? "@field>toggle"
             : definition.control;
         if (!isChoiceGroup && !inputEl && controlKey) {
@@ -300,9 +291,6 @@ export class InputBuilder extends Builder {
                 const module = INPUT_MODULE_IDS[type] ?? type;
                 this.#missing(type, module, `@aio-ui/input/${module} (${module}InputModule)`, "the field falls back to a native select over the same options.");
             }
-            if ((this.#input.type === "text" || this.#input.type === "number") && (cfg?.className === "loading")) {
-                inputEl.classList.add("loading");
-            }
         }
         // 📎 An uploader is additive: the field still opens the file dialog, it just stops
         // there. `onFileSelected` never fires and nothing is previewed, so say it once.
@@ -312,17 +300,16 @@ export class InputBuilder extends Builder {
         if (inputEl) {
             this.applyAttributes(inputEl, this.#input);
         }
+        // 🕒 `config.loading` replaces the old `className: "loading"` shortcut: one boolean,
+        // one class on the control, whatever control the type resolved to.
+        if (inputEl && cfg.loading === true)
+            inputEl.classList.add("loading");
         // `editable: true` is a promise to the visitor: this field stays writable even when the
         // control set locks everything else (its buttons are `edit`/`save`). The marker goes on
         // the wrapper because that is the scope a set reads, and it is one attribute instead of
         // every control kind having to know about the lock.
-        if (this.#input.editable === true || cfg?.editable === true) {
+        if (cfg.editable === true) {
             wrapper.setAttribute("data-editable", "true");
-        }
-        // C. Render Info Tambahan di bagian bawah jika ada
-        if (this.#input.info) {
-            const info = this.render("@field>info", this.#input.info);
-            wrapper.appendChild(info);
         }
         // Dropdown mencetak root `.dropdown` sendiri, jadi root itu yang ditempel apa adanya.
         if (inputEl)
@@ -334,9 +321,24 @@ export class InputBuilder extends Builder {
                 module.decorate?.(wrapper, inputEl, this.#input, this.#moduleContext);
             // Purely additive: the control is untouched and `config.popover` is simply not
             // attached. Worth a line, never worth a throw.
-            if (cfg?.popover && this.#popoverMissing) {
+            if (cfg.popover && this.#popoverMissing) {
                 this.#missing("popover", INPUT_MODULE_IDS.popover, "@aio-ui/input (popoverInputModule)", "config.popover is ignored and no anchor attaches to the control.");
             }
+        }
+        // 🚦 Host validation state: `data-error` on the wrapper (the scope a skin reads) plus
+        // one `@field>error` child when the schema carried a message. No `Error` object — the
+        // host passes `error.message`.
+        if (cfg.error) {
+            wrapper.setAttribute("data-error", typeof cfg.error === "string" ? cfg.error : "true");
+            if (typeof cfg.error === "string")
+                wrapper.appendChild(this.render("@field>error", cfg.error));
+        }
+        // Help text is always the last child: appended after the control and after every
+        // module decoration (uploader/action set/popover), so it never sits between the label
+        // and the control.
+        if (this.#input.info) {
+            const info = this.render("@field>info", this.#input.info);
+            wrapper.appendChild(info);
         }
         return wrapper;
     }
@@ -346,13 +348,10 @@ export class InputBuilder extends Builder {
         const cfg = payload.config; // ini merujuk ke 'payload' utuh yang dioper dari case @field
         switch (typeKey) {
             case "@field":
-                // console.log(el)
-                // Gaya kelas & atribut kosmetik wrapper utama
-                if (payload?.className && payload?.className !== "loading") {
-                    el.classList.add(...payload.className.split(" ").filter(Boolean));
-                }
-                if (payload?.display)
-                    el.setAttribute("data-display", payload.display ?? cfg.display);
+                // Cosmetic wrapper attributes. `className` left the schema: a per-field skin is
+                // this instance's `config.selectors["@field"].className`.
+                if (cfg.display)
+                    el.setAttribute("data-display", cfg.display);
                 break;
             case "@field>label":
                 // A choice group's caption names the group; there is no control to point at.
@@ -374,11 +373,10 @@ export class InputBuilder extends Builder {
                 el.autocomplete = "off";
                 break;
             case "@field>textarea":
-                el.rows = payload.rows;
+                // `rows` is a constraint (`iInputConstraint.rows`), defaulted here.
+                el.rows = cfg.rows ?? 3;
                 break;
             case "@field>select":
-                if (cfg?.className === "loading")
-                    el.classList.add("loading");
                 // Buat baris placeholder awal untuk select
                 const placeholderOpt = document.createElement("option");
                 placeholderOpt.value = "";
@@ -416,11 +414,12 @@ export class InputBuilder extends Builder {
             case "@field>file":
                 el.type = "file";
                 el.setAttribute("data-uploader", "");
-                el.setAttribute("data-view", `${cfg?.view || "list"}`);
-                el.setAttribute("data-render-thumbnail", `${cfg?.thumbnail ?? "true"}`);
+                // `view` is the one visual word for every type; `list` is the uploader default.
+                el.setAttribute("data-view", `${cfg.view || "list"}`);
+                el.setAttribute("data-render-thumbnail", `${cfg.thumbnail ?? "true"}`);
                 // Opt-in, and only declarative: this field's file is tabular, so whatever owns
                 // tables may preview it. The input layer still never parses anything itself.
-                if (cfg?.csv === true)
+                if (cfg.csv === true)
                     el.setAttribute("data-uploader-csv", "");
                 break;
             case "@field>select>option":
@@ -431,20 +430,26 @@ export class InputBuilder extends Builder {
                     option.setAttribute("selected", "selected");
                 }
                 break;
+            case "@field>error":
+                el.textContent = payload;
+                break;
             case "@field>info":
                 el.textContent = payload;
                 break;
         }
     }
     initialize(_el, _payload, _context) {
-        if (this.#input.config?.popover) {
-            if (this.#input.config?.popover instanceof HTMLElement) {
-                _el?.appendChild(this.#input.config?.popover);
-            }
-            else if (typeof this.#input.config?.popover === "string") {
-                _el?.insertAdjacentHTML("beforeend", this.#input.config?.popover);
-            }
-        }
+        const popover = this.#input.config?.popover;
+        if (!popover || !_el)
+            return;
+        // The popover module already anchors an element; this path only covers a host that
+        // built the field without it, so the content still arrives somewhere.
+        if (_el.querySelector("[popover]"))
+            return;
+        if (popover instanceof HTMLElement)
+            _el.appendChild(popover);
+        else if (typeof popover === "string")
+            _el.insertAdjacentHTML("beforeend", popover);
     }
     /**
      * A `radio`/`checkbox` field given `options` is a group: one control per option, all on
@@ -456,6 +461,7 @@ export class InputBuilder extends Builder {
      */
     renderChoices(wrapper) {
         const field = this.#input;
+        const cfg = field.config ?? {};
         const name = String(field.name || field.id);
         const chosen = this.choiceValues();
         wrapper.classList.add("choice");
@@ -470,9 +476,9 @@ export class InputBuilder extends Builder {
             input.name = name;
             input.value = value;
             input.checked = chosen.includes(value);
-            if (field.disabled)
+            if (cfg.disabled)
                 input.disabled = true;
-            if (field.required)
+            if (cfg.required)
                 input.required = true;
             const item = document.createElement("label");
             item.className = "choice-item";
@@ -491,14 +497,19 @@ export class InputBuilder extends Builder {
             return value.map(String);
         if (typeof value === "string")
             return value ? value.split(",").map((entry) => entry.trim()).filter(Boolean) : [];
-        if (value === undefined || value === null || value === "")
+        if (value === undefined || value === null)
             return [];
         return [String(value)];
     }
-    /** Whether this field asked for the switch shell (`config.style: "toggle"`). */
-    #isToggleStyle() {
-        const style = String(this.#input.config?.style ?? "").toLowerCase();
-        return style === "toggle";
+    /**
+     * Whether this field asked for the switch shell (`config.view: "toggle"`).
+     *
+     * `view` replaced the old `style` because `style` collided with `HTMLElement.style` and
+     * meant a different thing per type.
+     */
+    #isToggleView() {
+        const bag = (this.#input.config ?? {});
+        return String(bag.view ?? "").toLowerCase() === "toggle";
     }
     /**
      * Applies a schema to a live control.
@@ -548,6 +559,8 @@ export class InputBuilder extends Builder {
         if (el instanceof HTMLInputElement && el.type === "number" && !el.getAttribute("step")) {
             el.step = "any";
         }
+        if (el instanceof HTMLSelectElement)
+            watchPickerPlacement(el);
         // Tancapkan custom inline attributes bawaan array schema Anda (jika ada)
         if (cfg?.attributes && Array.isArray(cfg.attributes)) {
             cfg.attributes.forEach((attr) => {
@@ -569,6 +582,45 @@ export class InputBuilder extends Builder {
             .replace(/[^a-z0-9_-]+/g, "-")
             .replace(/^-+|-+$/g, "");
     }
+}
+/**
+ * The native picker's SIDE is chosen by the platform, but its size is readable:
+ * `getComputedStyle(select, "::picker(select)").height` is the laid-out picker box (Chrome
+ * resolves it even before it opens, because it is used to size the popup). With the real
+ * height there is no estimate left — the comparison below is the same one the platform
+ * makes (fits below, else above), so the mirrored seam lands on the right edge at every
+ * scroll position. The result is written as `data-placement`, the same contract `.menu`
+ * uses, and read by `select[data-placement="above"]` in `Input.css`.
+ */
+const watchedPickers = new WeakSet();
+function pickerHeight(select) {
+    const measured = parseFloat(getComputedStyle(select, "::picker(select)").height);
+    if (Number.isFinite(measured) && measured > 0)
+        return measured;
+    // Fallback for engines that do not resolve it: mirror `--input-popup-max-height`
+    // (4 rows + 10px) with the item padding from §5.3.
+    const style = getComputedStyle(select);
+    const size = parseFloat(style.fontSize) || 16;
+    const row = size * (1.6 + 0.62);
+    return Math.min(Math.max(select.options.length, 1) * row, size * 1.6 * 4 + 10);
+}
+function watchPickerPlacement(select) {
+    if (watchedPickers.has(select))
+        return;
+    watchedPickers.add(select);
+    const place = () => {
+        const box = select.getBoundingClientRect();
+        const spaceBelow = window.innerHeight - box.bottom;
+        select.dataset.placement = spaceBelow < pickerHeight(select) && box.top > spaceBelow ? "above" : "below";
+    };
+    // Before the platform opens it: a pointer click, the keys that open it, or focus.
+    select.addEventListener("pointerdown", place, { passive: true });
+    select.addEventListener("focus", place);
+    select.addEventListener("keydown", (event) => {
+        const key = event.key;
+        if (key === " " || key === "Enter" || key.startsWith("Arrow"))
+            place();
+    });
 }
 /**
  * Popover module.
@@ -594,7 +646,8 @@ class PopoverInputModule {
             return;
         if (!popover.hasAttribute("popover"))
             popover.setAttribute("popover", "manual");
-        const anchor = control.id ? `--anchor-${control.id}` : null;
+        // Same shared, field-scoped anchor name the CSS expects (see `.field` in Input.css).
+        const anchor = "--field-dropdown-anchor";
         if (anchor) {
             control.style.setProperty("anchor-name", anchor);
             popover.style.setProperty("position-anchor", anchor);

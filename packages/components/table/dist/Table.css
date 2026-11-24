@@ -5,10 +5,10 @@
   container-type: inline-size;
   container-name: tableParent;
   overflow-x: auto;
-  --table-primary-color: darkgoldenrod;
-  --table-accent-color: rgba(184, 135, 11, 0.384);
-  --table-border-color: var(--table-primary-color);
-  scrollbar-color: var(--table-primary-color) color-mix(in srgb, grey 10%, var(--table-primary-color) 5%);
+  --table-primary-color: var(--app-primary-color);
+  --table-accent-color: var(--app-accent-subtle);
+  --table-border-color: var(--app-border-color);
+  scrollbar-color: var(--app-primary-ui) var(--app-surface-muted);
 }
 
 .table-container {
@@ -21,18 +21,18 @@
 table.table,
 .table {
   /* --- Color Variables --- */
-  --table-primary-color: darkgoldenrod;
-  --table-accent-color: rgba(184, 135, 11, 0.384);
-  --table-border-color: var(--table-primary-color);
+  --table-primary-color: var(--app-primary-color);
+  --table-accent-color: var(--app-accent-subtle);
+  --table-border-color: var(--app-border-color);
 
-  --table-text-color: color-mix(in srgb, var(--table-accent-color) 30%, var(--table-primary-color) 45%);
-  --table-text-color-light: color-mix(in srgb, var(--table-accent-color) 20%, white 70%);
-  --table-text-color-darken: color-mix(in srgb, var(--table-accent-color) 15%, black 75%);
+  --table-text-color: var(--app-text-color);
+  --table-text-color-light: var(--app-text-heading-color);
+  --table-text-color-darken: var(--app-text-accent-color);
 
-  --table-background-color: color-mix(in srgb, var(--table-accent-color) 30%, #fff 100%);
-  --table-background-color-darken: color-mix(in srgb, var(--table-primary-color) 40%, black 40%);
-  --table-background-color-lighten: color-mix(in srgb, var(--table-accent-color) 80%, #fff 20%);
-  --table-background-color-darken-row: color-mix(in srgb, var(--table-accent-color) 40%, black 50%);
+  --table-background-color: var(--app-surface-strong);
+  --table-background-color-darken: color-mix(in srgb, var(--app-primary-color) 26%, var(--app-surface-background-color));
+  --table-background-color-lighten: color-mix(in srgb, var(--app-primary-color) 8%, var(--app-surface-strong));
+  --table-background-color-darken-row: color-mix(in srgb, var(--app-primary-color) 18%, var(--app-surface-background-color));
 
   /* sizing */
   --table-font-size: 0.95rem;
@@ -58,7 +58,7 @@ table.table,
   & td {
     border-collapse: collapse;
     padding: 0.78571429em 1em;
-    border-bottom: 1px solid color-mix(in srgb, var(--table-border-color) 30%, black 70%);
+    border-bottom: 1px solid var(--table-border-color);
     vertical-align: middle;
     text-align: left;
     display: table-cell;
@@ -87,9 +87,9 @@ table.table,
     left: var(--current-left);
     z-index: var(--z-index);
     border-right: var(--border-width) solid var(--table-border-color);
-    background: color-mix(in srgb, currentColor 20%, #f3f3f3 50%);
+    background: color-mix(in srgb, var(--app-surface-strong) 92%, var(--app-primary-color) 8%);
     font-weight: 600;
-    color: color-mix(in srgb, var(--table-text-color) 80%, white 25%);
+    color: var(--app-text-color);
     backdrop-filter: blur(6px);
     /* mix-blend-mode: lighten; */
   }
@@ -124,11 +124,11 @@ table.table,
     }
     /* --- Row banding, hover & borders --- */
     & tr:nth-child(even) {
-      background: color-mix(in srgb, var(--table-primary-color) 10%, var(--table-accent-color) 5%);
+      background: color-mix(in srgb, var(--app-primary-color) 8%, transparent);
     }
     & tr:hover {
-      color: color-mix(in srgb, var(--table-text-color) 15%, white 80%);
-      background: color-mix(in srgb, #925408 50%, black 15%);
+      color: var(--app-text-color);
+      background: color-mix(in srgb, var(--app-primary-color) 14%, transparent);
     }
     & tr {
       & td,
@@ -224,7 +224,7 @@ table.table,
               height: 1rem;
             }
             &:hover {
-              color: #1f2937;
+              color: var(--app-text-color);
             }
 
             &.edit-btn {
@@ -473,19 +473,19 @@ table.table,
       margin-bottom: 1.5rem;
       border: 1px solid var(--table-border-color);
       border-radius: 0.5rem;
-      background: color-mix(in srgb, var(--table-primary-color) 15%, var(--table-accent-color) 8%);
+      background: color-mix(in srgb, var(--app-primary-color) 12%, var(--app-surface-background-color));
       padding: 0.5rem;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+      box-shadow: var(--app-shadow-soft);
     }
 
     & tbody tr:nth-child(even) {
-      background: color-mix(in srgb, var(--table-primary-color) 10%, var(--table-accent-color) 5%);
+      background: color-mix(in srgb, var(--app-primary-color) 8%, transparent);
       /* background: var(--table-background-color) !important; */
     }
 
     & tbody tr td:hover {
-      color: color-mix(in srgb, grey 30%, var(--table-text-color) 35%);
-      background-color: color-mix(in srgb, var(--table-primary-color) 10%, var(--table-accent-color) 5%);
+      color: var(--app-text-color);
+      background-color: color-mix(in srgb, var(--app-primary-color) 10%, transparent);
     }
 
     & tbody tr td {
@@ -635,19 +635,19 @@ table.table:is(.stacked),
     margin-bottom: 1.5rem;
     border: 1px solid var(--table-border-color);
     border-radius: 0.5rem;
-    background: color-mix(in srgb, var(--table-primary-color) 15%, var(--table-accent-color) 8%);
+    background: color-mix(in srgb, var(--app-primary-color) 12%, var(--app-surface-background-color));
     padding: 0.5rem;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+    box-shadow: var(--app-shadow-soft);
   }
 
   & tbody tr:nth-child(even) {
-    background: color-mix(in srgb, var(--table-primary-color) 10%, var(--table-accent-color) 5%);
+    background: color-mix(in srgb, var(--app-primary-color) 8%, transparent);
     /* background: var(--table-background-color) !important; */
   }
 
   & tbody tr td:hover {
-    color: color-mix(in srgb, grey 30%, var(--table-text-color) 35%);
-    background-color: color-mix(in srgb, var(--table-primary-color) 10%, var(--table-accent-color) 5%);
+    color: var(--app-text-color);
+    background-color: color-mix(in srgb, var(--app-primary-color) 10%, transparent);
   }
 
   & tbody tr td {

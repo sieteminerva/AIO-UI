@@ -8,7 +8,7 @@
  */
 import type { iModuleDefinition } from "@aio-ui/module-loader";
 import type { iBuilderConfig } from "@aio-ui/core";
-import type { iBasicInputNode } from "./Input";
+import type { iInputField } from "./InputSchema";
 /** Stable ids for input sub-modules. */
 export declare const INPUT_MODULE_IDS: {
     readonly dropdown: "dropdown";
@@ -36,7 +36,7 @@ export interface iInputActionsSpec {
     }>;
     position?: "left" | "right";
     /** Field the set belongs to; absent when the scope is a group. */
-    input?: iBasicInputNode | null;
+    input?: iInputField | null;
 }
 /**
  * Optional hooks an input sub-module may implement.
@@ -52,7 +52,7 @@ export interface iInputAdapter {
      * @param host - Host configuration.
      * @returns The control, or `null` when this module does not handle the type.
      */
-    renderControl?: (field: iBasicInputNode, host: iInputModuleContext) => HTMLElement | null;
+    renderControl?: (field: iInputField, host: iInputModuleContext) => HTMLElement | null;
     /**
      * Adds markup or behaviour around a control that already exists.
      *
@@ -61,7 +61,7 @@ export interface iInputAdapter {
      * @param field - Resolved field payload.
      * @param host - Host configuration.
      */
-    decorate?: (wrapper: HTMLElement, control: HTMLElement, field: iBasicInputNode, host: iInputModuleContext) => void;
+    decorate?: (wrapper: HTMLElement, control: HTMLElement, field: iInputField, host: iInputModuleContext) => void;
     /**
      * Attaches to every input inside a subtree, including raw HTML fields that never went
      * through `InputBuilder.prepare()`.

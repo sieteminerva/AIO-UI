@@ -1,6 +1,6 @@
 {
   "name": "@aio-ui/id-address",
-  "version": "0.2.5",
+  "version": "0.2.6",
   "type": "module",
   "files": [
     "dist",
@@ -27,9 +27,9 @@
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "@aio-ui/core": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.5/aio-ui-core-0.2.5.tgz",
-    "@aio-ui/form": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.5/aio-ui-form-0.2.5.tgz",
-    "@aio-ui/http-service": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.5/aio-ui-http-service-0.2.5.tgz",
-    "@aio-ui/module-loader": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.5/aio-ui-module-loader-0.2.5.tgz"
+    "@aio-ui/core": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.6/aio-ui-core-0.2.6.tgz",
+    "@aio-ui/form": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.6/aio-ui-form-0.2.6.tgz",
+    "@aio-ui/http-service": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.6/aio-ui-http-service-0.2.6.tgz",
+    "@aio-ui/module-loader": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.6/aio-ui-module-loader-0.2.6.tgz"
   }
 }

@@ -8,7 +8,7 @@ export declare class CyberpunkTheme implements iThemeModule {
         menu: iBasicNode | null;
         footer: iBasicNode | null;
     };
-    /** Behavioural hook — the CSS does the work; this only marks the scope. */
+    /** Behavioural hook — the CSS does the work; this marks the scope and pins the mode. */
     activate(shell: HTMLElement, _elements: HTMLElement[], _context?: {
         setConfig: (builderName: keyof iBuilderRegistry, newConfig: Record<string, any>) => void;
     }): void;

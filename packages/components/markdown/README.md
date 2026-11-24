@@ -17,12 +17,12 @@ selector, or retheme it without touching markup by redeclaring a `--app-*` token
 <!-- install:begin -->
 ## Install
 
-Version — `0.2.4` (tag `v0.2.4`)
+Version — `0.2.5` (tag `v0.2.5`)
 
-    npm install https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.4/aio-ui-markdown-0.2.4.tgz
+    npm install https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.5/aio-ui-markdown-0.2.5.tgz
 
-CDN (ES module, no build step) — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.4/packages/components/markdown/dist/index.js`
-Stylesheet — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.4/packages/components/markdown/dist/Markdown.css`
+CDN (ES module, no build step) — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.5/packages/components/markdown/dist/index.js`
+Stylesheet — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.5/packages/components/markdown/dist/Markdown.css`
 <!-- install:end -->
 
 ## Payload

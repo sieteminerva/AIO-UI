@@ -13,7 +13,14 @@
   --markdown-muted-color: var(--app-text-accent-color, #6e5f51);
   --markdown-border-color: var(--app-border-color, #e2e2e6);
   --markdown-accent-color: var(--app-primary-color, #925408);
-  --markdown-inline-surface: var(--app-surface-muted, #f4eee2);
+  /* In-line code (`backticks`) is a chip ON the page, so its fill must be a visible step
+     AWAY from whatever page it lands on — not a surface token (a solid surface equals the
+     page in both modes, so the chip vanished: white on white, dark on dark). The fill and
+     the hairline are two strengths of the INK itself: ink always contrasts the page by
+     definition, so 10% of it reads as a patch on white AND on noir, and the text keeps
+     the body's contrast because the wash only moves the background 10% toward the ink. */
+  --markdown-inline-surface: color-mix(in oklab, var(--markdown-text-color, #1a140e) 14%, transparent);
+  --markdown-inline-border: color-mix(in oklab, var(--markdown-text-color, #1a140e) 32%, transparent);
   --markdown-font-size: 0.9rem;
   --markdown-line-height: 1.65;
   --markdown-inline-font-size: 0.85em;
@@ -109,6 +116,7 @@
 
   & .markdown-code {
     padding: 0.1em 0.3em;
+    border: 1px solid var(--markdown-inline-border);
     border-radius: var(--markdown-inline-radius);
     background: var(--markdown-inline-surface);
     color: var(--markdown-text-color);

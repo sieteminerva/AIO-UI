@@ -1,6 +1,6 @@
 {
   "name": "@aio-ui/product",
-  "version": "0.2.5",
+  "version": "0.2.6",
   "type": "module",
   "files": [
     "dist",
@@ -22,7 +22,7 @@
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "@aio-ui/base": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.5/aio-ui-base-0.2.5.tgz",
-    "@aio-ui/core": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.5/aio-ui-core-0.2.5.tgz"
+    "@aio-ui/base": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.6/aio-ui-base-0.2.6.tgz",
+    "@aio-ui/core": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.6/aio-ui-core-0.2.6.tgz"
   }
 }

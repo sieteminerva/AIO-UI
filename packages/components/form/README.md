@@ -16,14 +16,16 @@ retheme it without touching markup by redeclaring a `--app-*` token on an ancest
 `--form-*` token for this component only). A field's own markup belongs to `@aio-ui/input`.
 
 <!-- install:begin -->
+
 ## Install
 
-Version — `0.2.4` (tag `v0.2.4`)
+Version — `0.2.5` (tag `v0.2.5`)
 
-    npm install https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.4/aio-ui-form-0.2.4.tgz
+    npm install https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.5/aio-ui-form-0.2.5.tgz
 
-CDN (ES module, no build step) — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.4/packages/components/form/dist/index.js`
-Stylesheet — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.4/packages/components/form/dist/Form.css`
+CDN (ES module, no build step) — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.5/packages/components/form/dist/index.js`
+Stylesheet — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.5/packages/components/form/dist/Form.css`
+
 <!-- install:end -->
 
 ## Payload
@@ -34,7 +36,7 @@ Stylesheet — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.4/packages/
     id: "group-1",
     title: "Data pengiriman",
     description: "…",
-    group: [{ type: "text", id: "name", title: "Nama" }],
+    group: [{ content: { type: "text", id: "name", label: "Nama" } }],
   },
 ];
 ```
@@ -55,13 +57,17 @@ a field node is the input package's contract, not this one.
 | `group`           | group      | Fieldset children                                                           |
 | `row`             | row        | Inline children — layout, not a fieldset                                    |
 | `label`           | row        | Title rendered above the row (`@form>row>title`)                            |
-| `column`          | group, row | Column count for the layout                                                 |
+| `column`          | group, row | Line cap: how many children one line holds                                  |
 | `actions`         | group, row | Action words rendered in the corner: `search`, `copy`, `editor`, `repeater` |
 | `actionsPosition` | group, row | Where those buttons sit (`config.position` is the older spelling)           |
 
-A field's own keys (`type`, `id`, `title`, `placeholder`, `editable`, `condition`,
-`config.wide`, `config.csv`, …) belong to `@aio-ui/input`; `config.wide` (`50` = half,
-`"auto"` = full row) is only read by the form when it lays a row out.
+A field node **is** the input schema — `{ content, config }` — so its keys (`content.type`,
+`content.label`, `config.required`, `config.wide`, `config.csv`, …) belong to `@aio-ui/input`;
+this package adds only the cascade rule `condition` beside the two blocks. It reads `config.wide`
+whenever it lays a container out: a **row** always grids, a **group** only when it declares
+`column`. `wide` is a **percentage of the row** and the only way to size a field — `20`, `"40%"`,
+`0.5` (fraction), `"auto"` / `100` (the whole row); **absent means the whole row**. `column` is
+only the line cap, so the fourth child of a `column: 3` row starts the next line.
 
 <!-- part: id=config role=contract -->
 
@@ -210,8 +216,9 @@ is synchronous and never owns module I/O.
 ### Validation
 
 The rules are the fields' own DOM attributes (`required`, `pattern`, `min`, `max`, `minlength`,
-`maxlength`, `type`). Nothing is declared in `config`: the engine reads the constraints at submit
-or at `next`, so a message never appears while the user is still typing.
+`maxlength`). You declare them in the field's `config` bag; the input adapter puts them on the
+control. The engine reads the rendered attributes at submit or at `next`, so a message never
+appears while the user is still typing.
 
 ```ts
 const schema = [
@@ -219,9 +226,9 @@ const schema = [
     id: "order",
     title: "Order details",
     group: [
-      { type: "text", id: "name", title: "Name", required: true },
-      { type: "text", id: "invoice", title: "Invoice", required: true, pattern: "INV-[0-9]+" },
-      { type: "number", id: "qty", title: "Quantity", min: 1, max: 10 },
+      { content: { type: "text", id: "name", label: "Name" }, config: { required: true } },
+      { content: { type: "text", id: "invoice", label: "Invoice" }, config: { required: true, pattern: "INV-[0-9]+" } },
+      { content: { type: "number", id: "qty", label: "Quantity" }, config: { min: 1, max: 10 } },
     ],
   },
 ];
@@ -248,12 +255,14 @@ const schema = [
   {
     id: "delivery",
     group: [
-      { type: "radio", id: "pickup", name: "delivery", value: "pickup", title: "Pickup" },
-      { type: "radio", id: "courier", name: "delivery", value: "courier", title: "Courier" },
+      { content: { type: "radio", id: "pickup", name: "delivery", value: "pickup", label: "Pickup" } },
+      { content: { type: "radio", id: "courier", name: "delivery", value: "courier", label: "Courier" } },
       {
-        type: "text",
-        id: "courierNote",
-        title: "Note for the courier",
+        content: {
+          type: "text",
+          id: "courierNote",
+          label: "Note for the courier",
+        },
         condition: { field: "delivery", equals: "courier" },
       },
     ],
@@ -283,12 +292,14 @@ const schema = [
     id: "line",
     group: [
       {
-        type: "number",
-        id: "qty",
-        title: "Qty",
-        min: 0,
+        content: {
+          type: "number",
+          id: "qty",
+          label: "Qty",
+        },
         // The formula travels with the field that carries the quantity.
         config: {
+          min: 0,
           calculator: {
             id: "line-total",
             outputId: "total",
@@ -302,8 +313,8 @@ const schema = [
           },
         },
       },
-      { type: "number", id: "price", title: "Price", min: 0 },
-      { type: "number", id: "total", title: "Total", readonly: true },
+      { content: { type: "number", id: "price", label: "Price" }, config: { min: 0 } },
+      { content: { type: "number", id: "total", label: "Total" }, config: { readonly: true } },
     ],
   },
 ];
@@ -322,9 +333,17 @@ the one the user is on.
 
 ```ts
 const schema = [
-  { id: "contact", title: "Step 1 · Contact", group: [{ type: "email", id: "email", title: "Email", required: true }] },
-  { id: "address", title: "Step 2 · Address", group: [{ type: "text", id: "city", title: "City", required: true }] },
-  { id: "confirm", title: "Step 3 · Confirm", group: [{ type: "checkbox", id: "agree", title: "I agree" }] },
+  {
+    id: "contact",
+    title: "Step 1 · Contact",
+    group: [{ content: { type: "email", id: "email", label: "Email" }, config: { required: true } }],
+  },
+  {
+    id: "address",
+    title: "Step 2 · Address",
+    group: [{ content: { type: "text", id: "city", label: "City" }, config: { required: true } }],
+  },
+  { id: "confirm", title: "Step 3 · Confirm", group: [{ content: { type: "checkbox", id: "agree", label: "I agree" } }] },
 ];
 
 build("form", {

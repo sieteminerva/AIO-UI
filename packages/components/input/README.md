@@ -19,58 +19,99 @@ retheme it without touching markup by redeclaring a `--app-*` token on an ancest
 `--input-*` token for this component only). Nothing here is scoped under `.form`.
 
 <!-- install:begin -->
+
 ## Install
 
-Version — `0.2.4` (tag `v0.2.4`)
+Version — `0.2.5` (tag `v0.2.5`)
 
-    npm install https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.4/aio-ui-input-0.2.4.tgz
+    npm install https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.5/aio-ui-input-0.2.5.tgz
 
-CDN (ES module, no build step) — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.4/packages/components/input/dist/index.js`
-Stylesheet — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.4/packages/components/input/dist/input.css`
+CDN (ES module, no build step) — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.5/packages/components/input/dist/index.js`
+Stylesheet — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.5/packages/components/input/dist/input.css`
+
 <!-- install:end -->
 
 ## Payload
 
+A field is two blocks: **`content`** is what the field _is_, **`config`** is how it
+_behaves_. `InputSchema<T>` narrows both to the chosen `content.type`, so a `file` field
+never sees a picker's view word and a text field never sees `options`.
+
 ```ts
 {
-  type: "text",            // text | number | email | password | textarea | select | …
-  id: "email",
-  title: "Email address",  // `label` wins over `title` when both are present
-  placeholder: "you@example.com",
-  required: true,
+  content: {
+    type: "text",            // text | number | email | password | textarea | select | …
+    id: "email",
+    label: "Email address",
+    placeholder: "you@example.com",
+  },
+  config: {
+    required: true,
+    maxlength: 40,
+  },
 }
 ```
 
-The payload is a **single record** (`iBasicInputNode`), not a list. Useful fields:
-`value`, `rows`/`cols` (textarea), `step` (numeric increment, defaults to `"any"`),
-`multiple`, `disabled`, `readonly`, `editable` (skips the automatic read-only lock when
-action buttons are present), `info`, `position` (`top | left | right | bottom`),
-`dropdown` (forwarded to the dropdown module), `popover`, `onFileSelected`,
-`onValueChange` and `calculator` (calculation strategy for a readonly total).
+`content` — identity (`type`, `id`, `name`), readable text (`label`, `placeholder`, `info`),
+the value (`value`, `checked`) and the choices (`options`, on a chooser only).
+
+`config` — constraints (`required`, `min`/`max`/`step`, `minlength`/`maxlength`, `pattern`,
+`accept`, `inputmode`, `rows`/`cols`, `multiple`), state (`disabled`, `readonly`, `editable`,
+`loading`, `error`), layout (`position`, `useLabel`, `display`, `wide`, `attributes`,
+`view`, `shape`, `column`), callbacks (`onFileSelected`, `calculator`) and module settings
+(`actions`, `popover`, `apiUrl`, `debounceDelay`, `onSelect`, `onMultiChange`, `expanded`,
+`searchable`, `thumbnail`, `maxUpload`, `maxFileSize`, `groupUnallowed`, `csv`).
+
+`error` is the host's validation state: `true` marks the field invalid, a string marks it
+invalid **and** prints the message as a `@field>error` line just above `info`. `loading` puts
+the `loading` class on the control — it replaced the old `className: "loading"` shortcut.
+
+A field has exactly one spelling on each side. `label` is the caption — the old `title`
+alias is gone, and choices live in `content.options` only (a `config.options` bag is no
+longer read). `@aio-ui/form` sends this same shape: its adapter splits a flat form node into
+`content` and `config` before it calls `create()`.
+
+`config.view` is the one visual-variant word, typed per field type: `toggle` (checkbox/
+radio), `select`/`datalist` (dropdown), `icon`/`image`/`media`/`swatch` (picker) and
+`list`/`thumbnails` (file). It replaced the old `style` (dropdown/toggle) and the uploader's
+own `view`.
+
+### Width — `wide` is a percentage of the row
+
+`config.wide` is the **only** width knob: `20`, `"40%"`, `0.5` (fraction) or `"auto"` / `100`
+(the whole row); absent means the whole row. The old `span` key is **gone** — a column span
+cannot express `20 / 40 / 40`, so the form lays a 100-unit grid out from the percentage
+(`@aio-ui/form` owns the placement; see its README).
+
+### Action set — `config.actions`
+
+`config.actions` takes names (`"editor"` = edit+save, `"repeater"` = add+delete) or objects
+`{ type, label?, icon?, onClick, … }`. Two flags belong to the **`delete`** of a repeater:
+
+| Flag           | Default | Meaning                                                                                                                            |
+| -------------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `removable`    | `true`  | Whether the **source** row (index 0, the one Add was first clicked from) may be deleted. `false` locks it; clones are always free. |
+| `hideOnSource` | `false` | Hide the source's delete button (a look; `removable: false` is what locks it).                                                     |
+
+The old `minItems` / `atMin` pair is gone: counting rows could not say "keep index 0".
 
 ### Choices — one door for every chooser
 
-`options` and `multiple` belong to the **field**, next to `type` and `value`. One shape feeds
-`select`, `dropdown`, `picker` and a `radio`/`checkbox` group, and `multiple` means the same
-thing in all four:
+`options` is content and `multiple` is a constraint, so they sit on opposite sides of the
+same field: `content.options` feeds `select`, `dropdown`, `picker` and a `radio`/`checkbox`
+group, and `config.multiple` means the same thing in all four:
 
 ```ts
-{ type: "select", id: "size", options: ["S", "M", "L"] }
-{ type: "dropdown", id: "city", options: [{ value: "jkt", label: "Jakarta" }], multiple: true }
-{ type: "picker", id: "icon", options: ["gear", "user"], multiple: true }
-{ type: "radio", id: "ship", name: "ship", options: ["pickup", "courier"], value: "courier" }
+{ content: { type: "select", id: "size", options: ["S", "M", "L"] } }
+{ content: { type: "dropdown", id: "city", options: [{ value: "jkt", label: "Jakarta" }] }, config: { multiple: true } }
+{ content: { type: "picker", id: "icon", options: ["gear", "user"] }, config: { multiple: true } }
+{ content: { type: "radio", id: "ship", name: "ship", options: ["pickup", "courier"], value: "courier" } }
 ```
 
 A `radio`/`checkbox` field **with `options`** renders a group — one control per option, all
 on the field's `name`, `radio` exclusive and `checkbox` taking several — and the group's
 caption is not a `<label for>`, because there is no single control. Without `options` the
 field is the single control it always was.
-
-`config.options` is still lifted onto the field for an older sheet, but it is deprecated:
-write the list on the field.
-
-`useLabel`, `view`, `thumbnail`, `maxUpload`, `maxFileSize`, `groupUnallowed` and
-`createEventListener` are consumed by the file module.
 
 <!-- part: id=config role=contract -->
 
@@ -109,16 +150,18 @@ flat on `config`; the choices and the multiplicity stay on the field:
 
 ```ts
 {
-  type: "picker",
-  id: "featureIcon",
-  title: "Pilih ikon",
-  value: "gear",
-  // The choices are the field's own `options` (`{ value, label }` plus `icon` / `src` /
-  // `color`), exactly the shape a select uses. A string option is `{ value, label }`.
-  options: ["gear", "user", "checkmark"],
-  multiple: false,    // several cells at once
+  content: {
+    type: "picker",
+    id: "featureIcon",
+    label: "Pilih ikon",
+    value: "gear",
+    // The choices are the field's own `options` (`{ value, label }` plus `icon` / `src` /
+    // `color`), exactly the shape a select uses. A string option is `{ value, label }`.
+    options: ["gear", "user", "checkmark"],
+    multiple: false,    // several cells at once
+  },
   config: {
-    style: "icon",      // icon | image | media | swatch — what a cell draws
+    view: "icon",       // icon | image | media | swatch — what a cell draws
     column: 6,          // grid tracks, the same word a row layout uses
     expanded: false,    // true = print the grid inline, no trigger/popover
     searchable: true,   // adds the filter box
@@ -126,7 +169,7 @@ flat on `config`; the choices and the multiplicity stay on the field:
 }
 ```
 
-`style` decides what a cell draws: `icon` (a global `i.icon.<name>` class, the option value
+`view` decides what a cell draws: `icon` (a global `i.icon.<name>` class, the option value
 by default), `image` / `media` (`src`), `swatch` (`color`). The value reaches the form through
 a hidden input named after the field, joined with commas when `multiple` is on.
 
@@ -178,25 +221,27 @@ pins the sentences.
 
 ## Nodes
 
-| Key               | Default tag | Class / note                                  |
-| ----------------- | ----------- | --------------------------------------------- |
-| `@field`          | `div`       | `field`                                       |
-| `@field>label`    | `label`     | linked with `for` to the control id           |
-| `@field>input`    | `input`     | text-like types                               |
-| `@field>textarea` | `textarea`  | `type: "textarea"`                            |
-| `@field>select`   | `select`    | plus `@field>select>option`                   |
-| `@field>checkbox` | `input`     | `type=checkbox`, wrapped in `.switch.control` |
-| `@field>radio`    | `input`     | `type=radio`                                  |
-| `@field>toggle`   | `input`     | same switch shell, opt in with `config.style` |
-| `@field>file`     | `input`     | `type=file`                                   |
-| `@field>info`     | `small`     | `info`                                        |
+| Key               | Default tag | Class / note                                           |
+| ----------------- | ----------- | ------------------------------------------------------ |
+| `@field`          | `div`       | `field`                                                |
+| `@field>label`    | `label`     | linked with `for` to the control id                    |
+| `@field>input`    | `input`     | text-like types                                        |
+| `@field>textarea` | `textarea`  | `type: "textarea"`                                     |
+| `@field>select`   | `select`    | plus `@field>select>option`                            |
+| `@field>checkbox` | `input`     | `type=checkbox`, wrapped in `.switch.control`          |
+| `@field>radio`    | `input`     | `type=radio`                                           |
+| `@field>toggle`   | `input`     | same switch shell, opt in with `config.view: "toggle"` |
+| `@field>file`     | `input`     | `type=file`                                            |
+| `@field>error`    | `small`     | `error`, from a string `config.error`                  |
+| `@field>info`     | `small`     | `info`                                                 |
 
 <!-- part: id=tokens role=contract -->
 
 ### Structure
 
-The control element follows `type`; `label`, the control and the `small.info` line are appended
-only when the payload supplies them, and action buttons add `div.controls`.
+The control element follows `type`; `label`, the control, the `small.error` line and the
+`small.info` line are appended only when the payload supplies them, and action buttons add
+`div.controls`.
 
 ```html
 <div class="field">
@@ -206,6 +251,22 @@ only when the payload supplies them, and action buttons add `div.controls`.
 ```
 
 ## Tokens
+
+### Popup placement
+
+`select::picker(select)`, `.dropdown > .menu` and the picker panel share one surface that is
+placed by **CSS Anchor Positioning** and shown by the **Native Popover API** — so they escape
+any `overflow: hidden` ancestor and follow the field on scroll and resize without a JS
+position calculator. The anchor is the field-scoped name `--field-dropdown-anchor`
+(`anchor-scope` on `.field`), never a generated id.
+
+`position-try-fallbacks: --flip-top, flip-block` opens the surface **upward** when there is
+no room below; a `@position-try` rule may only carry placing/sizing declarations, so the
+mirror is geometric. Anchor positioning and the fallback need Chromium 125+ / Firefox 132+ /
+Safari 18+; older engines keep the absolute fallback the surface already declares. The
+trigger's own border does not mirror the flip (it is the anchor, not an anchored element, so
+it cannot query the chosen fallback); the menu overlaps the trigger by 1px, so the seam
+reads as one line in both directions.
 
 Every token is declared **once**, on `:root, [data-theme]`, in `input.css`. `[data-theme]`
 is required: a theme puts `--app-*` on the shell element, and a custom property is

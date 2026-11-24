@@ -1,22 +1,23 @@
 :root {
-  --toast-shadow-light: 0 1px 2px 0 rgba(34, 36, 38, 0.15);
-  --toast-shadow-modal: 0px 10px 30px rgba(0, 0, 0, 0.3);
+  --toast-shadow-light: var(--app-shadow-soft);
+  --toast-shadow-modal: var(--app-shadow-elevated);
   --toast-border-radius: 4px;
   --toast-font-stack: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 
-  /* Semantic UI Pure Colors Re-mapped */
-  --toast-info-bg: #f8ffff;
-  --toast-info-text: #276f86;
-  --toast-info-border: #a9d5de;
-  --toast-success-bg: #fcfff5;
-  --toast-success-text: #2b9b2d;
-  --toast-success-border: #a3c293;
-  --toast-error-bg: #fff6f6;
-  --toast-error-text: #9f3a38;
-  --toast-error-border: #e0b4b4;
-  --toast-warning-bg: #fffaf3;
-  --toast-warning-text: #573a08;
-  --toast-warning-border: #c9ba9b;
+  /* Status variants mapped onto the app status tokens: the fill is the wash, the solid is
+     the border/icon, and the body ink stays on `--app-text-color` so it clears 4.5:1. */
+  --toast-info-bg: var(--app-status-info-fill);
+  --toast-info-text: var(--app-text-color);
+  --toast-info-border: var(--app-status-info);
+  --toast-success-bg: var(--app-status-success-fill);
+  --toast-success-text: var(--app-text-color);
+  --toast-success-border: var(--app-status-success);
+  --toast-error-bg: var(--app-status-error-fill);
+  --toast-error-text: var(--app-text-color);
+  --toast-error-border: var(--app-status-error);
+  --toast-warning-bg: var(--app-status-warning-fill);
+  --toast-warning-text: var(--app-text-color);
+  --toast-warning-border: var(--app-status-warning);
 }
 
 /* ==========================================================================
@@ -28,10 +29,10 @@
   position: relative;
   min-height: 1em;
   margin: 1em 0em;
-  background: #f8f8f9;
+  background: var(--app-surface-strong);
   padding: 1em 1.5em;
   line-height: 1.4285em;
-  color: rgba(0, 0, 0, 0.87);
+  color: var(--app-text-color);
   transition:
     opacity 0.1s ease,
     color 0.1s ease,
@@ -41,7 +42,7 @@
   box-shadow: var(--toast-shadow-light);
   font-family: var(--toast-font-stack);
   font-size: 1rem;
-  border: 1px solid rgba(34, 36, 38, 0.15);
+  border: 1px solid var(--app-border-color);
   display: flex;
   align-items: flex-start;
   gap: 1rem;
@@ -79,7 +80,7 @@
   height: 24px;
   padding: 1px;
   justify-content: center;
-  color: red;
+  color: var(--app-status-error);
 }
 
 .toast .close.icon:hover {

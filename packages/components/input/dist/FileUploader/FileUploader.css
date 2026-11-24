@@ -46,11 +46,10 @@
   & .item {
     &:is(.info):hover,
     &:is(.info):hover .message {
-      /* background-color: color-mix(in srgb, var(--input-primary-color) 80%, rgb(245, 244, 244, 0.8)); */
-      color: color-mix(in srgb, var(--input-accent-color) 35%, rgb(7, 7, 7));
+      color: color-mix(in srgb, var(--input-accent-color) 35%, var(--app-text-color));
     }
     &:is(.info):hover i.icon {
-      background: color-mix(in srgb, var(--input-primary-color) 100%, black 50%);
+      background: color-mix(in srgb, var(--input-primary-color) 100%, var(--app-text-heading-color) 50%);
     }
     &:has(.unallowed) .filesize {
       background-color: var(--input-file-unallowed-color) !important;
@@ -160,11 +159,11 @@
     }
 
     &:last-child:hover i.icon {
-      background: color-mix(in srgb, var(--input-accent-color) 100%, black 10%);
+      background: color-mix(in srgb, var(--input-accent-color) 100%, var(--app-text-heading-color) 10%);
     }
 
     &:last-child:hover .label {
-      background: color-mix(in srgb, var(--input-accent-color) 100%, black 20%);
+      background: color-mix(in srgb, var(--input-accent-color) 100%, var(--app-text-heading-color) 20%);
     }
 
     &:last-child:hover .close i {
@@ -345,7 +344,7 @@
       font-weight: 700;
       padding: 2px 0.5em;
       margin-bottom: 0.25em;
-      background: color-mix(in srgb, var(--input-accent-color) 80%, black 10%);
+      background: color-mix(in srgb, var(--input-accent-color) 80%, var(--app-text-heading-color) 10%);
     }
     & .message {
       display: flex;
@@ -395,7 +394,7 @@
       border-color: var(--input-border-color);
       border-style: double;
       border-width: 1px;
-      box-shadow: 2px 2px 5px -3px rgba(59, 61, 71, 1) inset !important;
+      box-shadow: 2px 2px 5px -3px color-mix(in srgb, var(--app-text-color) 60%, transparent) inset !important;
       transition: 100ms;
       color: transparent !important;
     }
@@ -466,7 +465,7 @@
       transition: 30ms;
       align-self: center;
       outline: none;
-      color: color-mix(in srgb, var(--input-text-color) 30%, black 30%);
+      color: color-mix(in srgb, var(--input-text-color) 30%, var(--app-text-color) 30%);
       border: 2px solid var(--input-accent-color);
       background-color: color-mix(in srgb, var(--input-primary-color) 50%, var(--input-accent-color) 5%);
       box-shadow: 0 2px 3px 0 color-mix(in srgb, var(--input-accent-color) 30%, var(--input-primary-color) 45%);

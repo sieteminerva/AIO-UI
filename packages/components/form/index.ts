@@ -5,6 +5,8 @@ export type {
   iFormConfig, iFormMessage, iFormMessageCategory, iFormMessageCompose, iFormMessageField,
   iFormMessageParams, iFormMessages, iFormMessageStyle,
 } from "./Form";
+// The schema shapes, so a consumer's field list is checked instead of `any`.
+export type { FormField, FormNode, iFormGroupNode, iFormNodeLayout, iFormRowNode } from "./FormSchema";
 
 /**
  * The adapter stack **as data** — the root stays free of the implementations.

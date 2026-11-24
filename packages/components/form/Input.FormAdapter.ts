@@ -1,10 +1,32 @@
 import type { iModuleDefinition } from "@aio-ui/module-loader";
 import type { iFormModuleContext } from "./FormModuleTypes";
 import { FORM_MODULE_IDS } from "./FormModuleTypes";
+import type { FormField } from "./FormSchema";
 import { InputBuilder } from "@aio-ui/input";
 import { inputFilesOf, mountControls, mountInputModules } from "@aio-ui/input";
 import { INPUT_MODULE_IDS } from "@aio-ui/input";
 import { reportMissing } from "@aio-ui/input";
+
+/** The two blocks `InputBuilder.create()` takes, read from one field node. */
+interface iFieldSchema {
+  content: Record<string, any>;
+  config: Record<string, any>;
+}
+
+/**
+ * Reads the two blocks of one field node.
+ *
+ * The node already carries `content` / `config` — it is the input schema, unchanged — so the
+ * adapter splits nothing and renames nothing. The form's own keys (`condition`, `then`) sit
+ * beside the blocks on the same node and are never handed over: the cascade engine has read
+ * them before a field is rendered.
+ *
+ * @param input - Field node from the form schema.
+ * @returns `{ content, config }`, both defaulted to an empty bag.
+ */
+function blocksOf(input: FormField): iFieldSchema {
+  return { content: input.content ?? {}, config: input.config ?? {} };
+}
 
 /**
  * Field rendering adapter.
@@ -44,15 +66,29 @@ class InputFormAdapter {
   /**
    * Builds one field from the input schema.
    *
-   * @param input - Basic input node or raw descriptor.
+   * @param input - Field node from the form schema (identity and text, behaviour keys,
+   *   and the form-owned `condition` / `then`).
    * @param formId - Id of the owning form, forwarded to the field markup.
    * @returns The rendered field element.
    *
-   * @summary The host's builder config comes along, so the field inherits `themeId`,
-   * `namespace` and `emit` instead of starting blank — and so does its adapter set.
+   * @summary The node is split into the two blocks `InputBuilder.create()` takes, so the
+   * input layer never has to guess which key is data and which is behaviour. The host's
+   * builder config comes along, so the field inherits `themeId`, `namespace` and `emit`
+   * instead of starting blank — and so does its adapter set.
    */
-  public renderField(input: any, formId: string): HTMLElement {
-    return new InputBuilder({ ...this.#context.builderConfig, formId, modules: this.#preset } as any).create({ content: input });
+  public renderField(input: FormField, formId: string): HTMLElement {
+    const { content, config } = blocksOf(input);
+    // `selectors` is builder config, not field config: each field is its own builder
+    // instance, so a per-field skin is declared on the node and lifted here. `resolveConfig`
+    // merges it key by key, so a field that overrides one label keeps every other default.
+    const { selectors, ...fieldConfig } = config;
+
+    return new InputBuilder({
+      ...this.#context.builderConfig,
+      formId,
+      modules: this.#preset,
+      ...(selectors ? { selectors } : {}),
+    } as any).create({ content, config: fieldConfig } as any);
   }
 
   /**

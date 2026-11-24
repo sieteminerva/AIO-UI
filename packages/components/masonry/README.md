@@ -13,12 +13,12 @@ selector, or retheme it without touching markup by redeclaring a `--app-*` token
 <!-- install:begin -->
 ## Install
 
-Version — `0.2.4` (tag `v0.2.4`)
+Version — `0.2.5` (tag `v0.2.5`)
 
-    npm install https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.4/aio-ui-masonry-0.2.4.tgz
+    npm install https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.5/aio-ui-masonry-0.2.5.tgz
 
-CDN (ES module, no build step) — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.4/packages/components/masonry/dist/index.js`
-Stylesheet — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.4/packages/components/masonry/dist/Masonry.css`
+CDN (ES module, no build step) — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.5/packages/components/masonry/dist/index.js`
+Stylesheet — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.5/packages/components/masonry/dist/Masonry.css`
 <!-- install:end -->
 
 ## Payload
@@ -215,17 +215,22 @@ the class structure it targets; `--init-columns` in it is an older draft — the
     margin: 1.5rem auto;
     width: 40px;
     height: 40px;
-    background-image: var(--app-spinner-content); /_ Injected from global application root variables _/
-    background-repeat: no-repeat;
-    background-position: center;
-    background-size: contain;
+    /* Mask, not an image: alpha carries the shape, the token carries the colour. */
+    mask-image: var(--masonry-spinner);
+    mask-repeat: no-repeat;
+    mask-position: center;
+    mask-size: contain;
+    mask-mode: alpha;
+    background-color: var(--app-primary-color);
     transition: opacity 0.2s ease, visibility 0.2s ease;
+    opacity: 1;
+    visibility: visible;
 
-    &.hidden {
+    &:is(.hidden) {
       opacity: 0;
       visibility: hidden;
-      height: 0;
       margin: 0 auto;
+      height: 0;
     }
 
   }

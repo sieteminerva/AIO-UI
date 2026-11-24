@@ -11,7 +11,8 @@
  * duplicates the group rather than a single input. `<form>` is deliberately not a scope:
  * a control set that can delete or clone the whole form is a footgun, not a feature.
  */
-import type { iActionType, iBasicInputNode, iInputActionContext, iInputActionDefinition } from "../Input";
+import type { iActionType, iInputActionContext, iInputActionDefinition } from "../Input";
+import type { iInputField } from "../InputSchema";
 import type { iBuilderConfig, iElementProperty } from "@aio-ui/core";
 import { Builder } from "@aio-ui/base";
 import type { iModuleDefinition } from "@aio-ui/module-loader";
@@ -21,7 +22,7 @@ export type InputControlsElementType = "@controls" | "@controls>add" | "@control
 export interface iInputControlsConfig {
     position?: "left" | "right";
     actions: iInputActionDefinition[];
-    input?: iBasicInputNode | null;
+    input?: iInputField | null;
     /** Element the set acts on: a `.field` wrapper or a `<fieldset>` group. */
     scope?: HTMLElement | null;
     /** Legacy name for `scope`; still honoured so old call sites keep working. */
@@ -48,6 +49,20 @@ export declare class InputControlsBuilder extends Builder<InputControlsElementTy
      */
     initialize(controls: HTMLElement, _payload?: any): void;
     private bindButton;
+    /**
+     * Swaps one half of the edit/save pair for the other.
+     *
+     * @param currentButton - The button just pressed.
+     * @param controls - The set it belongs to.
+     * @param actionType - The side to show next.
+     * @param actions - Declared action set.
+     *
+     * @summary The pair is **one button that changes identity**: the idle half is detached and
+     * rebuilt on demand. Hiding it in place would leave a `display: none` node that the sheet's
+     * `:first-child`/`:last-child` border rules still count, so the visible button would take
+     * a square edge meant for its absent neighbour; a detached node also carries a stale
+     * `__payload` that a duplicate copies by index.
+     */
     protected toggleEdit(currentButton: HTMLButtonElement, controls: HTMLElement, actionType: iActionType, actions: iInputActionDefinition[]): void;
     protected emit(action: iActionType, context: iInputActionContext): void;
     protected copy(payload: string | HTMLElement | Object): Promise<void>;
@@ -59,7 +74,22 @@ export declare class InputControlsBuilder extends Builder<InputControlsElementTy
      * @returns The clone.
      */
     protected duplicate(scope: HTMLElement, actions: iInputActionDefinition[]): HTMLElement;
-    protected delete(scope: HTMLElement): boolean;
+    /**
+     * Removes a scope, unless it is the source of a repeater or the set is fixed.
+     *
+     * @param scope - Field or group.
+     * @param action - The `delete` definition, which may set `removable`.
+     * @returns `false` when the scope is a form, the repeater's source, or a fixed set.
+     *
+     * @summary Never a whole form: a control set edits records, it does not delete the
+     * container the visitor is filling in.
+     *
+     * A **repeater** (a set that declares `add` too) has one **source** instance — the row
+     * the first Add was clicked from, index 0 of the family. It carries the record the clones
+     * copy, so `removable: false` locks it. Clones are always free; the flag never applies to
+     * them. Outside a repeater the old remove-the-scope behaviour stays.
+     */
+    protected delete(scope: HTMLElement, action?: iInputActionDefinition): boolean;
     /** Saving: every control returns to the lock state it had before `edit`, then reports. */
     protected update(scope: HTMLElement): boolean;
     /**

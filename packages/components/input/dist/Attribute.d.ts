@@ -1,14 +1,16 @@
-import { type InputType, type iBasicInputNode } from "./Input";
+import { type InputType } from "./Input";
+import type { iInputField } from "./InputSchema";
 export interface iAttributeProperty {
     name: string;
     type: InputType;
     label?: string;
     value: string | number | boolean;
     config?: {
-        style?: string;
-        options?: any;
+        view?: string;
         position?: "left" | "right";
     };
+    /** Choices an editor control offers, when it is a chooser (`content.options`). */
+    options?: Array<string>;
 }
 export type InputAttributeType = "value" | "label" | "name" | "placeholder" | "required" | "disabled" | "min" | "max" | "minlength" | "maxlength" | "step" | "rows" | "cols" | "accept" | "multiple" | "checked" | "orient" | "pattern" | "form" | "range" | "data-max-upload" | "data-max-file-size" | "data-group-unallowed" | "data-thumbnail" | "data-view" | "view" | "thumbnail";
 export declare class InputAttributeBuilder {
@@ -24,7 +26,9 @@ export declare class InputAttributeBuilder {
     }>;
     static attributes: Partial<Record<InputAttributeType, iAttributeProperty>>;
     static resolveMinMaxType(inputType: InputType, key: InputAttributeType): "number" | "date" | "time" | "datetime-local" | null;
-    static buildSchemaForType(inputType: InputType, header?: iBasicInputNode): Record<string, any>;
+    static buildSchemaForType(inputType: InputType, header?: Partial<iInputField> & {
+        label?: string;
+    }): Record<string, any>;
     /**
      * Checks a field schema against the registry matrix for its type.
      *
@@ -34,7 +38,7 @@ export declare class InputAttributeBuilder {
      * allowed — one bad key next to one good key passed silently.
      *
      * @param type - Field type the schema claims.
-     * @param schema - Field schema (`{ type, id, title, placeholder, config, … }`).
+     * @param schema - Field schema (`{ type, id, label, placeholder, config, … }`).
      * @param customAllowed - Extra keys this project allows beyond the matrix.
      * @returns Accepted/rejected/structural keys; `ok` is true when nothing was rejected.
      */
@@ -54,6 +58,8 @@ export declare class InputAttributeBuilder {
      * @returns `true` when every non-structural key is valid for the type.
      */
     static scanUnallowedAttrs(type: InputType, config: Record<string, any>, customAllowed?: string[]): boolean;
-    static create(headers: Array<iBasicInputNode>): Record<string, any>[];
+    static create(headers: Array<Partial<iInputField> & {
+        label?: string;
+    }>): Record<string, any>[];
 }
 //# sourceMappingURL=Attribute.d.ts.map

@@ -10791,7 +10791,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 			const box = () => menu.parentElement;
 			input.setAttribute("aria-haspopup", "listbox");
 			input.setAttribute("aria-expanded", "false");
-			const anchorName = `--anchor-${input.id || this.listId}`;
+			const anchorName = "--field-dropdown-anchor";
 			(input.closest(".dropdown") || input).style.setProperty("anchor-name", anchorName);
 			menu.style.setProperty("position-anchor", anchorName);
 			let hideTimer = null;
@@ -10810,6 +10810,28 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 				document.addEventListener("mousedown", onOutsideDown, { signal: this.abortController.signal });
 				outsideBound = true;
 			};
+			const place = () => {
+				const own = box()?.getBoundingClientRect();
+				if (!own) return;
+				menu.dataset.placement = "below";
+				const need = menu.offsetHeight;
+				const spaceBelow = window.innerHeight - own.bottom;
+				menu.dataset.placement = spaceBelow < need && own.top > spaceBelow ? "above" : "below";
+			};
+			let placeBound = false;
+			const bindPlacement = () => {
+				if (placeBound) return;
+				window.addEventListener("scroll", place, {
+					capture: true,
+					passive: true,
+					signal: this.abortController.signal
+				});
+				window.addEventListener("resize", place, {
+					passive: true,
+					signal: this.abortController.signal
+				});
+				placeBound = true;
+			};
 			const open = () => {
 				if (hideTimer) {
 					window.clearTimeout(hideTimer);
@@ -10817,7 +10839,9 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 				}
 				bindBoxClick();
 				bindOutside();
+				bindPlacement();
 				if (!menu.matches(":popover-open")) menu.showPopover();
+				place();
 				requestAnimationFrame(() => menu.classList.add("visible"));
 				input.setAttribute("aria-expanded", "true");
 			};
@@ -11101,10 +11125,10 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 			});
 			const payload = {
 				id: field.id,
-				title: field.title,
+				title: field.label,
 				placeholder: field.placeholder,
 				options,
-				multiple: field.multiple === true,
+				multiple: cfg.multiple === true,
 				value: field.value,
 				name: field.name || field.id,
 				attributes: cfg.attributes || []
@@ -11119,7 +11143,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 				config: {
 					apiUrl: cfg.apiUrl || null,
 					debounceDelay: cfg.debounceDelay,
-					style: cfg.style || "select",
+					style: cfg.view || "select",
 					min: cfg.min,
 					max: cfg.max,
 					onSelect: cfg.onSelect,
@@ -12755,8 +12779,9 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 				scope,
 				input
 			};
+			if (scope) _assertClassBrand(_InputControlsBuilder_brand$1, this, _markRepeat$1).call(this, scope, actions);
 			for (const action of actions) {
-				const Templatekey = `@controls>${action.type}`;
+				const Templatekey = `@controls>${action.type === "remove" ? "delete" : action.type}`;
 				const button = this.render(Templatekey, {
 					scope,
 					parentElement: scope,
@@ -12806,7 +12831,12 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 				this.bindButton(button, controls, actions);
 			});
 			if (actions.some((action) => action.type === "search")) _assertClassBrand(_InputControlsBuilder_brand$1, this, _bindEnterToSearch$1).call(this, scope, controls);
-			if (actions.some((action) => action.type === "edit")) _assertClassBrand(_InputControlsBuilder_brand$1, this, _togglePair$1).call(this, controls, "edit");
+			_assertClassBrand(_InputControlsBuilder_brand$1, this, _openOnEdit$1).call(this, controls, actions);
+			_assertClassBrand(_InputControlsBuilder_brand$1, this, _markRepeat$1).call(this, scope, actions);
+			if (actions.some((action) => action.type === "delete" || action.type === "remove")) _assertClassBrand(_InputControlsBuilder_brand$1, this, _refreshDelete$1).call(this, _assertClassBrand(_InputControlsBuilder_brand$1, this, _family$1).call(this, scope), {
+				scope,
+				controls
+			});
 		}
 		bindButton(button, controls, actions) {
 			button.onclick = async (event) => {
@@ -12847,7 +12877,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 						context.result = this.search(scope);
 						break;
 					case "delete":
-					case "remove": context.result = this.delete(scope);
+					case "remove": context.result = this.delete(scope, action);
 				}
 				this.emit(action.type, context);
 				if (action.type === "search") _assertClassBrand(_InputControlsBuilder_brand$1, this, _setSearching$1).call(this, scope, true);
@@ -12859,23 +12889,27 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 				}
 			};
 		}
+		/**
+		* Swaps one half of the edit/save pair for the other.
+		*
+		* @param currentButton - The button just pressed.
+		* @param controls - The set it belongs to.
+		* @param actionType - The side to show next.
+		* @param actions - Declared action set.
+		*
+		* @summary The pair is **one button that changes identity**: the idle half is detached and
+		* rebuilt on demand. Hiding it in place would leave a `display: none` node that the sheet's
+		* `:first-child`/`:last-child` border rules still count, so the visible button would take
+		* a square edge meant for its absent neighbour; a detached node also carries a stale
+		* `__payload` that a duplicate copies by index.
+		*/
 		toggleEdit(currentButton, controls, actionType, actions) {
-			if ((actionType === "edit" || actionType === "save") && actions.some((action) => action.type === actionType) && _assertClassBrand(_InputControlsBuilder_brand$1, this, _togglePair$1).call(this, controls, actionType)) return;
-			const payload = currentButton.__payload;
-			const editAction = {
-				type: actionType,
-				label: actionType,
-				onClick: () => {}
-			};
-			const editButton = this.render(`@controls>${actionType}`, {
-				scope: payload.scope ?? payload.parentElement,
-				parentElement: payload.scope ?? payload.parentElement,
-				input: payload.input,
-				action: editAction
-			});
-			if (!editButton) return;
-			currentButton.replaceWith(editButton);
-			this.bindButton(editButton, controls, actions);
+			const next = _assertClassBrand(_InputControlsBuilder_brand$1, this, _pairButton$1).call(this, controls, actions, actionType);
+			if (!next) return;
+			const hadFocus = document.activeElement === currentButton;
+			currentButton.replaceWith(next);
+			this.bindButton(next, controls, actions);
+			if (hadFocus) next.focus();
 		}
 		emit(action, context) {
 			this.config.emit?.("elementChanged", {
@@ -12969,11 +13003,39 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 				bubbles: true,
 				detail: { scope: clone }
 			}));
+			_assertClassBrand(_InputControlsBuilder_brand$1, this, _refreshDelete$1).call(this, _assertClassBrand(_InputControlsBuilder_brand$1, this, _family$1).call(this, clone));
 			return clone;
 		}
-		delete(scope) {
+		/**
+		* Removes a scope, unless it is the source of a repeater or the set is fixed.
+		*
+		* @param scope - Field or group.
+		* @param action - The `delete` definition, which may set `removable`.
+		* @returns `false` when the scope is a form, the repeater's source, or a fixed set.
+		*
+		* @summary Never a whole form: a control set edits records, it does not delete the
+		* container the visitor is filling in.
+		*
+		* A **repeater** (a set that declares `add` too) has one **source** instance — the row
+		* the first Add was clicked from, index 0 of the family. It carries the record the clones
+		* copy, so `removable: false` locks it. Clones are always free; the flag never applies to
+		* them. Outside a repeater the old remove-the-scope behaviour stays.
+		*/
+		delete(scope, action) {
 			if (scope.tagName === "FORM") return false;
+			const repeat = Boolean(scope.dataset.repeat);
+			const family = repeat ? _assertClassBrand(_InputControlsBuilder_brand$1, this, _family$1).call(this, scope) : [scope];
+			if (repeat) {
+				const isSource = family[0] === scope;
+				const removable = action?.removable ?? true;
+				if (isSource && !removable) {
+					console.warn("[input-controls] delete refused: this repeater's source row declares removable: false.");
+					_assertClassBrand(_InputControlsBuilder_brand$1, this, _refreshDelete$1).call(this, family);
+					return false;
+				}
+			}
 			scope.remove();
+			if (repeat) _assertClassBrand(_InputControlsBuilder_brand$1, this, _refreshDelete$1).call(this, family);
 			return true;
 		}
 		/** Saving: every control returns to the lock state it had before `edit`, then reports. */
@@ -13058,20 +13120,53 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 		}
 	};
 	/**
-	* Makes exactly one of `edit`/`save` available.
+	* Renders one side of an edit/save pair from the set's own declarations.
 	*
-	* @param controls - The controls node holding the pair.
-	* @param actionType - Which side to enable.
-	* @returns `true` when both buttons exist and the switch happened; `false` when the set
-	*   has only one side, so the caller must swap the button itself.
+	* @param controls - The set the button will join.
+	* @param actions - Declared action set (already normalised).
+	* @param type - Which side to build.
+	* @returns The button, or `undefined` when its selector is missing.
+	*
+	* @summary A declared action keeps its label, icon and `onClick`; only when the set never
+	* declared the other side (`actions: ["edit"]`) is a no-op stand-in built, so the swap
+	* cycle still has somewhere to go.
 	*/
-	function _togglePair$1(controls, actionType) {
-		const edit = controls.querySelector("button.edit");
+	function _pairButton$1(controls, actions, type) {
+		const payload = controls.__payload ?? {};
+		const action = actions.find((entry) => entry.type === type) ?? {
+			type,
+			label: type,
+			onClick: () => {}
+		};
+		return this.render(`@controls>${type}`, {
+			scope: payload.scope ?? payload.parentElement ?? null,
+			parentElement: payload.scope ?? payload.parentElement ?? null,
+			input: payload.input ?? null,
+			action
+		});
+	}
+	/**
+	* Leaves the pair on its `edit` half.
+	*
+	* @param controls - The set just initialised: a fresh one, or a duplicate's copy.
+	* @param actions - Declared action set.
+	*
+	* @summary A duplicate clones the DOM as it stands, so a copy taken while the source was
+	* being edited arrives with `save` only; this puts `edit` back instead of leaving the copy
+	* permanently in edit mode. A set that never declared `edit` keeps whatever it has.
+	*/
+	function _openOnEdit$1(controls, actions) {
+		if (!actions.some((action) => action.type === "edit")) return;
 		const save = controls.querySelector("button.save");
-		if (!edit || !save) return false;
-		edit.disabled = actionType !== "edit";
-		save.disabled = actionType !== "save";
-		return true;
+		if (controls.querySelector("button.edit")) {
+			save?.remove();
+			return;
+		}
+		const rebuilt = _assertClassBrand(_InputControlsBuilder_brand$1, this, _pairButton$1).call(this, controls, actions, "edit");
+		if (!rebuilt) return;
+		if (save) save.replaceWith(rebuilt);
+		else controls.appendChild(rebuilt);
+		this.bindButton(rebuilt, controls, actions);
 	}
 	/**
 	* Applies the edit policy for a scope.
@@ -13197,6 +13292,79 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 		let index = 1;
 		while (taken.has(index)) index += 1;
 		return index;
+	}
+	/**
+	* Marks a repeater's scope so its siblings can be counted.
+	*
+	* @param scope - Field or group the set acts on.
+	* @param actions - Declared action set.
+	*
+	* @summary Only a set with **both** `add` and `delete` is a repeater: `add` is what makes
+	* a second item possible, so it is what makes a floor meaningful.
+	*
+	* The mark is a stable signature (`tag.class…`), never a per-instance token: siblings
+	* rendered from one schema must land in one family, and a clone copies the attribute
+	* with `cloneNode`. It is written in `prepare`, before the host adds its state classes
+	* (`actions`, `locked`), so every sibling computes the same value. Two repeaters of the
+	* same shape directly under one parent are therefore one family — the alternative would
+	* be a schema-level group key, which the input layer does not have.
+	*/
+	function _markRepeat$1(scope, actions) {
+		if (!(actions.some((action) => action.type === "add") && actions.some((action) => action.type === "delete" || action.type === "remove")) || scope.dataset.repeat) return;
+		scope.dataset.repeat = `${scope.tagName.toLowerCase()}.${[...scope.classList].sort().join(".")}`;
+	}
+	/**
+	* The scopes that share a repeater with `scope`, in document order.
+	*
+	* @param scope - A member of the family.
+	* @returns The siblings carrying the same `data-repeat`, or `[scope]` when it is not a
+	*   repeater.
+	*/
+	function _family$1(scope) {
+		const key = scope.dataset.repeat;
+		const owner = scope.parentElement;
+		if (!key || !owner) return [scope];
+		return Array.from(owner.children).filter((child) => child instanceof HTMLElement && child.dataset.repeat === key);
+	}
+	/** The delete button of a scope's own set, when it declares one. */
+	function _deleteButton$1(scope) {
+		return scope.querySelector(":scope > .controls > button.delete, :scope > .controls > button.remove");
+	}
+	/**
+	* The delete button of a set that is still being built.
+	*
+	* @param controls - The `.controls` node `initialize` is wiring.
+	* @returns Its delete/remove button, or `null`.
+	*
+	* @summary `initialize` runs before the host appends the node, so the first state pass
+	* cannot find the button under the scope yet.
+	*/
+	function _pendingDelete$1(controls) {
+		return controls.querySelector(":scope > button.delete, :scope > button.remove");
+	}
+	/**
+	* Makes every delete button of a family agree on which rows may go.
+	*
+	* @param members - Scopes of the family; a just-removed one may still be listed.
+	* @param pending - The set `initialize` is wiring, not yet inside its scope.
+	*
+	* @summary A guard that only the clicked button knows about is not a guard: every
+	* sibling has to learn the same rule. The **source** (first in the family) is always
+	* blocked; clones follow the action's `removable`, and `hideOnSource` takes the source's
+	* button out of the row instead of leaving it greyed out.
+	*/
+	function _refreshDelete$1(members, pending) {
+		const family = members.filter((member) => member.isConnected);
+		for (const member of family) {
+			const button = _assertClassBrand(_InputControlsBuilder_brand$1, this, _deleteButton$1).call(this, member) ?? (pending && member === pending.scope ? _assertClassBrand(_InputControlsBuilder_brand$1, this, _pendingDelete$1).call(this, pending.controls) : null);
+			if (!button) continue;
+			const action = button.__payload?.action;
+			const isSource = Boolean(member.dataset.repeat) && member === family[0];
+			const locked = isSource && action?.removable === false;
+			button.hidden = isSource && (action?.hideOnSource ?? false);
+			button.disabled = locked;
+			button.title = locked ? "The source row is locked (removable: false)" : `Click to ${action?.label ?? "delete"}`;
+		}
 	}
 	var _context$7 = /* @__PURE__ */ new WeakMap();
 	/**
@@ -13495,7 +13663,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 			_classPrivateFieldSet2(_panel$1, this, panel);
 			if (!this.config.expanded && _classPrivateFieldGet2(_trigger$1, this)) {
 				panel.setAttribute("popover", "manual");
-				const anchor = `--picker-${Math.random().toString(36).slice(2, 8)}`;
+				const anchor = "--field-dropdown-anchor";
 				_classPrivateFieldGet2(_trigger$1, this).style.setProperty("anchor-name", anchor);
 				panel.style.setProperty("position-anchor", anchor);
 			}
@@ -13701,7 +13869,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 	}
 	/** Field-level settings and the builder key each one feeds. */
 	var SETTINGS$1 = [
-		["style", "kind"],
+		["view", "kind"],
 		["column", "columns"],
 		["expanded", "expanded"],
 		["searchable", "searchable"],
@@ -13718,7 +13886,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 	* Settings live flat on the field's `config`, next to `options`, using the same vocabulary
 	* the rest of the schema already speaks:
 	*
-	*   `style`     — `icon | image | media | swatch` (the cell visual)
+	*   `view`      — `icon | image | media | swatch` (the cell visual)
 	*   `column`    — grid track count, like a row's `column`
 	*   `expanded`  — print the grid inline instead of behind the trigger's popover
 	*   `searchable`, `placeholder`
@@ -13746,12 +13914,12 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 			}
 			const payload = {
 				id: field.id,
-				title: field.label ?? field.title,
+				title: field.label,
 				name: field.name || field.id,
 				placeholder: field.placeholder,
 				value: field.value,
 				options: field.options ?? [],
-				multiple: field.multiple === true
+				multiple: cfg.multiple === true
 			};
 			return new PickerBuilder$1({
 				...settings,
@@ -14068,8 +14236,8 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 	* 1. **which selector renders the control** — `@field>textarea`, `@field>checkbox`, …
 	* 2. **which DOM attributes the type accepts** — the matrix, so an attribute that means
 	*    nothing for a type is dropped instead of silently landing in the markup;
-	* 3. **which keys are structural** — consumed by the builder (`title` is the legacy label
-	*    alias, `group`/`condition` belong to the form engine), so they never become attributes.
+	* 3. **which keys are structural** — consumed by the builder (`group`/`condition` belong
+	*    to the form engine), so they never become attributes.
 	*
 	* Adding a field type is one row here plus, when it needs custom markup, one selector.
 	*/
@@ -14091,16 +14259,15 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 	/**
 	* Keys the builder itself consumes and must never forward to the DOM.
 	*
-	* `title` is the important one: it is **not** the HTML `title` attribute. It is the legacy
-	* shorthand for `[id, name, label, placeholder]` and is read as label text
-	* (`input.label ?? input.title`). Renaming it would break every consumer schema, so it
-	* stays an alias and stays out of the attribute matrix.
+	* Identity and text (`id`, `name`, `label`, `placeholder`, `info`) live in `content`;
+	* every behaviour key lives in the `config` bag and is listed here so the attribute scan
+	* classifies it before the matrix is asked. A key that no reader owns is simply absent —
+	* the scan then reports it as rejected, which is the signal a stale consumer needs.
 	*/
 	var INPUT_STRUCTURAL_KEYS$1 = [
 		"type",
 		"id",
 		"name",
-		"title",
 		"label",
 		"value",
 		"config",
@@ -14117,15 +14284,31 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 		"legend",
 		"description",
 		"infos",
-		"class",
-		"className",
 		"position",
 		"useLabel",
 		"display",
-		"picker",
 		"editable",
 		"actions",
 		"popover",
+		"view",
+		"shape",
+		"error",
+		"loading",
+		"calculator",
+		"onFileSelected",
+		"attributes",
+		"thumbnail",
+		"maxUpload",
+		"maxFileSize",
+		"groupUnallowed",
+		"expanded",
+		"searchable",
+		"apiUrl",
+		"debounceDelay",
+		"onSelect",
+		"onMultiChange",
+		"dropdown",
+		"csv",
 		"options",
 		"multiple",
 		"steps",
@@ -14165,6 +14348,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 				"min",
 				"max",
 				"step",
+				"inputmode",
 				"value"
 			]
 		},
@@ -14262,6 +14446,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 				"maxlength",
 				"minlength",
 				"pattern",
+				"inputmode",
 				"value"
 			]
 		},
@@ -14281,6 +14466,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 				...TEXTUAL$1,
 				"maxlength",
 				"pattern",
+				"inputmode",
 				"value"
 			]
 		},
@@ -14290,6 +14476,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 				...TEXTUAL$1,
 				"maxlength",
 				"pattern",
+				"inputmode",
 				"value"
 			]
 		},
@@ -14596,7 +14783,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 			_defineProperty(this, "builderId", "input");
 			_defineProperty(this, "name", "input");
 			_defineProperty(this, "stylesheet", "./input.css");
-			_classPrivateFieldInitSpec(this, _input$1, {});
+			_classPrivateFieldInitSpec(this, _input$1, { type: "text" });
 			_classPrivateFieldInitSpec(this, _loader$3, void 0);
 			_classPrivateFieldInitSpec(this, _live$1, void 0);
 			_classPrivateFieldInitSpec(this, _declared$1, void 0);
@@ -14631,6 +14818,10 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 						tagName: "input",
 						type: "file"
 					},
+					"@field>error": {
+						tagName: "small",
+						className: "error"
+					},
 					"@field>info": {
 						tagName: "small",
 						className: "info"
@@ -14652,58 +14843,49 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 			}
 			_classPrivateFieldSet2(_declared$1, this, new Set(_classPrivateFieldGet2(_loader$3, this)?.ids() ?? []));
 		}
-		resolvePayload(inputObj) {
-			const defaultPayload = {
+		resolvePayload(schema) {
+			const inputObj = schema ?? {};
+			const elementId = this._sanitizeId(inputObj.id || `input-${Math.random().toString(36).slice(2, 10)}`);
+			const payload = {
 				type: "text",
-				id: this._sanitizeId(inputObj.id || inputObj.title || `input-${Math.random().toString(36).slice(2, 10)}`),
-				title: "",
 				placeholder: "",
-				rows: 3,
-				multiple: false,
-				disabled: false,
-				readonly: false,
-				required: false,
-				checked: false,
+				...inputObj,
+				id: elementId,
+				label: inputObj.label ?? "",
 				config: {
 					attributes: [],
-					style: "",
-					className: "",
 					useLabel: true,
-					display: void 0,
-					createEventListener: false,
-					popover: void 0,
-					actions: void 0
+					...inputObj.config ?? {}
 				}
 			};
-			const inputPayload = {
-				...defaultPayload,
-				...inputObj,
-				config: {
-					...defaultPayload.config,
-					...inputObj.config
-				}
-			};
-			if (!inputPayload.placeholder && inputPayload.title) inputPayload.placeholder = inputPayload.type === "select" || inputPayload.type === "textarea" ? `Pilih ${inputPayload.title}` : `Isi ${inputPayload.title}`;
-			const rawOptions = inputObj.options ?? inputObj.config?.options;
-			if (Array.isArray(rawOptions)) inputPayload.options = rawOptions.map((option) => typeof option === "string" ? {
+			if (Array.isArray(payload.options)) payload.options = payload.options.map((option) => typeof option === "string" ? {
 				value: option,
 				label: option
 			} : option);
-			return inputPayload;
+			if (!payload.placeholder && payload.label) payload.placeholder = payload.type === "select" || payload.type === "textarea" ? `Pilih ${payload.label}` : `Isi ${payload.label}`;
+			return payload;
+		}
+		create(schema) {
+			const content = schema?.content;
+			const config = schema?.config;
+			return super.create({ content: {
+				...content,
+				config
+			} });
 		}
 		prepare(inputObj, _config) {
 			_classPrivateFieldSet2(_input$1, this, this.resolvePayload(inputObj));
-			const cfg = _classPrivateFieldGet2(_input$1, this).config;
+			const cfg = _classPrivateFieldGet2(_input$1, this).config ?? {};
 			const definition = inputTypeOf$1(_classPrivateFieldGet2(_input$1, this).type);
 			_classPrivateFieldSet2(_modules$1, this, [..._classPrivateFieldGet2(_loader$3, this)?.resolveAll(_get_moduleContext$1.call(_assertClassBrand(_InputBuilder_brand$1, this))) ?? [], ..._classPrivateFieldGet2(_live$1, this)]);
-			if (cfg?.actions && !_assertClassBrand(_InputBuilder_brand$1, this, _offers$1).call(this, "renderActions")) _assertClassBrand(_InputBuilder_brand$1, this, _missing$1).call(this, "actions", INPUT_MODULE_IDS$1.controls, "@aio-ui/input/controls (inputControlsInputModule)", "the declared action buttons would never render.", "error");
+			if (cfg.actions && !_assertClassBrand(_InputBuilder_brand$1, this, _offers$1).call(this, "renderActions")) _assertClassBrand(_InputBuilder_brand$1, this, _missing$1).call(this, "actions", INPUT_MODULE_IDS$1.controls, "@aio-ui/input/controls (inputControlsInputModule)", "the declared action buttons would never render.", "error");
 			const wrapper = this.render("@field", _classPrivateFieldGet2(_input$1, this));
 			const choices = Array.isArray(_classPrivateFieldGet2(_input$1, this).options) ? _classPrivateFieldGet2(_input$1, this).options : [];
 			const isChoiceGroup = (_classPrivateFieldGet2(_input$1, this).type === "radio" || _classPrivateFieldGet2(_input$1, this).type === "checkbox") && choices.length > 0;
-			const labelText = _classPrivateFieldGet2(_input$1, this).label ?? _classPrivateFieldGet2(_input$1, this).title;
+			const labelText = _classPrivateFieldGet2(_input$1, this).label;
 			const isToggle = _classPrivateFieldGet2(_input$1, this).type === "checkbox" || _classPrivateFieldGet2(_input$1, this).type === "radio";
-			const labelPosition = _classPrivateFieldGet2(_input$1, this).config?.position ?? _classPrivateFieldGet2(_input$1, this).position ?? (isToggle ? "right" : void 0);
-			const label = labelText && _classPrivateFieldGet2(_input$1, this).config?.useLabel !== false ? this.render("@field>label", {
+			const labelPosition = cfg.position ?? (isToggle ? "right" : void 0);
+			const label = labelText && cfg.useLabel !== false ? this.render("@field>label", {
 				text: labelText,
 				position: isChoiceGroup ? "top" : labelPosition,
 				id: isChoiceGroup ? void 0 : _classPrivateFieldGet2(_input$1, this).id
@@ -14718,7 +14900,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 					break;
 				}
 			}
-			const controlKey = !isChoiceGroup && _classPrivateFieldGet2(_input$1, this).type === "radio" && _assertClassBrand(_InputBuilder_brand$1, this, _isToggleStyle$1).call(this) ? "@field>toggle" : definition.control;
+			const controlKey = !isChoiceGroup && _classPrivateFieldGet2(_input$1, this).type === "radio" && _assertClassBrand(_InputBuilder_brand$1, this, _isToggleView$1).call(this) ? "@field>toggle" : definition.control;
 			if (!isChoiceGroup && !inputEl && controlKey) inputEl = this.render(controlKey, _classPrivateFieldGet2(_input$1, this));
 			if (!isChoiceGroup && !inputEl) {
 				inputEl = controlKey ? this.render("@field>input", _classPrivateFieldGet2(_input$1, this)) : this.render("@field>select", _classPrivateFieldGet2(_input$1, this));
@@ -14727,19 +14909,23 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 					const module = INPUT_MODULE_IDS$1[type] ?? type;
 					_assertClassBrand(_InputBuilder_brand$1, this, _missing$1).call(this, type, module, `@aio-ui/input/${module} (${module}InputModule)`, "the field falls back to a native select over the same options.");
 				}
-				if ((_classPrivateFieldGet2(_input$1, this).type === "text" || _classPrivateFieldGet2(_input$1, this).type === "number") && cfg?.className === "loading") inputEl.classList.add("loading");
 			}
 			if (_classPrivateFieldGet2(_input$1, this).type === "file" && !_assertClassBrand(_InputBuilder_brand$1, this, _offers$1).call(this, "getFiles")) _assertClassBrand(_InputBuilder_brand$1, this, _missing$1).call(this, "file", INPUT_MODULE_IDS$1.file, "@aio-ui/input/file-uploader (fileUploaderInputModule)", "the field is a plain file input: no preview, and onFileSelected never fires.");
 			if (inputEl) this.applyAttributes(inputEl, _classPrivateFieldGet2(_input$1, this));
-			if (_classPrivateFieldGet2(_input$1, this).editable === true || cfg?.editable === true) wrapper.setAttribute("data-editable", "true");
-			if (_classPrivateFieldGet2(_input$1, this).info) {
-				const info = this.render("@field>info", _classPrivateFieldGet2(_input$1, this).info);
-				wrapper.appendChild(info);
-			}
+			if (inputEl && cfg.loading === true) inputEl.classList.add("loading");
+			if (cfg.editable === true) wrapper.setAttribute("data-editable", "true");
 			if (inputEl) inputEl.__outer ? wrapper.appendChild(inputEl.__outer) : wrapper.appendChild(inputEl);
 			if (inputEl) {
 				for (const module of _classPrivateFieldGet2(_modules$1, this)) module.decorate?.(wrapper, inputEl, _classPrivateFieldGet2(_input$1, this), _get_moduleContext$1.call(_assertClassBrand(_InputBuilder_brand$1, this)));
-				if (cfg?.popover && _get_popoverMissing$1.call(_assertClassBrand(_InputBuilder_brand$1, this))) _assertClassBrand(_InputBuilder_brand$1, this, _missing$1).call(this, "popover", INPUT_MODULE_IDS$1.popover, "@aio-ui/input (popoverInputModule)", "config.popover is ignored and no anchor attaches to the control.");
+				if (cfg.popover && _get_popoverMissing$1.call(_assertClassBrand(_InputBuilder_brand$1, this))) _assertClassBrand(_InputBuilder_brand$1, this, _missing$1).call(this, "popover", INPUT_MODULE_IDS$1.popover, "@aio-ui/input (popoverInputModule)", "config.popover is ignored and no anchor attaches to the control.");
+			}
+			if (cfg.error) {
+				wrapper.setAttribute("data-error", typeof cfg.error === "string" ? cfg.error : "true");
+				if (typeof cfg.error === "string") wrapper.appendChild(this.render("@field>error", cfg.error));
+			}
+			if (_classPrivateFieldGet2(_input$1, this).info) {
+				const info = this.render("@field>info", _classPrivateFieldGet2(_input$1, this).info);
+				wrapper.appendChild(info);
 			}
 			return wrapper;
 		}
@@ -14748,8 +14934,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 			const cfg = payload.config;
 			switch (typeKey) {
 				case "@field":
-					if (payload?.className && payload?.className !== "loading") el.classList.add(...payload.className.split(" ").filter(Boolean));
-					if (payload?.display) el.setAttribute("data-display", payload.display ?? cfg.display);
+					if (cfg.display) el.setAttribute("data-display", cfg.display);
 					break;
 				case "@field>label":
 					if (payload.id) el.setAttribute("for", payload.id);
@@ -14768,10 +14953,9 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 					el.autocomplete = "off";
 					break;
 				case "@field>textarea":
-					el.rows = payload.rows;
+					el.rows = cfg.rows ?? 3;
 					break;
 				case "@field>select":
-					if (cfg?.className === "loading") el.classList.add("loading");
 					const placeholderOpt = document.createElement("option");
 					placeholderOpt.value = "";
 					placeholderOpt.textContent = payload.placeholder || "Pilih Opsi...";
@@ -14805,9 +14989,9 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 				case "@field>file":
 					el.type = "file";
 					el.setAttribute("data-uploader", "");
-					el.setAttribute("data-view", `${cfg?.view || "list"}`);
-					el.setAttribute("data-render-thumbnail", `${cfg?.thumbnail ?? "true"}`);
-					if (cfg?.csv === true) el.setAttribute("data-uploader-csv", "");
+					el.setAttribute("data-view", `${cfg.view || "list"}`);
+					el.setAttribute("data-render-thumbnail", `${cfg.thumbnail ?? "true"}`);
+					if (cfg.csv === true) el.setAttribute("data-uploader-csv", "");
 					break;
 				case "@field>select>option":
 					const option = el;
@@ -14815,14 +14999,18 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 					option.textContent = payload.option.label;
 					if (payload.parentValue !== void 0 && String(payload.option.value) === String(payload.parentValue)) option.setAttribute("selected", "selected");
 					break;
+				case "@field>error":
+					el.textContent = payload;
+					break;
 				case "@field>info": el.textContent = payload;
 			}
 		}
 		initialize(_el, _payload, _context) {
-			if (_classPrivateFieldGet2(_input$1, this).config?.popover) {
-				if (_classPrivateFieldGet2(_input$1, this).config?.popover instanceof HTMLElement) _el?.appendChild(_classPrivateFieldGet2(_input$1, this).config?.popover);
-				else if (typeof _classPrivateFieldGet2(_input$1, this).config?.popover === "string") _el?.insertAdjacentHTML("beforeend", _classPrivateFieldGet2(_input$1, this).config?.popover);
-			}
+			const popover = _classPrivateFieldGet2(_input$1, this).config?.popover;
+			if (!popover || !_el) return;
+			if (_el.querySelector("[popover]")) return;
+			if (popover instanceof HTMLElement) _el.appendChild(popover);
+			else if (typeof popover === "string") _el.insertAdjacentHTML("beforeend", popover);
 		}
 		/**
 		* A `radio`/`checkbox` field given `options` is a group: one control per option, all on
@@ -14834,6 +15022,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 		*/
 		renderChoices(wrapper) {
 			const field = _classPrivateFieldGet2(_input$1, this);
+			const cfg = field.config ?? {};
 			const name = String(field.name || field.id);
 			const chosen = this.choiceValues();
 			wrapper.classList.add("choice");
@@ -14851,8 +15040,8 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 				input.name = name;
 				input.value = value;
 				input.checked = chosen.includes(value);
-				if (field.disabled) input.disabled = true;
-				if (field.required) input.required = true;
+				if (cfg.disabled) input.disabled = true;
+				if (cfg.required) input.required = true;
 				const item = document.createElement("label");
 				item.className = "choice-item";
 				item.setAttribute("for", id);
@@ -14868,7 +15057,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 			const value = _classPrivateFieldGet2(_input$1, this).value;
 			if (Array.isArray(value)) return value.map(String);
 			if (typeof value === "string") return value ? value.split(",").map((entry) => entry.trim()).filter(Boolean) : [];
-			if (value === void 0 || value === null || value === "") return [];
+			if (value === void 0 || value === null) return [];
 			return [String(value)];
 		}
 		/**
@@ -14906,6 +15095,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 				el.setAttribute(key, String(value));
 			}
 			if (el instanceof HTMLInputElement && el.type === "number" && !el.getAttribute("step")) el.step = "any";
+			if (el instanceof HTMLSelectElement) watchPickerPlacement$1(el);
 			if (cfg?.attributes && Array.isArray(cfg.attributes)) cfg.attributes.forEach((attr) => {
 				if (attr?.name) {
 					if (typeof attr.value === "function" && attr.name.startsWith("on")) el[attr.name] = attr.value;
@@ -14968,9 +15158,15 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 			emit: this.config.emit
 		});
 	}
-	/** Whether this field asked for the switch shell (`config.style: "toggle"`). */
-	function _isToggleStyle$1() {
-		return String(_classPrivateFieldGet2(_input$1, this).config?.style ?? "").toLowerCase() === "toggle";
+	/**
+	* Whether this field asked for the switch shell (`config.view: "toggle"`).
+	*
+	* `view` replaced the old `style` because `style` collided with `HTMLElement.style` and
+	* meant a different thing per type.
+	*/
+	function _isToggleView$1() {
+		const bag = _classPrivateFieldGet2(_input$1, this).config ?? {};
+		return String(bag.view ?? "").toLowerCase() === "toggle";
 	}
 	_defineProperty(InputBuilder$1, "contract", {
 		schema: {
@@ -14980,7 +15176,6 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 				type: { t: "string" },
 				id: { t: "string" },
 				name: { t: "string" },
-				title: { t: "string" },
 				label: { t: "string" },
 				placeholder: { t: "string" },
 				required: { t: "boolean" }
@@ -14989,10 +15184,43 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 		example: {
 			type: "text",
 			id: "email",
-			title: "Email address",
+			label: "Email address",
 			placeholder: "you@example.com"
 		}
 	});
+	/**
+	* The native picker's SIDE is chosen by the platform, but its size is readable:
+	* `getComputedStyle(select, "::picker(select)").height` is the laid-out picker box (Chrome
+	* resolves it even before it opens, because it is used to size the popup). With the real
+	* height there is no estimate left — the comparison below is the same one the platform
+	* makes (fits below, else above), so the mirrored seam lands on the right edge at every
+	* scroll position. The result is written as `data-placement`, the same contract `.menu`
+	* uses, and read by `select[data-placement="above"]` in `Input.css`.
+	*/
+	var watchedPickers$1 = /* @__PURE__ */ new WeakSet();
+	function pickerHeight$1(select) {
+		const measured = parseFloat(getComputedStyle(select, "::picker(select)").height);
+		if (Number.isFinite(measured) && measured > 0) return measured;
+		const style = getComputedStyle(select);
+		const size = parseFloat(style.fontSize) || 16;
+		const row = size * 2.22;
+		return Math.min(Math.max(select.options.length, 1) * row, size * 1.6 * 4 + 10);
+	}
+	function watchPickerPlacement$1(select) {
+		if (watchedPickers$1.has(select)) return;
+		watchedPickers$1.add(select);
+		const place = () => {
+			const box = select.getBoundingClientRect();
+			const spaceBelow = window.innerHeight - box.bottom;
+			select.dataset.placement = spaceBelow < pickerHeight$1(select) && box.top > spaceBelow ? "above" : "below";
+		};
+		select.addEventListener("pointerdown", place, { passive: true });
+		select.addEventListener("focus", place);
+		select.addEventListener("keydown", (event) => {
+			const key = event.key;
+			if (key === " " || key === "Enter" || key.startsWith("Arrow")) place();
+		});
+	}
 	var _PopoverInputModule_brand$1 = /* @__PURE__ */ new WeakSet();
 	/**
 	* Popover module.
@@ -15018,11 +15246,9 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 			const popover = typeof target === "string" ? _assertClassBrand(_PopoverInputModule_brand$1, this, _parse$1).call(this, target) : target;
 			if (!popover) return;
 			if (!popover.hasAttribute("popover")) popover.setAttribute("popover", "manual");
-			const anchor = control.id ? `--anchor-${control.id}` : null;
-			if (anchor) {
-				control.style.setProperty("anchor-name", anchor);
-				popover.style.setProperty("position-anchor", anchor);
-			}
+			const anchor = "--field-dropdown-anchor";
+			control.style.setProperty("anchor-name", anchor);
+			popover.style.setProperty("position-anchor", anchor);
 			control.insertAdjacentElement("afterend", popover);
 			control.addEventListener("focus", () => {
 				if (typeof HTMLElement.prototype.showPopover === "function") popover.showPopover();
@@ -15085,6 +15311,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 			}
 		}
 		static buildSchemaForType(inputType, header = {}) {
+			const raw = header;
 			const merged = {
 				...baseInputConfig$1,
 				...this.inputs[inputType],
@@ -15113,20 +15340,22 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 					}
 				}
 				if (inputType === "file") delete schema.value;
-				const elementId = `${header.id ? header.id.toLowerCase().replace(/[\s_]+/g, "-") : header.title ? header.title.toLowerCase().replace(/[\s_]+/g, "-") : inputType}-${schemaDef.name}`;
-				let attrConfig = {
+				const elementId = `${raw.id ? raw.id.toLowerCase().replace(/[\s_]+/g, "-") : raw.label ? raw.label.toLowerCase().replace(/[\s_]+/g, "-") : inputType}-${schemaDef.name}`;
+				const attrConfig = {
 					type: attrType,
-					title: schemaDef.name,
-					label: schemaDef.label,
 					id: elementId,
-					value,
-					...schemaDef.config ? { config: schemaDef.config } : {}
+					label: schemaDef.label ?? schemaDef.name,
+					value
 				};
+				if (schemaDef.options) attrConfig.options = schemaDef.options;
 				schema[key] = {
 					input: attrType,
 					value,
 					...schemaDef.config ? { config: schemaDef.config } : {},
-					template: new InputBuilder$1().create({ content: attrConfig })
+					template: new InputBuilder$1().create({
+						content: attrConfig,
+						config: schemaDef.config
+					})
 				};
 			}
 			return schema;
@@ -15140,7 +15369,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 		* allowed — one bad key next to one good key passed silently.
 		*
 		* @param type - Field type the schema claims.
-		* @param schema - Field schema (`{ type, id, title, placeholder, config, … }`).
+		* @param schema - Field schema (`{ type, id, label, placeholder, config, … }`).
 		* @param customAllowed - Extra keys this project allows beyond the matrix.
 		* @returns Accepted/rejected/structural keys; `ok` is true when nothing was rejected.
 		*/
@@ -15273,7 +15502,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 			name: "required",
 			type: "checkbox",
 			config: {
-				style: "toggle",
+				view: "toggle",
 				position: "left"
 			},
 			value: false
@@ -15282,7 +15511,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 			name: "disabled",
 			type: "checkbox",
 			config: {
-				style: "toggle",
+				view: "toggle",
 				position: "left"
 			},
 			value: false
@@ -15331,7 +15560,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 			name: "multiple",
 			type: "checkbox",
 			config: {
-				style: "toggle",
+				view: "toggle",
 				position: "left"
 			},
 			value: false
@@ -15340,7 +15569,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 			name: "checked",
 			type: "checkbox",
 			config: {
-				style: "toggle",
+				view: "toggle",
 				position: "left"
 			},
 			value: false
@@ -15371,14 +15600,14 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 			name: "data-view",
 			type: "select",
 			value: "thumbnails",
-			config: { options: ["thumbnails", "list"] }
+			options: ["thumbnails", "list"]
 		},
 		["data-group-unallowed"]: {
 			name: "data-group-unallowed",
 			label: "group unallowed",
 			type: "checkbox",
 			config: {
-				style: "toggle",
+				view: "toggle",
 				position: "left"
 			},
 			value: false
@@ -15388,7 +15617,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 			label: "display thumbnail",
 			type: "checkbox",
 			config: {
-				style: "toggle",
+				view: "toggle",
 				position: "left"
 			},
 			value: false
@@ -15426,6 +15655,23 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 	];
 	INPUT_MODULE_DEFINITIONS$1.map((definition) => String(definition.id));
 	// packages/components/form/Input.FormAdapter.ts
+	/**
+	* Reads the two blocks of one field node.
+	*
+	* The node already carries `content` / `config` — it is the input schema, unchanged — so the
+	* adapter splits nothing and renames nothing. The form's own keys (`condition`, `then`) sit
+	* beside the blocks on the same node and are never handed over: the cascade engine has read
+	* them before a field is rendered.
+	*
+	* @param input - Field node from the form schema.
+	* @returns `{ content, config }`, both defaulted to an empty bag.
+	*/
+	function blocksOf$1(input) {
+		return {
+			content: input.content ?? {},
+			config: input.config ?? {}
+		};
+	}
 	var _context$5 = /* @__PURE__ */ new WeakMap();
 	var _InputFormAdapter_brand$1 = /* @__PURE__ */ new WeakSet();
 	/**
@@ -15450,19 +15696,28 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 		/**
 		* Builds one field from the input schema.
 		*
-		* @param input - Basic input node or raw descriptor.
+		* @param input - Field node from the form schema (identity and text, behaviour keys,
+		*   and the form-owned `condition` / `then`).
 		* @param formId - Id of the owning form, forwarded to the field markup.
 		* @returns The rendered field element.
 		*
-		* @summary The host's builder config comes along, so the field inherits `themeId`,
-		* `namespace` and `emit` instead of starting blank — and so does its adapter set.
+		* @summary The node is split into the two blocks `InputBuilder.create()` takes, so the
+		* input layer never has to guess which key is data and which is behaviour. The host's
+		* builder config comes along, so the field inherits `themeId`, `namespace` and `emit`
+		* instead of starting blank — and so does its adapter set.
 		*/
 		renderField(input, formId) {
+			const { content, config } = blocksOf$1(input);
+			const { selectors, ...fieldConfig } = config;
 			return new InputBuilder$1({
 				..._classPrivateFieldGet2(_context$5, this).builderConfig,
 				formId,
-				modules: _get_preset$1.call(_assertClassBrand(_InputFormAdapter_brand$1, this))
-			}).create({ content: input });
+				modules: _get_preset$1.call(_assertClassBrand(_InputFormAdapter_brand$1, this)),
+				...selectors ? { selectors } : {}
+			}).create({
+				content,
+				config: fieldConfig
+			});
 		}
 		/**
 		* Covers file inputs that bypass `InputBuilder` (raw HTML fields).
@@ -15584,7 +15839,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 		load: (context) => new InputFormAdapter$1(context)
 	};
 	/**
-	* Clamps the column count into a usable range.
+	* Clamps the column cap into a usable range.
 	*
 	* @param value - `column` from the schema; anything non-numeric falls back to the default.
 	* @returns Integer between 1 and {@link MAX_ROW_COLUMNS}.
@@ -15596,62 +15851,118 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 		return Math.min(16, Math.max(1, Math.round(numeric)));
 	}
 	/**
-	* Turns a `wide` hint into a column span.
+	* Reads the line cap a container declares.
 	*
-	* Three spellings are accepted, because a schema read from a sheet writes whatever the
-	* author typed:
+	* A row always caps its lines (it falls back to {@link DEFAULT_ROW_COLUMNS}); a group only
+	* does when it says `column`, because a plain fieldset is a one-column stack by design.
 	*
-	* - `"auto"` → the whole row (a textarea or an address line wants the full width);
-	* - `0 < n ≤ 1` → fraction of the row (`0.5` = half);
-	* - anything else numeric → percentage (`50` = half, `33` = a third).
-	*
-	* @param wide - Width hint from `config.wide` (or the node's own `wide`).
-	* @param columns - Column count of the row this child lives in.
-	* @returns Span between 1 and `columns`.
+	* @param node - Row or group schema node.
+	* @returns The cap, or `0` when the node declares no grid.
 	*/
-	function spanOf$1(wide, columns) {
-		const total = Math.max(1, Math.round(columns));
-		if (wide === "auto" || wide === "full") return total;
-		const numeric = typeof wide === "number" ? wide : Number(wide);
-		if (!Number.isFinite(numeric) || numeric <= 0) return 1;
-		const ratio = numeric <= 1 ? numeric : numeric / 100;
-		return Math.min(total, Math.max(1, Math.round(ratio * total)));
+	function declaredColumns$1(node) {
+		const column = node?.column;
+		if (column === void 0 || column === null || column === "") return 0;
+		return columnsOf$1(column);
 	}
 	/**
-	* Applies a span to a child element.
+	* Turns a `wide` hint into a percentage of the row.
+	*
+	* Four spellings are accepted, because a schema read from a sheet writes whatever the
+	* author typed: `"auto"` / `"full"` (the whole row), a fraction (`0.5` = 50), a percentage
+	* (`20`, `100`), and the same percentage with a sign (`"40%"`). Anything unreadable means
+	* the whole row, which is also what "not written" means.
+	*
+	* @param wide - Width hint from `config.wide` (or the node's own `wide`).
+	* @returns Integer between 1 and {@link WIDE_FULL}.
+	*/
+	function wideOf$1(wide) {
+		if (wide === "auto" || wide === "full") return 100;
+		const numeric = typeof wide === "number" ? wide : Number(String(wide ?? "").replace("%", "").trim());
+		if (!Number.isFinite(numeric) || numeric <= 0) return 100;
+		const percent = numeric <= 1 ? numeric * 100 : numeric;
+		return Math.min(100, Math.max(1, Math.round(percent)));
+	}
+	/**
+	* Resolves the share a container child asked for.
+	*
+	* @param child - Row child node.
+	* @returns Percentage of the row between 1 and {@link WIDE_FULL}.
+	*/
+	function childWideOf$1(child) {
+		if (!child || typeof child !== "object") return 100;
+		const node = child;
+		return wideOf$1(node.config?.wide ?? node.wide);
+	}
+	/**
+	* Applies a share to a child element.
 	*
 	* `data-span` is the human/debug marker; `--span` carries the number, because CSS cannot
 	* read an attribute inside `grid-column: span …`.
 	*
 	* @param element - Child element of a row container.
-	* @param span - Column span, already clamped by {@link spanOf}.
+	* @param wide - Percentage of the row, already resolved by {@link wideOf}.
 	*/
-	function applyRowSpan$1(element, span) {
-		element.dataset.span = String(span);
-		element.style.setProperty("--span", String(span));
+	function applyRowSpan$1(element, wide) {
+		element.dataset.span = String(wide);
+		element.style.setProperty("--span", String(wide));
 	}
 	/**
 	* Declares the grid of a row container.
 	*
 	* @param element - Row container.
-	* @param columns - Column count, already clamped by {@link columnsOf}.
+	* @param columns - Line cap, already clamped by {@link columnsOf}.
 	*/
 	function applyRowColumns$1(element, columns) {
 		element.dataset.column = String(columns);
-		element.style.setProperty("--items", String(columns));
 	}
 	/**
-	* Resolves the span a row child asked for, explicit `span` first, then `wide`.
+	* Places every child of a container on its line.
 	*
-	* @param child - Row child node.
-	* @param columns - Column count of the parent row.
-	* @returns Span between 1 and `columns`.
+	* Widths are percentages of a 100-unit grid, so placement is explicit: the cursor walks
+	* the children, adds `wide` units, and starts a new line when the cap is reached **or**
+	* when the next share would pass 100. That is how "the fourth child of a `column: 3` row
+	* starts the next line" is guaranteed — CSS auto-placement wraps by width alone and would
+	* let a fourth child try to fit.
+	*
+	* A share that would pass 100 starts a new line instead of overflowing: a placement past
+	* track 100 would make CSS create implicit tracks, which silently shrink every explicit
+	* one (the whole row loses its percentages). Headings and anything the layout does not
+	* know (a control set, raw markup) take a full line of their own.
+	*
+	* @param container - Row or column group.
+	* @param columns - Line cap; `0` means "no cap, one line".
 	*/
-	function childSpanOf$1(child, columns) {
-		if (!child || typeof child !== "object") return 1;
-		const node = child;
-		if (node.span !== void 0) return Math.min(columns, Math.max(1, Math.round(Number(node.span) || 1)));
-		return spanOf$1(node.config?.wide ?? node.wide, columns);
+	function arrangeRow$1(container, columns) {
+		const cap = columns > 0 ? columns : Number.MAX_SAFE_INTEGER;
+		let line = 1;
+		let count = 0;
+		let used = 0;
+		for (const child of Array.from(container.children)) {
+			if (!(child instanceof HTMLElement)) continue;
+			if (!child.matches(".field, .form-group")) {
+				if (count > 0) {
+					line += 1;
+					count = 0;
+					used = 0;
+				}
+				child.style.gridRow = String(line);
+				child.style.gridColumn = "1 / -1";
+				line += 1;
+				count = 0;
+				used = 0;
+				continue;
+			}
+			const wide = Number(child.style.getPropertyValue("--span")) || 100;
+			if (count >= cap || used > 0 && used + wide > 100) {
+				line += 1;
+				count = 0;
+				used = 0;
+			}
+			child.style.gridRow = String(line);
+			child.style.gridColumn = `${used + 1} / span ${wide}`;
+			used += wide;
+			count += 1;
+		}
 	}
 	// packages/components/form/FormMessages.ts
 	/**
@@ -15800,7 +16111,8 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 		if (!value || typeof value !== "object") return false;
 		const node = value;
 		if ("group" in node || "row" in node) return true;
-		return typeof node.type === "string" && node.type.trim().length > 0;
+		const type = node.content?.type;
+		return typeof type === "string" && type.trim().length > 0;
 	}
 	/**
 	* The field module a form always carries, whatever the host declares.
@@ -16099,12 +16411,15 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 		*/
 		renderGroup(groupInput, formId, cascadePath) {
 			const fieldset = this.render("@form>group", groupInput);
+			const columns = declaredColumns$1(groupInput);
+			if (columns) applyRowColumns$1(fieldset, columns);
 			const cascadeActive = this.config.cascading === true && cascadePath !== void 0;
 			if (groupInput.group && Array.isArray(groupInput.group)) groupInput.group.forEach((innerInput, _index) => {
 				if (cascadeActive && _classPrivateFieldGet2(_cascade$1, this)?.isCascadeItem(innerInput)) {
 					_classPrivateFieldGet2(_cascade$1, this)?.hold(fieldset, `${cascadePath}.group.${_index}`, innerInput);
 					return;
 				}
+				let element = null;
 				if (typeof innerInput === "string") {
 					const btn = this.scanForSubmitButton(innerInput, formId);
 					if (btn) this.submitButtonId = btn.id;
@@ -16115,6 +16430,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 					const nestedRow = this.renderRow(innerInput, formId, cascadeActive ? `${cascadePath}.group.${_index}` : void 0);
 					if (innerInput.id) nestedRow.id = innerInput.id;
 					fieldset.appendChild(nestedRow);
+					element = nestedRow;
 				} else if (innerInput && typeof innerInput === "object" && "group" in innerInput) {
 					const nestedFieldset = this.renderGroup(innerInput, formId, cascadeActive ? `${cascadePath}.group.${_index}` : void 0);
 					if (innerInput.id) nestedFieldset.id = innerInput.id;
@@ -16136,12 +16452,15 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 						}
 					}
 					fieldset.appendChild(nestedFieldset);
+					element = nestedFieldset;
 				} else {
 					const inputEl = innerInput instanceof HTMLElement ? innerInput : this._renderField(innerInput, formId);
 					const btn = this.scanForSubmitButton(inputEl, formId);
 					if (btn) this.submitButtonId = btn.id;
 					fieldset.append(inputEl);
+					element = inputEl;
 				}
+				if (columns && element) applyRowSpan$1(element, childWideOf$1(innerInput));
 			});
 			if (groupInput.submitButton) {
 				const submitBtn = this.render("@form>actions>submit", {
@@ -16152,6 +16471,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 				fieldset.appendChild(submitBtn);
 			}
 			_assertClassBrand(_FormBuilder_brand$1, this, _appendActions$1).call(this, fieldset, groupInput);
+			if (columns) arrangeRow$1(fieldset, columns);
 			return fieldset;
 		}
 		/**
@@ -16173,7 +16493,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 		*/
 		renderRow(rowInput, formId, cascadePath) {
 			const container = this.render("@form>row", rowInput);
-			const columns = columnsOf$1(rowInput.column);
+			const columns = declaredColumns$1(rowInput) || 2;
 			applyRowColumns$1(container, columns);
 			if (rowInput.id) container.id = rowInput.id;
 			if (rowInput.className) container.classList.add(...String(rowInput.className).split(" ").filter(Boolean));
@@ -16197,10 +16517,11 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 				if (!element) return;
 				const submitBtn = this.scanForSubmitButton(element, formId);
 				if (submitBtn) this.submitButtonId = submitBtn.id;
-				applyRowSpan$1(element, childSpanOf$1(child, columns));
+				applyRowSpan$1(element, childWideOf$1(child));
 				container.appendChild(element);
 			});
 			_assertClassBrand(_FormBuilder_brand$1, this, _appendActions$1).call(this, container, rowInput);
+			arrangeRow$1(container, columns);
 			return container;
 		}
 		/**
@@ -17139,6 +17460,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 				const formId = parent.closest("form")?.id ?? "";
 				const element = _assertClassBrand(_FormCascade_brand$1, this, _build$1).call(this, item, formId, path);
 				element.dataset.cascade = path;
+				_assertClassBrand(_FormCascade_brand$1, this, _stampSpan$1).call(this, element, item, parent);
 				element.hidden = true;
 				element.setAttribute("data-cascade-hidden", "");
 				parent.appendChild(element);
@@ -17244,6 +17566,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 						if (!FormCascadeHandler$1.conditionMet(condition, (field) => resolveIn(instance ?? placeholder.parentElement, field), values)) continue;
 						const el = _assertClassBrand(_FormCascade_brand$1, this, _buildForInstance$1).call(this, item, form.id, path, instance);
 						placeholder.replaceWith(el);
+						_assertClassBrand(_FormCascade_brand$1, this, _stampSpan$1).call(this, el, item, el.parentElement);
 						changed = true;
 						this.emit(form, "mount", el, item, path);
 					}
@@ -17452,6 +17775,23 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 	*/
 	function _buildRow$1(item, formId, path) {
 		return this.host.renderRow(item, formId, path);
+	}
+	/**
+	* Writes the child's column share when it is born outside the row loop.
+	*
+	* A conditional field is built here, not by `renderRow`/`renderGroup`, so without this it
+	* would keep the CSS fallback (`span 1`) even when its `config.wide` asks for more. The
+	* container already carries `data-column`; the item carries `wide` / `span`.
+	*
+	* @param element - Freshly built child.
+	* @param item - Its schema node.
+	* @param parent - Container it was inserted into.
+	*/
+	function _stampSpan$1(element, item, parent) {
+		const column = Number(parent?.dataset.column);
+		if (!Number.isFinite(column) || column <= 0) return;
+		applyRowSpan$1(element, childWideOf$1(item));
+		arrangeRow$1(parent, column);
 	}
 	/**
 	* Form module definition for the cascade engine.
@@ -20389,6 +20729,23 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 		message: "message"
 	};
 	// packages/components/form/dist/Input.FormAdapter.js
+	/**
+	* Reads the two blocks of one field node.
+	*
+	* The node already carries `content` / `config` — it is the input schema, unchanged — so the
+	* adapter splits nothing and renames nothing. The form's own keys (`condition`, `then`) sit
+	* beside the blocks on the same node and are never handed over: the cascade engine has read
+	* them before a field is rendered.
+	*
+	* @param input - Field node from the form schema.
+	* @returns `{ content, config }`, both defaulted to an empty bag.
+	*/
+	function blocksOf(input) {
+		return {
+			content: input.content ?? {},
+			config: input.config ?? {}
+		};
+	}
 	var _context$4 = /* @__PURE__ */ new WeakMap();
 	var _InputFormAdapter_brand = /* @__PURE__ */ new WeakSet();
 	/**
@@ -20413,19 +20770,28 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 		/**
 		* Builds one field from the input schema.
 		*
-		* @param input - Basic input node or raw descriptor.
+		* @param input - Field node from the form schema (identity and text, behaviour keys,
+		*   and the form-owned `condition` / `then`).
 		* @param formId - Id of the owning form, forwarded to the field markup.
 		* @returns The rendered field element.
 		*
-		* @summary The host's builder config comes along, so the field inherits `themeId`,
-		* `namespace` and `emit` instead of starting blank — and so does its adapter set.
+		* @summary The node is split into the two blocks `InputBuilder.create()` takes, so the
+		* input layer never has to guess which key is data and which is behaviour. The host's
+		* builder config comes along, so the field inherits `themeId`, `namespace` and `emit`
+		* instead of starting blank — and so does its adapter set.
 		*/
 		renderField(input, formId) {
+			const { content, config } = blocksOf(input);
+			const { selectors, ...fieldConfig } = config;
 			return new InputBuilder$1({
 				..._classPrivateFieldGet2(_context$4, this).builderConfig,
 				formId,
-				modules: _get_preset.call(_assertClassBrand(_InputFormAdapter_brand, this))
-			}).create({ content: input });
+				modules: _get_preset.call(_assertClassBrand(_InputFormAdapter_brand, this)),
+				...selectors ? { selectors } : {}
+			}).create({
+				content,
+				config: fieldConfig
+			});
 		}
 		/**
 		* Covers file inputs that bypass `InputBuilder` (raw HTML fields).
@@ -20547,7 +20913,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 		load: (context) => new InputFormAdapter(context)
 	};
 	/**
-	* Clamps the column count into a usable range.
+	* Clamps the column cap into a usable range.
 	*
 	* @param value - `column` from the schema; anything non-numeric falls back to the default.
 	* @returns Integer between 1 and {@link MAX_ROW_COLUMNS}.
@@ -20559,62 +20925,118 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 		return Math.min(16, Math.max(1, Math.round(numeric)));
 	}
 	/**
-	* Turns a `wide` hint into a column span.
+	* Reads the line cap a container declares.
 	*
-	* Three spellings are accepted, because a schema read from a sheet writes whatever the
-	* author typed:
+	* A row always caps its lines (it falls back to {@link DEFAULT_ROW_COLUMNS}); a group only
+	* does when it says `column`, because a plain fieldset is a one-column stack by design.
 	*
-	* - `"auto"` → the whole row (a textarea or an address line wants the full width);
-	* - `0 < n ≤ 1` → fraction of the row (`0.5` = half);
-	* - anything else numeric → percentage (`50` = half, `33` = a third).
-	*
-	* @param wide - Width hint from `config.wide` (or the node's own `wide`).
-	* @param columns - Column count of the row this child lives in.
-	* @returns Span between 1 and `columns`.
+	* @param node - Row or group schema node.
+	* @returns The cap, or `0` when the node declares no grid.
 	*/
-	function spanOf(wide, columns) {
-		const total = Math.max(1, Math.round(columns));
-		if (wide === "auto" || wide === "full") return total;
-		const numeric = typeof wide === "number" ? wide : Number(wide);
-		if (!Number.isFinite(numeric) || numeric <= 0) return 1;
-		const ratio = numeric <= 1 ? numeric : numeric / 100;
-		return Math.min(total, Math.max(1, Math.round(ratio * total)));
+	function declaredColumns(node) {
+		const column = node?.column;
+		if (column === void 0 || column === null || column === "") return 0;
+		return columnsOf(column);
 	}
 	/**
-	* Applies a span to a child element.
+	* Turns a `wide` hint into a percentage of the row.
+	*
+	* Four spellings are accepted, because a schema read from a sheet writes whatever the
+	* author typed: `"auto"` / `"full"` (the whole row), a fraction (`0.5` = 50), a percentage
+	* (`20`, `100`), and the same percentage with a sign (`"40%"`). Anything unreadable means
+	* the whole row, which is also what "not written" means.
+	*
+	* @param wide - Width hint from `config.wide` (or the node's own `wide`).
+	* @returns Integer between 1 and {@link WIDE_FULL}.
+	*/
+	function wideOf(wide) {
+		if (wide === "auto" || wide === "full") return 100;
+		const numeric = typeof wide === "number" ? wide : Number(String(wide ?? "").replace("%", "").trim());
+		if (!Number.isFinite(numeric) || numeric <= 0) return 100;
+		const percent = numeric <= 1 ? numeric * 100 : numeric;
+		return Math.min(100, Math.max(1, Math.round(percent)));
+	}
+	/**
+	* Resolves the share a container child asked for.
+	*
+	* @param child - Row child node.
+	* @returns Percentage of the row between 1 and {@link WIDE_FULL}.
+	*/
+	function childWideOf(child) {
+		if (!child || typeof child !== "object") return 100;
+		const node = child;
+		return wideOf(node.config?.wide ?? node.wide);
+	}
+	/**
+	* Applies a share to a child element.
 	*
 	* `data-span` is the human/debug marker; `--span` carries the number, because CSS cannot
 	* read an attribute inside `grid-column: span …`.
 	*
 	* @param element - Child element of a row container.
-	* @param span - Column span, already clamped by {@link spanOf}.
+	* @param wide - Percentage of the row, already resolved by {@link wideOf}.
 	*/
-	function applyRowSpan(element, span) {
-		element.dataset.span = String(span);
-		element.style.setProperty("--span", String(span));
+	function applyRowSpan(element, wide) {
+		element.dataset.span = String(wide);
+		element.style.setProperty("--span", String(wide));
 	}
 	/**
 	* Declares the grid of a row container.
 	*
 	* @param element - Row container.
-	* @param columns - Column count, already clamped by {@link columnsOf}.
+	* @param columns - Line cap, already clamped by {@link columnsOf}.
 	*/
 	function applyRowColumns(element, columns) {
 		element.dataset.column = String(columns);
-		element.style.setProperty("--items", String(columns));
 	}
 	/**
-	* Resolves the span a row child asked for, explicit `span` first, then `wide`.
+	* Places every child of a container on its line.
 	*
-	* @param child - Row child node.
-	* @param columns - Column count of the parent row.
-	* @returns Span between 1 and `columns`.
+	* Widths are percentages of a 100-unit grid, so placement is explicit: the cursor walks
+	* the children, adds `wide` units, and starts a new line when the cap is reached **or**
+	* when the next share would pass 100. That is how "the fourth child of a `column: 3` row
+	* starts the next line" is guaranteed — CSS auto-placement wraps by width alone and would
+	* let a fourth child try to fit.
+	*
+	* A share that would pass 100 starts a new line instead of overflowing: a placement past
+	* track 100 would make CSS create implicit tracks, which silently shrink every explicit
+	* one (the whole row loses its percentages). Headings and anything the layout does not
+	* know (a control set, raw markup) take a full line of their own.
+	*
+	* @param container - Row or column group.
+	* @param columns - Line cap; `0` means "no cap, one line".
 	*/
-	function childSpanOf(child, columns) {
-		if (!child || typeof child !== "object") return 1;
-		const node = child;
-		if (node.span !== void 0) return Math.min(columns, Math.max(1, Math.round(Number(node.span) || 1)));
-		return spanOf(node.config?.wide ?? node.wide, columns);
+	function arrangeRow(container, columns) {
+		const cap = columns > 0 ? columns : Number.MAX_SAFE_INTEGER;
+		let line = 1;
+		let count = 0;
+		let used = 0;
+		for (const child of Array.from(container.children)) {
+			if (!(child instanceof HTMLElement)) continue;
+			if (!child.matches(".field, .form-group")) {
+				if (count > 0) {
+					line += 1;
+					count = 0;
+					used = 0;
+				}
+				child.style.gridRow = String(line);
+				child.style.gridColumn = "1 / -1";
+				line += 1;
+				count = 0;
+				used = 0;
+				continue;
+			}
+			const wide = Number(child.style.getPropertyValue("--span")) || 100;
+			if (count >= cap || used > 0 && used + wide > 100) {
+				line += 1;
+				count = 0;
+				used = 0;
+			}
+			child.style.gridRow = String(line);
+			child.style.gridColumn = `${used + 1} / span ${wide}`;
+			used += wide;
+			count += 1;
+		}
 	}
 	// packages/components/form/dist/FormMessages.js
 	/**
@@ -20791,7 +21213,8 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 		if (!value || typeof value !== "object") return false;
 		const node = value;
 		if ("group" in node || "row" in node) return true;
-		return typeof node.type === "string" && node.type.trim().length > 0;
+		const type = node.content?.type;
+		return typeof type === "string" && type.trim().length > 0;
 	}
 	/**
 	* The field module a form always carries, whatever the host declares.
@@ -21090,12 +21513,15 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 		*/
 		renderGroup(groupInput, formId, cascadePath) {
 			const fieldset = this.render("@form>group", groupInput);
+			const columns = declaredColumns(groupInput);
+			if (columns) applyRowColumns(fieldset, columns);
 			const cascadeActive = this.config.cascading === true && cascadePath !== void 0;
 			if (groupInput.group && Array.isArray(groupInput.group)) groupInput.group.forEach((innerInput, _index) => {
 				if (cascadeActive && _classPrivateFieldGet2(_cascade, this)?.isCascadeItem(innerInput)) {
 					_classPrivateFieldGet2(_cascade, this)?.hold(fieldset, `${cascadePath}.group.${_index}`, innerInput);
 					return;
 				}
+				let element = null;
 				if (typeof innerInput === "string") {
 					const btn = this.scanForSubmitButton(innerInput, formId);
 					if (btn) this.submitButtonId = btn.id;
@@ -21106,6 +21532,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 					const nestedRow = this.renderRow(innerInput, formId, cascadeActive ? `${cascadePath}.group.${_index}` : void 0);
 					if (innerInput.id) nestedRow.id = innerInput.id;
 					fieldset.appendChild(nestedRow);
+					element = nestedRow;
 				} else if (innerInput && typeof innerInput === "object" && "group" in innerInput) {
 					const nestedFieldset = this.renderGroup(innerInput, formId, cascadeActive ? `${cascadePath}.group.${_index}` : void 0);
 					if (innerInput.id) nestedFieldset.id = innerInput.id;
@@ -21127,12 +21554,15 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 						}
 					}
 					fieldset.appendChild(nestedFieldset);
+					element = nestedFieldset;
 				} else {
 					const inputEl = innerInput instanceof HTMLElement ? innerInput : this._renderField(innerInput, formId);
 					const btn = this.scanForSubmitButton(inputEl, formId);
 					if (btn) this.submitButtonId = btn.id;
 					fieldset.append(inputEl);
+					element = inputEl;
 				}
+				if (columns && element) applyRowSpan(element, childWideOf(innerInput));
 			});
 			if (groupInput.submitButton) {
 				const submitBtn = this.render("@form>actions>submit", {
@@ -21143,6 +21573,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 				fieldset.appendChild(submitBtn);
 			}
 			_assertClassBrand(_FormBuilder_brand, this, _appendActions).call(this, fieldset, groupInput);
+			if (columns) arrangeRow(fieldset, columns);
 			return fieldset;
 		}
 		/**
@@ -21164,7 +21595,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 		*/
 		renderRow(rowInput, formId, cascadePath) {
 			const container = this.render("@form>row", rowInput);
-			const columns = columnsOf(rowInput.column);
+			const columns = declaredColumns(rowInput) || 2;
 			applyRowColumns(container, columns);
 			if (rowInput.id) container.id = rowInput.id;
 			if (rowInput.className) container.classList.add(...String(rowInput.className).split(" ").filter(Boolean));
@@ -21188,10 +21619,11 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 				if (!element) return;
 				const submitBtn = this.scanForSubmitButton(element, formId);
 				if (submitBtn) this.submitButtonId = submitBtn.id;
-				applyRowSpan(element, childSpanOf(child, columns));
+				applyRowSpan(element, childWideOf(child));
 				container.appendChild(element);
 			});
 			_assertClassBrand(_FormBuilder_brand, this, _appendActions).call(this, container, rowInput);
+			arrangeRow(container, columns);
 			return container;
 		}
 		/**
@@ -22088,6 +22520,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 				const formId = parent.closest("form")?.id ?? "";
 				const element = _assertClassBrand(_FormCascade_brand, this, _build).call(this, item, formId, path);
 				element.dataset.cascade = path;
+				_assertClassBrand(_FormCascade_brand, this, _stampSpan).call(this, element, item, parent);
 				element.hidden = true;
 				element.setAttribute("data-cascade-hidden", "");
 				parent.appendChild(element);
@@ -22193,6 +22626,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 						if (!FormCascadeHandler.conditionMet(condition, (field) => resolveIn(instance ?? placeholder.parentElement, field), values)) continue;
 						const el = _assertClassBrand(_FormCascade_brand, this, _buildForInstance).call(this, item, form.id, path, instance);
 						placeholder.replaceWith(el);
+						_assertClassBrand(_FormCascade_brand, this, _stampSpan).call(this, el, item, el.parentElement);
 						changed = true;
 						this.emit(form, "mount", el, item, path);
 					}
@@ -22401,6 +22835,23 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 	*/
 	function _buildRow(item, formId, path) {
 		return this.host.renderRow(item, formId, path);
+	}
+	/**
+	* Writes the child's column share when it is born outside the row loop.
+	*
+	* A conditional field is built here, not by `renderRow`/`renderGroup`, so without this it
+	* would keep the CSS fallback (`span 1`) even when its `config.wide` asks for more. The
+	* container already carries `data-column`; the item carries `wide` / `span`.
+	*
+	* @param element - Freshly built child.
+	* @param item - Its schema node.
+	* @param parent - Container it was inserted into.
+	*/
+	function _stampSpan(element, item, parent) {
+		const column = Number(parent?.dataset.column);
+		if (!Number.isFinite(column) || column <= 0) return;
+		applyRowSpan(element, childWideOf(item));
+		arrangeRow(parent, column);
 	}
 	/**
 	* Form module definition for the cascade engine.
@@ -23247,7 +23698,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 			const box = () => menu.parentElement;
 			input.setAttribute("aria-haspopup", "listbox");
 			input.setAttribute("aria-expanded", "false");
-			const anchorName = `--anchor-${input.id || this.listId}`;
+			const anchorName = "--field-dropdown-anchor";
 			(input.closest(".dropdown") || input).style.setProperty("anchor-name", anchorName);
 			menu.style.setProperty("position-anchor", anchorName);
 			let hideTimer = null;
@@ -23266,6 +23717,28 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 				document.addEventListener("mousedown", onOutsideDown, { signal: this.abortController.signal });
 				outsideBound = true;
 			};
+			const place = () => {
+				const own = box()?.getBoundingClientRect();
+				if (!own) return;
+				menu.dataset.placement = "below";
+				const need = menu.offsetHeight;
+				const spaceBelow = window.innerHeight - own.bottom;
+				menu.dataset.placement = spaceBelow < need && own.top > spaceBelow ? "above" : "below";
+			};
+			let placeBound = false;
+			const bindPlacement = () => {
+				if (placeBound) return;
+				window.addEventListener("scroll", place, {
+					capture: true,
+					passive: true,
+					signal: this.abortController.signal
+				});
+				window.addEventListener("resize", place, {
+					passive: true,
+					signal: this.abortController.signal
+				});
+				placeBound = true;
+			};
 			const open = () => {
 				if (hideTimer) {
 					window.clearTimeout(hideTimer);
@@ -23273,7 +23746,9 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 				}
 				bindBoxClick();
 				bindOutside();
+				bindPlacement();
 				if (!menu.matches(":popover-open")) menu.showPopover();
+				place();
 				requestAnimationFrame(() => menu.classList.add("visible"));
 				input.setAttribute("aria-expanded", "true");
 			};
@@ -23557,10 +24032,10 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 			});
 			const payload = {
 				id: field.id,
-				title: field.title,
+				title: field.label,
 				placeholder: field.placeholder,
 				options,
-				multiple: field.multiple === true,
+				multiple: cfg.multiple === true,
 				value: field.value,
 				name: field.name || field.id,
 				attributes: cfg.attributes || []
@@ -23575,7 +24050,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 				config: {
 					apiUrl: cfg.apiUrl || null,
 					debounceDelay: cfg.debounceDelay,
-					style: cfg.style || "select",
+					style: cfg.view || "select",
 					min: cfg.min,
 					max: cfg.max,
 					onSelect: cfg.onSelect,
@@ -25211,8 +25686,9 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 				scope,
 				input
 			};
+			if (scope) _assertClassBrand(_InputControlsBuilder_brand, this, _markRepeat).call(this, scope, actions);
 			for (const action of actions) {
-				const Templatekey = `@controls>${action.type}`;
+				const Templatekey = `@controls>${action.type === "remove" ? "delete" : action.type}`;
 				const button = this.render(Templatekey, {
 					scope,
 					parentElement: scope,
@@ -25262,7 +25738,12 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 				this.bindButton(button, controls, actions);
 			});
 			if (actions.some((action) => action.type === "search")) _assertClassBrand(_InputControlsBuilder_brand, this, _bindEnterToSearch).call(this, scope, controls);
-			if (actions.some((action) => action.type === "edit")) _assertClassBrand(_InputControlsBuilder_brand, this, _togglePair).call(this, controls, "edit");
+			_assertClassBrand(_InputControlsBuilder_brand, this, _openOnEdit).call(this, controls, actions);
+			_assertClassBrand(_InputControlsBuilder_brand, this, _markRepeat).call(this, scope, actions);
+			if (actions.some((action) => action.type === "delete" || action.type === "remove")) _assertClassBrand(_InputControlsBuilder_brand, this, _refreshDelete).call(this, _assertClassBrand(_InputControlsBuilder_brand, this, _family).call(this, scope), {
+				scope,
+				controls
+			});
 		}
 		bindButton(button, controls, actions) {
 			button.onclick = async (event) => {
@@ -25303,7 +25784,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 						context.result = this.search(scope);
 						break;
 					case "delete":
-					case "remove": context.result = this.delete(scope);
+					case "remove": context.result = this.delete(scope, action);
 				}
 				this.emit(action.type, context);
 				if (action.type === "search") _assertClassBrand(_InputControlsBuilder_brand, this, _setSearching).call(this, scope, true);
@@ -25315,23 +25796,27 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 				}
 			};
 		}
+		/**
+		* Swaps one half of the edit/save pair for the other.
+		*
+		* @param currentButton - The button just pressed.
+		* @param controls - The set it belongs to.
+		* @param actionType - The side to show next.
+		* @param actions - Declared action set.
+		*
+		* @summary The pair is **one button that changes identity**: the idle half is detached and
+		* rebuilt on demand. Hiding it in place would leave a `display: none` node that the sheet's
+		* `:first-child`/`:last-child` border rules still count, so the visible button would take
+		* a square edge meant for its absent neighbour; a detached node also carries a stale
+		* `__payload` that a duplicate copies by index.
+		*/
 		toggleEdit(currentButton, controls, actionType, actions) {
-			if ((actionType === "edit" || actionType === "save") && actions.some((action) => action.type === actionType) && _assertClassBrand(_InputControlsBuilder_brand, this, _togglePair).call(this, controls, actionType)) return;
-			const payload = currentButton.__payload;
-			const editAction = {
-				type: actionType,
-				label: actionType,
-				onClick: () => {}
-			};
-			const editButton = this.render(`@controls>${actionType}`, {
-				scope: payload.scope ?? payload.parentElement,
-				parentElement: payload.scope ?? payload.parentElement,
-				input: payload.input,
-				action: editAction
-			});
-			if (!editButton) return;
-			currentButton.replaceWith(editButton);
-			this.bindButton(editButton, controls, actions);
+			const next = _assertClassBrand(_InputControlsBuilder_brand, this, _pairButton).call(this, controls, actions, actionType);
+			if (!next) return;
+			const hadFocus = document.activeElement === currentButton;
+			currentButton.replaceWith(next);
+			this.bindButton(next, controls, actions);
+			if (hadFocus) next.focus();
 		}
 		emit(action, context) {
 			this.config.emit?.("elementChanged", {
@@ -25425,11 +25910,39 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 				bubbles: true,
 				detail: { scope: clone }
 			}));
+			_assertClassBrand(_InputControlsBuilder_brand, this, _refreshDelete).call(this, _assertClassBrand(_InputControlsBuilder_brand, this, _family).call(this, clone));
 			return clone;
 		}
-		delete(scope) {
+		/**
+		* Removes a scope, unless it is the source of a repeater or the set is fixed.
+		*
+		* @param scope - Field or group.
+		* @param action - The `delete` definition, which may set `removable`.
+		* @returns `false` when the scope is a form, the repeater's source, or a fixed set.
+		*
+		* @summary Never a whole form: a control set edits records, it does not delete the
+		* container the visitor is filling in.
+		*
+		* A **repeater** (a set that declares `add` too) has one **source** instance — the row
+		* the first Add was clicked from, index 0 of the family. It carries the record the clones
+		* copy, so `removable: false` locks it. Clones are always free; the flag never applies to
+		* them. Outside a repeater the old remove-the-scope behaviour stays.
+		*/
+		delete(scope, action) {
 			if (scope.tagName === "FORM") return false;
+			const repeat = Boolean(scope.dataset.repeat);
+			const family = repeat ? _assertClassBrand(_InputControlsBuilder_brand, this, _family).call(this, scope) : [scope];
+			if (repeat) {
+				const isSource = family[0] === scope;
+				const removable = action?.removable ?? true;
+				if (isSource && !removable) {
+					console.warn("[input-controls] delete refused: this repeater's source row declares removable: false.");
+					_assertClassBrand(_InputControlsBuilder_brand, this, _refreshDelete).call(this, family);
+					return false;
+				}
+			}
 			scope.remove();
+			if (repeat) _assertClassBrand(_InputControlsBuilder_brand, this, _refreshDelete).call(this, family);
 			return true;
 		}
 		/** Saving: every control returns to the lock state it had before `edit`, then reports. */
@@ -25514,20 +26027,53 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 		}
 	};
 	/**
-	* Makes exactly one of `edit`/`save` available.
+	* Renders one side of an edit/save pair from the set's own declarations.
 	*
-	* @param controls - The controls node holding the pair.
-	* @param actionType - Which side to enable.
-	* @returns `true` when both buttons exist and the switch happened; `false` when the set
-	*   has only one side, so the caller must swap the button itself.
+	* @param controls - The set the button will join.
+	* @param actions - Declared action set (already normalised).
+	* @param type - Which side to build.
+	* @returns The button, or `undefined` when its selector is missing.
+	*
+	* @summary A declared action keeps its label, icon and `onClick`; only when the set never
+	* declared the other side (`actions: ["edit"]`) is a no-op stand-in built, so the swap
+	* cycle still has somewhere to go.
 	*/
-	function _togglePair(controls, actionType) {
-		const edit = controls.querySelector("button.edit");
+	function _pairButton(controls, actions, type) {
+		const payload = controls.__payload ?? {};
+		const action = actions.find((entry) => entry.type === type) ?? {
+			type,
+			label: type,
+			onClick: () => {}
+		};
+		return this.render(`@controls>${type}`, {
+			scope: payload.scope ?? payload.parentElement ?? null,
+			parentElement: payload.scope ?? payload.parentElement ?? null,
+			input: payload.input ?? null,
+			action
+		});
+	}
+	/**
+	* Leaves the pair on its `edit` half.
+	*
+	* @param controls - The set just initialised: a fresh one, or a duplicate's copy.
+	* @param actions - Declared action set.
+	*
+	* @summary A duplicate clones the DOM as it stands, so a copy taken while the source was
+	* being edited arrives with `save` only; this puts `edit` back instead of leaving the copy
+	* permanently in edit mode. A set that never declared `edit` keeps whatever it has.
+	*/
+	function _openOnEdit(controls, actions) {
+		if (!actions.some((action) => action.type === "edit")) return;
 		const save = controls.querySelector("button.save");
-		if (!edit || !save) return false;
-		edit.disabled = actionType !== "edit";
-		save.disabled = actionType !== "save";
-		return true;
+		if (controls.querySelector("button.edit")) {
+			save?.remove();
+			return;
+		}
+		const rebuilt = _assertClassBrand(_InputControlsBuilder_brand, this, _pairButton).call(this, controls, actions, "edit");
+		if (!rebuilt) return;
+		if (save) save.replaceWith(rebuilt);
+		else controls.appendChild(rebuilt);
+		this.bindButton(rebuilt, controls, actions);
 	}
 	/**
 	* Applies the edit policy for a scope.
@@ -25653,6 +26199,79 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 		let index = 1;
 		while (taken.has(index)) index += 1;
 		return index;
+	}
+	/**
+	* Marks a repeater's scope so its siblings can be counted.
+	*
+	* @param scope - Field or group the set acts on.
+	* @param actions - Declared action set.
+	*
+	* @summary Only a set with **both** `add` and `delete` is a repeater: `add` is what makes
+	* a second item possible, so it is what makes a floor meaningful.
+	*
+	* The mark is a stable signature (`tag.class…`), never a per-instance token: siblings
+	* rendered from one schema must land in one family, and a clone copies the attribute
+	* with `cloneNode`. It is written in `prepare`, before the host adds its state classes
+	* (`actions`, `locked`), so every sibling computes the same value. Two repeaters of the
+	* same shape directly under one parent are therefore one family — the alternative would
+	* be a schema-level group key, which the input layer does not have.
+	*/
+	function _markRepeat(scope, actions) {
+		if (!(actions.some((action) => action.type === "add") && actions.some((action) => action.type === "delete" || action.type === "remove")) || scope.dataset.repeat) return;
+		scope.dataset.repeat = `${scope.tagName.toLowerCase()}.${[...scope.classList].sort().join(".")}`;
+	}
+	/**
+	* The scopes that share a repeater with `scope`, in document order.
+	*
+	* @param scope - A member of the family.
+	* @returns The siblings carrying the same `data-repeat`, or `[scope]` when it is not a
+	*   repeater.
+	*/
+	function _family(scope) {
+		const key = scope.dataset.repeat;
+		const owner = scope.parentElement;
+		if (!key || !owner) return [scope];
+		return Array.from(owner.children).filter((child) => child instanceof HTMLElement && child.dataset.repeat === key);
+	}
+	/** The delete button of a scope's own set, when it declares one. */
+	function _deleteButton(scope) {
+		return scope.querySelector(":scope > .controls > button.delete, :scope > .controls > button.remove");
+	}
+	/**
+	* The delete button of a set that is still being built.
+	*
+	* @param controls - The `.controls` node `initialize` is wiring.
+	* @returns Its delete/remove button, or `null`.
+	*
+	* @summary `initialize` runs before the host appends the node, so the first state pass
+	* cannot find the button under the scope yet.
+	*/
+	function _pendingDelete(controls) {
+		return controls.querySelector(":scope > button.delete, :scope > button.remove");
+	}
+	/**
+	* Makes every delete button of a family agree on which rows may go.
+	*
+	* @param members - Scopes of the family; a just-removed one may still be listed.
+	* @param pending - The set `initialize` is wiring, not yet inside its scope.
+	*
+	* @summary A guard that only the clicked button knows about is not a guard: every
+	* sibling has to learn the same rule. The **source** (first in the family) is always
+	* blocked; clones follow the action's `removable`, and `hideOnSource` takes the source's
+	* button out of the row instead of leaving it greyed out.
+	*/
+	function _refreshDelete(members, pending) {
+		const family = members.filter((member) => member.isConnected);
+		for (const member of family) {
+			const button = _assertClassBrand(_InputControlsBuilder_brand, this, _deleteButton).call(this, member) ?? (pending && member === pending.scope ? _assertClassBrand(_InputControlsBuilder_brand, this, _pendingDelete).call(this, pending.controls) : null);
+			if (!button) continue;
+			const action = button.__payload?.action;
+			const isSource = Boolean(member.dataset.repeat) && member === family[0];
+			const locked = isSource && action?.removable === false;
+			button.hidden = isSource && (action?.hideOnSource ?? false);
+			button.disabled = locked;
+			button.title = locked ? "The source row is locked (removable: false)" : `Click to ${action?.label ?? "delete"}`;
+		}
 	}
 	var _context$2 = /* @__PURE__ */ new WeakMap();
 	/**
@@ -25936,7 +26555,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 			_classPrivateFieldSet2(_panel, this, panel);
 			if (!this.config.expanded && _classPrivateFieldGet2(_trigger, this)) {
 				panel.setAttribute("popover", "manual");
-				const anchor = `--picker-${Math.random().toString(36).slice(2, 8)}`;
+				const anchor = "--field-dropdown-anchor";
 				_classPrivateFieldGet2(_trigger, this).style.setProperty("anchor-name", anchor);
 				panel.style.setProperty("position-anchor", anchor);
 			}
@@ -26142,7 +26761,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 	}
 	/** Field-level settings and the builder key each one feeds. */
 	var SETTINGS = [
-		["style", "kind"],
+		["view", "kind"],
 		["column", "columns"],
 		["expanded", "expanded"],
 		["searchable", "searchable"],
@@ -26159,7 +26778,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 	* Settings live flat on the field's `config`, next to `options`, using the same vocabulary
 	* the rest of the schema already speaks:
 	*
-	*   `style`     — `icon | image | media | swatch` (the cell visual)
+	*   `view`      — `icon | image | media | swatch` (the cell visual)
 	*   `column`    — grid track count, like a row's `column`
 	*   `expanded`  — print the grid inline instead of behind the trigger's popover
 	*   `searchable`, `placeholder`
@@ -26187,12 +26806,12 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 			}
 			const payload = {
 				id: field.id,
-				title: field.label ?? field.title,
+				title: field.label,
 				name: field.name || field.id,
 				placeholder: field.placeholder,
 				value: field.value,
 				options: field.options ?? [],
-				multiple: field.multiple === true
+				multiple: cfg.multiple === true
 			};
 			return new PickerBuilder({
 				...settings,
@@ -26233,16 +26852,15 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 	/**
 	* Keys the builder itself consumes and must never forward to the DOM.
 	*
-	* `title` is the important one: it is **not** the HTML `title` attribute. It is the legacy
-	* shorthand for `[id, name, label, placeholder]` and is read as label text
-	* (`input.label ?? input.title`). Renaming it would break every consumer schema, so it
-	* stays an alias and stays out of the attribute matrix.
+	* Identity and text (`id`, `name`, `label`, `placeholder`, `info`) live in `content`;
+	* every behaviour key lives in the `config` bag and is listed here so the attribute scan
+	* classifies it before the matrix is asked. A key that no reader owns is simply absent —
+	* the scan then reports it as rejected, which is the signal a stale consumer needs.
 	*/
 	var INPUT_STRUCTURAL_KEYS = [
 		"type",
 		"id",
 		"name",
-		"title",
 		"label",
 		"value",
 		"config",
@@ -26259,15 +26877,31 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 		"legend",
 		"description",
 		"infos",
-		"class",
-		"className",
 		"position",
 		"useLabel",
 		"display",
-		"picker",
 		"editable",
 		"actions",
 		"popover",
+		"view",
+		"shape",
+		"error",
+		"loading",
+		"calculator",
+		"onFileSelected",
+		"attributes",
+		"thumbnail",
+		"maxUpload",
+		"maxFileSize",
+		"groupUnallowed",
+		"expanded",
+		"searchable",
+		"apiUrl",
+		"debounceDelay",
+		"onSelect",
+		"onMultiChange",
+		"dropdown",
+		"csv",
 		"options",
 		"multiple",
 		"steps",
@@ -26307,6 +26941,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 				"min",
 				"max",
 				"step",
+				"inputmode",
 				"value"
 			]
 		},
@@ -26404,6 +27039,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 				"maxlength",
 				"minlength",
 				"pattern",
+				"inputmode",
 				"value"
 			]
 		},
@@ -26423,6 +27059,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 				...TEXTUAL,
 				"maxlength",
 				"pattern",
+				"inputmode",
 				"value"
 			]
 		},
@@ -26432,6 +27069,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 				...TEXTUAL,
 				"maxlength",
 				"pattern",
+				"inputmode",
 				"value"
 			]
 		},
@@ -26719,7 +27357,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 			_defineProperty(this, "builderId", "input");
 			_defineProperty(this, "name", "input");
 			_defineProperty(this, "stylesheet", "./input.css");
-			_classPrivateFieldInitSpec(this, _input, {});
+			_classPrivateFieldInitSpec(this, _input, { type: "text" });
 			_classPrivateFieldInitSpec(this, _loader, void 0);
 			_classPrivateFieldInitSpec(this, _live, void 0);
 			_classPrivateFieldInitSpec(this, _declared, void 0);
@@ -26754,6 +27392,10 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 						tagName: "input",
 						type: "file"
 					},
+					"@field>error": {
+						tagName: "small",
+						className: "error"
+					},
 					"@field>info": {
 						tagName: "small",
 						className: "info"
@@ -26775,58 +27417,49 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 			}
 			_classPrivateFieldSet2(_declared, this, new Set(_classPrivateFieldGet2(_loader, this)?.ids() ?? []));
 		}
-		resolvePayload(inputObj) {
-			const defaultPayload = {
+		resolvePayload(schema) {
+			const inputObj = schema ?? {};
+			const elementId = this._sanitizeId(inputObj.id || `input-${Math.random().toString(36).slice(2, 10)}`);
+			const payload = {
 				type: "text",
-				id: this._sanitizeId(inputObj.id || inputObj.title || `input-${Math.random().toString(36).slice(2, 10)}`),
-				title: "",
 				placeholder: "",
-				rows: 3,
-				multiple: false,
-				disabled: false,
-				readonly: false,
-				required: false,
-				checked: false,
+				...inputObj,
+				id: elementId,
+				label: inputObj.label ?? "",
 				config: {
 					attributes: [],
-					style: "",
-					className: "",
 					useLabel: true,
-					display: void 0,
-					createEventListener: false,
-					popover: void 0,
-					actions: void 0
+					...inputObj.config ?? {}
 				}
 			};
-			const inputPayload = {
-				...defaultPayload,
-				...inputObj,
-				config: {
-					...defaultPayload.config,
-					...inputObj.config
-				}
-			};
-			if (!inputPayload.placeholder && inputPayload.title) inputPayload.placeholder = inputPayload.type === "select" || inputPayload.type === "textarea" ? `Pilih ${inputPayload.title}` : `Isi ${inputPayload.title}`;
-			const rawOptions = inputObj.options ?? inputObj.config?.options;
-			if (Array.isArray(rawOptions)) inputPayload.options = rawOptions.map((option) => typeof option === "string" ? {
+			if (Array.isArray(payload.options)) payload.options = payload.options.map((option) => typeof option === "string" ? {
 				value: option,
 				label: option
 			} : option);
-			return inputPayload;
+			if (!payload.placeholder && payload.label) payload.placeholder = payload.type === "select" || payload.type === "textarea" ? `Pilih ${payload.label}` : `Isi ${payload.label}`;
+			return payload;
+		}
+		create(schema) {
+			const content = schema?.content;
+			const config = schema?.config;
+			return super.create({ content: {
+				...content,
+				config
+			} });
 		}
 		prepare(inputObj, _config) {
 			_classPrivateFieldSet2(_input, this, this.resolvePayload(inputObj));
-			const cfg = _classPrivateFieldGet2(_input, this).config;
+			const cfg = _classPrivateFieldGet2(_input, this).config ?? {};
 			const definition = inputTypeOf(_classPrivateFieldGet2(_input, this).type);
 			_classPrivateFieldSet2(_modules, this, [..._classPrivateFieldGet2(_loader, this)?.resolveAll(_get_moduleContext.call(_assertClassBrand(_InputBuilder_brand, this))) ?? [], ..._classPrivateFieldGet2(_live, this)]);
-			if (cfg?.actions && !_assertClassBrand(_InputBuilder_brand, this, _offers).call(this, "renderActions")) _assertClassBrand(_InputBuilder_brand, this, _missing).call(this, "actions", INPUT_MODULE_IDS.controls, "@aio-ui/input/controls (inputControlsInputModule)", "the declared action buttons would never render.", "error");
+			if (cfg.actions && !_assertClassBrand(_InputBuilder_brand, this, _offers).call(this, "renderActions")) _assertClassBrand(_InputBuilder_brand, this, _missing).call(this, "actions", INPUT_MODULE_IDS.controls, "@aio-ui/input/controls (inputControlsInputModule)", "the declared action buttons would never render.", "error");
 			const wrapper = this.render("@field", _classPrivateFieldGet2(_input, this));
 			const choices = Array.isArray(_classPrivateFieldGet2(_input, this).options) ? _classPrivateFieldGet2(_input, this).options : [];
 			const isChoiceGroup = (_classPrivateFieldGet2(_input, this).type === "radio" || _classPrivateFieldGet2(_input, this).type === "checkbox") && choices.length > 0;
-			const labelText = _classPrivateFieldGet2(_input, this).label ?? _classPrivateFieldGet2(_input, this).title;
+			const labelText = _classPrivateFieldGet2(_input, this).label;
 			const isToggle = _classPrivateFieldGet2(_input, this).type === "checkbox" || _classPrivateFieldGet2(_input, this).type === "radio";
-			const labelPosition = _classPrivateFieldGet2(_input, this).config?.position ?? _classPrivateFieldGet2(_input, this).position ?? (isToggle ? "right" : void 0);
-			const label = labelText && _classPrivateFieldGet2(_input, this).config?.useLabel !== false ? this.render("@field>label", {
+			const labelPosition = cfg.position ?? (isToggle ? "right" : void 0);
+			const label = labelText && cfg.useLabel !== false ? this.render("@field>label", {
 				text: labelText,
 				position: isChoiceGroup ? "top" : labelPosition,
 				id: isChoiceGroup ? void 0 : _classPrivateFieldGet2(_input, this).id
@@ -26841,7 +27474,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 					break;
 				}
 			}
-			const controlKey = !isChoiceGroup && _classPrivateFieldGet2(_input, this).type === "radio" && _assertClassBrand(_InputBuilder_brand, this, _isToggleStyle).call(this) ? "@field>toggle" : definition.control;
+			const controlKey = !isChoiceGroup && _classPrivateFieldGet2(_input, this).type === "radio" && _assertClassBrand(_InputBuilder_brand, this, _isToggleView).call(this) ? "@field>toggle" : definition.control;
 			if (!isChoiceGroup && !inputEl && controlKey) inputEl = this.render(controlKey, _classPrivateFieldGet2(_input, this));
 			if (!isChoiceGroup && !inputEl) {
 				inputEl = controlKey ? this.render("@field>input", _classPrivateFieldGet2(_input, this)) : this.render("@field>select", _classPrivateFieldGet2(_input, this));
@@ -26850,19 +27483,23 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 					const module = INPUT_MODULE_IDS[type] ?? type;
 					_assertClassBrand(_InputBuilder_brand, this, _missing).call(this, type, module, `@aio-ui/input/${module} (${module}InputModule)`, "the field falls back to a native select over the same options.");
 				}
-				if ((_classPrivateFieldGet2(_input, this).type === "text" || _classPrivateFieldGet2(_input, this).type === "number") && cfg?.className === "loading") inputEl.classList.add("loading");
 			}
 			if (_classPrivateFieldGet2(_input, this).type === "file" && !_assertClassBrand(_InputBuilder_brand, this, _offers).call(this, "getFiles")) _assertClassBrand(_InputBuilder_brand, this, _missing).call(this, "file", INPUT_MODULE_IDS.file, "@aio-ui/input/file-uploader (fileUploaderInputModule)", "the field is a plain file input: no preview, and onFileSelected never fires.");
 			if (inputEl) this.applyAttributes(inputEl, _classPrivateFieldGet2(_input, this));
-			if (_classPrivateFieldGet2(_input, this).editable === true || cfg?.editable === true) wrapper.setAttribute("data-editable", "true");
-			if (_classPrivateFieldGet2(_input, this).info) {
-				const info = this.render("@field>info", _classPrivateFieldGet2(_input, this).info);
-				wrapper.appendChild(info);
-			}
+			if (inputEl && cfg.loading === true) inputEl.classList.add("loading");
+			if (cfg.editable === true) wrapper.setAttribute("data-editable", "true");
 			if (inputEl) inputEl.__outer ? wrapper.appendChild(inputEl.__outer) : wrapper.appendChild(inputEl);
 			if (inputEl) {
 				for (const module of _classPrivateFieldGet2(_modules, this)) module.decorate?.(wrapper, inputEl, _classPrivateFieldGet2(_input, this), _get_moduleContext.call(_assertClassBrand(_InputBuilder_brand, this)));
-				if (cfg?.popover && _get_popoverMissing.call(_assertClassBrand(_InputBuilder_brand, this))) _assertClassBrand(_InputBuilder_brand, this, _missing).call(this, "popover", INPUT_MODULE_IDS.popover, "@aio-ui/input (popoverInputModule)", "config.popover is ignored and no anchor attaches to the control.");
+				if (cfg.popover && _get_popoverMissing.call(_assertClassBrand(_InputBuilder_brand, this))) _assertClassBrand(_InputBuilder_brand, this, _missing).call(this, "popover", INPUT_MODULE_IDS.popover, "@aio-ui/input (popoverInputModule)", "config.popover is ignored and no anchor attaches to the control.");
+			}
+			if (cfg.error) {
+				wrapper.setAttribute("data-error", typeof cfg.error === "string" ? cfg.error : "true");
+				if (typeof cfg.error === "string") wrapper.appendChild(this.render("@field>error", cfg.error));
+			}
+			if (_classPrivateFieldGet2(_input, this).info) {
+				const info = this.render("@field>info", _classPrivateFieldGet2(_input, this).info);
+				wrapper.appendChild(info);
 			}
 			return wrapper;
 		}
@@ -26871,8 +27508,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 			const cfg = payload.config;
 			switch (typeKey) {
 				case "@field":
-					if (payload?.className && payload?.className !== "loading") el.classList.add(...payload.className.split(" ").filter(Boolean));
-					if (payload?.display) el.setAttribute("data-display", payload.display ?? cfg.display);
+					if (cfg.display) el.setAttribute("data-display", cfg.display);
 					break;
 				case "@field>label":
 					if (payload.id) el.setAttribute("for", payload.id);
@@ -26891,10 +27527,9 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 					el.autocomplete = "off";
 					break;
 				case "@field>textarea":
-					el.rows = payload.rows;
+					el.rows = cfg.rows ?? 3;
 					break;
 				case "@field>select":
-					if (cfg?.className === "loading") el.classList.add("loading");
 					const placeholderOpt = document.createElement("option");
 					placeholderOpt.value = "";
 					placeholderOpt.textContent = payload.placeholder || "Pilih Opsi...";
@@ -26928,9 +27563,9 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 				case "@field>file":
 					el.type = "file";
 					el.setAttribute("data-uploader", "");
-					el.setAttribute("data-view", `${cfg?.view || "list"}`);
-					el.setAttribute("data-render-thumbnail", `${cfg?.thumbnail ?? "true"}`);
-					if (cfg?.csv === true) el.setAttribute("data-uploader-csv", "");
+					el.setAttribute("data-view", `${cfg.view || "list"}`);
+					el.setAttribute("data-render-thumbnail", `${cfg.thumbnail ?? "true"}`);
+					if (cfg.csv === true) el.setAttribute("data-uploader-csv", "");
 					break;
 				case "@field>select>option":
 					const option = el;
@@ -26938,14 +27573,18 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 					option.textContent = payload.option.label;
 					if (payload.parentValue !== void 0 && String(payload.option.value) === String(payload.parentValue)) option.setAttribute("selected", "selected");
 					break;
+				case "@field>error":
+					el.textContent = payload;
+					break;
 				case "@field>info": el.textContent = payload;
 			}
 		}
 		initialize(_el, _payload, _context) {
-			if (_classPrivateFieldGet2(_input, this).config?.popover) {
-				if (_classPrivateFieldGet2(_input, this).config?.popover instanceof HTMLElement) _el?.appendChild(_classPrivateFieldGet2(_input, this).config?.popover);
-				else if (typeof _classPrivateFieldGet2(_input, this).config?.popover === "string") _el?.insertAdjacentHTML("beforeend", _classPrivateFieldGet2(_input, this).config?.popover);
-			}
+			const popover = _classPrivateFieldGet2(_input, this).config?.popover;
+			if (!popover || !_el) return;
+			if (_el.querySelector("[popover]")) return;
+			if (popover instanceof HTMLElement) _el.appendChild(popover);
+			else if (typeof popover === "string") _el.insertAdjacentHTML("beforeend", popover);
 		}
 		/**
 		* A `radio`/`checkbox` field given `options` is a group: one control per option, all on
@@ -26957,6 +27596,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 		*/
 		renderChoices(wrapper) {
 			const field = _classPrivateFieldGet2(_input, this);
+			const cfg = field.config ?? {};
 			const name = String(field.name || field.id);
 			const chosen = this.choiceValues();
 			wrapper.classList.add("choice");
@@ -26974,8 +27614,8 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 				input.name = name;
 				input.value = value;
 				input.checked = chosen.includes(value);
-				if (field.disabled) input.disabled = true;
-				if (field.required) input.required = true;
+				if (cfg.disabled) input.disabled = true;
+				if (cfg.required) input.required = true;
 				const item = document.createElement("label");
 				item.className = "choice-item";
 				item.setAttribute("for", id);
@@ -26991,7 +27631,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 			const value = _classPrivateFieldGet2(_input, this).value;
 			if (Array.isArray(value)) return value.map(String);
 			if (typeof value === "string") return value ? value.split(",").map((entry) => entry.trim()).filter(Boolean) : [];
-			if (value === void 0 || value === null || value === "") return [];
+			if (value === void 0 || value === null) return [];
 			return [String(value)];
 		}
 		/**
@@ -27029,6 +27669,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 				el.setAttribute(key, String(value));
 			}
 			if (el instanceof HTMLInputElement && el.type === "number" && !el.getAttribute("step")) el.step = "any";
+			if (el instanceof HTMLSelectElement) watchPickerPlacement(el);
 			if (cfg?.attributes && Array.isArray(cfg.attributes)) cfg.attributes.forEach((attr) => {
 				if (attr?.name) {
 					if (typeof attr.value === "function" && attr.name.startsWith("on")) el[attr.name] = attr.value;
@@ -27091,9 +27732,15 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 			emit: this.config.emit
 		});
 	}
-	/** Whether this field asked for the switch shell (`config.style: "toggle"`). */
-	function _isToggleStyle() {
-		return String(_classPrivateFieldGet2(_input, this).config?.style ?? "").toLowerCase() === "toggle";
+	/**
+	* Whether this field asked for the switch shell (`config.view: "toggle"`).
+	*
+	* `view` replaced the old `style` because `style` collided with `HTMLElement.style` and
+	* meant a different thing per type.
+	*/
+	function _isToggleView() {
+		const bag = _classPrivateFieldGet2(_input, this).config ?? {};
+		return String(bag.view ?? "").toLowerCase() === "toggle";
 	}
 	_defineProperty(InputBuilder, "contract", {
 		schema: {
@@ -27103,7 +27750,6 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 				type: { t: "string" },
 				id: { t: "string" },
 				name: { t: "string" },
-				title: { t: "string" },
 				label: { t: "string" },
 				placeholder: { t: "string" },
 				required: { t: "boolean" }
@@ -27112,10 +27758,43 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 		example: {
 			type: "text",
 			id: "email",
-			title: "Email address",
+			label: "Email address",
 			placeholder: "you@example.com"
 		}
 	});
+	/**
+	* The native picker's SIDE is chosen by the platform, but its size is readable:
+	* `getComputedStyle(select, "::picker(select)").height` is the laid-out picker box (Chrome
+	* resolves it even before it opens, because it is used to size the popup). With the real
+	* height there is no estimate left — the comparison below is the same one the platform
+	* makes (fits below, else above), so the mirrored seam lands on the right edge at every
+	* scroll position. The result is written as `data-placement`, the same contract `.menu`
+	* uses, and read by `select[data-placement="above"]` in `Input.css`.
+	*/
+	var watchedPickers = /* @__PURE__ */ new WeakSet();
+	function pickerHeight(select) {
+		const measured = parseFloat(getComputedStyle(select, "::picker(select)").height);
+		if (Number.isFinite(measured) && measured > 0) return measured;
+		const style = getComputedStyle(select);
+		const size = parseFloat(style.fontSize) || 16;
+		const row = size * 2.22;
+		return Math.min(Math.max(select.options.length, 1) * row, size * 1.6 * 4 + 10);
+	}
+	function watchPickerPlacement(select) {
+		if (watchedPickers.has(select)) return;
+		watchedPickers.add(select);
+		const place = () => {
+			const box = select.getBoundingClientRect();
+			const spaceBelow = window.innerHeight - box.bottom;
+			select.dataset.placement = spaceBelow < pickerHeight(select) && box.top > spaceBelow ? "above" : "below";
+		};
+		select.addEventListener("pointerdown", place, { passive: true });
+		select.addEventListener("focus", place);
+		select.addEventListener("keydown", (event) => {
+			const key = event.key;
+			if (key === " " || key === "Enter" || key.startsWith("Arrow")) place();
+		});
+	}
 	var _PopoverInputModule_brand = /* @__PURE__ */ new WeakSet();
 	/**
 	* Popover module.
@@ -27141,11 +27820,9 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 			const popover = typeof target === "string" ? _assertClassBrand(_PopoverInputModule_brand, this, _parse).call(this, target) : target;
 			if (!popover) return;
 			if (!popover.hasAttribute("popover")) popover.setAttribute("popover", "manual");
-			const anchor = control.id ? `--anchor-${control.id}` : null;
-			if (anchor) {
-				control.style.setProperty("anchor-name", anchor);
-				popover.style.setProperty("position-anchor", anchor);
-			}
+			const anchor = "--field-dropdown-anchor";
+			control.style.setProperty("anchor-name", anchor);
+			popover.style.setProperty("position-anchor", anchor);
 			control.insertAdjacentElement("afterend", popover);
 			control.addEventListener("focus", () => {
 				if (typeof HTMLElement.prototype.showPopover === "function") popover.showPopover();
@@ -27208,6 +27885,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 			}
 		}
 		static buildSchemaForType(inputType, header = {}) {
+			const raw = header;
 			const merged = {
 				...baseInputConfig,
 				...this.inputs[inputType],
@@ -27236,20 +27914,22 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 					}
 				}
 				if (inputType === "file") delete schema.value;
-				const elementId = `${header.id ? header.id.toLowerCase().replace(/[\s_]+/g, "-") : header.title ? header.title.toLowerCase().replace(/[\s_]+/g, "-") : inputType}-${schemaDef.name}`;
-				let attrConfig = {
+				const elementId = `${raw.id ? raw.id.toLowerCase().replace(/[\s_]+/g, "-") : raw.label ? raw.label.toLowerCase().replace(/[\s_]+/g, "-") : inputType}-${schemaDef.name}`;
+				const attrConfig = {
 					type: attrType,
-					title: schemaDef.name,
-					label: schemaDef.label,
 					id: elementId,
-					value,
-					...schemaDef.config ? { config: schemaDef.config } : {}
+					label: schemaDef.label ?? schemaDef.name,
+					value
 				};
+				if (schemaDef.options) attrConfig.options = schemaDef.options;
 				schema[key] = {
 					input: attrType,
 					value,
 					...schemaDef.config ? { config: schemaDef.config } : {},
-					template: new InputBuilder().create({ content: attrConfig })
+					template: new InputBuilder().create({
+						content: attrConfig,
+						config: schemaDef.config
+					})
 				};
 			}
 			return schema;
@@ -27263,7 +27943,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 		* allowed — one bad key next to one good key passed silently.
 		*
 		* @param type - Field type the schema claims.
-		* @param schema - Field schema (`{ type, id, title, placeholder, config, … }`).
+		* @param schema - Field schema (`{ type, id, label, placeholder, config, … }`).
 		* @param customAllowed - Extra keys this project allows beyond the matrix.
 		* @returns Accepted/rejected/structural keys; `ok` is true when nothing was rejected.
 		*/
@@ -27396,7 +28076,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 			name: "required",
 			type: "checkbox",
 			config: {
-				style: "toggle",
+				view: "toggle",
 				position: "left"
 			},
 			value: false
@@ -27405,7 +28085,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 			name: "disabled",
 			type: "checkbox",
 			config: {
-				style: "toggle",
+				view: "toggle",
 				position: "left"
 			},
 			value: false
@@ -27454,7 +28134,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 			name: "multiple",
 			type: "checkbox",
 			config: {
-				style: "toggle",
+				view: "toggle",
 				position: "left"
 			},
 			value: false
@@ -27463,7 +28143,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 			name: "checked",
 			type: "checkbox",
 			config: {
-				style: "toggle",
+				view: "toggle",
 				position: "left"
 			},
 			value: false
@@ -27494,14 +28174,14 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 			name: "data-view",
 			type: "select",
 			value: "thumbnails",
-			config: { options: ["thumbnails", "list"] }
+			options: ["thumbnails", "list"]
 		},
 		["data-group-unallowed"]: {
 			name: "data-group-unallowed",
 			label: "group unallowed",
 			type: "checkbox",
 			config: {
-				style: "toggle",
+				view: "toggle",
 				position: "left"
 			},
 			value: false
@@ -27511,7 +28191,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 			label: "display thumbnail",
 			type: "checkbox",
 			config: {
-				style: "toggle",
+				view: "toggle",
 				position: "left"
 			},
 			value: false
@@ -34215,13 +34895,17 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 				footer
 			};
 		}
-		/** Behavioural hook — the CSS does the work; this only marks the scope. */
+		/** Behavioural hook — the CSS does the work; this marks the scope and pins the mode. */
 		activate(shell, _elements, _context) {
 			shell.dataset.theme = THEME_ID$1;
+			shell.dataset.mode = "dark";
+			shell.style.colorScheme = "dark";
 		}
 		/** Unmount hook — leave the shell as found. */
 		deactivate(shell) {
 			if (shell.dataset.theme === THEME_ID$1) delete shell.dataset.theme;
+			if (shell.dataset.mode === "dark") delete shell.dataset.mode;
+			if (shell.style.colorScheme === "dark") shell.style.removeProperty("color-scheme");
 		}
 	};
 	// packages/themes/cyberpunk/src/index.ts
@@ -34689,13 +35373,17 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 				footer
 			};
 		}
-		/** Behavioural hook — the CSS does the work; this only marks the scope. */
+		/** Behavioural hook — the CSS does the work; this marks the scope and pins the mode. */
 		activate(shell, _elements, _context) {
 			shell.dataset.theme = THEME_ID;
+			shell.dataset.mode = "dark";
+			shell.style.colorScheme = "dark";
 		}
 		/** Unmount hook — leave the shell as found. */
 		deactivate(shell) {
 			if (shell.dataset.theme === THEME_ID) delete shell.dataset.theme;
+			if (shell.dataset.mode === "dark") delete shell.dataset.mode;
+			if (shell.style.colorScheme === "dark") shell.style.removeProperty("color-scheme");
 		}
 	};
 	// packages/themes/horizontal/dist/HorizontalScrolling.js
@@ -35686,7 +36374,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 	}
 	// temp/bundle/entry.js
 	var AioUI = {
-		version: "0.2.5",
+		version: "0.2.6",
 		packages: {
 			accordion: accordion_exports,
 			animations: animations_exports,

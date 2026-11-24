@@ -8,8 +8,8 @@
  * 1. **which selector renders the control** — `@field>textarea`, `@field>checkbox`, …
  * 2. **which DOM attributes the type accepts** — the matrix, so an attribute that means
  *    nothing for a type is dropped instead of silently landing in the markup;
- * 3. **which keys are structural** — consumed by the builder (`title` is the legacy label
- *    alias, `group`/`condition` belong to the form engine), so they never become attributes.
+ * 3. **which keys are structural** — consumed by the builder (`group`/`condition` belong
+ *    to the form engine), so they never become attributes.
  *
  * Adding a field type is one row here plus, when it needs custom markup, one selector.
  */
@@ -29,10 +29,10 @@ export interface iInputTypeDefinition {
 /**
  * Keys the builder itself consumes and must never forward to the DOM.
  *
- * `title` is the important one: it is **not** the HTML `title` attribute. It is the legacy
- * shorthand for `[id, name, label, placeholder]` and is read as label text
- * (`input.label ?? input.title`). Renaming it would break every consumer schema, so it
- * stays an alias and stays out of the attribute matrix.
+ * Identity and text (`id`, `name`, `label`, `placeholder`, `info`) live in `content`;
+ * every behaviour key lives in the `config` bag and is listed here so the attribute scan
+ * classifies it before the matrix is asked. A key that no reader owns is simply absent —
+ * the scan then reports it as rejected, which is the signal a stale consumer needs.
  */
 export declare const INPUT_STRUCTURAL_KEYS: readonly string[];
 /** The matrix. Every `InputType` must appear, so a new type cannot be half-added. */

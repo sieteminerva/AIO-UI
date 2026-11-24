@@ -14,10 +14,11 @@
      WCAG-picked on-accent token, never from a background token */
   --tab-active-foreground: var(--app-text-on-accent, #1a140e);
   --tab-spinner: var(--app-spinner-content, none);
-  /* component-private washes: no app token carries these alphas */
-  --tab-hover-wash: rgba(255, 255, 255, 0.06);
-  --tab-active-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  --tab-divider-color: rgba(255, 255, 255, 0.08);
+  /* component-private washes: derived from app ink/border so they read in both modes
+     (they used to assume a dark page with `rgba(255,255,255,…)` literals) */
+  --tab-hover-wash: color-mix(in srgb, var(--app-text-color) 6%, transparent);
+  --tab-active-shadow: var(--app-shadow-soft);
+  --tab-divider-color: var(--app-border-color);
   /* folder variant: the rule the tabs sit on, the panel surface they lift onto, and the
      resting wash of an inactive tab */
   --tab-border-color: var(--app-border-color, rgba(168, 137, 102, 0.28));
@@ -525,9 +526,13 @@
     transform: translate(-50%, -50%);
     width: 32px;
     height: 32px;
-    background-image: var(--tab-spinner);
-    background-size: contain;
-    background-repeat: no-repeat;
+    /* Mask, not an image: alpha carries the shape, the token carries the colour. */
+    mask-image: var(--tab-spinner);
+    mask-size: contain;
+    mask-repeat: no-repeat;
+    mask-position: center;
+    mask-mode: alpha;
+    background-color: var(--app-primary-color);
     z-index: 10;
     transition: opacity 0.2s ease;
 

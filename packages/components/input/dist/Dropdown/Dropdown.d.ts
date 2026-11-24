@@ -1,9 +1,10 @@
 /**
  * 🧩 INPUT ADAPTER — dropdown rendering for `InputBuilder`.
  *
- * Owned by the input layer, not by `FormBuilder`. Two surfaces:
- * - `style: "select"` (default) renders a popover menu (`.menu[popover]`) anchored to the control.
- * - `style: "datalist"` renders a native `<datalist>`.
+ * Owned by the input layer, not by `FormBuilder`. Two surfaces, chosen by the field's
+ * `view` word:
+ * - `view: "select"` (default) renders a popover menu (`.menu[popover]`) anchored to the control.
+ * - `view: "datalist"` renders a native `<datalist>`.
  */
 import type { iBuilderConfig, iBuilderRegistry } from "@aio-ui/core";
 import { Builder } from "@aio-ui/base";

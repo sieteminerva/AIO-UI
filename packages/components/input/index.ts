@@ -17,9 +17,27 @@ import type { InputModuleDefinition } from "./InputModuleTypes";
 
 export { InputBuilder, popoverInputModule } from "./Input";
 export type {
-  InputType, iActionType, iBasicInputConfig, iBasicInputNode, iBasicSelectOption, iInputActionContext,
+  InputType, iActionType, iBasicSelectOption, iInputActionContext,
   iInputActionDefinition, iInputActionHandler, iInputConfig,
 } from "./Input";
+
+/**
+ * The field schema: `create({ content, config })`, narrowed per `content.type`.
+ *
+ * `InputSchema<T>` is the public door; `iInputField` is the folded payload the render
+ * pipeline and the modules read. `iInputDiscardedKeys` stays internal — it exists to be
+ * deleted, not to be consumed.
+ */
+export type {
+  AnyInputSchema, InputChooserType, InputModeOf, InputSchema, InputValueType, InputViewOf,
+  InputDropdownViewType, InputFileViewType, InputPickerViewType, InputToggleShapeType,
+  InputToggleViewType, InputViewType,
+  iInputChoices, iInputConfigNode, iInputConfigOf, iInputConstraint, iInputConstraintOf,
+  iInputContentNode, iInputContentOf, iInputEvents, iInputField, iInputIdentity, iInputIdentityOf,
+  iInputLayout, iInputLayoutOf, iInputActionsSettings, iInputDropdownSettings, iInputFileSettings,
+  iInputModuleConfig, iInputModuleSettingsOf, iInputPickerSettings, iInputState, iInputText,
+  iInputValue, iInputValueOf,
+} from "./InputSchema";
 
 /**
  * The input layer's default sub-module stack, as data a `ModuleLoader` takes.

@@ -52,8 +52,8 @@ export class InputAttributeBuilder {
     static attributes = {
         value: { name: "value", type: "text", value: "" },
         placeholder: { name: "placeholder", type: "text", value: "" },
-        required: { name: "required", type: "checkbox", config: { style: "toggle", position: "left" }, value: false },
-        disabled: { name: "disabled", type: "checkbox", config: { style: "toggle", position: "left" }, value: false },
+        required: { name: "required", type: "checkbox", config: { view: "toggle", position: "left" }, value: false },
+        disabled: { name: "disabled", type: "checkbox", config: { view: "toggle", position: "left" }, value: false },
         min: { name: "min", type: "number", value: "" },
         max: { name: "max", type: "number", value: "" },
         minlength: { name: "minlength", type: "number", value: "" },
@@ -62,8 +62,8 @@ export class InputAttributeBuilder {
         rows: { name: "rows", type: "number", value: 3 },
         cols: { name: "cols", type: "number", value: 30 },
         accept: { name: "accept", type: "text", value: "" },
-        multiple: { name: "multiple", type: "checkbox", config: { style: "toggle", position: "left" }, value: false },
-        checked: { name: "checked", type: "checkbox", config: { style: "toggle", position: "left" }, value: false },
+        multiple: { name: "multiple", type: "checkbox", config: { view: "toggle", position: "left" }, value: false },
+        checked: { name: "checked", type: "checkbox", config: { view: "toggle", position: "left" }, value: false },
         orient: { name: "orient", type: "text", value: "horizontal" },
         pattern: { name: "pattern", type: "text", value: "" },
         // Custom
@@ -73,16 +73,16 @@ export class InputAttributeBuilder {
             name: "data-view",
             type: "select",
             value: "thumbnails",
-            config: { options: ["thumbnails", "list"] },
+            options: ["thumbnails", "list"],
         },
         ["data-group-unallowed"]: {
             name: "data-group-unallowed",
             label: "group unallowed",
             type: "checkbox",
-            config: { style: "toggle", position: "left" },
+            config: { view: "toggle", position: "left" },
             value: false,
         },
-        ["data-thumbnail"]: { name: "data-thumbnail", label: "display thumbnail", type: "checkbox", config: { style: "toggle", position: "left" }, value: false },
+        ["data-thumbnail"]: { name: "data-thumbnail", label: "display thumbnail", type: "checkbox", config: { view: "toggle", position: "left" }, value: false },
     };
     // resolve correct attr type for min/max
     static resolveMinMaxType(inputType, key) {
@@ -101,6 +101,7 @@ export class InputAttributeBuilder {
     }
     // unified builder
     static buildSchemaForType(inputType, header = {}) {
+        const raw = header;
         // merge base + type defaults + user overrides
         const merged = {
             ...baseInputConfig,
@@ -141,26 +142,30 @@ export class InputAttributeBuilder {
             if (inputType === "file") {
                 delete schema.value;
             }
-            const title = header.id
-                ? header.id.toLowerCase().replace(/[\s_]+/g, "-")
-                : header.title
-                    ? header.title.toLowerCase().replace(/[\s_]+/g, "-")
+            const slug = raw.id
+                ? raw.id.toLowerCase().replace(/[\s_]+/g, "-")
+                : raw.label
+                    ? raw.label.toLowerCase().replace(/[\s_]+/g, "-")
                     : inputType;
-            const elementId = `${title}-${schemaDef.name}`;
-            let attrConfig = {
+            const elementId = `${slug}-${schemaDef.name}`;
+            // One editor field, through the same door a project uses: identity + value in
+            // `content`, the type's own settings in `config`.
+            const attrConfig = {
                 type: attrType,
-                title: schemaDef.name,
-                label: schemaDef.label,
                 id: elementId,
+                label: schemaDef.label ?? schemaDef.name,
                 value,
-                ...(schemaDef.config ? { config: schemaDef.config } : {}),
             };
-            // console.log(`[${inputType} > attrConfig]`, attrConfig);
+            if (schemaDef.options)
+                attrConfig.options = schemaDef.options;
             schema[key] = {
                 input: attrType,
                 value,
                 ...(schemaDef.config ? { config: schemaDef.config } : {}),
-                template: new InputBuilder().create({ content: attrConfig }),
+                template: new InputBuilder().create({
+                    content: attrConfig,
+                    config: schemaDef.config,
+                }),
             };
         }
         // console.log(`[${inputType} > schema]`, schema);
@@ -175,7 +180,7 @@ export class InputAttributeBuilder {
      * allowed — one bad key next to one good key passed silently.
      *
      * @param type - Field type the schema claims.
-     * @param schema - Field schema (`{ type, id, title, placeholder, config, … }`).
+     * @param schema - Field schema (`{ type, id, label, placeholder, config, … }`).
      * @param customAllowed - Extra keys this project allows beyond the matrix.
      * @returns Accepted/rejected/structural keys; `ok` is true when nothing was rejected.
      */

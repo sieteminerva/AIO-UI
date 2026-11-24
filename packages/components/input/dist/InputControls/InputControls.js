@@ -52,8 +52,16 @@ export class InputControlsBuilder extends Builder {
         // 1. Buat kontainer utama pembungkus tombol aksi
         const container = this.render("@controls", position);
         container.__payload = { actions, scope, input };
+        // A repeater's scope is marked while it is still unstyled: the host adds `actions`
+        // right after this call, so every sibling would otherwise compute a different key.
+        if (scope)
+            this.#markRepeat(scope, actions);
         for (const action of actions) {
-            const Templatekey = `@controls>${action.type}`;
+            // `remove` is an alias of `delete` and only `delete` has a selector: without the
+            // alias `render()` returns nothing and `appendChild` throws — the button never
+            // appeared at all.
+            const key = action.type === "remove" ? "delete" : action.type;
+            const Templatekey = `@controls>${key}`;
             const button = this.render(Templatekey, { scope, parentElement: scope, input, action });
             container.appendChild(button);
         }
@@ -106,9 +114,14 @@ export class InputControlsBuilder extends Builder {
         });
         if (actions.some((action) => action.type === "search"))
             this.#bindEnterToSearch(scope, controls);
-        // A set that declares both sides of the toggle shows one available at a time.
-        if (actions.some((action) => action.type === "edit"))
-            this.#togglePair(controls, "edit");
+        // A set that declares both sides of the toggle leaves only `edit` in the row.
+        this.#openOnEdit(controls, actions);
+        // The delete floor is a property of the family: a clone that just landed has to wake
+        // the survivor's button, and a scope rendered at the floor must start inert.
+        this.#markRepeat(scope, actions);
+        if (actions.some((action) => action.type === "delete" || action.type === "remove")) {
+            this.#refreshDelete(this.#family(scope), { scope, controls });
+        }
     }
     bindButton(button, controls, actions) {
         button.onclick = async (event) => {
@@ -151,7 +164,7 @@ export class InputControlsBuilder extends Builder {
                     break;
                 case "delete":
                 case "remove":
-                    context.result = this.delete(scope);
+                    context.result = this.delete(scope, action);
                     break;
             }
             this.emit(action.type, context);
@@ -169,53 +182,80 @@ export class InputControlsBuilder extends Builder {
             }
         };
     }
+    /**
+     * Swaps one half of the edit/save pair for the other.
+     *
+     * @param currentButton - The button just pressed.
+     * @param controls - The set it belongs to.
+     * @param actionType - The side to show next.
+     * @param actions - Declared action set.
+     *
+     * @summary The pair is **one button that changes identity**: the idle half is detached and
+     * rebuilt on demand. Hiding it in place would leave a `display: none` node that the sheet's
+     * `:first-child`/`:last-child` border rules still count, so the visible button would take
+     * a square edge meant for its absent neighbour; a detached node also carries a stale
+     * `__payload` that a duplicate copies by index.
+     */
     toggleEdit(currentButton, controls, actionType, actions) {
-        // When the set declares both sides, they are a pair: enable the counterpart and step
-        // back. Replacing the button instead would append a second "Simpan" next to the one
-        // that was already there.
-        //
-        // The pair is only a pair when **both** buttons exist: a set may declare `edit` alone
-        // (`actions: ["edit"]` without `save`), and the first click then swaps edit → save.
-        // Bailing out on the pair branch regardless left that swap as the last thing that ever
-        // happened — the second click had nothing to switch back to and the set went dead.
-        if ((actionType === "edit" || actionType === "save")
-            && actions.some((action) => action.type === actionType)
-            && this.#togglePair(controls, actionType)) {
+        const next = this.#pairButton(controls, actions, actionType);
+        if (!next)
             return;
-        }
-        const payload = currentButton.__payload;
-        const editAction = {
-            type: actionType,
-            label: actionType,
-            onClick: () => { },
-        };
-        const editButton = this.render(`@controls>${actionType}`, {
-            scope: payload.scope ?? payload.parentElement,
-            parentElement: payload.scope ?? payload.parentElement,
-            input: payload.input,
-            action: editAction,
-        });
-        if (!editButton)
-            return;
-        currentButton.replaceWith(editButton);
-        this.bindButton(editButton, controls, actions);
+        const hadFocus = document.activeElement === currentButton;
+        currentButton.replaceWith(next);
+        this.bindButton(next, controls, actions);
+        if (hadFocus)
+            next.focus();
     }
     /**
-     * Makes exactly one of `edit`/`save` available.
+     * Renders one side of an edit/save pair from the set's own declarations.
      *
-     * @param controls - The controls node holding the pair.
-     * @param actionType - Which side to enable.
-     * @returns `true` when both buttons exist and the switch happened; `false` when the set
-     *   has only one side, so the caller must swap the button itself.
+     * @param controls - The set the button will join.
+     * @param actions - Declared action set (already normalised).
+     * @param type - Which side to build.
+     * @returns The button, or `undefined` when its selector is missing.
+     *
+     * @summary A declared action keeps its label, icon and `onClick`; only when the set never
+     * declared the other side (`actions: ["edit"]`) is a no-op stand-in built, so the swap
+     * cycle still has somewhere to go.
      */
-    #togglePair(controls, actionType) {
-        const edit = controls.querySelector("button.edit");
+    #pairButton(controls, actions, type) {
+        const payload = controls.__payload ?? {};
+        const action = (actions.find((entry) => entry.type === type)
+            ?? { type, label: type, onClick: () => { } });
+        return this.render(`@controls>${type}`, {
+            scope: payload.scope ?? payload.parentElement ?? null,
+            parentElement: payload.scope ?? payload.parentElement ?? null,
+            input: payload.input ?? null,
+            action,
+        });
+    }
+    /**
+     * Leaves the pair on its `edit` half.
+     *
+     * @param controls - The set just initialised: a fresh one, or a duplicate's copy.
+     * @param actions - Declared action set.
+     *
+     * @summary A duplicate clones the DOM as it stands, so a copy taken while the source was
+     * being edited arrives with `save` only; this puts `edit` back instead of leaving the copy
+     * permanently in edit mode. A set that never declared `edit` keeps whatever it has.
+     */
+    #openOnEdit(controls, actions) {
+        if (!actions.some((action) => action.type === "edit"))
+            return;
         const save = controls.querySelector("button.save");
-        if (!edit || !save)
-            return false;
-        edit.disabled = actionType !== "edit";
-        save.disabled = actionType !== "save";
-        return true;
+        const edit = controls.querySelector("button.edit");
+        if (edit) {
+            save?.remove();
+            return;
+        }
+        const rebuilt = this.#pairButton(controls, actions, "edit");
+        if (!rebuilt)
+            return;
+        if (save)
+            save.replaceWith(rebuilt);
+        else
+            controls.appendChild(rebuilt);
+        this.bindButton(rebuilt, controls, actions);
     }
     emit(action, context) {
         this.config.emit?.("elementChanged", {
@@ -324,14 +364,45 @@ export class InputControlsBuilder extends Builder {
         // source was in (a visible conditional field, a locked control). Announcing it lets
         // the cascade re-evaluate the copy against the copy's own (empty) values.
         clone.dispatchEvent(new CustomEvent("scopeAdded", { bubbles: true, detail: { scope: clone } }));
+        // The sibling that was the last item now has company: its delete button has to come
+        // back before anyone clicks it.
+        this.#refreshDelete(this.#family(clone));
         return clone;
     }
-    delete(scope) {
-        // Never a whole form: a control set edits records, it does not delete the container
-        // the visitor is filling in.
+    /**
+     * Removes a scope, unless it is the source of a repeater or the set is fixed.
+     *
+     * @param scope - Field or group.
+     * @param action - The `delete` definition, which may set `removable`.
+     * @returns `false` when the scope is a form, the repeater's source, or a fixed set.
+     *
+     * @summary Never a whole form: a control set edits records, it does not delete the
+     * container the visitor is filling in.
+     *
+     * A **repeater** (a set that declares `add` too) has one **source** instance — the row
+     * the first Add was clicked from, index 0 of the family. It carries the record the clones
+     * copy, so `removable: false` locks it. Clones are always free; the flag never applies to
+     * them. Outside a repeater the old remove-the-scope behaviour stays.
+     */
+    delete(scope, action) {
         if (scope.tagName === "FORM")
             return false;
+        const repeat = Boolean(scope.dataset.repeat);
+        const family = repeat ? this.#family(scope) : [scope];
+        if (repeat) {
+            const isSource = family[0] === scope;
+            const removable = action?.removable ?? true;
+            // A stale button (a sibling removed outside the set) still reaches this guard, which
+            // is why the warning lives here and not only in the refresh.
+            if (isSource && !removable) {
+                console.warn("[input-controls] delete refused: this repeater's source row declares removable: false.");
+                this.#refreshDelete(family);
+                return false;
+            }
+        }
         scope.remove();
+        if (repeat)
+            this.#refreshDelete(family);
         return true;
     }
     /** Saving: every control returns to the lock state it had before `edit`, then reports. */
@@ -583,6 +654,88 @@ export class InputControlsBuilder extends Builder {
         while (taken.has(index))
             index += 1;
         return index;
+    }
+    /**
+     * Marks a repeater's scope so its siblings can be counted.
+     *
+     * @param scope - Field or group the set acts on.
+     * @param actions - Declared action set.
+     *
+     * @summary Only a set with **both** `add` and `delete` is a repeater: `add` is what makes
+     * a second item possible, so it is what makes a floor meaningful.
+     *
+     * The mark is a stable signature (`tag.class…`), never a per-instance token: siblings
+     * rendered from one schema must land in one family, and a clone copies the attribute
+     * with `cloneNode`. It is written in `prepare`, before the host adds its state classes
+     * (`actions`, `locked`), so every sibling computes the same value. Two repeaters of the
+     * same shape directly under one parent are therefore one family — the alternative would
+     * be a schema-level group key, which the input layer does not have.
+     */
+    #markRepeat(scope, actions) {
+        const isRepeater = actions.some((action) => action.type === "add")
+            && actions.some((action) => action.type === "delete" || action.type === "remove");
+        if (!isRepeater || scope.dataset.repeat)
+            return;
+        scope.dataset.repeat = `${scope.tagName.toLowerCase()}.${[...scope.classList].sort().join(".")}`;
+    }
+    /**
+     * The scopes that share a repeater with `scope`, in document order.
+     *
+     * @param scope - A member of the family.
+     * @returns The siblings carrying the same `data-repeat`, or `[scope]` when it is not a
+     *   repeater.
+     */
+    #family(scope) {
+        const key = scope.dataset.repeat;
+        const owner = scope.parentElement;
+        if (!key || !owner)
+            return [scope];
+        return Array.from(owner.children).filter((child) => child instanceof HTMLElement && child.dataset.repeat === key);
+    }
+    /** The delete button of a scope's own set, when it declares one. */
+    #deleteButton(scope) {
+        return scope.querySelector(":scope > .controls > button.delete, :scope > .controls > button.remove");
+    }
+    /**
+     * The delete button of a set that is still being built.
+     *
+     * @param controls - The `.controls` node `initialize` is wiring.
+     * @returns Its delete/remove button, or `null`.
+     *
+     * @summary `initialize` runs before the host appends the node, so the first state pass
+     * cannot find the button under the scope yet.
+     */
+    #pendingDelete(controls) {
+        return controls.querySelector(":scope > button.delete, :scope > button.remove");
+    }
+    /**
+     * Makes every delete button of a family agree on which rows may go.
+     *
+     * @param members - Scopes of the family; a just-removed one may still be listed.
+     * @param pending - The set `initialize` is wiring, not yet inside its scope.
+     *
+     * @summary A guard that only the clicked button knows about is not a guard: every
+     * sibling has to learn the same rule. The **source** (first in the family) is always
+     * blocked; clones follow the action's `removable`, and `hideOnSource` takes the source's
+     * button out of the row instead of leaving it greyed out.
+     */
+    #refreshDelete(members, pending) {
+        const family = members.filter((member) => member.isConnected);
+        for (const member of family) {
+            const button = this.#deleteButton(member)
+                ?? (pending && member === pending.scope ? this.#pendingDelete(pending.controls) : null);
+            if (!button)
+                continue;
+            const action = button.__payload?.action;
+            const repeat = Boolean(member.dataset.repeat);
+            const isSource = repeat && member === family[0];
+            const locked = isSource && action?.removable === false;
+            button.hidden = isSource && (action?.hideOnSource ?? false);
+            button.disabled = locked;
+            button.title = locked
+                ? "The source row is locked (removable: false)"
+                : `Click to ${action?.label ?? "delete"}`;
+        }
     }
 }
 /**

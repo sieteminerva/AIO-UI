@@ -21,6 +21,14 @@
     margin-bottom: 0.35em;
   }
 
+  /* Help text is its own full-width row in the composite field too, never inline with the
+     buttons: `flex-basis: 100%` forces it onto a new wrapped line. */
+  & > .info {
+    flex: 0 0 100%;
+    width: 100%;
+    margin-top: 0.35em;
+  }
+
   &:has(.controls) {
     & input,
     & select,
@@ -122,24 +130,26 @@
 
     &[position="right"],
     &[data-position="right"] {
-      & button:last-child {
+      /* "Last" means last *visible*: a hidden member (`hideOnSource`) is still a DOM
+         child, and it must not hand its radius to a node that has left the row. */
+      & button:not([hidden]):not(:has(~ button:not([hidden]))) {
         border-top-right-radius: var(--input-border-radius, 4px);
         border-bottom-right-radius: var(--input-border-radius, 4px);
       }
 
-      & button:not(:last-child) {
+      & button:not([hidden]):has(~ button:not([hidden])) {
         border-right: none;
       }
     }
 
     &[position="left"],
     &[data-position="left"] {
-      & button:first-child {
+      & button:not([hidden]):first-child {
         border-top-left-radius: var(--input-border-radius, 4px);
         border-bottom-left-radius: var(--input-border-radius, 4px);
       }
 
-      & button:not(:first-child) {
+      & button:not([hidden]):not(:first-child) {
         border-left: none;
       }
     }
@@ -160,7 +170,7 @@
       gap: 0.35em;
       border-radius: 0; /* Reset default radius */
 
-      color: color-mix(in srgb, var(--input-text-color) 20%, white 70%);
+      color: color-mix(in srgb, var(--input-text-color) 20%, var(--app-surface-strong) 70%);
       border: 1px solid var(--input-accent-color);
       background-color: color-mix(in srgb, var(--input-accent-color) 90%, var(--input-primary-color) 5%);
 
@@ -178,6 +188,12 @@
       &:disabled {
         cursor: not-allowed;
         opacity: 0.45;
+      }
+
+      /* A `hideOnSource` delete must really leave the row: the author `display: inline-flex`
+         above would otherwise beat the browser's `[hidden]` rule. */
+      &[hidden] {
+        display: none;
       }
     }
   }
@@ -216,7 +232,7 @@ fieldset.form-group,
 
       &:hover {
         color: var(--input-text-on-primary);
-        background-color: color-mix(in srgb, var(--input-primary-color) 80%, black 20%);
+        background-color: color-mix(in srgb, var(--input-primary-color) 80%, var(--app-text-heading-color) 20%);
       }
     }
   }

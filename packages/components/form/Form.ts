@@ -14,7 +14,7 @@ import type { InputModuleItem, InputModulePreset } from "@aio-ui/input";
 import { ModuleLoader } from "@aio-ui/module-loader";
 import { inputFormAdapter } from "./Input.FormAdapter";
 import { dropdownInputModule } from "@aio-ui/input/dropdown";
-import { applyRowColumns, applyRowSpan, childSpanOf, columnsOf } from "./FormLayout";
+import { DEFAULT_ROW_COLUMNS, applyRowColumns, applyRowSpan, arrangeRow, childWideOf, declaredColumns } from "./FormLayout";
 import { collectFormValues } from "@aio-ui/input";
 import type { HttpService } from "@aio-ui/http-service";
 import type { iFormMessages } from "./FormMessages";
@@ -181,9 +181,11 @@ function isFieldNode(value: unknown): boolean {
   if (typeof value === "string") return true;
   if (typeof HTMLElement !== "undefined" && value instanceof HTMLElement) return true;
   if (!value || typeof value !== "object") return false;
-  const node = value as Record<string, unknown>;
+  const node = value as Record<string, any>;
   if ("group" in node || "row" in node) return true;
-  return typeof node.type === "string" && node.type.trim().length > 0;
+  // A field is the input schema: the discriminator lives in its `content` block.
+  const type = node.content?.type;
+  return typeof type === "string" && type.trim().length > 0;
 }
 
 /**
@@ -679,6 +681,12 @@ export class FormBuilder extends Builder<FormElementType, iFormConfig> {
   private renderGroup(groupInput: any, formId: string, cascadePath?: string): HTMLElement {
     const fieldset = this.render("@form>group", groupInput) as HTMLElement;
 
+    // A group may lay its children out in the same grid a row uses (`column: 2` plus
+    // `config.wide`). Without `column` it stays the plain fieldset stack — that default is
+    // the reason `declaredColumns` answers `0` instead of a fallback count.
+    const columns = declaredColumns(groupInput);
+    if (columns) applyRowColumns(fieldset, columns);
+
     const cascadeActive = this.config.cascading === true && cascadePath !== undefined;
 
     if (groupInput.group && Array.isArray(groupInput.group)) {
@@ -691,6 +699,8 @@ export class FormBuilder extends Builder<FormElementType, iFormConfig> {
           this.#cascade?.hold(fieldset, `${cascadePath}.group.${_index}`, innerInput);
           return;
         }
+
+        let element: HTMLElement | null = null;
 
         // Case 1: Raw HTML String
         if (typeof innerInput === "string") {
@@ -708,6 +718,7 @@ export class FormBuilder extends Builder<FormElementType, iFormConfig> {
           const nestedRow = this.renderRow(innerInput, formId, cascadeActive ? `${cascadePath}.group.${_index}` : undefined);
           if (innerInput.id) nestedRow.id = innerInput.id;
           fieldset.appendChild(nestedRow);
+          element = nestedRow;
         }
         // Case 3: Nested Group Object -> RECURSE!
         else if (innerInput && typeof innerInput === "object" && "group" in innerInput) {
@@ -731,9 +742,9 @@ export class FormBuilder extends Builder<FormElementType, iFormConfig> {
           }
 
           fieldset.appendChild(nestedFieldset);
-
+          element = nestedFieldset;
         }
-        // Case 3: Regular Input Item or DOM Element
+        // Case 4: Regular Input Item or DOM Element
         else {
           const inputEl = innerInput instanceof HTMLElement
             ? innerInput
@@ -743,7 +754,13 @@ export class FormBuilder extends Builder<FormElementType, iFormConfig> {
           if (btn) this.submitButtonId = btn.id;
 
           fieldset.append(inputEl as any);
+          element = inputEl;
         }
+
+        // The same `--span` a row child gets: a group that declared `column` owns the grid,
+        // so every child states its share of it. A held (conditional) child is stamped by
+        // the cascade when it is built.
+        if (columns && element) applyRowSpan(element, childWideOf(innerInput));
       });
     }
 
@@ -757,6 +774,8 @@ export class FormBuilder extends Builder<FormElementType, iFormConfig> {
     // 🧩 A group can carry its own control set (add/edit/save/search). The form only
     // offers the fieldset; the controls module owns the buttons and what they do.
     this.#appendActions(fieldset, groupInput);
+
+    if (columns) arrangeRow(fieldset, columns);
 
     return fieldset;
   }
@@ -780,7 +799,7 @@ export class FormBuilder extends Builder<FormElementType, iFormConfig> {
    */
   private renderRow(rowInput: any, formId: string, cascadePath?: string): HTMLElement {
     const container = this.render("@form>row", rowInput) as HTMLElement;
-    const columns = columnsOf(rowInput.column);
+    const columns = declaredColumns(rowInput) || DEFAULT_ROW_COLUMNS;
 
     applyRowColumns(container, columns);
     if (rowInput.id) container.id = rowInput.id;
@@ -822,13 +841,15 @@ export class FormBuilder extends Builder<FormElementType, iFormConfig> {
       const submitBtn = this.scanForSubmitButton(element, formId);
       if (submitBtn) this.submitButtonId = submitBtn.id;
 
-      applyRowSpan(element, childSpanOf(child, columns));
+      applyRowSpan(element, childWideOf(child));
       container.appendChild(element);
     });
 
     // 🧩 A row is a scope too (it is a layout container, not a group, but its children can
     // be a record). Same offer as `renderGroup`: the controls module owns the buttons.
     this.#appendActions(container, rowInput);
+
+    arrangeRow(container, columns);
 
     return container;
   }

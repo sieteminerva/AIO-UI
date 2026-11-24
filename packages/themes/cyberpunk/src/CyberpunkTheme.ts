@@ -26,17 +26,24 @@ export class CyberpunkTheme implements iThemeModule {
     return { pages, menu, footer };
   }
 
-  /** Behavioural hook — the CSS does the work; this only marks the scope. */
+  /** Behavioural hook — the CSS does the work; this marks the scope and pins the mode. */
   public activate(
     shell: HTMLElement,
     _elements: HTMLElement[],
     _context?: { setConfig: (builderName: keyof iBuilderRegistry, newConfig: Record<string, any>) => void }
   ): void {
     shell.dataset.theme = THEME_ID;
+    // The palette below is fixed-dark (night-city surfaces, cold light on dark). Pin the
+    // mode so `light-dark()` pairs and any component dark block resolve against it, instead
+    // of following the OS by accident.
+    shell.dataset.mode = "dark";
+    shell.style.colorScheme = "dark";
   }
 
   /** Unmount hook — leave the shell as found. */
   public deactivate(shell: HTMLElement): void {
     if (shell.dataset.theme === THEME_ID) delete shell.dataset.theme;
+    if (shell.dataset.mode === "dark") delete shell.dataset.mode;
+    if (shell.style.colorScheme === "dark") shell.style.removeProperty("color-scheme");
   }
 }

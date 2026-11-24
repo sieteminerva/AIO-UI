@@ -4,22 +4,23 @@
    warna turunan via color-mix dari accent, lalu semua slot memakainya.
    ========================================================================== */
 section:is(.article) {
-  /* --- warna dasar (selaras accent darkgoldenrod milik form) --- */
-  --article-primary-color: darkgoldenrod;
-  --article-accent-color: rgba(184, 135, 11, 0.384);
+  /* --- warna dasar: every value derives from the app contract, so both modes flip --- */
+  --article-primary-color: var(--app-primary-color); /* fill: active page, washes */
+  --article-primary-ui: var(--app-primary-ui); /* stroke/glyph/text-safe accent */
+  --article-accent-color: var(--app-accent-color);
 
-  --article-bg: #ffffff;
-  --article-surface: color-mix(in srgb, var(--article-accent-color) 14%, #ffffff);
-  --article-surface-strong: color-mix(in srgb, var(--article-accent-color) 24%, #ffffff);
-  --article-surface-hover: color-mix(in srgb, var(--article-accent-color) 32%, #ffffff);
-  --article-border: color-mix(in srgb, var(--article-primary-color) 18%, #e4e7ec);
-  --article-border-strong: color-mix(in srgb, var(--article-primary-color) 34%, #b9c0ca);
-  --article-divider: color-mix(in srgb, var(--article-primary-color) 12%, #eef1f5);
+  --article-bg: var(--app-surface-strong);
+  --article-surface: color-mix(in srgb, var(--article-accent-color) 14%, var(--app-surface-strong));
+  --article-surface-strong: color-mix(in srgb, var(--article-accent-color) 24%, var(--app-surface-strong));
+  --article-surface-hover: color-mix(in srgb, var(--article-accent-color) 32%, var(--app-surface-strong));
+  --article-border: color-mix(in srgb, var(--app-primary-color) 18%, var(--app-border-color));
+  --article-border-strong: var(--app-primary-ui);
+  --article-divider: color-mix(in srgb, var(--app-primary-color) 12%, var(--app-border-color));
 
-  --article-text: #1d2733;
-  --article-text-soft: #445060;
-  --article-muted: #6b7686;
-  --article-inverse: #ffffff;
+  --article-text: var(--app-text-color);
+  --article-text-soft: var(--app-text-accent-color);
+  --article-muted: color-mix(in srgb, var(--app-text-accent-color) 82%, var(--app-surface-strong));
+  --article-inverse: var(--app-text-on-primary);
 
   /* --- ukuran & bentuk --- */
   --article-radius: 0.75rem;
@@ -32,8 +33,8 @@ section:is(.article) {
   --article-detail-max: 740px;
 
   /* --- bayangan & transisi --- */
-  --article-shadow-sm: 0 1px 2px rgb(29 39 51 / 0.05), 0 8px 20px rgb(29 39 51 / 0.05);
-  --article-shadow-hover: 0 12px 26px rgb(29 39 51 / 0.12);
+  --article-shadow-sm: var(--app-shadow-soft);
+  --article-shadow-hover: var(--app-shadow-elevated);
   --article-ease: 0.18s ease;
   --article-ease-spring: 0.22s cubic-bezier(0.2, 0.8, 0.3, 1);
 
@@ -57,7 +58,7 @@ section:is(.article) {
     flex-wrap: wrap;
     gap: 0.75rem 1rem;
     padding: 0.6rem 0.9rem;
-    background: color-mix(in srgb, var(--article-surface) 80%, #ffffff);
+    background: color-mix(in srgb, var(--article-surface) 80%, var(--app-surface-strong));
     border: 1px solid var(--article-border);
     border-radius: var(--article-radius);
     box-shadow: var(--article-shadow-sm);
@@ -85,7 +86,7 @@ section:is(.article) {
       &:hover {
         background: var(--article-surface-hover);
         border-color: var(--article-border-strong);
-        color: var(--article-primary-color);
+        color: var(--article-primary-ui);
       }
       &:active {
         transform: translateY(1px);
@@ -209,7 +210,7 @@ section:is(.article) {
     background: var(--article-surface);
     scroll-behavior: smooth;
     scrollbar-width: thin;
-    scrollbar-color: var(--article-primary-color) var(--article-divider);
+    scrollbar-color: var(--article-primary-ui) var(--article-divider);
     direction: rtl;
 
     & > .block.recommendations {
@@ -360,7 +361,7 @@ section:is(.article) {
 
         & .meta-divider {
           margin: 0 0.45rem;
-          color: var(--article-primary-color);
+          color: var(--article-primary-ui);
         }
       }
     }
@@ -432,7 +433,7 @@ section:is(.article) {
 
         & .meta-divider {
           margin: 0 0.45rem;
-          color: var(--article-primary-color);
+          color: var(--article-primary-ui);
         }
       }
     }
@@ -481,7 +482,7 @@ section:is(.article) {
 
         & .divider {
           margin: 0 0.5rem;
-          color: var(--article-primary-color);
+          color: var(--article-primary-ui);
         }
       }
     }
@@ -499,12 +500,12 @@ section:is(.article) {
         border-radius: 0.6rem;
       }
       & a {
-        color: var(--article-primary-color);
+        color: var(--article-primary-ui);
         text-decoration: underline;
         text-underline-offset: 3px;
 
         &:hover {
-          color: var(--article-border-strong);
+          color: var(--app-primary-hover);
         }
       }
     }

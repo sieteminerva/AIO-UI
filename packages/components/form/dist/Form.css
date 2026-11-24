@@ -7,13 +7,24 @@
    rows, fieldsets, action sets, multistep, inline variants, cascade visibility.
    ========================================================================== */
 
+/* A child's share of its container is resolved once, in FormLayout, and written as
+   `--span` (1..100). Registered here so it does NOT inherit: an element the layout never
+   stamped (a legend, an action set, a child of a nested container) falls back to the whole
+   row instead of borrowing its container's share and overflowing the grid. */
+@property --span {
+  syntax: "<integer>";
+  inherits: false;
+  initial-value: 100;
+}
+
 /* 4. Native Fieldset & Structural Legends */
 .form > fieldset {
   display: grid;
   gap: 1em;
   margin-bottom: 1em;
   padding: 1.2em 1.5em 1.5em 1.5em;
-  border: 1px solid var(--input-primary-color);
+  /* a 1px line is non-text UI: the UI-safe brand shade, not the fill colour */
+  border: 1px solid var(--input-border-color);
   border-radius: var(--input-border-radius);
   /* background-color: var(--primary-background-color); */
   & legend {
@@ -31,43 +42,49 @@
 }
 
 /* ==========================================================================
-   7b. Row Layout (inline field groups)
+   7b. Row Layout (inline field groups) — one way to size a field
    --------------------------------------------------------------------------
-   A row is a layout container, not a fieldset: fields (and nested rows) in a
-   grid of `--items` columns. Children wrap by themselves once the declared
-   columns are used up, and each child's width comes from `--span` (set by
-   FormLayout from `config.wide`: 50 = half, "auto" = full row).
+   `wide` is a percentage of the row. FormLayout resolves it into `--span`
+   (1..100) and places each child on a 100-unit grid with an explicit
+   `grid-column: <start> / span <wide>` (`arrangeRow`), so 20/40/40 is exactly
+   20/40/40 and a fourth child drops to the next line. `column` is only the
+   line cap; it no longer divides the space. A share that would pass 100 starts
+   a new line too: placing past track 100 would create implicit tracks and
+   shrink every explicit one.
 
-   The hook is `[data-column]`, written by `applyRowColumns` — no extra class,
-   and it keeps the single-field inline variant (`.field.group[data-display]`)
-   untouched. Child selectors carry the full `.field.group` prefix because the
-   base field block (`.native.form .field`, `.field:is(.group) .field`) sets
-   `display: block; width: 100%` and would win otherwise.
+   The gutter lives inside each share (`padding-inline`): a `column-gap` would
+   be added on top of the percentages and push a 20/40/40 line past 100.
+
+   The hook is `[data-column]`, written by `applyRowColumns` — a row always has
+   it, a group only when it declares `column`. Child selectors carry the full
+   `.field.group` prefix because the base field block (`.native.form .field`,
+   `.field:is(.group) .field`) sets `display: block; width: 100%` and would win.
    ========================================================================== */
-.field.group[data-column] {
+.field.group[data-column],
+.form > fieldset.form-group[data-column] {
   display: grid;
-  grid-template-columns: repeat(var(--items, 2), minmax(0, 1fr));
-  gap: 0.25em 1em;
+  grid-template-columns: repeat(100, minmax(0, 1fr));
+  column-gap: 0;
+  row-gap: 0.25em;
   align-items: start;
-  width: 100%;
-  margin-bottom: 1em;
 
   /* A child is a grid cell, not a block: no full width, no bottom margin. */
   & > .field,
   & > .field.group[data-column],
-  & > .form-group {
+  & > .form-group[data-column] {
     display: block;
     width: auto;
     min-width: 0;
     margin-bottom: 0;
-    grid-column: span var(--span, 1);
+    padding-inline: calc(var(--row-gutter, 1em) / 2);
+    grid-column: span var(--span, 100);
   }
 
-  /* Row heading and note read across the whole row. */
+  /* Heading and note read across the whole line (and line up with the fields). */
   & > .title,
   & > .desc {
-    grid-column: 1 / -1;
     margin-bottom: 0;
+    padding-inline: calc(var(--row-gutter, 1em) / 2);
   }
 
   & > .title {
@@ -78,19 +95,31 @@
   & > .form-group {
     border: none;
     padding: 0;
+    padding-inline: calc(var(--row-gutter, 1em) / 2);
     margin: 0;
     min-inline-size: 0;
   }
 }
 
+/* A row keeps its bottom margin; a column group keeps the fieldset's padding. */
+.field.group[data-column] {
+  width: 100%;
+  margin-bottom: 1em;
+}
+
 @media (max-width: 640px) {
-  .field.group[data-column] {
+  /* One narrow column is the only honest layout: the placement is inline, so the
+     collapse has to win over it. */
+  .field.group[data-column],
+  .form > fieldset.form-group[data-column] {
     grid-template-columns: 1fr;
 
     & > .field,
     & > .field.group[data-column],
-    & > .form-group {
-      grid-column: auto;
+    & > .form-group[data-column] {
+      grid-column: 1 / -1 !important;
+      grid-row: auto !important;
+      padding-inline: 0;
     }
   }
 }
@@ -99,6 +128,36 @@
    but must not take space. `[hidden]` alone only sets visibility in this stylesheet. */
 [data-cascade-hidden] {
   display: none !important;
+}
+
+/* ==========================================================================
+   8. Footer (`.form-footer`)
+   --------------------------------------------------------------------------
+   `config.footer` appends `@form>footer` after the submit button. It is a note
+   line — terms, a help link, a build stamp — not a second action bar, so it is
+   quiet, right-aligned, and separated by a hairline from the actions above.
+   Component tokens stay `--form-*` and derive from the app layer.
+   ========================================================================== */
+.form {
+  --form-footer-border: var(--app-border-color);
+  --form-footer-text: var(--app-text-accent-color);
+}
+
+.form > .form-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5em;
+  margin-top: 1em;
+  padding-top: 0.75em;
+  border-top: 1px solid var(--form-footer-border);
+  color: var(--form-footer-text);
+  font-size: calc(var(--input-font-size) * 0.9);
+
+  & a {
+    color: var(--input-accent-color);
+  }
 }
 
 /* An action set (`Edit/Save/Add/Delete`…) is owned by `@aio-ui/input`: the layout that
@@ -278,7 +337,7 @@
         & option {
           transition: all 100ms;
           &:hover {
-            color: color-mix(in srgb, grey 30%, var(--input-text-color) 35%);
+            color: color-mix(in srgb, var(--app-text-accent-color) 30%, var(--input-text-color) 35%);
             background-color: color-mix(in srgb, var(--input-primary-color) 10%, var(--input-accent-color) 5%);
           }
         }
@@ -326,26 +385,28 @@
     min-height: var(--input-line-height);
     & > .input-popover {
       position-area: bottom span-right;
-      margin: unset;
       inset: unset;
       appearance: base-select;
-      top: anchor(bottom);
       opacity: 0;
       max-width: 500px;
 
-      border: 1px solid var(--input-primary-color);
-      border-radius: var(--input-border-radius);
+      border: 1px solid var(--input-border-color);
+      /* attached: `position-area` puts it flush under the control, so the shared edge
+         belongs to the popup (square corners, no top border) and the sheet unrolls from
+         that seam instead of sliding in. */
+      border-top: none;
+      border-radius: 0 0 var(--input-border-radius) var(--input-border-radius);
       transition-delay: var(--input-dropdown-transition-delay, 30ms);
       background-color: var(--input-popover-background-color);
       backdrop-filter: blur(12px);
       color: inherit;
 
       transform-origin: top;
-      transform: translateY(0) translateX(0) scaleY(0%) scaleX(99.7%);
+      transform: scaleY(0);
       transition: all 150ms ease;
       transition-behavior: allow-discrete;
 
-      box-shadow: 0 14px 20px rgba(136, 135, 81, 0.356);
+      box-shadow: var(--app-shadow-soft, 0 14px 20px rgba(92, 60, 20, 0.12));
       display: block;
       padding: 0.75em 0.5em 0.5em 0.5em;
       overflow-x: hidden;
@@ -354,9 +415,9 @@
         z-index: 10;
         opacity: 1;
         transition-delay: var(--input-dropdown-transition-delay, 30ms);
-        transform: translateY(-80%) translateX(0) scaleY(1) scaleX(1);
+        transform: scaleY(1);
         scrollbar-width: thin;
-        box-shadow: 0 2px 3px 0 var(--input-primary-color);
+        box-shadow: var(--app-shadow-soft, 0 14px 20px rgba(92, 60, 20, 0.12));
         background-color: var(--input-background-color);
       }
 
@@ -414,14 +475,14 @@
       & .field select:open::picker(select) {
         display: block;
         opacity: 0;
-        transform: translateY(calc(var(--input-popup-distance, 4px) * -1)) translateX(-25%) scaleY(0%) scaleX(99.7%);
+        transform: translateY(calc(var(--input-popup-distance, 4px) * -1));
         transition-delay: var(--input-dropdown-transition-delay, 30ms);
 
         & > .input-popover {
           &:popover-open {
             display: block;
             opacity: 0;
-            transform: translateY(0) translateX(0) scaleY(0%) scaleX(99.7%);
+            transform: scaleY(0);
           }
         }
       }
@@ -551,7 +612,7 @@
     cursor: pointer;
     text-align: center;
     vertical-align: middle;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--app-shadow-soft, 0 4px 6px rgba(92, 60, 20, 0.08));
     transition:
       background 0.2s ease,
       transform 0.1s ease;
@@ -610,7 +671,7 @@
 
     &:is(.back, .next, .submit):hover {
       background-color: color-mix(in srgb, var(--input-primary-color) 10%, var(--input-accent-color) 5%);
-      color: color-mix(in srgb, grey 30%, var(--input-text-color) 35%);
+      color: color-mix(in srgb, var(--app-text-accent-color) 30%, var(--input-text-color) 35%);
     }
 
     &:active {
@@ -635,7 +696,7 @@
       }
     }
     &:is(.download):hover {
-      color: color-mix(in srgb, grey 30%, var(--input-text-color) 35%);
+      color: color-mix(in srgb, var(--app-text-accent-color) 30%, var(--input-text-color) 35%);
     }
   }
 }

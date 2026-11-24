@@ -3,26 +3,45 @@ import { Builder } from "@aio-ui/base";
 import type { iModuleDefinition } from "@aio-ui/module-loader";
 import { ModuleLoader } from "@aio-ui/module-loader";
 import { type iInputAdapter, type iInputModuleContext, type InputModulePreset } from "./InputRegistry";
-import type { iCalculationFormula } from "./CalculationTypes";
+import type { InputSchema, iInputField } from "./InputSchema";
 export type InputType = "text" | "textarea" | "number" | "select" | "dropdown" | "picker" | "actions" | "checkbox" | "radio" | "range" | "date" | "time" | "datetime-local" | "file" | "color" | "email" | "password" | "url" | "tel" | "hidden";
 export interface iBasicSelectOption {
     value?: string;
     label?: string;
     icon?: string;
+    /**
+     * Swatch colour for a `picker` in `view: "swatch"`.
+     *
+     * Read by `PickerBuilder` as `--picker-swatch` on the cell, so a swatch option can show a
+     * colour the label cannot say. Ignored by every other view and by a plain `<select>`.
+     */
+    color?: string;
 }
-export type InputElementType = "@field" | "@field>label" | "@field>input" | "@field>textarea" | "@field>select" | "@field>select>option" | "@field>checkbox" | "@field>radio" | "@field>toggle" | "@field>file" | "@field>info";
+export type InputElementType = "@field" | "@field>label" | "@field>input" | "@field>textarea" | "@field>select" | "@field>select>option" | "@field>checkbox" | "@field>radio" | "@field>toggle" | "@field>file" | "@field>error" | "@field>info";
 export type iActionType = "add" | "remove" | "delete" | "save" | "edit" | "copy" | "search" | "custom" | "editor" | "repeater";
 export interface iInputActionDefinition {
     type: iActionType;
     selector?: Record<string, iElementProperty>;
     label?: string;
     icon?: string;
+    /**
+     * `delete` only, on a repeater's **source** row (index 0). Default `true`.
+     *
+     * `false` locks that row: the record the clones copy stays. Clones are always free to
+     * go — this flag never applies to them.
+     */
+    removable?: boolean;
+    /**
+     * `delete` only: hide the source's button (a `removable: false` lock is what makes it
+     * inert; hiding is a look, not a rule).
+     */
+    hideOnSource?: boolean;
     onClick: iInputActionHandler;
 }
 export interface iInputActionContext {
     parentElement: HTMLElement;
     /** Field the set belongs to; `null` when the scope is a group. */
-    input: iBasicInputNode | null;
+    input: iInputField | null;
     action: iActionType;
     button: HTMLButtonElement;
     /** First control of the scope, kept for single-field sets. */
@@ -35,105 +54,6 @@ export interface iInputActionContext {
     result?: unknown;
 }
 export type iInputActionHandler = (parentElement: HTMLElement, context: iInputActionContext) => void | Promise<void>;
-export interface iBasicInputConfig {
-    attributes?: Array<{
-        name: string;
-        value: string;
-    }>;
-    style?: string;
-    field?: string;
-    className?: string;
-    /**
-     * @deprecated Choices belong to the field: write `content.options`. Kept so a sheet that
-     * still says `config.options` keeps rendering; nothing inside the layer reads this bag
-     * for options any more.
-     */
-    options?: Array<string | iBasicSelectOption>;
-    position?: "left" | "right";
-    icon?: string;
-    textContent?: string | Record<string, unknown>;
-    /**
-     * Buttons for this set.
-     *
-     * Entries may be mixed: a bare name is a preset (`"editor"` → edit+save, `"repeater"` →
-     * add+delete, `"search"` → search) with the built-in behaviour and no callback, while an
-     * object is taken literally — it exists so a project can name the button and do its own
-     * work. `["editor", { type: "copy", onClick }]` is therefore valid.
-     */
-    actions?: Array<iActionType | iInputActionDefinition> | Partial<Record<iActionType, Omit<iInputActionDefinition, "type">>> | null;
-    /**
-     * Keep this field writable even when a control set locks its scope.
-     *
-     * Same meaning as the node-level `editable`; accepted here too so a schema can group it
-     * with the rest of the field's behaviour.
-     */
-    editable?: boolean;
-    /**
-     * Width hint when the field sits inside a row.
-     *
-     * `50` → half the row, `0.5` → the same thing as a fraction, `"auto"` → the whole row.
-     * Ignored outside a row (a plain field is always full width).
-     */
-    wide?: number | string | null;
-    useLabel?: boolean;
-    view?: string;
-    thumbnail?: boolean;
-    maxUpload?: number;
-    maxFileSize?: number;
-    groupUnallowed?: boolean;
-    createEventListener?: boolean;
-    popover?: string | HTMLElement | undefined;
-    display?: "block" | "inline";
-    /** Options forwarded to the dropdown module when `type` is `"dropdown"`. */
-    dropdown?: Record<string, any>;
-    /**
-     * Called with the raw files the user picked, when the file module is registered.
-     *
-     * The input layer deliberately stops here: parsing a CSV into a table, serializing a
-     * Drive payload or rendering a preview are decisions for whoever owns the file. Without
-     * the `file` module in the preset this callback never fires.
-     *
-     * @param files - Selected files, in the order the browser reported them.
-     * @param field - The resolved field payload, for id/name context.
-     */
-    onFileSelected?: (files: File[], field: any) => void | Promise<void>;
-    /** Calculation strategy attached to this input (usually a readonly total field). */
-    calculator?: iCalculationFormula<any>;
-}
-export interface iBasicInputNode extends iBuilderConfig<InputElementType> {
-    type?: InputType;
-    id?: string;
-    formId?: string | null;
-    name?: string;
-    title?: string;
-    /** Alternatif `title` untuk teks label; dipakai lebih dulu bila ada. */
-    label?: string;
-    /**
-     * Choices for `select`, `dropdown`, `picker` and a `radio`/`checkbox` group.
-     *
-     * One spelling for every chooser: a string is `{ value, label }`, and `multiple`
-     * (also at this level) decides single or many. The config bag no longer carries options.
-     */
-    options?: Array<string | iBasicSelectOption>;
-    placeholder?: string;
-    value?: any;
-    /** Numeric increment; defaults to "any" so decimal values pass native validation. */
-    step?: number | "any";
-    rows?: number;
-    cols?: number;
-    multiple?: boolean;
-    disabled?: boolean;
-    readonly?: boolean;
-    /** Skip InputControls' automatic read-only/disabled lock when edit actions are present. */
-    editable?: boolean;
-    required?: boolean;
-    checked?: boolean;
-    range?: string;
-    info?: string;
-    position?: "top" | "left" | "right" | "bottom";
-    config?: iBasicInputConfig;
-    onValueChange?: (form: any, e: Event) => {};
-}
 /** Builder-level configuration for the input layer. */
 export interface iInputConfig extends iBuilderConfig<InputElementType> {
     /**
@@ -156,7 +76,7 @@ export declare class InputBuilder extends Builder<InputElementType, iInputConfig
     readonly builderId: keyof iBuilderRegistry;
     readonly name: keyof iBuilderRegistry;
     readonly stylesheet: string;
-    /** One field node. The full field vocabulary belongs to `iBasicInputNode`, so it stays open. */
+    /** One field node. The vocabulary itself lives in `InputSchema.ts`; this stays open. */
     static readonly contract: iContentContract;
     /**
      * 🪶 LOADING MOCKUP — one label and one control box, drawn with the mandatory
@@ -166,7 +86,28 @@ export declare class InputBuilder extends Builder<InputElementType, iInputConfig
     protected loading(): HTMLElement;
     constructor(config?: Partial<iInputConfig>);
     private resolvePayload;
-    prepare(inputObj: Partial<iBasicInputNode>, _config?: Required<iInputConfig> | undefined): HTMLElement | Record<string, any | HTMLElement>;
+    /**
+     * The one door.
+     *
+     * `{ content, config }` is folded into the flat payload the pipeline reads — content keys
+     * at the top level, behaviour in one bag. Those are the only two blocks a field has, so
+     * the schema is the only shape this builder accepts.
+     *
+     * @param schema - `InputSchema<T>` when the type is known, the whole union otherwise.
+     * @returns The field's root element.
+     */
+    create<const T extends InputType>(schema?: InputSchema<T>): HTMLElement;
+    /**
+     * Assignability only: `Builder.create` takes the base shape, and a narrower parameter
+     * cannot override it. Nothing in this package calls it — the fold above is the door.
+     *
+     * @internal
+     */
+    create(schema?: {
+        content?: any;
+        config?: Partial<iInputConfig>;
+    }): HTMLElement;
+    prepare(inputObj: Partial<iInputField> & Record<string, any>, _config?: Required<iInputConfig> | undefined): HTMLElement | Record<string, any | HTMLElement>;
     protected template(typeKey: InputElementType, el: HTMLElement, payload?: any): void;
     initialize(_el?: HTMLElement, _payload?: any, _context?: any): void;
     /**

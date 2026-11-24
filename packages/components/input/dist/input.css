@@ -25,24 +25,34 @@
   --input-primary-color: var(--app-primary-color, darkgoldenrod);
   --input-accent-color: var(--app-accent-color, rgba(184, 135, 11, 0.384));
 
-  /* The neutral paper every field tint is mixed onto. Not an app surface: --app-surface-strong
-     is pure white and --app-surface-muted is a warm translucent wash, so neither is this value.
-     `-soft` is the same paper at 80% alpha — the alpha sites inside color-mix() blend against
-     it, so it is a separate token, not the same colour rounded. */
-  --input-paper: rgb(245, 244, 244);
-  --input-paper-soft: rgb(245, 244, 244, 0.8);
+  /* The neutral paper every field tint is mixed onto: the theme's own strong surface, so a
+     light field tints toward white and a dark one toward the dark card instead of both
+     mixing into `rgb(245,244,244)` (which painted a light wash on a dark page).
+     `-soft` is the same paper at 80% alpha — the alpha sites inside color-mix() blend
+     against it, so it is a separate token, not the same colour rounded. */
+  --input-paper: var(--app-surface-strong, #ffffff);
+  --input-paper-soft: color-mix(in srgb, var(--app-surface-strong, #ffffff) 80%, transparent);
 
-  --input-border-color: var(--input-primary-color);
+  /* A 1px stroke is non-text UI (WCAG 1.4.11): read the UI-safe shade of the brand, not the
+     fill colour — a light primary teal is ~2.5:1 on a light surface and disappears. */
+  --input-border-color: var(--app-primary-ui, var(--input-primary-color));
 
-  --input-text-color: color-mix(in srgb, var(--input-accent-color) 30%, var(--input-primary-color) 45%);
-  --input-label-color: var(--input-accent-color);
-  --input-text-color-light: color-mix(in srgb, var(--input-primary-color) 40%, white 50%);
-  --input-text-color-hover: color-mix(in srgb, var(--input-primary-color) 40%, black 30%);
-  --input-placeholder-color: color-mix(in srgb, grey 15%, var(--input-text-color) 30%);
+  /* Text is not decoration: the ink stays the theme's text colour with a brand whisper
+     (22%), so a pale brand cannot paint body text below 4.5:1. The label is small caps, so
+     it leans on the muted ink and only borrows 30% of the body ink to clear the same floor —
+     a brand tint there would only LOWER the ratio on a pale theme. */
+  --input-text-color: color-mix(in srgb, var(--app-text-color) 78%, var(--input-primary-color) 22%);
+  --input-label-color: color-mix(in srgb, var(--app-text-accent-color) 70%, var(--app-text-color) 30%);
+  /* A lift and a sink of the brand, anchored to the theme's ink instead of a fixed
+     white/black: on a dark page "lift" must mean lighter and "sink" darker, and only an
+     anchor that flips with `color-scheme` can say that. */
+  --input-text-color-light: color-mix(in srgb, var(--input-primary-color) 40%, var(--app-surface-strong) 50%);
+  --input-text-color-hover: color-mix(in srgb, var(--input-primary-color) 40%, var(--app-text-color) 30%);
+  --input-placeholder-color: color-mix(in srgb, var(--app-text-accent-color) 15%, var(--input-text-color) 30%);
 
-  --input-background-color: color-mix(in srgb, var(--input-accent-color) 30%, #fff 100%);
-  --input-background-color-hover: color-mix(in srgb, var(--input-accent-color) 50%, #fff 15%);
-  --input-picker-background: color-mix(in srgb, var(--input-background-color) 100%, #fff 90%);
+  --input-background-color: color-mix(in srgb, var(--input-accent-color) 30%, var(--app-surface-strong) 100%);
+  --input-background-color-hover: color-mix(in srgb, var(--input-accent-color) 50%, var(--app-surface-strong) 15%);
+  --input-picker-background: color-mix(in srgb, var(--input-background-color) 100%, var(--app-surface-strong) 90%);
   /* tag chips printed inside a multi-select field (Dropdown.css) */
   --input-tag-background: var(--app-surface-muted, #e0e1e2);
   --input-tag-text-color: var(--app-text-color, rgba(0, 0, 0, 0.6));
@@ -71,6 +81,23 @@
   --input-popup-easing: ease;
   --input-popup-distance: 4px;
 
+  /* POPUP — ONE SOURCE. `::picker(select)` and `.menu` are the same sheet, so every value
+     they share is declared here once and consumed by both. Retune the surface here and the
+     native picker and the custom menu move together; there is no matching edit to forget.
+     Only genuinely different things (DOM shape, `position: fixed`, the flip mirror) stay in
+     their own rules. */
+  --input-popup-background: var(--input-background-color);
+  --input-popup-color: var(--input-text-color);
+  --input-popup-border: 1px solid var(--input-border-color);
+  /* The edge shared with the control: no border there, the control's owns the seam. */
+  --input-popup-seam: none;
+  --input-popup-radius: var(--input-border-radius);
+  --input-popup-shadow: var(--app-shadow-soft, 0 12px 35px -8px rgba(92, 60, 20, 0.12));
+  --input-popup-max-height: calc((var(--input-min-height) * 4) + 10px);
+  --input-popup-item-padding: 0.31em 0.5em;
+  /* The custom menu's entrance (the select keeps its own, authored in `& select`). */
+  --input-popup-enter-origin: top;
+
   /* error state — derived from the app layer so a theme can retheme it */
   --input-error-color: var(--app-status-error, #ff114d);
   --input-error-text-color: var(--app-status-error-soft, #ff93ae);
@@ -94,9 +121,6 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-mode="light"]) {
     --input-border-color: var(--app-border-color, rgba(229, 164, 67, 0.22));
-    --input-text-color: var(--app-text-color, #f3ede2);
-    --input-label-color: var(--app-text-accent-color, #bfaea0);
-    --input-placeholder-color: rgba(191, 174, 160, 0.5);
     --input-background-color: transparent;
     --input-picker-background: var(--app-surface-strong, #231b14);
     --input-number-spin-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 20'%3E%3Cpath d='M6 1 10 7H2z' fill='%23bfaea0'/%3E%3Cpath d='M6 19 2 13h8z' fill='%23bfaea0'/%3E%3C/svg%3E");
@@ -105,9 +129,6 @@
 
 :root[data-mode="dark"] {
   --input-border-color: var(--app-border-color, rgba(229, 164, 67, 0.22));
-  --input-text-color: var(--app-text-color, #f3ede2);
-  --input-label-color: var(--app-text-accent-color, #bfaea0);
-  --input-placeholder-color: rgba(191, 174, 160, 0.5);
   --input-background-color: transparent;
   --input-picker-background: var(--app-surface-strong, #231b14);
   --input-number-spin-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 20'%3E%3Cpath d='M6 1 10 7H2z' fill='%23bfaea0'/%3E%3Cpath d='M6 19 2 13h8z' fill='%23bfaea0'/%3E%3C/svg%3E");
@@ -123,6 +144,15 @@ select:focus-visible {
    2. Input Wrapper & Display Layouts
    ========================================================================== */
 .field {
+  /* The field wrapper owns the positioning context: the datalist arrow, the spinner and
+     the menu's anchor all position against it. Declared once, here — a second sheet
+     declaring it was a second source for the same box. */
+  position: relative;
+  /* One anchor name for every field control, scoped to the field: a dropdown, a native
+     `select` picker and a picker panel on one page never compete, and no id has to be
+     generated. */
+  anchor-scope: --field-dropdown-anchor;
+
   &:is([hidden]) {
     visibility: hidden !important;
   }
@@ -188,6 +218,40 @@ select:focus-visible {
   margin-bottom: 1em;
   text-align: left;
 
+  /* A field's help text sits on its own full-width line below the control, never inline
+     with it. `grid-column: 1 / -1` makes it span the whole row inside a grid field
+     (group / inline / switch), where it would otherwise share a cell with the control. */
+  & > .info {
+    display: block;
+    width: 100%;
+    grid-column: 1 / -1;
+    margin-top: 0.35em;
+    color: var(--input-label-color);
+    font-size: calc(var(--input-font-size) * 0.85);
+    font-weight: 400;
+    line-height: 1.3;
+  }
+
+  /* The host's validation message (`config.error`): the same full-width line as the help
+     text, printed just above it, so a field says what is wrong before what it is for. */
+  & > .error {
+    display: block;
+    width: 100%;
+    grid-column: 1 / -1;
+    margin-top: 0.35em;
+    color: var(--input-error-color);
+    font-size: calc(var(--input-font-size) * 0.85);
+    font-weight: 500;
+    line-height: 1.3;
+  }
+
+  /* `config.error` tints the control itself, including the `error: true` case that has no
+     message child to read. Native controls only: a dropdown/picker draws its own surface. */
+  &[data-error] :is(input:not([type="checkbox"], [type="file"]), select, textarea) {
+    border-color: var(--input-error-color);
+    background-color: var(--input-error-background-color);
+  }
+
   /* 3. Labels & Base Form Controls */
   & label {
     display: block;
@@ -239,7 +303,7 @@ select:focus-visible {
     font-size: var(--input-font-size);
     border-width: 1px;
     border-style: solid;
-    border-color: var(--input-text-color-light);
+    border-color: var(--input-border-color);
     border-radius: var(--input-border-radius);
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -300,15 +364,16 @@ select:focus-visible {
     /* background-blend-mode: normal; */
   }
 
+  /* A native select used to rest on `--input-accent-color` — the only control with a
+     different untouched border, so it read as a foreign element beside the inputs. One hue
+     for every control, untouched or not: `--input-border-color`. */
   & select:not(:open),
   & select:not(:open):is(:focus-visible) {
-    border-color: var(--input-accent-color);
+    border-color: var(--input-border-color);
   }
 
   /* Open Select Special Rounding Layer Override */
   & select:open,
-  &:has(select:open) select,
-  &:has(select:open) select:is(:hover, :active),
   &:has(select:active) select:open::picker(select),
   &:has(select:focus) select:open::picker(select) {
     transition:
@@ -321,12 +386,7 @@ select:focus-visible {
       color var(--input-popup-duration, 250ms);
     border-color: var(--input-border-color);
     /* border-width/border-style SENGAJA tidak di-declare di sini:
-         sudah dijamin oleh shared surface §5.2 (popup) & core §3 (select).
-         Re-declare di 0-4-1 akan mengalahkan rule ATTACHED §5.2
-         (border-top: none) → border atas picker nyala lagi saat open. */
-    border-bottom-left-radius: 0;
-    border-bottom-right-radius: 0;
-    border-bottom-color: transparent;
+         sudah dijamin oleh shared surface §5.2 (popup) & core §3 (select). */
   }
 
   & select {
@@ -348,139 +408,220 @@ select:focus-visible {
       display: block;
       outline: none;
       line-height: var(--input-line-height);
-      padding: 0.31em 0.5em;
+      padding: var(--input-popup-item-padding);
       border: none;
       width: auto;
       /* warna selected diambil dari rule bersama §5.3 (ikut option:checked) */
     }
 
+    /* Native picker, opening DOWN (default): it owns the shared edge — square top corners,
+       no top border — and the control squares below to match. */
+    &::picker(select) {
+      border-block-start: var(--input-popup-seam);
+      border-start-start-radius: 0;
+      border-start-end-radius: 0;
+    }
+
+    /* Native picker opened UP (`data-placement` written by the adapter from the picker's
+       real height): mirror every edge. */
+    &[data-placement="above"]::picker(select) {
+      top: auto;
+      bottom: calc(anchor(top) - 1px);
+      position-try-fallbacks: none;
+      border-block-start: var(--input-popup-border);
+      border-block-end: var(--input-popup-seam);
+      border-start-start-radius: var(--input-popup-radius);
+      border-start-end-radius: var(--input-popup-radius);
+      border-end-start-radius: 0;
+      border-end-end-radius: 0;
+      transform-origin: bottom;
+    }
+
+    &[data-placement="above"]:open {
+      border-bottom-left-radius: var(--input-border-radius);
+      border-bottom-right-radius: var(--input-border-radius);
+      border-top-left-radius: 0;
+      border-top-right-radius: 0;
+    }
+
     &:open::picker(select) {
       opacity: 1;
       transition-delay: var(--input-dropdown-transition-delay, 30ms);
+      /* KEEP: the select's own entrance, as authored — the platform picker grows and
+         slides in one motion. The custom `.menu` unrolls instead (see `& > .menu`). */
       transform: translateY(0) scaleY(1) scaleX(1);
       outline: none;
-      border-radius: 0 0 var(--input-border-radius) var(--input-border-radius);
-      box-shadow: 0 2px 3px 0 color-mix(in srgb, var(--input-accent-color) 30%, var(--input-primary-color) 45%);
+      box-shadow: var(--input-popup-shadow);
       /* scrollbar-gutter: stable; */
       scrollbar-width: thin;
       overflow-x: hidden;
     }
 
     &:open {
+      border-color: var(--input-border-color);
+      border-bottom-left-radius: 0;
+      border-bottom-right-radius: 0;
+    }
+
+    /* Native picker: the PLATFORM decides whether it opens up or down; the adapter reads
+       the picker's real height and writes `data-placement`, so the seam mirrors exactly.
+       Below is the default and needs no attribute. */
+    &:open::picker(select) {
+      opacity: 1;
+      transition-delay: var(--input-dropdown-transition-delay, 30ms);
+      /* KEEP: the select's own entrance, as authored. */
+      transform: translateY(0) scaleY(1) scaleX(1);
+      outline: none;
+      box-shadow: var(--input-popup-shadow);
+      /* scrollbar-gutter: stable; */
+      scrollbar-width: thin;
+      overflow-x: hidden;
+    }
+
+    &:open {
+      border-color: var(--input-border-color);
       border-bottom-left-radius: 0;
       border-bottom-right-radius: 0;
     }
   }
+}
 
-  /* ------------------------------------------------------------------
-      5.2 SHARED POPUP SURFACE — ::picker(select) & .dropdown > .menu
-      Ditulis sebagai rule STANDALONE yang disinkronkan (BUKAN digabung
-      dengan .menu via selector list lintas jenis — pseudo-element +
-      selector kompleks dalam satu list bisa membatalkan seluruh rule).
-      Perubahan visual di salah satu WAJIB disalin ke pasangannya.
+/* ------------------------------------------------------------------
+      5.2 SHARED POPUP SURFACE — `::picker(select)` and `.menu` are ONE sheet.
+      Every value they share comes from a `--input-popup-*` token (token layer, top of
+      this file), so retuning the surface is one edit and the two can never drift or
+      override each other. Only the DOM shape, `position: fixed`, the flip mirror and the
+      platform picker's own entrance live in their own rules below.
     ------------------------------------------------------------------ */
-  & select::picker(select),
-  & .dropdown[data-style] > .menu {
-    box-sizing: border-box;
-    padding: 0;
-    margin: 0;
-    scrollbar-width: thin;
-    scrollbar-color: var(--input-accent-color) color-mix(in srgb, grey 10%, var(--input-accent-color) 5%);
-    background-color: var(--input-background-color);
-    color: var(--input-text-color);
-    backdrop-filter: blur(12px);
-    inset: auto;
-    left: anchor(left);
-    width: anchor-size(width);
-    top: calc(anchor(bottom) - 1px);
-    border: 1px solid var(--input-primary-color);
-    border-radius: var(--input-border-radius);
-    max-height: calc((var(--input-min-height) * 4) + 10px);
-    opacity: 0;
-    transform-origin: top;
-    transition-behavior: allow-discrete;
-    white-space: nowrap;
-    overflow-x: hidden;
-    text-overflow: ellipsis;
-    outline: none;
-    position-try-fallbacks: none;
-  }
+& select::picker(select),
+& .dropdown[data-style] > .menu {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+  scrollbar-width: thin;
+  scrollbar-color: var(--input-accent-color)
+    color-mix(in srgb, var(--app-text-accent-color) 10%, var(--input-accent-color) 5%);
+  background-color: var(--input-popup-background);
+  color: var(--input-popup-color);
+  backdrop-filter: blur(12px);
+  inset: auto;
+  left: anchor(left);
+  width: anchor-size(width);
+  /* ATTACHED: the sheet sits flush on the control, and the edge they share belongs to
+       the control — no border there, corners squared on that side, 1px overlap so the
+       doubled line never shows. `[data-placement="above"]` mirrors every edge. */
+  top: calc(anchor(bottom) - 1px);
+  border: var(--input-popup-border);
+  border-block-start: var(--input-popup-seam);
+  border-start-start-radius: 0;
+  border-start-end-radius: 0;
+  border-end-start-radius: var(--input-popup-radius);
+  border-end-end-radius: var(--input-popup-radius);
+  transform-origin: var(--input-popup-enter-origin);
+  box-shadow: var(--input-popup-shadow);
+  max-height: var(--input-popup-max-height);
+  opacity: 0;
+  transition-behavior: allow-discrete;
+  white-space: nowrap;
+  overflow-x: hidden;
+  text-overflow: ellipsis;
+  outline: none;
+  position-try-fallbacks: --flip-top, flip-block;
+}
 
-  & select::picker(select),
-  & .dropdown[data-style] > .menu {
-    border-top: none;
-  }
+/* MENU-ONLY seam (dropdown below): drop the shared border edge and square the corners on
+     that side, so menu + control read as one box. */
+& .dropdown[data-style] > .menu {
+  border-block-start: var(--input-popup-seam);
+  border-start-start-radius: 0;
+  border-start-end-radius: 0;
+}
 
-  & select option,
-  & .dropdown[data-style] > .menu > .item {
-    color: var(--input-text-color);
-    transition: all 100ms;
-    white-space: nowrap;
-    overflow-x: hidden;
-    text-overflow: ellipsis;
-    display: block;
-    outline: none;
-    line-height: var(--input-line-height);
-    padding: 0.31em 0.5em;
+/* Opened upward: mirror the seam (square bottom corners, no bottom border) and keep the
+     outer top edge closed. `.menu` carries `data-placement` written by `Dropdown`; the
+     native `::picker(select)` has no such hook, so it keeps the downward seam and lets
+     `--flip-top` move it (the platform picker rarely flips). */
+& .dropdown[data-style] > .menu[data-placement="above"] {
+  top: auto;
+  bottom: calc(anchor(top) - 1px);
+  position-try-fallbacks: none;
+  border-block-start: var(--input-popup-border);
+  border-block-end: var(--input-popup-seam);
+  border-start-start-radius: var(--input-popup-radius);
+  border-start-end-radius: var(--input-popup-radius);
+  border-end-start-radius: 0;
+  border-end-end-radius: 0;
+  /* grows upward out of the seam it shares with the control's top edge */
+  transform-origin: bottom;
+}
+& select option,
+& .dropdown[data-style] > .menu > .item {
+  color: var(--input-text-color);
+  transition: all 100ms;
+  white-space: nowrap;
+  overflow-x: hidden;
+  text-overflow: ellipsis;
+  display: block;
+  outline: none;
+  line-height: var(--input-line-height);
+  padding: 0.31em 0.5em;
+  border: none;
+  width: auto;
+  cursor: pointer;
+  text-transform: capitalize;
+
+  &:hover {
+    color: color-mix(in srgb, var(--app-text-accent-color) 30%, var(--input-text-color) 35%);
+    background-color: color-mix(in srgb, var(--input-primary-color) 10%, var(--input-accent-color) 5%);
+  }
+}
+
+& select option:checked,
+& select::part(selectedcontent),
+& .dropdown[data-style] > .menu > .item:is(.selected) {
+  color: color-mix(in srgb, var(--input-accent-color) 15%, var(--input-paper));
+  background-color: color-mix(in srgb, var(--input-primary-color) 80%, var(--input-paper-soft));
+}
+
+& .dropdown[data-style] > .menu > .item {
+  display: flex;
+  align-items: center;
+  min-height: var(--input-min-height);
+
+  &:is(.selected) {
+    font-weight: 600;
+  }
+}
+
+/* 9. Validation Error States */
+&:has(.error) {
+  & label {
+    color: var(--input-error-text-color);
+  }
+  & input,
+  & select {
+    border: 1px solid var(--input-error-color);
+    color: var(--input-error-color);
+    box-shadow: none;
+  }
+  /* border kini utuh di semua sisi (shared popup surface §5.2), jadi tidak ada
+         "border-top: none" yang perlu ditekan ulang */
+  & select:open::picker(select) {
+    border: 1px solid var(--input-error-color);
+    color: var(--input-error-color);
+    box-shadow: none;
+  }
+  & input::placeholder,
+  & select option {
     border: none;
-    width: auto;
-    cursor: pointer;
-    text-transform: capitalize;
-
-    &:hover {
-      color: color-mix(in srgb, grey 30%, var(--input-text-color) 35%);
-      background-color: color-mix(in srgb, var(--input-primary-color) 10%, var(--input-accent-color) 5%);
-    }
+    color: var(--input-error-color);
   }
-
-  & select option:checked,
-  & select::part(selectedcontent),
-  & .dropdown[data-style] > .menu > .item:is(.selected) {
-    color: color-mix(in srgb, var(--input-accent-color) 15%, var(--input-paper));
-    background-color: color-mix(in srgb, var(--input-primary-color) 80%, var(--input-paper-soft));
-  }
-
-  & .dropdown[data-style] > .menu > .item {
-    display: flex;
-    align-items: center;
-    min-height: var(--input-min-height);
-
-    &:is(.selected) {
-      font-weight: 600;
-    }
-  }
-
-  /* 9. Validation Error States */
-  &:has(.error) {
-    & label {
-      color: var(--input-error-text-color);
-    }
-    & input,
-    & select {
-      border: 1px solid var(--input-error-color);
-      color: var(--input-error-color);
-      box-shadow: none;
-    }
-    /* border-top: none kini berasal dari shared popup surface §5.2; border
-         penuh di sini akan mengaktifkannya kembali → tekan eksplisit */
-    & select:open::picker(select) {
-      border: 1px solid var(--input-error-color);
-      border-top: none;
-      color: var(--input-error-color);
-      box-shadow: none;
-    }
-    & input::placeholder,
-    & select option {
-      border: none;
-      color: var(--input-error-color);
-    }
-    & select option:first-child:checked,
-    & select option[value=""]:checked,
-    & select option.placeholder:checked {
-      border: 1px solid var(--input-error-color);
-      color: var(--input-error-background-color);
-      background-color: var(--input-error-color);
-    }
+  & select option:first-child:checked,
+  & select option[value=""]:checked,
+  & select option.placeholder:checked {
+    border: 1px solid var(--input-error-color);
+    color: var(--input-error-background-color);
+    background-color: var(--input-error-color);
   }
 }
 
@@ -500,7 +641,7 @@ select:focus-visible {
     transition-behavior: allow-discrete;
     transition-delay: var(--input-dropdown-transition-delay, 30ms);
     cursor: pointer;
-    color: var(--primary-border-color);
+    color: var(--input-border-color);
     transition:
       transform 200ms,
       opacity 200ms;
@@ -550,14 +691,14 @@ select:focus-visible {
     clear: both;
     /* padding: 0.2em 0.3em; */
     background-color: var(--input-background-color);
-    border: 1px solid var(--input-accent-color);
+    border: 1px solid var(--input-border-color);
     border-radius: var(--input-border-radius);
     cursor: pointer;
     transition: 200ms;
     min-height: var(--input-min-height);
 
     &:focus-within {
-      border-color: var(--input-text-color-light);
+      border-color: var(--input-border-color);
     }
 
     &:is(:hover, :active, :focus, :focus-visible) {
@@ -568,10 +709,20 @@ select:focus-visible {
       background-color: var(--input-background-color);
     }
 
+    /* Open = the control and the popup are one box: the bottom corners (and the bottom
+       border) belong to the popup now. Closed, these rules stop matching and the control
+       gets its radius back. */
     &:has(.menu.visible) {
+      border-color: var(--input-border-color);
       border-bottom-left-radius: 0;
       border-bottom-right-radius: 0;
-      border-color: var(--input-primary-color);
+    }
+
+    &:has(.menu.visible[data-placement="above"]) {
+      border-bottom-left-radius: var(--input-border-radius);
+      border-bottom-right-radius: var(--input-border-radius);
+      border-top-left-radius: 0;
+      border-top-right-radius: 0;
     }
 
     &:has(> .tags > .badge) > input[type="text"]::placeholder {
@@ -686,21 +837,25 @@ select:focus-visible {
     & > .menu {
       position: fixed;
       overflow-y: auto;
-      border-top-left-radius: 0;
-      border-top-right-radius: 0;
-      box-shadow: 0px 1px 2px 0 color-mix(in srgb, var(--input-accent-color) 30%, var(--input-primary-color) 45%);
+      /* ONE arbiter of placement: `Dropdown` writes `data-placement` from the space it has,
+         and the attribute decides every edge. Leaving `position-try-fallbacks` on as well
+         meant the platform could move the sheet while the attribute styled the other side —
+         the "sometimes flush, sometimes shifted" seam. */
+      position-try-fallbacks: none;
+      box-shadow: var(--input-popup-shadow);
       pointer-events: none;
-      transform: translateY(calc(var(--input-popup-distance, 4px) * -1)) scaleY(0%);
+      opacity: 0;
+      /* Unrolls from the seam (§5.2 sets the origin): a slide would show a gap under an
+         attached sheet, so the growth IS the animation. */
+      transform: scaleY(0);
       transition: all var(--input-popup-duration, 150ms) var(--input-popup-easing, ease);
       transition-delay: var(--input-dropdown-transition-delay, 30ms);
 
       &:is(.visible) {
         opacity: 1;
-        transform: translateY(0) scaleY(1);
+        transform: scaleY(1);
         pointer-events: auto;
         padding: 0;
-        border-top-left-radius: 0;
-        border-top-right-radius: 0;
       }
 
       & .no-results {
@@ -875,24 +1030,30 @@ select:focus-visible {
 .field,
 .field:is(.group) {
   &:has(.switch.control) {
-    /* --input-text-color-light: color-mix(in srgb, var(--input-primary-color) 40%, white 50%); */
-    display: inline-grid !important;
+    /* Block-level grid, not inline-grid: a switch field spans the row like every other
+       field. The tracks fill the row (the switch stays 48px, the label takes the rest), so a
+       full-width `info` child really spans the field. */
+    display: grid;
     align-items: center;
     justify-content: start;
     gap: 0.5em 0.25em;
-    width: max-content;
+    width: 100%;
     height: auto;
     &:has(> label[data-position="top"]) {
       grid-template-areas: "label" "control";
+      grid-template-columns: 1fr;
     }
     &:has(> label[data-position="left"]) {
       grid-template-areas: "label control";
+      grid-template-columns: max-content 1fr;
     }
     &:has(> label[data-position="right"]) {
       grid-template-areas: "control label";
+      grid-template-columns: max-content 1fr;
     }
     &:has(> label[data-position="bottom"]) {
       grid-template-areas: "control" "label";
+      grid-template-columns: 1fr;
     }
     & > label {
       grid-area: label;
@@ -931,7 +1092,7 @@ select:focus-visible {
         display: block;
         background-color: var(--input-background-color);
         border: 1px solid var(--input-text-color-light);
-        box-shadow: 0px 0px 3px 1px inset rgba(46, 46, 44, 0.1);
+        box-shadow: 0px 0px 3px 1px inset var(--app-border-color);
         transition: 0.4s;
 
         &:before {
@@ -944,8 +1105,8 @@ select:focus-visible {
           border: 1px solid var(--input-primary-color);
           background: radial-gradient(
             circle,
-            color-mix(in srgb, var(--input-primary-color) 100%, #fff 50%) 100%,
-            color-mix(in srgb, var(--input-primary-color) 60%, #fff 20%) 0%
+            color-mix(in srgb, var(--input-primary-color) 100%, var(--app-surface-strong) 50%) 100%,
+            color-mix(in srgb, var(--input-primary-color) 60%, var(--app-surface-strong) 20%) 0%
           );
           transition: 0.4s;
         }
@@ -968,19 +1129,19 @@ select:focus-visible {
       }
 
       & > input:is([type="checkbox"], [type="radio"]):checked ~ .slider {
-        background-color: color-mix(in hsl, var(--input-background-color) 30%, rgba(90, 90, 90, 0.6) 40%);
-        box-shadow: 0px 0px 2px 1px inset rgba(46, 46, 44, 0.1);
+        background-color: color-mix(in hsl, var(--input-background-color) 30%, var(--app-text-accent-color) 40%);
+        box-shadow: 0px 0px 2px 1px inset var(--app-border-color);
         /* border: 1px solid var(--input-border-color); */
       }
       & > input:is([type="checkbox"], [type="radio"]) ~ .slider::before {
         box-shadow:
-          -1px 0px 1px 1px rgba(20, 20, 12, 0.1),
-          -1px -1px 1px 0px rgba(20, 20, 12, 0.1);
+          -1px 0px 1px 1px color-mix(in srgb, var(--app-text-color) 12%, transparent),
+          -1px -1px 1px 0px color-mix(in srgb, var(--app-text-color) 12%, transparent);
       }
       & > input:is([type="checkbox"], [type="radio"]):checked ~ .slider:before {
         box-shadow:
-          1px 0px 1px 1px rgba(20, 20, 12, 0.1),
-          2px 0px 1px 0px rgba(20, 20, 12, 0.1);
+          1px 0px 1px 1px color-mix(in srgb, var(--app-text-color) 12%, transparent),
+          2px 0px 1px 0px color-mix(in srgb, var(--app-text-color) 12%, transparent);
         transform: translateX(20px);
       }
     }
@@ -1027,7 +1188,24 @@ select:focus-visible {
     & > select:open::picker(select) {
       display: block;
       opacity: 0;
+      /* KEEP: the select's own entrance, as authored. */
       transform: translateY(calc(var(--input-popup-distance, 4px) * -1)) scaleY(0%) scaleX(99.7%);
     }
   }
+}
+
+/* ------------------------------------------------------------------
+   Flip-to-top. `position-try-fallbacks` on the shared surface asks the
+   platform to try this arrangement first; `flip-block` is the built-in
+   safety net. A try rule may only carry placing/sizing declarations, so the
+   mirror is purely geometric: same inset, same anchor edges, same width.
+   Chromium 125+ / Firefox 132+ / Safari 18+; older engines ignore both and
+   keep the absolute fallback the surface already declares.
+------------------------------------------------------------------ */
+@position-try --flip-top {
+  inset: auto;
+  top: auto;
+  left: anchor(left);
+  width: anchor-size(width);
+  bottom: calc(anchor(top) + var(--input-popup-distance, 4px));
 }

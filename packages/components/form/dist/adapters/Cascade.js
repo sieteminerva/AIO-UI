@@ -4,6 +4,7 @@
 // lalu attach(form) sekali. Evaluasi, mount/unmount, gerbang tombol next,
 // dan delegasi listener berjalan di dalam engine, tanpa membebani Form.ts.
 // ======================================================================
+import { applyRowSpan, arrangeRow, childWideOf } from "../FormLayout.js";
 import { FORM_MODULE_IDS } from "../FormModuleTypes.js";
 /**
  * Cascade engine.
@@ -227,6 +228,7 @@ export class FormCascade {
             const formId = parent.closest("form")?.id ?? "";
             const element = this.#build(item, formId, path);
             element.dataset.cascade = path;
+            this.#stampSpan(element, item, parent);
             // `hidden` is the semantic flag; `data-cascade-hidden` is the layout switch, because
             // Form.css keeps `[hidden]` fields in the flow (visibility) to avoid jumping.
             element.hidden = true;
@@ -339,6 +341,24 @@ export class FormCascade {
      */
     #buildRow(item, formId, path) {
         return this.host.renderRow(item, formId, path);
+    }
+    /**
+     * Writes the child's column share when it is born outside the row loop.
+     *
+     * A conditional field is built here, not by `renderRow`/`renderGroup`, so without this it
+     * would keep the CSS fallback (`span 1`) even when its `config.wide` asks for more. The
+     * container already carries `data-column`; the item carries `wide` / `span`.
+     *
+     * @param element - Freshly built child.
+     * @param item - Its schema node.
+     * @param parent - Container it was inserted into.
+     */
+    #stampSpan(element, item, parent) {
+        const column = Number(parent?.dataset.column);
+        if (!Number.isFinite(column) || column <= 0)
+            return;
+        applyRowSpan(element, childWideOf(item));
+        arrangeRow(parent, column);
     }
     /** Aktifkan engine: delegasi input/change + sync + gate awal */
     attach(form) {
@@ -458,6 +478,7 @@ export class FormCascade {
                     // A build failure throws — it is not swallowed. The copy keeps its own ids.
                     const el = this.#buildForInstance(item, form.id, path, instance);
                     placeholder.replaceWith(el);
+                    this.#stampSpan(el, item, el.parentElement);
                     changed = true;
                     this.emit(form, "mount", el, item, path);
                 }

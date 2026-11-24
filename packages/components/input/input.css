@@ -364,9 +364,12 @@ select:focus-visible {
     /* background-blend-mode: normal; */
   }
 
+  /* A native select used to rest on `--input-accent-color` — the only control with a
+     different untouched border, so it read as a foreign element beside the inputs. One hue
+     for every control, untouched or not: `--input-border-color`. */
   & select:not(:open),
   & select:not(:open):is(:focus-visible) {
-    border-color: var(--input-accent-color);
+    border-color: var(--input-border-color);
   }
 
   /* Open Select Special Rounding Layer Override */
@@ -411,6 +414,36 @@ select:focus-visible {
       /* warna selected diambil dari rule bersama §5.3 (ikut option:checked) */
     }
 
+    /* Native picker, opening DOWN (default): it owns the shared edge — square top corners,
+       no top border — and the control squares below to match. */
+    &::picker(select) {
+      border-block-start: var(--input-popup-seam);
+      border-start-start-radius: 0;
+      border-start-end-radius: 0;
+    }
+
+    /* Native picker opened UP (`data-placement` written by the adapter from the picker's
+       real height): mirror every edge. */
+    &[data-placement="above"]::picker(select) {
+      top: auto;
+      bottom: calc(anchor(top) - 1px);
+      position-try-fallbacks: none;
+      border-block-start: var(--input-popup-border);
+      border-block-end: var(--input-popup-seam);
+      border-start-start-radius: var(--input-popup-radius);
+      border-start-end-radius: var(--input-popup-radius);
+      border-end-start-radius: 0;
+      border-end-end-radius: 0;
+      transform-origin: bottom;
+    }
+
+    &[data-placement="above"]:open {
+      border-bottom-left-radius: var(--input-border-radius);
+      border-bottom-right-radius: var(--input-border-radius);
+      border-top-left-radius: 0;
+      border-top-right-radius: 0;
+    }
+
     &:open::picker(select) {
       opacity: 1;
       transition-delay: var(--input-dropdown-transition-delay, 30ms);
@@ -424,16 +457,15 @@ select:focus-visible {
       overflow-x: hidden;
     }
 
-scrollbar-width: thin;
-      overflow-x: hidden;
+    &:open {
+      border-color: var(--input-border-color);
+      border-bottom-left-radius: 0;
+      border-bottom-right-radius: 0;
     }
 
-    /* Native picker: the PLATFORM decides whether it opens up or down, and it exposes no
-       event/box to read that afterwards. So it must not depend on the side at all — a full
-       outline with all four corners rounded, sitting flush (1px overlap). Guessing the side
-       from an estimated height was wrong at exactly the heights where the guess disagreed
-       with the platform. The custom `.menu` below keeps the mirrored seam because JS owns
-       its placement. */
+    /* Native picker: the PLATFORM decides whether it opens up or down; the adapter reads
+       the picker's real height and writes `data-placement`, so the seam mirrors exactly.
+       Below is the default and needs no attribute. */
     &:open::picker(select) {
       opacity: 1;
       transition-delay: var(--input-dropdown-transition-delay, 30ms);
@@ -448,7 +480,10 @@ scrollbar-width: thin;
 
     &:open {
       border-color: var(--input-border-color);
+      border-bottom-left-radius: 0;
+      border-bottom-right-radius: 0;
     }
+  }
 }
 
 /* ------------------------------------------------------------------
@@ -472,14 +507,16 @@ scrollbar-width: thin;
   inset: auto;
   left: anchor(left);
   width: anchor-size(width);
-  /* Flush with the control (attached, 1px overlap). Which border edge is dropped and
-       which corners are squared depends on the side the sheet lands on, so that part is
-       NOT here: it is the menu-only rules below, where the side is known. The native
-       picker keeps this full outline and its four corners — the platform picks its side
-       and tells nobody, so a guess would be wrong at exactly the flip heights. */
+  /* ATTACHED: the sheet sits flush on the control, and the edge they share belongs to
+       the control — no border there, corners squared on that side, 1px overlap so the
+       doubled line never shows. `[data-placement="above"]` mirrors every edge. */
   top: calc(anchor(bottom) - 1px);
   border: var(--input-popup-border);
-  border-radius: var(--input-popup-radius);
+  border-block-start: var(--input-popup-seam);
+  border-start-start-radius: 0;
+  border-start-end-radius: 0;
+  border-end-start-radius: var(--input-popup-radius);
+  border-end-end-radius: var(--input-popup-radius);
   transform-origin: var(--input-popup-enter-origin);
   box-shadow: var(--input-popup-shadow);
   max-height: var(--input-popup-max-height);
@@ -501,8 +538,9 @@ scrollbar-width: thin;
 }
 
 /* Opened upward: mirror the seam (square bottom corners, no bottom border) and keep the
-     outer top edge closed. Only `.menu` can do this — `Dropdown` writes `data-placement`
-     from the space it measured, and nothing else is allowed to move it. */
+     outer top edge closed. `.menu` carries `data-placement` written by `Dropdown`; the
+     native `::picker(select)` has no such hook, so it keeps the downward seam and lets
+     `--flip-top` move it (the platform picker rarely flips). */
 & .dropdown[data-style] > .menu[data-placement="above"] {
   top: auto;
   bottom: calc(anchor(top) - 1px);

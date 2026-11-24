@@ -796,6 +796,8 @@ export class InputBuilder extends Builder<InputElementType, iInputConfig> {
       el.step = "any";
     }
 
+    if (el instanceof HTMLSelectElement) watchPickerPlacement(el);
+
     // Tancapkan custom inline attributes bawaan array schema Anda (jika ada)
     if (cfg?.attributes && Array.isArray(cfg.attributes)) {
       cfg.attributes.forEach((attr: any) => {
@@ -820,6 +822,47 @@ export class InputBuilder extends Builder<InputElementType, iInputConfig> {
       .replace(/^-+|-+$/g, "");
   }
 
+}
+
+/**
+ * The native picker's SIDE is chosen by the platform, but its size is readable:
+ * `getComputedStyle(select, "::picker(select)").height` is the laid-out picker box (Chrome
+ * resolves it even before it opens, because it is used to size the popup). With the real
+ * height there is no estimate left — the comparison below is the same one the platform
+ * makes (fits below, else above), so the mirrored seam lands on the right edge at every
+ * scroll position. The result is written as `data-placement`, the same contract `.menu`
+ * uses, and read by `select[data-placement="above"]` in `Input.css`.
+ */
+const watchedPickers = new WeakSet<HTMLSelectElement>();
+
+function pickerHeight(select: HTMLSelectElement): number {
+  const measured = parseFloat(getComputedStyle(select, "::picker(select)").height);
+  if (Number.isFinite(measured) && measured > 0) return measured;
+  // Fallback for engines that do not resolve it: mirror `--input-popup-max-height`
+  // (4 rows + 10px) with the item padding from §5.3.
+  const style = getComputedStyle(select);
+  const size = parseFloat(style.fontSize) || 16;
+  const row = size * (1.6 + 0.62);
+  return Math.min(Math.max(select.options.length, 1) * row, size * 1.6 * 4 + 10);
+}
+
+function watchPickerPlacement(select: HTMLSelectElement): void {
+  if (watchedPickers.has(select)) return;
+  watchedPickers.add(select);
+
+  const place = () => {
+    const box = select.getBoundingClientRect();
+    const spaceBelow = window.innerHeight - box.bottom;
+    select.dataset.placement = spaceBelow < pickerHeight(select) && box.top > spaceBelow ? "above" : "below";
+  };
+
+  // Before the platform opens it: a pointer click, the keys that open it, or focus.
+  select.addEventListener("pointerdown", place, { passive: true });
+  select.addEventListener("focus", place);
+  select.addEventListener("keydown", (event) => {
+    const key = (event as KeyboardEvent).key;
+    if (key === " " || key === "Enter" || key.startsWith("Arrow")) place();
+  });
 }
 
 /**

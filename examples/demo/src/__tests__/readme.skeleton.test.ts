@@ -5,7 +5,7 @@
  * interface: this test fails when a package README stops following `COMPONENT-CONVENTIONS.md` §1c —
  * which is what keeps a newly scaffolded component from shipping unparseable docs.
  */
-import { readdirSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
@@ -22,11 +22,12 @@ import {
 const ROOT = process.cwd();
 const ALLOWED = new Set<string>([...README_REQUIRED, ...README_OPTIONAL]);
 
-/** Directory names that are packages (every folder in the band has a README). */
+/** A package folder is a directory that carries a `package.json`; shared `__tests__` does not. */
 function packageFolders(band: string): string[] {
   return readdirSync(join(ROOT, "packages", band), { withFileTypes: true })
     .filter((entry) => entry.isDirectory())
     .map((entry) => entry.name)
+    .filter((name) => existsSync(join(ROOT, "packages", band, name, "package.json")))
     .sort();
 }
 

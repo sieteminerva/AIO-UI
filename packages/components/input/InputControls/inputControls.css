@@ -21,6 +21,14 @@
     margin-bottom: 0.35em;
   }
 
+  /* Help text is its own full-width row in the composite field too, never inline with the
+     buttons: `flex-basis: 100%` forces it onto a new wrapped line. */
+  & > .info {
+    flex: 0 0 100%;
+    width: 100%;
+    margin-top: 0.35em;
+  }
+
   &:has(.controls) {
     & input,
     & select,

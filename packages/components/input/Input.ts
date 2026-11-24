@@ -589,13 +589,6 @@ export class InputBuilder extends Builder<InputElementType, iInputConfig> {
       wrapper.setAttribute("data-editable", "true");
     }
 
-    // C. Render Info Tambahan di bagian bawah jika ada
-    if (this.#input.info) {
-      const info = this.render("@field>info", this.#input.info)!;
-      wrapper.appendChild(info);
-    }
-
-
     // Dropdown mencetak root `.dropdown` sendiri, jadi root itu yang ditempel apa adanya.
     if (inputEl) inputEl.__outer ? wrapper.appendChild(inputEl.__outer) : wrapper.appendChild(inputEl);
 
@@ -614,6 +607,14 @@ export class InputBuilder extends Builder<InputElementType, iInputConfig> {
           "config.popover is ignored and no anchor attaches to the control."
         );
       }
+    }
+
+    // Help text is always the last child: appended after the control and after every
+    // module decoration (uploader/action set/popover), so it never sits between the label
+    // and the control.
+    if (this.#input.info) {
+      const info = this.render("@field>info", this.#input.info)!;
+      wrapper.appendChild(info);
     }
 
     return wrapper!;

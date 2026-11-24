@@ -379,4 +379,46 @@ describe("input sheet", () => {
     expect(sheet).toContain("&:is(.choice) {");
     expect(sheet).toContain("& > .choice-item > input {");
   });
+
+  it("gives the help text its own full-width line, never inline", () => {
+    // `& > .info` is a block that spans every column of a grid field, so it can never sit
+    // beside the control.
+    expect(sheet).toContain("& > .info {");
+    expect(sheet).toContain("grid-column: 1 / -1;");
+  });
+});
+
+describe("InputBuilder help text (info)", () => {
+  it("is the last child of the field, after the control", () => {
+    const { container } = build({ type: "text", id: "name", title: "Nama", info: "Helper text" });
+    const last = container.lastElementChild as HTMLElement;
+
+    expect(last.tagName).toBe("SMALL");
+    expect(last.classList.contains("info")).toBe(true);
+    expect(last.textContent).toBe("Helper text");
+  });
+
+  it("stays last for a choice group (radio + options)", () => {
+    const { container } = build({
+      type: "radio",
+      id: "pick",
+      title: "Pick",
+      options: [{ value: "a", label: "A" }, { value: "b", label: "B" }],
+      info: "Pick one",
+    });
+
+    expect((container.lastElementChild as HTMLElement).classList.contains("info")).toBe(true);
+  });
+
+  it("comes after the label and after the control, never between them", () => {
+    const { container, control } = build({ type: "text", id: "name", title: "Nama", info: "Help" });
+    const children = Array.from(container.children);
+    const labelIndex = children.findIndex((child) => child.tagName === "LABEL");
+    const controlIndex = children.indexOf(control);
+    const infoIndex = children.findIndex((child) => child.classList.contains("info"));
+
+    expect(infoIndex).toBeGreaterThan(labelIndex);
+    expect(infoIndex).toBeGreaterThan(controlIndex);
+    expect(infoIndex).toBe(children.length - 1);
+  });
 });

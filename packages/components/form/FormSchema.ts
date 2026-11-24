@@ -27,7 +27,7 @@ export interface iFormNodeLayout {
   /** Row heading. Kept beside `legend` because a row renders a label, not a legend. */
   label?: string;
   description?: string;
-  /** Column count of a row grid. A `group` ignores it. */
+  /** Column count of the container grid: a row always grids, a group only when it says so. */
   column?: number | string;
   className?: string;
   wide?: number | string | null;

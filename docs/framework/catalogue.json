@@ -1431,7 +1431,7 @@
           "tables": []
         },
         "Payload": {
-          "text": "An array of groups, each with an optional `group` array of field nodes (or nested rows). The shape of\na field node is the input package's contract, not this one.\n\n<!-- part: id=group-row-keys -->\n\n### Group and row keys\n\nA field node **is** the input schema — `{ content, config }` — so its keys (`content.type`,\n`content.label`, `config.required`, `config.wide`, `config.csv`, …) belong to `@aio-ui/input`;\nthis package adds only the cascade rule `condition` beside the two blocks, and reads `config.wide`\n(`50` = half, `\"auto\"` = full row) when it lays a row out.\n\n<!-- part: id=config role=contract -->",
+          "text": "An array of groups, each with an optional `group` array of field nodes (or nested rows). The shape of\na field node is the input package's contract, not this one.\n\n<!-- part: id=group-row-keys -->\n\n### Group and row keys\n\nA field node **is** the input schema — `{ content, config }` — so its keys (`content.type`,\n`content.label`, `config.required`, `config.wide`, `config.csv`, …) belong to `@aio-ui/input`;\nthis package adds only the cascade rule `condition` beside the two blocks. It reads `config.wide`\nwhenever it lays a container out: a **row** always grids, a **group** only when it declares\n`column`. The share is one contract in both — `50` / `\"50%\"` = half, `0.5` = half, `\"auto\"` /\n`100` = the whole row, absent = one column, rounded to whole columns and clamped to the count.\n\n<!-- part: id=config role=contract -->",
           "examples": [
             {
               "lang": "ts",

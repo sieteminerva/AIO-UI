@@ -195,3 +195,50 @@ describe("cascade and a repeated scope", () => {
     });
   }
 });
+
+/**
+ * A conditional child is built by the cascade, not by the row loop, so its share of the
+ * row has to be stamped a second time. Without that, a `wide: "auto"` child fell back to
+ * one column and sat in half the row it asked for.
+ */
+describe("cascade keeps a child's share of its row", () => {
+  const line = [
+    {
+      id: "line",
+      column: 2,
+      row: [
+        { content: { type: "text", id: "ref", label: "Ref" }, config: { wide: 50 } },
+        {
+          content: { type: "text", id: "memo", label: "Memo" },
+          config: { wide: "auto" },
+          condition: { field: "ref", filled: true },
+        },
+      ],
+    },
+  ];
+
+  const render = (mode: "template" | "hidden") =>
+    builder().create({ content: line, config: { cascading: true, cascadeMode: mode } }) as HTMLFormElement;
+
+  const tick = () => new Promise((resolve) => setTimeout(resolve, 0));
+
+  for (const mode of ["hidden", "template"] as const) {
+    it(`stamps --span on the held field once it is built (${mode})`, async () => {
+      const form = render(mode);
+
+      if (mode === "hidden") {
+        const held = form.querySelector("#memo")!.closest(".field") as HTMLElement;
+        expect(held.dataset.span).toBe("2");
+      }
+
+      const ref = form.querySelector("#ref") as HTMLInputElement;
+      ref.value = "A-1";
+      ref.dispatchEvent(new Event("input", { bubbles: true }));
+      await tick();
+
+      const memo = form.querySelector("#memo")!.closest(".field") as HTMLElement;
+      expect(memo.dataset.span).toBe("2");
+      expect(memo.style.getPropertyValue("--span")).toBe("2");
+    });
+  }
+});

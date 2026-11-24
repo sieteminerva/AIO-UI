@@ -1,13 +1,41 @@
 # TASK — input & form polish before the next release
 
 **Band:** Framework · **Claim:** none yet — take a row before the first edit · **Brief:** this file
-**Status:** not started. Order matters: **A → B → C, then the release** (the release also owes the
+**Status:** A **done (b78)**. Order matters: **B → C, then the release** (the release also owes the
 note for the three types `@aio-ui/core` stopped exporting in b76).
 
 Three defects the owner reported after the b74/b76 refactor. Each one is a "looks wired, does not
 work" case, so each needs a measurement, not an eyeball (`AGENT_RULES.md` §16).
 
 ## A — form `.wide` / `span` layout is not implemented in full
+
+**Landed — b78.** The root cause was not the arithmetic but the *containers*: only a row
+consumed the share. A `group` (`fieldset`) never called FormLayout, so a documented
+`column: 2` group (the demo's `#form/calculation`) rendered a one-column stack with no
+`--span` at all; and a cascade-held child was built outside the row loop, so its
+`config.wide` was never stamped.
+
+- `FormLayout.ts` — one contract: `spanOf` (fraction, percent, `"50%"`, `"auto"`/`"full"`)
+  and `clampSpan` (the only bounds), `declaredColumns` (a row always grids, a group only
+  when it says `column`), `childSpanOf` (explicit `span` wins, then `wide`).
+- `Form.ts` — `renderGroup` lays its children out when `column` is declared, using the
+  same `applyRowColumns` + `applyRowSpan` a row uses; `renderRow` reads `declaredColumns`.
+- `adapters/Cascade.ts` — `#stampSpan` writes the share on a child built later (both hold
+  modes), from the container's `data-column` and the item's `wide`/`span`.
+- `Form.css` — `@property --span { inherits: false }` so a share never leaks into a nested
+  container; new `7c. Group Grid` block reads only `--items` / `--span`; the 640px query
+  collapses both grids.
+- `FormSchema.ts` / `README.md` — `column` on a group is the contract now (the old
+  “a group ignores it” JSDoc was stale); one share spelling table in both places.
+
+**Measured (browser, demo dev server, 2026-11-24):**
+- `#form/calculation` (group, `column: 2`): fieldset 700px → Qty 314px, Harga 314px,
+  Total 646px (`span 2`); before b78 the same group was `grid-template-columns: none` and
+  the fields stacked 646px each.
+- `#form/layout` (row, `column: 2`): row 704px, two `span 1` children 343px each
+  (`(704 − 18 gap) / 2`), the `"auto"` child 704px (`span 2`).
+
+## A — original brief (kept for the contract)
 
 **Symptom.** A field's share of a form row is documented as `wide: 50` (half) / `"auto"` (full row)
 / an explicit `span`, but the rendered grid does not honour it faithfully.

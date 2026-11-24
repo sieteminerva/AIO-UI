@@ -10,13 +10,13 @@ Why / stages: `.guidance/plan-framework.md`. Engineering rules:
 | --- | --------------------------- | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 1   | Theme console view (fab)    | in progress | `examples/demo/src/ThemeConsole/TASKS.md` — view composed, gate green; open: page-only popover sections                                                                                                                             |
 | 2   | Inspect surface (b43)       | in progress | `inspect()` + `inspectPage()` green; open: dead relay removal, `#cleanupMap` reset                                                                                                                                                  |
-| 3   | Input & form polish         | not started | 3 owner-reported defects: `.wide`/`span` layout, unstyled `config.footer`, clipped `select`/`dropdown` popup (CSS anchor + native popover) → `docs/framework/TASK-INPUT-POLISH.md` |
+| 3   | Input & form polish         | in progress | A `.wide`/`span` **done (b78)**, measured on `#form/calculation` + `#form/layout`; open: B `config.footer` styling, C clipped `select`/`dropdown` popup → `docs/framework/TASK-INPUT-POLISH.md` |
 
 ## Next
 
-- **Input & form polish — the release blocker.** A `.wide`/`span` layout · B `config.footer` styling ·
-  C `select`/`dropdown` popup clipping (CSS anchor positioning + native popover). Each needs a
-  measured proof. → `docs/framework/TASK-INPUT-POLISH.md`
+- **Input & form polish — the release blocker.** B `config.footer` styling · C `select`/`dropdown`
+  popup clipping (CSS anchor positioning + native popover). Each needs a measured proof.
+  A (the `.wide`/`span` share) landed in b78. → `docs/framework/TASK-INPUT-POLISH.md`
 - **Release the input breaking change.** b76 removed `iBasicInputNode`, `iFormGroupNode` and
   `InputBuilderConfigOptions` from `@aio-ui/core` — type-only, no runtime change, but a public
   removal: the next minor (0.3.0 line) must say so. Owner orders the release.
@@ -31,6 +31,13 @@ Why / stages: `.guidance/plan-framework.md`. Engineering rules:
 
 ## Landed (newest first)
 
+- **Batch 78 (2026-11-24)** — the `.wide`/`span` share is honoured by every container, not only a
+  row. `FormLayout` keeps one contract (`spanOf` + `clampSpan` + `declaredColumns`), `renderGroup`
+  lays out a `column` group with the same writer a row uses, the cascade stamps a late-built
+  child's share (both hold modes), and `@property --span { inherits: false }` stops a share leaking
+  into a nested container; `Form.css` gained the `7c. Group Grid` block. Proof: browser numbers on
+  the demo (calc group 700 → 314/314/646; layout row 704 → 343/343/704), `check` green, `verify`
+  1012 pass / 1 skip.
 - **Batch 76 (2026-11-24)** — input legacy sweep closed. `@aio-ui/core` no longer declares a field
   node: `iBasicInputNode`, its duplicate `iFormGroupNode` and `InputBuilderConfigOptions` are gone,
   and the four registry payloads follow the existing `input: any` door rule. Docs stop claiming

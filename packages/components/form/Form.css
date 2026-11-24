@@ -7,6 +7,16 @@
    rows, fieldsets, action sets, multistep, inline variants, cascade visibility.
    ========================================================================== */
 
+/* A child's share of its container is resolved once, in FormLayout, and written as
+   `--span`. Registered here so it does NOT inherit: an element the layout never stamped
+   (a legend, an action set, a child of a nested container) falls back to one column
+   instead of borrowing its container's share and overflowing the grid. */
+@property --span {
+  syntax: "<integer>";
+  inherits: false;
+  initial-value: 1;
+}
+
 /* 4. Native Fieldset & Structural Legends */
 .form > fieldset {
   display: grid;
@@ -44,6 +54,7 @@
    base field block (`.native.form .field`, `.field:is(.group) .field`) sets
    `display: block; width: 100%` and would win otherwise.
    ========================================================================== */
+
 .field.group[data-column] {
   display: grid;
   grid-template-columns: repeat(var(--items, 2), minmax(0, 1fr));
@@ -83,6 +94,35 @@
   }
 }
 
+/* ==========================================================================
+   7c. Group Grid (the same columns, one level up)
+   --------------------------------------------------------------------------
+   A group is a one-column stack by default; declaring `column: 2` opts it into
+   the row contract, so FormLayout stamps the same `--items` / `--span` and this
+   sheet reads only those. `column` is the count, `config.wide` the child share.
+   ========================================================================== */
+.form > fieldset.form-group[data-column] {
+  grid-template-columns: repeat(var(--items, 2), minmax(0, 1fr));
+  align-items: start;
+
+  /* A child is a grid cell: the base fieldset rule would keep it 100% wide and
+     give a grid child an unwanted bottom margin. */
+  & > .field,
+  & > .field.group[data-column],
+  & > .form-group[data-column] {
+    width: auto;
+    min-width: 0;
+    margin-bottom: 0;
+    grid-column: span var(--span, 1);
+  }
+
+  /* Legend and note read across the whole group. */
+  & > .title,
+  & > .desc {
+    grid-column: 1 / -1;
+  }
+}
+
 @media (max-width: 640px) {
   .field.group[data-column] {
     grid-template-columns: 1fr;
@@ -90,6 +130,17 @@
     & > .field,
     & > .field.group[data-column],
     & > .form-group {
+      grid-column: auto;
+    }
+  }
+
+  /* A column group stacks too: one narrow column is the only honest layout. */
+  .form > fieldset.form-group[data-column] {
+    grid-template-columns: 1fr;
+
+    & > .field,
+    & > .field.group[data-column],
+    & > .form-group[data-column] {
       grid-column: auto;
     }
   }

@@ -63,8 +63,10 @@ a field node is the input package's contract, not this one.
 
 A field node **is** the input schema — `{ content, config }` — so its keys (`content.type`,
 `content.label`, `config.required`, `config.wide`, `config.csv`, …) belong to `@aio-ui/input`;
-this package adds only the cascade rule `condition` beside the two blocks, and reads `config.wide`
-(`50` = half, `"auto"` = full row) when it lays a row out.
+this package adds only the cascade rule `condition` beside the two blocks. It reads `config.wide`
+whenever it lays a container out: a **row** always grids, a **group** only when it declares
+`column`. The share is one contract in both — `50` / `"50%"` = half, `0.5` = half, `"auto"` /
+`100` = the whole row, absent = one column, rounded to whole columns and clamped to the count.
 
 <!-- part: id=config role=contract -->
 

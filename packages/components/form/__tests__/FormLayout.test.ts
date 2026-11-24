@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { DEFAULT_ROW_COLUMNS, MAX_ROW_COLUMNS, childSpanOf, columnsOf, spanOf } from "../FormLayout";
+import { DEFAULT_ROW_COLUMNS, MAX_ROW_COLUMNS, childSpanOf, clampSpan, columnsOf, declaredColumns, spanOf } from "../FormLayout";
 
 /**
  * Row arithmetic, without a DOM: the numbers decide the grid, so they are the part worth
@@ -32,14 +32,28 @@ describe("spanOf", () => {
     expect(spanOf(25, 4)).toBe(1);
   });
 
+  it("reads the same percentage written with a sign", () => {
+    expect(spanOf("50%", 2)).toBe(1);
+    expect(spanOf("50%", 4)).toBe(2);
+    expect(spanOf("100%", 3)).toBe(3);
+    expect(spanOf(" 66% ", 3)).toBe(2);
+  });
+
+  it("gives 100 the whole row, like auto", () => {
+    expect(spanOf(100, 2)).toBe(2);
+    expect(spanOf(100, 3)).toBe(3);
+  });
+
   it("treats a fraction as a share of the row", () => {
     expect(spanOf(0.5, 2)).toBe(1);
+    expect(spanOf(0.5, 4)).toBe(2);
     expect(spanOf(1, 4)).toBe(4);
   });
 
   it('gives "auto" the whole row', () => {
     expect(spanOf("auto", 2)).toBe(2);
     expect(spanOf("auto", 5)).toBe(5);
+    expect(spanOf("full", 3)).toBe(3);
   });
 
   it("falls back to one column and never exceeds the row", () => {
@@ -47,6 +61,26 @@ describe("spanOf", () => {
     expect(spanOf("abc", 3)).toBe(1);
     expect(spanOf(0, 3)).toBe(1);
     expect(spanOf(300, 3)).toBe(3);
+  });
+});
+
+describe("clampSpan", () => {
+  it("keeps a span inside the row", () => {
+    expect(clampSpan(2, 3)).toBe(2);
+    expect(clampSpan(9, 3)).toBe(3);
+    expect(clampSpan(0, 3)).toBe(1);
+    expect(clampSpan(-4, 3)).toBe(1);
+    expect(clampSpan("abc", 3)).toBe(1);
+  });
+});
+
+describe("declaredColumns", () => {
+  it("separates a row (always a grid) from a group (opt-in)", () => {
+    expect(declaredColumns({ column: 2 })).toBe(2);
+    expect(declaredColumns({ column: "3" })).toBe(3);
+    expect(declaredColumns({ group: [] })).toBe(0);
+    expect(declaredColumns({ column: "" })).toBe(0);
+    expect(declaredColumns(undefined)).toBe(0);
   });
 });
 

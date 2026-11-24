@@ -1,4 +1,6 @@
 // @vitest-environment happy-dom
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import { ModuleLoader } from "@aio-ui/module-loader";
@@ -133,5 +135,113 @@ describe("form rows", () => {
     expect(form.querySelector("#sku")).not.toBeNull();
     // No stray field rendered from the row descriptor itself (the row is `.field.group`).
     expect(form.querySelectorAll("fieldset.form-group > .field:not(.group)")).toHaveLength(0);
+  });
+
+  it("gives a three-column row its thirds", () => {
+    const form = renderForm([
+      {
+        id: "thirds",
+        column: 3,
+        row: [
+          { content: { type: "text", id: "a", label: "A" }, config: { wide: 33 } },
+          { content: { type: "text", id: "b", label: "B" }, config: { wide: "33%" } },
+          { content: { type: "text", id: "c", label: "C" }, config: { wide: 33 } },
+          { content: { type: "text", id: "d", label: "D" }, config: { wide: 100 } },
+        ],
+      },
+    ]);
+    const row = form.querySelector(".field.group[data-column]") as HTMLElement;
+    const spans = [...row.querySelectorAll(":scope > .field")].map((el) => (el as HTMLElement).dataset.span);
+
+    expect(row.style.getPropertyValue("--items")).toBe("3");
+    expect(spans).toEqual(["1", "1", "1", "3"]);
+  });
+
+  it("never lets a child ask for more columns than the row has", () => {
+    const form = renderForm([
+      {
+        id: "clamp",
+        column: 2,
+        row: [
+          { content: { type: "text", id: "one", label: "One" }, span: 7 },
+          { content: { type: "text", id: "two", label: "Two" }, span: 0 },
+        ],
+      },
+    ]);
+    const row = form.querySelector(".field.group[data-column]") as HTMLElement;
+    const spans = [...row.querySelectorAll(":scope > .field")].map((el) => (el as HTMLElement).style.getPropertyValue("--span"));
+
+    expect(spans).toEqual(["2", "1"]);
+  });
+});
+
+/**
+ * A group honours the same `column` / `wide` contract as a row — the demo's calculation
+ * topic is a `column: 2` group, and the README table lists `column` for both. The grid is
+ * still the sheet's job; what this pins is the resolved `--span` every child carries.
+ */
+describe("group columns", () => {
+  const schema = [
+    {
+      id: "order",
+      title: "Satu baris pesanan",
+      column: 2,
+      group: [
+        { content: { type: "number", id: "qty", label: "Qty" }, config: { wide: 50 } },
+        { content: { type: "number", id: "price", label: "Harga" }, config: { wide: 50 } },
+        { content: { type: "number", id: "total", label: "Total" }, config: { wide: "auto" } },
+      ],
+    },
+  ];
+
+  it("declares its column count on the fieldset", () => {
+    const group = renderForm(schema).querySelector("fieldset.form-group") as HTMLElement;
+
+    expect(group.dataset.column).toBe("2");
+    expect(group.style.getPropertyValue("--items")).toBe("2");
+  });
+
+  it("stamps every child with its share of the grid", () => {
+    const group = renderForm(schema).querySelector("fieldset.form-group") as HTMLElement;
+    const fields = [...group.querySelectorAll(":scope > .field")] as HTMLElement[];
+
+    expect(fields.map((el) => el.dataset.span)).toEqual(["1", "1", "2"]);
+    expect(fields[2].style.getPropertyValue("--span")).toBe("2");
+  });
+
+  it("leaves a group without `column` a plain stack", () => {
+    const group = renderForm([{ id: "plain", group: schema[0].group }])
+      .querySelector("fieldset.form-group") as HTMLElement;
+
+    expect(group.dataset.column).toBeUndefined();
+    expect((group.querySelector(":scope > .field") as HTMLElement).style.getPropertyValue("--span")).toBe("");
+  });
+});
+
+/**
+ * The sheet reads only the two variables FormLayout writes. happy-dom does not run the
+ * cascade, so the grid itself is pinned as a rule on both container roots; the measured
+ * width comes from the browser probe on the demo routes.
+ */
+describe("form sheet reads the resolved span", () => {
+  const sheet = readFileSync(resolve(process.cwd(), "packages/components/form/Form.css"), "utf8");
+
+  it("defines the row grid from --items and the child share from --span", () => {
+    expect(sheet).toMatch(/^\.field\.group\[data-column\] \{/m);
+    expect(sheet).toMatch(/grid-template-columns: repeat\(var\(--items, 2\), minmax\(0, 1fr\)\)/);
+    expect(sheet).toMatch(/grid-column: span var\(--span, 1\)/);
+  });
+
+  it("gives a column group the same grid", () => {
+    expect(sheet).toMatch(/^\.form > fieldset\.form-group\[data-column\] \{/m);
+    expect(sheet).toMatch(/\.form > fieldset\.form-group\[data-column\] \{[\s\S]*?grid-column: span var\(--span, 1\)/);
+  });
+
+  it("keeps --span from inheriting into a nested container", () => {
+    expect(sheet).toMatch(/@property --span \{[\s\S]*inherits: false/);
+  });
+
+  it("carries no Sass-style suffix the build would drop", () => {
+    expect(sheet).not.toMatch(/&-[a-z]/i);
   });
 });

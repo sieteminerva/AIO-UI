@@ -6,9 +6,7 @@
 
 ## Live claims
 
-| Agent       | Band      | Task                                                        | Write scope                                                                              | Started    | Checkpoint                          | State |
-| ----------- | --------- | ----------------------------------------------------------- | ---------------------------------------------------------------------------------------- | ---------- | ----------------------------------- | ----- |
-| copilot b73 | Framework | Input schema: stage 3 done; stage 3.3 (examples) next | `packages/components/input/**`, `packages/components/form/Input.FormAdapter.ts`          | 2026-11-24 | `docs/framework/TASK-INPUT-SCHEMA.md` | handoff |
+_No live writer._
 
 ## Row shape
 

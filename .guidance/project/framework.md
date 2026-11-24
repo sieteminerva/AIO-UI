@@ -10,7 +10,7 @@ Why / stages: `.guidance/plan-framework.md`. Engineering rules:
 | --- | ------------------------ | ----------- | ------------------------------------------------------------------------------------------------------- |
 | 1   | Theme console view (fab) | in progress | `examples/demo/src/ThemeConsole/TASKS.md` — view composed, gate green; open: page-only popover sections |
 | 2   | Inspect surface (b43)    | in progress | `inspect()` + `inspectPage()` green; open: dead relay removal, `#cleanupMap` reset                      |
-| 3   | Input schema split (b71) | handoff     | stage 1 landed (`InputSchema.ts`); execute stage 2 from `docs/framework/TASK-INPUT-SCHEMA.md`           |
+| 3   | Input schema split (b73) | handoff     | stages 1–3 landed (`86124cd`, `9d79f9f`); open: stage 3.3 examples from `docs/framework/TASK-INPUT-SCHEMA.md` |
 
 ## Next
 

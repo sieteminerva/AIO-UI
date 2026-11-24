@@ -92,9 +92,9 @@ export const BUILDER_CATALOGUE: Record<string, CatalogueEntry> = {
   "product-detail": { capability: "product", modules: ["@aio-ui/product"], styles: ["@aio-ui/product/index.css"] },
   table: { capability: "table", modules: ["@aio-ui/table"], styles: ["@aio-ui/table/Table.css"] },
   form: { capability: "form", modules: ["@aio-ui/form"], styles: ["@aio-ui/form/Form.css"] },
-  input: { capability: "input", modules: ["@aio-ui/input"], styles: ["@aio-ui/input/input.css"] },
-  dropdown: { capability: "dropdown", modules: ["@aio-ui/input/dropdown"], styles: ["@aio-ui/input/dropdown.css"] },
-  "input-controls": { capability: "controls", modules: ["@aio-ui/input/controls"], styles: ["@aio-ui/input/controls.css"] },
+  input: { capability: "input", modules: ["@aio-ui/input"], styles: ["@aio-ui/input/Input.css"] },
+  dropdown: { capability: "dropdown", modules: ["@aio-ui/input/dropdown"], styles: ["@aio-ui/input/Dropdown.css"] },
+  "input-controls": { capability: "controls", modules: ["@aio-ui/input/controls"], styles: ["@aio-ui/input/InputControls.css"] },
 };
 
 /**
@@ -116,9 +116,9 @@ export const FORM_ADAPTER_CATALOGUE: Record<string, CatalogueEntry> = {
 
 /** Input-side modules, keyed by the field type or config that needs them. */
 export const INPUT_MODULE_CATALOGUE: Record<string, CatalogueEntry> = {
-  dropdown: { capability: "dropdown", modules: ["@aio-ui/input/dropdown"], styles: ["@aio-ui/input/dropdown.css"], id: "dropdown", export: "dropdownInputModule" },
-  file: { capability: "file-uploader", modules: ["@aio-ui/input/file-uploader"], styles: ["@aio-ui/input/file-uploader.css"], id: "file", export: "fileUploaderInputModule" },
-  controls: { capability: "controls", modules: ["@aio-ui/input/controls"], styles: ["@aio-ui/input/controls.css"], id: "controls", export: "inputControlsInputModule" },
+  dropdown: { capability: "dropdown", modules: ["@aio-ui/input/dropdown"], styles: ["@aio-ui/input/Dropdown.css"], id: "dropdown", export: "dropdownInputModule" },
+  file: { capability: "file-uploader", modules: ["@aio-ui/input/file-uploader"], styles: ["@aio-ui/input/FileUploader.css"], id: "file", export: "fileUploaderInputModule" },
+  controls: { capability: "controls", modules: ["@aio-ui/input/controls"], styles: ["@aio-ui/input/InputControls.css"], id: "controls", export: "inputControlsInputModule" },
   popover: { capability: "popover", modules: ["@aio-ui/input"], styles: [], id: "popover", export: "popoverInputModule" },
 };
 
@@ -128,7 +128,7 @@ export const CAPABILITY_CATALOGUE: Record<string, CatalogueEntry> = {
   http: { capability: "http-service", modules: ["@aio-ui/http-service"], styles: [] },
   events: { capability: "event-emitter", modules: ["@aio-ui/event-emitter"], styles: [] },
   animations: { capability: "animations", modules: ["@aio-ui/animations"], styles: ["@aio-ui/animations/Animations.css"] },
-  "id-address": { capability: "id-address", modules: ["@aio-ui/id-address"], styles: ["@aio-ui/id-address/id-address.css"], id: "idAddress", export: "idAddressFormAdapter" },
+  "id-address": { capability: "id-address", modules: ["@aio-ui/id-address"], styles: ["@aio-ui/id-address/IdAddress.css"], id: "idAddress", export: "idAddressFormAdapter" },
   "form-message": { capability: "message-adapter", modules: ["@aio-ui/message"], styles: [], id: "message", export: "messageFormAdapter" },
   "form-table": { capability: "table-adapter", modules: ["@aio-ui/table"], styles: [], id: "table", export: "tableFormAdapter" },
 };

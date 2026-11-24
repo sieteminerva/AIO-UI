@@ -13,9 +13,9 @@
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
-    "./id-address.css": {
-      "types": "./id-address.css.d.ts",
-      "default": "./id-address.css"
+    "./IdAddress.css": {
+      "types": "./IdAddress.css.d.ts",
+      "default": "./IdAddress.css"
     }
   },
   "peerDependencies": {

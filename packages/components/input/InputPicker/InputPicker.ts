@@ -111,7 +111,7 @@ export class PickerBuilder extends Builder<PickerElementType, iPickerConfig> {
   readonly builderId = "input-picker";
   readonly name = "input-picker";
   /** Short specifier the package maps to `InputPicker.css` — the file-uploader pattern. */
-  readonly stylesheet = "./picker.css";
+  readonly stylesheet = "./InputPicker.css";
 
   public config: Required<iPickerConfig>;
 
@@ -192,7 +192,7 @@ export class PickerBuilder extends Builder<PickerElementType, iPickerConfig> {
       // Manual popover: the trigger owns open/close, so no light-dismiss fight with the
       // filter box. Anchored to the trigger when the platform has anchor positioning.
       panel.setAttribute("popover", "manual");
-      // The shared, field-scoped anchor name (see `.field` in input.css).
+      // The shared, field-scoped anchor name (see `.field` in Input.css).
       const anchor = "--field-dropdown-anchor";
       this.#trigger.style.setProperty("anchor-name", anchor);
       panel.style.setProperty("position-anchor", anchor);

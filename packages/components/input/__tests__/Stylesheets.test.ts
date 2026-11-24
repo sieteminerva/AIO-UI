@@ -12,17 +12,18 @@ import { InputControlsBuilder } from "../InputControls/InputControls";
  * The input package ships four sheets and none of them is imported by the component:
  * each declares a specifier and the host keys the map. Resolution falls back to the
  * file name, so a declaration written in the "source file" spelling
- * (`"./FileUploader.css"`) silently missed a host key written in the package's export
- * spelling (`@aio-ui/input/file-uploader.css`) — the sheet was never injected and the
- * component rendered unstyled with no error. This pins the two spellings together.
+ * (`"./FileUploader.css"`) and a host key written in the package's export spelling
+ * (`@aio-ui/input/FileUploader.css`) must agree — when they did not, the sheet was never
+ * injected and the component rendered unstyled with no error. This pins the two spellings
+ * together.
  */
 
 /** The host's key layout, as `examples/demo/src/registry.assets.ts` declares it. */
 const HOST_KEYS = [
-  "@aio-ui/input/input.css",
-  "@aio-ui/input/dropdown.css",
-  "@aio-ui/input/file-uploader.css",
-  "@aio-ui/input/controls.css",
+  "@aio-ui/input/Input.css",
+  "@aio-ui/input/Dropdown.css",
+  "@aio-ui/input/FileUploader.css",
+  "@aio-ui/input/InputControls.css",
 ];
 
 const CSS = "@media all { .field { color: gold } }";

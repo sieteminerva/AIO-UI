@@ -97,8 +97,8 @@ rethemeable without touching its CSS.
 | `badge/Badge.css`                | `--badge-*`                                                                    |
 | `code-block/CodeBlock.css`       | `--code-block-*` (base colours are literal: dark paper in both modes)          |
 | `footer/Footer.css`              | `--footer-*`                                                                   |
-| `id-address/id-address.css`      | `--id-address-*`                                                               |
-| `input/input.css`                | `--input-*` (also read by `form`, `Dropdown`, `InputControls`, `FileUploader`) |
+| `id-address/IdAddress.css`       | `--id-address-*`                                                               |
+| `input/Input.css`                | `--input-*` (also read by `form`, `Dropdown`, `InputControls`, `FileUploader`) |
 | `masonry/Masonry.css`            | `--masonry-*`                                                                  |
 | `markdown/Markdown.css`          | `--markdown-*` (imports `CodeBlock.css` for the fences it renders)             |
 | `menu/Menu.css`                  | `--menu-*`                                                                     |

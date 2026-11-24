@@ -25,12 +25,13 @@ packages/components/my-widget/
    └─ MyWidget.test.ts  DOM-free tests (payload contract + selector coverage)
 ```
 
-| Rule                        | Reason                                                                |
-| --------------------------- | --------------------------------------------------------------------- |
-| Folder name is `kebab-case` | It is the package name suffix and the registry key.                   |
-| File name is `PascalCase`   | It is the class name; the registry derives the CSS path from it.      |
-| One component per folder    | Multi-component folders break stylesheet derivation and chunk naming. |
-| `package.json` is private   | Nothing is published; workspaces link them locally.                   |
+| Rule                             | Reason                                                                                                                    |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| Folder name is `kebab-case`      | It is the package name suffix and the registry key.                                                                       |
+| File name is `PascalCase`        | It is the class name; the registry derives the CSS path from it.                                                          |
+| Sheet specifier mirrors the file | `Input.css` is `@aio-ui/input/Input.css`, never `input.css`; a lowercase sheet looked fine on Windows and 404'd on Linux. |
+| One component per folder         | Multi-component folders break stylesheet derivation and chunk naming.                                                     |
+| `package.json` is private        | Nothing is published; workspaces link them locally.                                                                       |
 
 ---
 
@@ -633,8 +634,8 @@ by measuring, and each has cost at least one session.
   and the adapter stack but styles nothing. A surface that hand-builds another primitive's classes
   must have that primitive's sheets on the page — demo convention is a host link in `main.ts`.
 - **Never re-style an input-primitive surface in a component sheet.** `.field.actions` alignment,
-  glued radii and the action-button box belong to `InputControls/inputControls.css`
-  (`@aio-ui/input/controls.css`); the markup obligation is `.field.actions` with the
+  glued radii and the action-button box belong to `InputControls/InputControls.css`
+  (`@aio-ui/input/InputControls.css`); the markup obligation is `.field.actions` with the
   `select`/`input` as a DIRECT child plus `button.controls[data-position="right"]` beside it.
 
 ### Gates

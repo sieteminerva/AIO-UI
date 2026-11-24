@@ -33,6 +33,20 @@ Why / stages: `.guidance/plan-framework.md`. Engineering rules:
 
 ## Landed (newest first)
 
+- **Batch 97 (2026-11-25)** — class files are PascalCase, so their sheets are too:
+  `input.css → Input.css`, `InputControls/inputControls.css → InputControls.css`,
+  `id-address.css → IdAddress.css`, and `id-address-builder.ts → IdAddressBuilder.ts`. The
+  **specifier mirrors the file** (new conventions row): `@aio-ui/input/Input.css`,
+  `/Dropdown.css`, `/FileUploader.css`, `/InputControls.css`, `/InputPicker.css`,
+  `@aio-ui/id-address/IdAddress.css`. Runtime `stylesheet` strings, host asset maps (demo,
+  gallery, rajutan), presets, tests, READMEs and `live-cdn-repo.md` follow; `layout.json` and
+  `catalogue.json` regenerated. `release.test.ts` now accepts the published tree
+  (`releases/<dir>/<file>`) as well as source, because a rename on `main` legitimately outruns
+  `v0.2.6`. Proof: `verify` 1046 pass / 1 skip; demo + gallery build; preview of the built demo
+  injects `rajutan-lazy-css____aio-ui_input_Input_css`, `…_InputControls_css`,
+  `…_Dropdown_css`, 38 fields, 6 control sets, `--input-font-size: 1.1rem`. Breaking for
+  consumers → v0.2.7 note.
+
 - **Batch 96 (2026-11-25)** — the Pages workflow went red on Linux (`Input.test.ts` 510 read
   `packages/components/input/Input.css`; the tree tracks `input.css`, and Windows answers
   `existsSync`/`readFileSync` case-insensitively) — red since run #46, unrelated to v0.2.6. Fix:

@@ -23,16 +23,16 @@
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
-    "./input.css": {
-      "types": "./input.css.d.ts",
-      "default": "./input.css"
+    "./Input.css": {
+      "types": "./Input.css.d.ts",
+      "default": "./Input.css"
     },
     "./dropdown": {
       "development": "./Dropdown/Dropdown.ts",
       "types": "./dist/Dropdown/Dropdown.d.ts",
       "default": "./dist/Dropdown/Dropdown.js"
     },
-    "./dropdown.css": {
+    "./Dropdown.css": {
       "types": "./Dropdown/Dropdown.css.d.ts",
       "default": "./Dropdown/Dropdown.css"
     },
@@ -41,7 +41,7 @@
       "types": "./dist/FileUploader/FileUploader.d.ts",
       "default": "./dist/FileUploader/FileUploader.js"
     },
-    "./file-uploader.css": {
+    "./FileUploader.css": {
       "types": "./FileUploader/FileUploader.css.d.ts",
       "default": "./FileUploader/FileUploader.css"
     },
@@ -50,16 +50,16 @@
       "types": "./dist/InputControls/InputControls.d.ts",
       "default": "./dist/InputControls/InputControls.js"
     },
-    "./controls.css": {
-      "types": "./InputControls/inputControls.css.d.ts",
-      "default": "./InputControls/inputControls.css"
+    "./InputControls.css": {
+      "types": "./InputControls/InputControls.css.d.ts",
+      "default": "./InputControls/InputControls.css"
     },
     "./picker": {
       "development": "./InputPicker/InputPicker.ts",
       "types": "./dist/InputPicker/InputPicker.d.ts",
       "default": "./dist/InputPicker/InputPicker.js"
     },
-    "./picker.css": {
+    "./InputPicker.css": {
       "types": "./InputPicker/InputPicker.css.d.ts",
       "default": "./InputPicker/InputPicker.css"
     }

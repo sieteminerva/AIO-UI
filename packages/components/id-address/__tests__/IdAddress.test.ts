@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 import { describe, expect, it, vi } from "vitest";
 
-import { IdAddressBuilder } from "../id-address-builder";
+import { IdAddressBuilder } from "../IdAddressBuilder";
 
 /**
  * The picker's data source, without a network.

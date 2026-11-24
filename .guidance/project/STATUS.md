@@ -4,7 +4,8 @@
 > **only** after the user picks it — never "to orient" (`AGENT_RULES.md` §13). Rewritten each
 > session, newest on top. One card = one line + one pointer.
 >
-> Recent batches (newest first): **b96** Pages workflow red on Linux — `Input.css` vs `input.css` ·
+> Recent batches (newest first): **b97** class files are PascalCase — CSS specifiers renamed ·
+> **b96** Pages workflow red on Linux — `Input.css` vs `input.css` ·
 > **b95** v0.2.6 published (colour pass + closed input surface) ·
 > **b94** colour-literal lint (T5) · **b93** cyberpunk theme pins
 > dark mode · **b92** Article/Table/Message/Tab palettes → `--app-*` · **b91** select rests on the
@@ -43,6 +44,11 @@ for `store` / `profile` / `blog`. → `docs/releases/v0.2.6.md` · `docs/live-cd
 The **Pages workflow** was red since run #46 (not caused by the release): `Input.test.ts` read
 `Input.css` while the tree tracks `input.css` — Windows hides the difference. Fixed in b96, plus a
 letter-for-letter export check in `packaging.test.ts`.
+
+**Next release must carry a migration note** (b97): the sheet specifiers are now `Input.css`,
+`Dropdown.css`, `FileUploader.css`, `InputControls.css`, `InputPicker.css` and `IdAddress.css`
+(was `input.css`, `dropdown.css`, `file-uploader.css`, `controls.css`, `picker.css`,
+`id-address.css`). `v0.2.6` keeps serving the lowercase names.
 
 ### 3. Theme console view (fab) — in progress (framework band)
 

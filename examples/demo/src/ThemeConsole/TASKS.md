@@ -22,7 +22,7 @@ its page, its `componentRoutes` entry and its nav leaf are gone.
 - Rail controls are the **input primitive's switch** — `.field` > `label[data-position="right"]` +
   `.switch.control` > `input[type=checkbox]` + `.slider[data-shape="round"]`. No bespoke pills and no
   local sheet for an input surface.
-- `main.ts` host links: `@aio-ui/input/input.css` **and** `@aio-ui/input/controls.css` (the
+- `main.ts` host links: `@aio-ui/input/Input.css` **and** `@aio-ui/input/InputControls.css` (the
   colouriser hand-builds primitive classes, so both sheets must be on the page) +
   `./ColorTheme/ColorTheme.css`. `registry.assets.ts` carries only the console sheet.
 

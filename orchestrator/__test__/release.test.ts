@@ -127,7 +127,13 @@ describe.skipIf(!available)("release artefacts", () => {
       for (const [subpath, file] of Object.entries(entry.subpaths)) {
         // Wildcard exports describe a pattern, not a file.
         if (file.includes("*")) continue;
-        if (!existsSync(join(ROOT, entry.dir, file))) {
+        // The published tree sits at the `releases` worktree root (what the CDN serves); the
+        // source tree is the fallback for artefacts regenerated but not yet published. They
+        // diverge the moment a sheet is renamed on `main` — `v0.2.6` ships `input.css` while
+        // the source carries `Input.css` — and that is not a broken release.
+        const served = join(ROOT, "releases", entry.dir, file);
+        const source = join(ROOT, entry.dir, file);
+        if (!existsSync(served) && !existsSync(source)) {
           missing.push(`${name}${subpath === "." ? "" : `/${subpath}`} → ${entry.dir}/${file}`);
         }
       }

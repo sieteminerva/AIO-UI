@@ -31,9 +31,9 @@ export const componentAssets = {
     // `?inline` keeps stylesheet text addressable so the registry can inject it
     // as a real <style> element and hold the element until it lands.
     "@aio-ui/form/Form.css": () => import("@aio-ui/form/Form.css?inline"),
-    "@aio-ui/input/dropdown.css": () => import("@aio-ui/input/dropdown.css?inline"),
-    "@aio-ui/input/file-uploader.css": () => import("@aio-ui/input/file-uploader.css?inline"),
-    "@aio-ui/input/controls.css": () => import("@aio-ui/input/controls.css?inline"),
+    "@aio-ui/input/Dropdown.css": () => import("@aio-ui/input/Dropdown.css?inline"),
+    "@aio-ui/input/FileUploader.css": () => import("@aio-ui/input/FileUploader.css?inline"),
+    "@aio-ui/input/InputControls.css": () => import("@aio-ui/input/InputControls.css?inline"),
     "@aio-ui/message/Message.css": () => import("@aio-ui/message/Message.css?inline"),
     "@aio-ui/accordion/Accordion.css": () => import("@aio-ui/accordion/Accordion.css?inline"),
     "@aio-ui/table/Table.css": () => import("@aio-ui/table/Table.css?inline"),

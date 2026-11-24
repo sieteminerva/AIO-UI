@@ -2,7 +2,7 @@
    Form chrome — layout and lifecycle only.
 
    Field styling (wrapper, label, control, toggle shell) moved to
-   @aio-ui/input/input.css: a field must look the same outside a form, and the
+   @aio-ui/input/Input.css: a field must look the same outside a form, and the
    form must not be a prerequisite for it. What is left here is form-only:
    rows, fieldsets, action sets, multistep, inline variants, cascade visibility.
    ========================================================================== */

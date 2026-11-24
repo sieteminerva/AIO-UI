@@ -59,8 +59,8 @@ const NOT_DATA_TYPES = new Set(["button", "submit", "reset", "image", "hidden"])
 export class InputControlsBuilder extends Builder<InputControlsElementType> {
   readonly builderId = "input-controls";
   readonly name = "input-controls";
-  /** Matches the host's key (`@aio-ui/input/controls.css`): resolution is by basename. */
-  readonly stylesheet: string = "./controls.css";
+  /** Matches the host's key (`@aio-ui/input/InputControls.css`): resolution is by basename. */
+  readonly stylesheet: string = "./InputControls.css";
 
   /** Lock state per control as it was before the set locked it, restored on save. */
   #editableState = new WeakMap<HTMLElement, { readonly: boolean; disabled: boolean; valueDisabled?: boolean }>();

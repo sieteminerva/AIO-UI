@@ -106,8 +106,8 @@ describe("plan — store pulls in what it declares", () => {
 
   it("attaches a package's stylesheets to its own module entry", () => {
     expect(stylesOf(storePreset, "@aio-ui/form")).toEqual(["@aio-ui/form/Form.css"]);
-    expect(stylesOf(storePreset, "@aio-ui/input")).toEqual(["@aio-ui/input/input.css"]);
-    expect(stylesOf(storePreset, "@aio-ui/input/dropdown")).toEqual(["@aio-ui/input/dropdown.css"]);
+    expect(stylesOf(storePreset, "@aio-ui/input")).toEqual(["@aio-ui/input/Input.css"]);
+    expect(stylesOf(storePreset, "@aio-ui/input/dropdown")).toEqual(["@aio-ui/input/Dropdown.css"]);
   });
 });
 

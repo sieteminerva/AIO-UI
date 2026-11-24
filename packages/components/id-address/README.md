@@ -14,6 +14,7 @@ it a plain CSS library by construction: any markup carrying the same wrappers an
 styled identically, and the base field look stays with the component that rendered the field.
 
 <!-- install:begin -->
+
 ## Install
 
 Version — `0.2.6` (tag `v0.2.6`)
@@ -22,6 +23,7 @@ Version — `0.2.6` (tag `v0.2.6`)
 
 CDN (ES module, no build step) — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.6/packages/components/id-address/dist/index.js`
 Stylesheet — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.6/packages/components/id-address/dist/id-address.css`
+
 <!-- install:end -->
 
 ## Payload
@@ -118,7 +120,7 @@ per level inside `config.container`:
 `[data-level]` is **not** unique to the value carrier: a custom dropdown may mark the wrapper too,
 so the builder filters the elements it decorates instead of taking every match.
 
-`@aio-ui/core/Stylesheets` fetches `id-address.css` on `init()`, so a host only declares where the
+`@aio-ui/core/Stylesheets` fetches `IdAddress.css` on `init()`, so a host only declares where the
 sheet can be found (its `styles` asset map) — nothing is injected twice.
 
 <!-- part: id=tokens role=contract -->
@@ -146,7 +148,7 @@ else is stamped.
 
 ## Tokens
 
-Declared once on `:root, [data-theme]` in `id-address.css`. The package contributes only its own
+Declared once on `:root, [data-theme]` in `IdAddress.css`. The package contributes only its own
 contribution to the field (`loading` / `error` states); the base look stays with whoever renders the
 field.
 
@@ -202,13 +204,13 @@ await schema.select(data.find((row) => row.kota_id === value));
    (no transport — what tests and mock rows use).
 4. Call `init()` after the markup exists and `destroy()` when the page goes away.
 
-| Entry                                                                | What it gives you                                                           |
-| -------------------------------------------------------------------- | --------------------------------------------------------------------------- |
-| `@aio-ui/id-address`                                                 | `IdAddressBuilder` and the config/detail types                              |
-| `@aio-ui/id-address`                                         | the adapter interface and the bundled adapters                              |
+| Entry                                                 | What it gives you                                                           |
+| ----------------------------------------------------- | --------------------------------------------------------------------------- |
+| `@aio-ui/id-address`                                  | `IdAddressBuilder` and the config/detail types                              |
+| `@aio-ui/id-address`                                  | the adapter interface and the bundled adapters                              |
 | `@aio-ui/id-address`, `/adapter.aio`, `/adapter.base` | one adapter each                                                            |
-| `@aio-ui/id-address`                                            | `idAddressFormAdapter`; needs `@aio-ui/form`, which is an **optional peer** |
-| `@aio-ui/id-address/id-address.css`                                  | state styling (`loading`, `error`) for the controls it decorates            |
+| `@aio-ui/id-address`                                  | `idAddressFormAdapter`; needs `@aio-ui/form`, which is an **optional peer** |
+| `@aio-ui/id-address/IdAddress.css`                    | state styling (`loading`, `error`) for the controls it decorates            |
 
 ### Quick start
 

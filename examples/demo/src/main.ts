@@ -27,11 +27,11 @@ import '@aio-ui/animations/Animations.css';
 // component's own sheet is still on its way*, so it can never be loaded lazily.
 import '@aio-ui/skeleton/Skeleton.css';
 // The colouriser hand-builds field-level controls — `.field`, `.field.actions`, `.switch.control`,
-// `input[type="range"]` — so the INPUT PRIMITIVE's sheets have to be on the page: `input.css`
-// draws a control, `controls.css` glues an action set (select + `button.controls`) to it.
+// `input[type="range"]` — so the INPUT PRIMITIVE's sheets have to be on the page: `Input.css`
+// draws a control, `InputControls.css` glues an action set (select + `button.controls`) to it.
 // Both are the package's own sheets; the demo styles nothing of it itself.
-import '@aio-ui/input/input.css';
-import '@aio-ui/input/controls.css';
+import '@aio-ui/input/Input.css';
+import '@aio-ui/input/InputControls.css';
 // The theme console instantiates the colouriser directly (no registry entry), so its
 // sheet is not requested through the seam — the host links it, exactly like the Editor
 // archive did. Loaded before the console's own sheet so the drawer chrome wins.

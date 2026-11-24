@@ -40,6 +40,11 @@
   --app-accent-strong: #d9822b;
   --app-accent-subtle: rgba(180, 120, 40, 0.12);
 
+  /* UI-safe brand strokes (borders, focus rings, icons). A base tuned for fills can be
+     too light for a 1px line on a surface; these clear WCAG 1.4.11 (3:1). */
+  --app-primary-ui: #754103;
+  --app-accent-ui: #8a5a1c;
+
   --app-page-background: linear-gradient(175deg, #fdfbf7 0%, #f6f1e8 45%, #efe7d8 100%);
   --app-surface-background-color: rgba(255, 255, 255, 0.82);
   --app-surface-strong: #ffffff;
@@ -92,6 +97,8 @@
     --app-accent-color: #c98a32;
     --app-accent-strong: #f7ba5b;
     --app-accent-subtle: rgba(229, 164, 67, 0.14);
+    --app-primary-ui: #e5a443;
+    --app-accent-ui: #d99a3f;
 
     --app-page-background: radial-gradient(circle at 50% 0%, #201913 0%, #14100b 60%, #0c0907 100%);
     --app-surface-background-color: rgba(28, 22, 17, 0.78);
@@ -131,6 +138,8 @@
   --app-accent-color: #c98a32;
   --app-accent-strong: #f7ba5b;
   --app-accent-subtle: rgba(229, 164, 67, 0.14);
+  --app-primary-ui: #e5a443;
+  --app-accent-ui: #d99a3f;
 
   --app-page-background: radial-gradient(circle at 50% 0%, #201913 0%, #14100b 60%, #0c0907 100%);
   --app-surface-background-color: rgba(28, 22, 17, 0.78);

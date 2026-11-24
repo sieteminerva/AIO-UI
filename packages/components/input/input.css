@@ -32,7 +32,9 @@
   --input-paper: rgb(245, 244, 244);
   --input-paper-soft: rgb(245, 244, 244, 0.8);
 
-  --input-border-color: var(--input-primary-color);
+  /* A 1px stroke is non-text UI (WCAG 1.4.11): read the UI-safe shade of the brand, not the
+     fill colour — a light primary teal is ~2.5:1 on a light surface and disappears. */
+  --input-border-color: var(--app-primary-ui, var(--input-primary-color));
 
   --input-text-color: color-mix(in srgb, var(--input-accent-color) 30%, var(--input-primary-color) 45%);
   --input-label-color: var(--input-accent-color);
@@ -278,7 +280,7 @@ select:focus-visible {
     font-size: var(--input-font-size);
     border-width: 1px;
     border-style: solid;
-    border-color: var(--input-text-color-light);
+    border-color: var(--input-border-color);
     border-radius: var(--input-border-radius);
     text-overflow: ellipsis;
     white-space: nowrap;

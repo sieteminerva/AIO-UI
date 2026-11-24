@@ -406,9 +406,35 @@ export class ColorThemeEngine {
     const surface = dark ? mix(8, "#1c1611") : mix(3, "#ffffff");
     const surfacePanel = dark ? mix(8, "#1c1611") : mix(4, "#ffffff");
 
+    /**
+     * A UI stroke or icon may not sink into the surface. WCAG 1.4.11 wants 3:1 for
+     * non-text UI, and a playful light brand colour routinely fails it (a teal on white
+     * is ~2.5:1). Mix toward the mode's contrast direction just enough to clear 3:1;
+     * 0% means the base already passes and the token is the base itself.
+     */
+    const toward = dark ? "white" : "black";
+    // The surface expression still carries `var(--app-primary-color)`, which a canvas
+    // cannot resolve — it reads back as the black sentinel, so every candidate "passes".
+    // Inline the two base literals for the measurement only.
+    const surfaceLiteral = surface
+      .replaceAll("var(--app-primary-color)", bases.primary)
+      .replaceAll("var(--app-accent-color)", bases.accent);
+    const uiOf = (ref: string, literal: string) => {
+      for (let amount = 0; amount <= 90; amount += 5) {
+        const candidate = amount === 0 ? literal : `color-mix(in oklch, ${literal} ${100 - amount}%, ${toward})`;
+        if (ColorThemeEngine.contrast(candidate, surfaceLiteral) >= 3) {
+          return amount === 0 ? ref : `color-mix(in oklch, ${ref} ${100 - amount}%, ${toward})`;
+        }
+      }
+      return `color-mix(in oklch, ${ref} 10%, ${toward})`;
+    };
+
     const tokens: Record<string, string> = {
       "--app-primary-color": bases.primary,
       "--app-accent-color": bases.accent,
+      // UI-safe strokes: borders, focus rings, icons — never the raw base when it fails 3:1.
+      "--app-primary-ui": uiOf(P, bases.primary),
+      "--app-accent-ui": uiOf(A, bases.accent),
       "--app-primary-hover": dark ? mix(80, "white", "hover") : mix(80, "black", "hover"),
       "--app-accent-strong": mixOf(A, 85, dark ? "white" : "black", "strong"),
       "--app-accent-subtle": mixOf(A, 12, "transparent", "subtle"),
@@ -614,8 +640,8 @@ export class ColorThemeEngine {
       ["Body text on surface", theme.preview["--app-text-color"], ColorThemeEngine.toRgba(theme.probes.surface), 4.5],
       ["Heading on page background", theme.preview["--app-text-heading-color"], ColorThemeEngine.toRgba(theme.probes.page), 4.5],
       ["Muted text on surface", theme.preview["--app-text-accent-color"], ColorThemeEngine.toRgba(theme.probes.surface), 4.5],
-      ["Primary on surface (UI)", theme.preview["--app-primary-color"], ColorThemeEngine.toRgba(theme.probes.surface), 3],
-      ["Accent on surface (UI)", theme.preview["--app-accent-color"], ColorThemeEngine.toRgba(theme.probes.surface), 3],
+      ["Primary on surface (UI)", theme.preview["--app-primary-ui"] ?? theme.preview["--app-primary-color"], ColorThemeEngine.toRgba(theme.probes.surface), 3],
+      ["Accent on surface (UI)", theme.preview["--app-accent-ui"] ?? theme.preview["--app-accent-color"], ColorThemeEngine.toRgba(theme.probes.surface), 3],
       ["White label on primary (button)", dynamicButtonText, primaryRgba, 4.5],
     ];
 

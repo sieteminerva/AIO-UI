@@ -81,6 +81,25 @@
   --input-popup-easing: ease;
   --input-popup-distance: 4px;
 
+  /* POPUP — ONE SOURCE. `::picker(select)` and `.menu` are the same sheet, so every value
+     they share is declared here once and consumed by both. Retune the surface here and the
+     native picker and the custom menu move together; there is no matching edit to forget.
+     Only genuinely different things (DOM shape, `position: fixed`, the flip mirror) stay in
+     their own rules. */
+  --input-popup-background: var(--input-background-color);
+  --input-popup-color: var(--input-text-color);
+  --input-popup-border: 1px solid var(--input-border-color);
+  /* The edge shared with the control: no border there, the control's owns the seam. */
+  --input-popup-seam: none;
+  --input-popup-radius: var(--input-border-radius);
+  --input-popup-shadow: var(--app-shadow-soft, 0 12px 35px -8px rgba(92, 60, 20, 0.12));
+  --input-popup-max-height: calc((var(--input-min-height) * 4) + 10px);
+  --input-popup-item-padding: 0.31em 0.5em;
+  /* Entrance: the sheet unrolls out of the seam. One pair of values for both surfaces. */
+  --input-popup-enter: scaleY(0);
+  --input-popup-open: scaleY(1);
+  --input-popup-enter-origin: top;
+
   /* error state — derived from the app layer so a theme can retheme it */
   --input-error-color: var(--app-status-error, #ff114d);
   --input-error-text-color: var(--app-status-error-soft, #ff93ae);
@@ -127,6 +146,10 @@ select:focus-visible {
    2. Input Wrapper & Display Layouts
    ========================================================================== */
 .field {
+  /* The field wrapper owns the positioning context: the datalist arrow, the spinner and
+     the menu's anchor all position against it. Declared once, here — a second sheet
+     declaring it was a second source for the same box. */
+  position: relative;
   /* One anchor name for every field control, scoped to the field: a dropdown, a native
      `select` picker and a picker panel on one page never compete, and no id has to be
      generated. */
@@ -350,8 +373,7 @@ select:focus-visible {
 
   /* Open Select Special Rounding Layer Override */
   & select:open,
-  &:has(select:open) select,
-  &:has(select:open) select:is(:hover, :active),
+
   &:has(select:active) select:open::picker(select),
   &:has(select:focus) select:open::picker(select) {
     transition:
@@ -386,7 +408,7 @@ select:focus-visible {
       display: block;
       outline: none;
       line-height: var(--input-line-height);
-      padding: 0.31em 0.5em;
+      padding: var(--input-popup-item-padding);
       border: none;
       width: auto;
       /* warna selected diambil dari rule bersama §5.3 (ikut option:checked) */
@@ -395,12 +417,9 @@ select:focus-visible {
     &:open::picker(select) {
       opacity: 1;
       transition-delay: var(--input-dropdown-transition-delay, 30ms);
-      transform: translateY(0);
+      transform: var(--input-popup-open);
       outline: none;
-      outline: none;
-      /* the picker is the bottom half of one box now: its own corners are squared above,
-         so the control squares below to match */
-      box-shadow: var(--app-shadow-soft, 0 12px 35px -8px rgba(92, 60, 20, 0.12));
+      box-shadow: var(--input-popup-shadow);
       /* scrollbar-gutter: stable; */
       scrollbar-width: thin;
       overflow-x: hidden;
@@ -414,11 +433,11 @@ select:focus-visible {
   }
 
   /* ------------------------------------------------------------------
-      5.2 SHARED POPUP SURFACE — ::picker(select) & .dropdown > .menu
-      Ditulis sebagai rule STANDALONE yang disinkronkan (BUKAN digabung
-      dengan .menu via selector list lintas jenis — pseudo-element +
-      selector kompleks dalam satu list bisa membatalkan seluruh rule).
-      Perubahan visual di salah satu WAJIB disalin ke pasangannya.
+      5.2 SHARED POPUP SURFACE — `::picker(select)` and `.menu` are ONE sheet.
+      Every value they share comes from a `--input-popup-*` token (token layer, top of
+      this file), so retuning the surface is one edit and the two can never drift or
+      override each other. Only the DOM shape, `position: fixed`, the flip mirror and the
+      platform picker's own entrance live in their own rules below.
     ------------------------------------------------------------------ */
   & select::picker(select),
   & .dropdown[data-style] > .menu {
@@ -428,26 +447,25 @@ select:focus-visible {
     scrollbar-width: thin;
     scrollbar-color: var(--input-accent-color)
       color-mix(in srgb, var(--app-text-accent-color) 10%, var(--input-accent-color) 5%);
-    background-color: var(--input-background-color);
-    color: var(--input-text-color);
+    background-color: var(--input-popup-background);
+    color: var(--input-popup-color);
     backdrop-filter: blur(12px);
     inset: auto;
     left: anchor(left);
     width: anchor-size(width);
-    /* ATTACHED, not a floating card: the popup sits flush on the control and the two
-       read as ONE box. The seam is shared — the control drops its bottom border and its
-       bottom corners while open, the popup drops its top border and its top corners, and
-       the 1px overlap hides the doubled line. `[data-placement="above"]` below mirrors
-       every one of those edges when the popup has to open upward. */
+    /* ATTACHED: the sheet sits flush on the control, and the edge they share belongs to
+       the control — no border there, corners squared on that side, 1px overlap so the
+       doubled line never shows. `[data-placement="above"]` mirrors every edge. */
     top: calc(anchor(bottom) - 1px);
-    border: 1px solid var(--input-border-color);
-    border-top: none;
-    border-radius: 0 0 var(--input-border-radius) var(--input-border-radius);
-    /* The sheet unrolls out of the seam: origin on the shared edge, so `scaleY` grows it
-       from the control instead of sliding a floating card across the page. */
-    transform-origin: top;
-    box-shadow: var(--app-shadow-soft, 0 12px 35px -8px rgba(92, 60, 20, 0.12));
-    max-height: calc((var(--input-min-height) * 4) + 10px);
+    border: var(--input-popup-border);
+    border-block-start: var(--input-popup-seam);
+    border-start-start-radius: 0;
+    border-start-end-radius: 0;
+    border-end-start-radius: var(--input-popup-radius);
+    border-end-end-radius: var(--input-popup-radius);
+    transform-origin: var(--input-popup-enter-origin);
+    box-shadow: var(--input-popup-shadow);
+    max-height: var(--input-popup-max-height);
     opacity: 0;
     transition-behavior: allow-discrete;
     white-space: nowrap;
@@ -465,9 +483,12 @@ select:focus-visible {
     top: auto;
     bottom: calc(anchor(top) - 1px);
     position-try-fallbacks: none;
-    border-top: 1px solid var(--input-border-color);
-    border-bottom: none;
-    border-radius: var(--input-border-radius) var(--input-border-radius) 0 0;
+    border-block-start: var(--input-popup-border);
+    border-block-end: var(--input-popup-seam);
+    border-start-start-radius: var(--input-popup-radius);
+    border-start-end-radius: var(--input-popup-radius);
+    border-end-start-radius: 0;
+    border-end-end-radius: 0;
     /* grows upward out of the seam it shares with the control's top edge */
     transform-origin: bottom;
   }
@@ -756,7 +777,12 @@ select:focus-visible {
     & > .menu {
       position: fixed;
       overflow-y: auto;
-      box-shadow: var(--app-shadow-soft, 0 12px 35px -8px rgba(92, 60, 20, 0.12));
+      /* ONE arbiter of placement: `Dropdown` writes `data-placement` from the space it has,
+         and the attribute decides every edge. Leaving `position-try-fallbacks` on as well
+         meant the platform could move the sheet while the attribute styled the other side —
+         the "sometimes flush, sometimes shifted" seam. */
+      position-try-fallbacks: none;
+      box-shadow: var(--input-popup-shadow);
       pointer-events: none;
       opacity: 0;
       /* Unrolls from the seam (§5.2 sets the origin): a slide would show a gap under an

@@ -379,19 +379,35 @@ export class DropdownBuilder extends Builder<DropdownElementType, iDropdownConfi
       document.addEventListener("mousedown", onOutsideDown, { signal: this.abortController.signal });
       outsideBound = true;
     };
+    // 🧭 Placement has ONE source: this function. It reads the space around the control and
+    // writes `data-placement`; CSS derives every edge (which border is dropped, which
+    // corners are squared, which anchor edge is used) from that attribute alone. The
+    // platform fallbacks are off for `.menu`, so nothing else can move the sheet — that
+    // second arbiter was what made the seam "sometimes flush, sometimes shifted".
+    const place = () => {
+      const own = box()?.getBoundingClientRect();
+      if (!own) return;
+      menu.dataset.placement = "below";
+      // `offsetHeight`, not a rect: the entrance transform is `scaleY(0)` at this moment, and
+      // a collapsed rect would report 0 height and decide "fits" for any space.
+      const need = menu.offsetHeight;
+      const spaceBelow = window.innerHeight - own.bottom;
+      menu.dataset.placement = spaceBelow < need && own.top > spaceBelow ? "above" : "below";
+    };
+    let placeBound = false;
+    const bindPlacement = () => {
+      if (placeBound) return;
+      window.addEventListener("scroll", place, { capture: true, passive: true, signal: this.abortController.signal });
+      window.addEventListener("resize", place, { passive: true, signal: this.abortController.signal });
+      placeBound = true;
+    };
     const open = () => {
       if (hideTimer) { window.clearTimeout(hideTimer); hideTimer = null; }
       bindBoxClick();
       bindOutside();
+      bindPlacement();
       if (!menu.matches(":popover-open")) menu.showPopover();
-      // 🔁 The menu is one sheet with the control, and the seam is mirrored when it has to
-      // open upward: CSS squares the corners that touch the control and drops that border
-      // edge, chosen by `data-placement`. Reset to the default first — measuring while the
-      // previous `above` styling is still on would place it above and then agree with
-      // itself (a self-fulfilling flip).
-      menu.dataset.placement = "below";
-      const own = box()?.getBoundingClientRect();
-      if (own && menu.getBoundingClientRect().top < own.top) menu.dataset.placement = "above";
+      place();
       // Tambahkan .visible pada frame berikutnya agar animasi masuk terlihat
       requestAnimationFrame(() => menu.classList.add("visible"));
       input.setAttribute("aria-expanded", "true");

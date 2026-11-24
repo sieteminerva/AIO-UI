@@ -14,6 +14,10 @@ Why / stages: `.guidance/plan-framework.md`. Engineering rules:
 
 ## Next
 
+- **v0.2.7 migration note** — b97 renamed the sheet specifiers (`Input.css`, `Dropdown.css`,
+  `FileUploader.css`, `InputControls.css`, `InputPicker.css`, `IdAddress.css`); `v0.2.6` keeps
+  serving the lowercase names, so the note must list the swap. `examples/rajutan` needs its own
+  commit (its two files are edited, not committed).
 - **Colour tokens after v0.2.6** — T1–T5 shipped (b95). Only the **T3 taste pass** is open
   (owner reviews colours; taste, not algorithm), plus a picker-upward re-check when a tab is
   visible. Restore tag `color-pre-full-2026-11-25` (547973e). → `docs/framework/TASK-color-tokens.md`

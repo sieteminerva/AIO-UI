@@ -22,7 +22,16 @@
 > eight missing package READMEs · **b67** publish-side followers · **b65–b66** per-package versions.
 > Older history: `git log --oneline`.
 
-### 1. Colour tokens — T1–T5 shipped in v0.2.6 (framework band)
+### 1. Class files are PascalCase — sheets, specifiers, builder (framework band)
+
+`Input.css`, `InputControls.css`, `IdAddress.css` and `IdAddressBuilder.ts` replaced the kebab
+names, and every sheet specifier mirrors its file (`@aio-ui/input/{Input,Dropdown,FileUploader,
+InputControls,InputPicker}.css`, `@aio-ui/id-address/IdAddress.css`). The Linux-only failures are
+closed: b96 fixed the test literal, b98 the catalogue drift. **Open:** v0.2.7 must carry the
+migration note (v0.2.6 still serves the lowercase names) and `examples/rajutan` needs its own
+commit. → `docs/framework/COMPONENT-CONVENTIONS.md` (naming table) · `docs/live-cdn-repo.md` §3.4
+
+### 2. Colour tokens — T1–T5 shipped in v0.2.6 (framework band)
 
 T1 (one `light-dark()` root + mask spinner + derived skeleton), T2 (form path ink/border,
 theme-aware code paper, popup = one sheet with the control), T3 (Article/Table/Message/Tab
@@ -34,7 +43,7 @@ taste, not algorithm) and a picker-upward re-check when a tab is visible; the
 `color-pre-full-2026-11-25` / branch `color-restore-pre-full` (547973e).
 → `docs/framework/TASK-color-tokens.md`
 
-### 2. Release — `v0.2.6` published (tooling band)
+### 3. Release — `v0.2.6` published (tooling band)
 
 **Published 2026-11-25** (b95): whole family at `0.2.6`, branch `releases` at `f255d82`, tag
 `v0.2.6`, `check:live` 6/6 → `200`, package probes `200`, checksums byte-identical. The note lists
@@ -42,24 +51,9 @@ the three breaking removals (core field node types, `span`, repeater floor). **O
 optional GitHub Release asset upload (needs `GITHUB_TOKEN`), and the official release still waits
 for `store` / `profile` / `blog`. → `docs/releases/v0.2.6.md` · `docs/live-cdn-repo.md`
 
-The **Pages workflow** was red since run #46 (not caused by the release): `Input.test.ts` read
-`Input.css` while the tree tracks `input.css` — Windows hides the difference. Fixed in b96, plus a
-letter-for-letter export check in `packaging.test.ts`.
-
-**Next release must carry a migration note** (b97): the sheet specifiers are now `Input.css`,
-`Dropdown.css`, `FileUploader.css`, `InputControls.css`, `InputPicker.css` and `IdAddress.css`
-(was `input.css`, `dropdown.css`, `file-uploader.css`, `controls.css`, `picker.css`,
-`id-address.css`). `v0.2.6` keeps serving the lowercase names.
-
-**Formatter trap (b98):** a blank line inserted before `<!-- install:end -->` in two package
-READMEs made `check:catalogue` stale, and CI run #52 died on it while the local gate (run before
-the formatting) was green. `node temp/case-guard.cjs` now emulates a case-sensitive FS for every
-check script — that is how the stale catalogue surfaced locally.
-
-### 3. Theme console view (fab) — in progress (framework band)
-
-View composed, gate green; open: page-only popover sections.
-→ `examples/demo/src/ThemeConsole/TASKS.md`
+**Pages is green again** (run #53, `6a33045`): red since #46 on a Windows-only path difference
+(b96), then on a formatter blank line inside the install block (b98). `temp/case-guard.cjs`
+replays a case-sensitive FS locally; promote it to `scripts/` if the class of failure returns.
 
 _Retired from the logbook (batch 57 landed, still live): rajutan hosting → `orchestrator/mechanism.md`
 §1–§11 · `.guidance/project/generator.md` §Next._

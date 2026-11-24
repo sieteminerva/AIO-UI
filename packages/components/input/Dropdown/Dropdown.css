@@ -108,7 +108,12 @@
 
 .field input[list].dropdown.loading ~ span.spinner {
   visibility: visible;
-  content: var(--app-spinner-content); /* shared asset from variables.css */
+  /* Shared MASK asset: the shape comes from alpha, the colour from the token. */
+  mask-image: var(--app-spinner-content);
+  mask-size: contain;
+  mask-repeat: no-repeat;
+  mask-mode: alpha;
+  background-color: var(--input-primary-color);
 }
 
 /* ==========================================================================

@@ -525,9 +525,13 @@
     transform: translate(-50%, -50%);
     width: 32px;
     height: 32px;
-    background-image: var(--tab-spinner);
-    background-size: contain;
-    background-repeat: no-repeat;
+    /* Mask, not an image: alpha carries the shape, the token carries the colour. */
+    mask-image: var(--tab-spinner);
+    mask-size: contain;
+    mask-repeat: no-repeat;
+    mask-position: center;
+    mask-mode: alpha;
+    background-color: var(--app-primary-color);
     z-index: 10;
     transition: opacity 0.2s ease;
 

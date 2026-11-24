@@ -166,10 +166,13 @@ section:is(.masonry),
     margin: 1.5rem auto;
     width: 40px;
     height: 40px;
-    background-image: var(--masonry-spinner);
-    background-repeat: no-repeat;
-    background-position: center;
-    background-size: contain;
+    /* Mask, not an image: alpha carries the shape, the token carries the colour. */
+    mask-image: var(--masonry-spinner);
+    mask-repeat: no-repeat;
+    mask-position: center;
+    mask-size: contain;
+    mask-mode: alpha;
+    background-color: var(--app-primary-color);
     transition:
       opacity 0.2s ease,
       visibility 0.2s ease;

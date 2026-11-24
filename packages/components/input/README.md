@@ -88,10 +88,10 @@ cannot express `20 / 40 / 40`, so the form lays a 100-unit grid out from the per
 `config.actions` takes names (`"editor"` = edit+save, `"repeater"` = add+delete) or objects
 `{ type, label?, icon?, onClick, … }`. Two flags belong to the **`delete`** of a repeater:
 
-| Flag           | Default | Meaning                                                                         |
-| -------------- | ------- | ------------------------------------------------------------------------------- |
+| Flag           | Default | Meaning                                                                                                                            |
+| -------------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------- |
 | `removable`    | `true`  | Whether the **source** row (index 0, the one Add was first clicked from) may be deleted. `false` locks it; clones are always free. |
-| `hideOnSource` | `false` | Hide the source's delete button (a look; `removable: false` is what locks it).   |
+| `hideOnSource` | `false` | Hide the source's delete button (a look; `removable: false` is what locks it).                                                     |
 
 The old `minItems` / `atMin` pair is gone: counting rows could not say "keep index 0".
 

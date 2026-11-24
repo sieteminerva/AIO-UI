@@ -330,9 +330,12 @@ header.docs-head {
   & .state-spinner {
     width: 24px;
     height: 24px;
-    background-image: var(--app-spinner-content);
-    background-repeat: no-repeat;
-    background-size: contain;
+    /* `--app-spinner-content` is a mask: alpha is the shape, the token paints it. */
+    mask-image: var(--app-spinner-content);
+    mask-repeat: no-repeat;
+    mask-size: contain;
+    mask-mode: alpha;
+    background-color: var(--app-primary-color);
   }
 
   & .state-title {

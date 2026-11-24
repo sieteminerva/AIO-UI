@@ -33,8 +33,9 @@ visible. Restore checkpoint: tag `color-pre-full-2026-11-25` / branch `color-res
 ### 2. Release — everything landed, waiting on the owner's order (tooling band)
 
 Input & form work is closed (b76/b78/b79/b80/b81). **Open:** the next minor lists the removed
-`@aio-ui/core` types and the `span` removal; owner orders the publish. Colour tokens must land
-first (card 1). Owner orders; `docs/live-cdn-repo.md` is the ritual.
+`@aio-ui/core` types and the `span` removal; **colour tokens T1–T5 have landed (b86–b94)** so only
+the owner's T3 taste pass stands between here and v0.2.6. Owner orders the publish;
+`docs/live-cdn-repo.md` is the ritual.
 → `.guidance/project/framework.md` §Next · `docs/releases/v0.2.5.md`
 
 ### 3. Theme console view (fab) — in progress (framework band)

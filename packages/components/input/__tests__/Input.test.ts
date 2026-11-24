@@ -15,17 +15,26 @@ import { ModuleLoader } from "@aio-ui/module-loader";
  * pinned down by rendering it. Everything else here is the type matrix and the module set.
  */
 
-function build(schema: Record<string, any>, config: Record<string, any> = {}): { container: HTMLElement; control: HTMLElement } {
+/**
+ * Renders one field: `content` is the field itself, `config` its behaviour, and `builder`
+ * the constructor configuration (the module set this file exercises).
+ */
+function build(
+  content: Record<string, any>,
+  config: Record<string, any> = {},
+  builder: Record<string, any> = {},
+): { container: HTMLElement; control: HTMLElement } {
   // The layer ships no preset of its own since `0.2.2`, so this file states the one it
   // exercises. Degradation with no modules at all is pinned in `Modules.test.ts`.
-  const container = new InputBuilder({ modules: INPUT_MODULE_DEFINITIONS, ...config } as any).create({ content: schema as any }) as HTMLElement;
+  const container = new InputBuilder({ modules: INPUT_MODULE_DEFINITIONS, ...builder } as any)
+    .create({ content, config } as any) as HTMLElement;
   const control = container.querySelector("input, textarea, select") as HTMLElement;
   return { container, control };
 }
 
 describe("InputBuilder label", () => {
   it("renders the label once, bound to the control", () => {
-    const { container, control } = build({ type: "text", id: "name", title: "Nama" });
+    const { container, control } = build({ type: "text", id: "name", label: "Nama" });
     const labels = container.querySelectorAll("label");
 
     expect(labels).toHaveLength(1);
@@ -34,42 +43,42 @@ describe("InputBuilder label", () => {
   });
 
   it("renders one label for a checkbox (the second one was a duplicate)", () => {
-    const { container } = build({ type: "checkbox", id: "agree", title: "Saya setuju" });
+    const { container } = build({ type: "checkbox", id: "agree", label: "Saya setuju" });
 
     expect(container.querySelectorAll("label")).toHaveLength(1);
   });
 
   it("defaults a toggle label to the right so it cannot sit on the switch", () => {
-    const { container } = build({ type: "checkbox", id: "agree", title: "Saya setuju" });
+    const { container } = build({ type: "checkbox", id: "agree", label: "Saya setuju" });
 
     expect(container.querySelector("label")?.getAttribute("data-position")).toBe("right");
   });
 
-  it("takes an explicit position from the field or from its config", () => {
-    expect(build({ type: "checkbox", id: "a", title: "A", position: "left" }).container.querySelector("label")?.getAttribute("data-position")).toBe("left");
-    expect(build({ type: "text", id: "b", title: "B", config: { position: "right" } }).container.querySelector("label")?.getAttribute("data-position")).toBe("right");
+  it("takes an explicit position from the config", () => {
+    expect(build({ type: "checkbox", id: "a", label: "A" }, { position: "left" }).container.querySelector("label")?.getAttribute("data-position")).toBe("left");
+    expect(build({ type: "text", id: "b", label: "B" }, { position: "right" }).container.querySelector("label")?.getAttribute("data-position")).toBe("right");
   });
 
   it("leaves a plain text label without a position hint", () => {
-    const { container } = build({ type: "text", id: "name", title: "Nama" });
+    const { container } = build({ type: "text", id: "name", label: "Nama" });
 
     expect(container.querySelector("label")?.hasAttribute("data-position")).toBe(false);
   });
 
-  it("prefers label over title, because title is only the legacy shorthand", () => {
-    const { container } = build({ type: "text", id: "x", title: "legacy", label: "Real label" });
+  it("reads the caption from `label`, the only spelling a field has", () => {
+    const { container } = build({ type: "text", id: "x", label: "Real label" });
 
     expect(container.querySelector("label")?.textContent).toBe("Real label");
   });
 
   it("honours useLabel: false", () => {
-    const { container } = build({ type: "text", id: "x", title: "Nama", config: { useLabel: false } });
+    const { container } = build({ type: "text", id: "x", label: "Nama" }, { useLabel: false });
 
     expect(container.querySelectorAll("label")).toHaveLength(0);
   });
 
   it("passes position through as a data attribute, not as a different order", () => {
-    const { container } = build({ type: "text", id: "x", title: "Nama", config: { position: "right" } });
+    const { container } = build({ type: "text", id: "x", label: "Nama" }, { position: "right" });
     const label = container.querySelector("label") as HTMLElement;
 
     expect(label.getAttribute("data-position")).toBe("right");
@@ -117,14 +126,14 @@ describe("InputBuilder attributes", () => {
   });
 
   it("drops an attribute the type does not accept", () => {
-    const { control } = build({ type: "checkbox", id: "agree", maxlength: 12, placeholder: "nope" });
+    const { control } = build({ type: "checkbox", id: "agree", placeholder: "nope" }, { maxlength: 12 });
 
     expect(control.hasAttribute("maxlength")).toBe(false);
     expect(control.hasAttribute("placeholder")).toBe(false);
   });
 
   it("keeps numeric bounds and falls back to step=any", () => {
-    const bounded = build({ type: "number", id: "qty", min: 1, max: 9, step: 2 }).control;
+    const bounded = build({ type: "number", id: "qty" }, { min: 1, max: 9, step: 2 }).control;
     const loose = build({ type: "number", id: "qty" }).control;
 
     expect(bounded.getAttribute("min")).toBe("1");
@@ -139,19 +148,17 @@ describe("InputBuilder attributes", () => {
   });
 
   it("renders a select with its placeholder and options", () => {
-    const { control } = build({
-      type: "select",
-      id: "size",
-      required: true,
-      config: { options: ["S", "M"] },
-    });
+    const { control } = build(
+      { type: "select", id: "size", options: ["S", "M"] },
+      { required: true },
+    );
     const options = [...(control as HTMLSelectElement).options].map((o) => o.value);
 
     expect((control as HTMLSelectElement).required).toBe(true);
     expect(options).toEqual(["", "S", "M"]);
   });
 
-  it("accepts options written flat on the schema, as a sheet does", () => {
+  it("reads the choices from `content.options` and nowhere else", () => {
     const { control } = build({ type: "select", id: "size", options: ["S", "M", "L"] });
     const options = [...(control as HTMLSelectElement).options].map((o) => o.value);
 
@@ -163,7 +170,7 @@ describe("InputBuilder attributes", () => {
       type: "radio",
       id: "delivery",
       name: "delivery",
-      title: "Pengiriman",
+      label: "Pengiriman",
       value: "courier",
       options: [
         { value: "pickup", label: "Ambil sendiri" },
@@ -190,7 +197,7 @@ describe("InputBuilder attributes", () => {
     const { container } = build({
       type: "checkbox",
       id: "extras",
-      title: "Tambahan",
+      label: "Tambahan",
       value: "cheese,sauce",
       options: ["cheese", "sauce", "onion"],
     });
@@ -202,11 +209,10 @@ describe("InputBuilder attributes", () => {
   });
 
   it("keeps config.attributes as the escape hatch, applied last", () => {
-    const { control } = build({
-      type: "text",
-      id: "x",
-      config: { attributes: [{ name: "data-test", value: "ok" }, { name: "maxlength", value: "3" }] },
-    });
+    const { control } = build(
+      { type: "text", id: "x" },
+      { attributes: [{ name: "data-test", value: "ok" }, { name: "maxlength", value: "3" }] },
+    );
 
     expect(control.getAttribute("data-test")).toBe("ok");
     expect(control.getAttribute("maxlength")).toBe("3");
@@ -224,8 +230,8 @@ describe("InputBuilder attributes", () => {
     // layer flags it and still never parses anything. Without the flag (or with a plain
     // `file` field) a CSV preview would be attached to a photo upload.
     expect(build({ type: "file", id: "a" }).control.hasAttribute("data-uploader-csv")).toBe(false);
-    expect(build({ type: "file", id: "b", config: { csv: true } }).control.hasAttribute("data-uploader-csv")).toBe(true);
-    expect(build({ type: "file", id: "c", config: { csv: true } }).control.hasAttribute("data-uploader")).toBe(true);
+    expect(build({ type: "file", id: "b" }, { csv: true }).control.hasAttribute("data-uploader-csv")).toBe(true);
+    expect(build({ type: "file", id: "c" }, { csv: true }).control.hasAttribute("data-uploader")).toBe(true);
   });
 });
 
@@ -246,13 +252,13 @@ describe("InputRegistry", () => {
     const scan = scanInputAttributes("text", {
       type: "text",
       id: "name",
-      title: "Nama",
+      label: "Nama",
       placeholder: "Nama lengkap",
       config: {},
       bogus: 1,
     });
 
-    expect(scan.structural).toEqual(["type", "id", "title", "config"]);
+    expect(scan.structural).toEqual(["type", "id", "label", "config"]);
     expect(scan.accepted).toEqual(["placeholder"]);
     expect(scan.rejected).toEqual(["bogus"]);
   });
@@ -287,12 +293,12 @@ describe("input module registry", () => {
   const withActions = {
     type: "text",
     id: "sku",
-    title: "SKU",
+    label: "SKU",
     config: { actions: [{ type: "add", label: "Add", onClick: () => undefined }] },
   };
 
   it("decorates a field with the action set when the controls module is registered", () => {
-    const { container } = build(withActions, { modules: new ModuleLoader("input", INPUT_MODULE_DEFINITIONS) });
+    const { container } = build({ type: withActions.type, id: withActions.id, label: withActions.label }, withActions.config, { modules: new ModuleLoader("input", INPUT_MODULE_DEFINITIONS) });
 
     expect(container.classList.contains("actions")).toBe(true);
     expect(container.querySelector("button")).not.toBeNull();
@@ -301,7 +307,7 @@ describe("input module registry", () => {
   it("refuses a declared action set when the controls module is not registered", () => {
     // A field that declared buttons and got none is a hole, not a plainer control, so the
     // degradation is a throw with the fix in the message — `Missing.test.ts` pins the wording.
-    expect(() => build(withActions, { modules: new ModuleLoader("input", []) })).toThrow(
+    expect(() => build({ type: withActions.type, id: withActions.id, label: withActions.label }, withActions.config, { modules: new ModuleLoader("input", []) })).toThrow(
       /"controls" module is not in this builder's set/
     );
   });
@@ -318,7 +324,7 @@ describe("input module registry", () => {
       ...INPUT_MODULE_DEFINITIONS,
       { id: "rating", load: () => ({ renderControl }) },
     ]);
-    const { container } = build({ type: "rating", id: "score", title: "Score" }, { modules: loader });
+    const { container } = build({ type: "rating", id: "score", label: "Score" }, {}, { modules: loader });
 
     expect(renderControl).toHaveBeenCalled();
     expect(container.querySelector(".rating-stars")).not.toBeNull();
@@ -326,8 +332,9 @@ describe("input module registry", () => {
 
   it("keeps a plain field free of modules entirely", () => {
     const { container, control } = build(
-      { type: "text", id: "name", title: "Nama" },
-      { modules: new ModuleLoader("input", []) }
+      { type: "text", id: "name", label: "Nama" },
+      {},
+      { modules: new ModuleLoader("input", []) },
     );
 
     expect(control.tagName).toBe("INPUT");
@@ -347,8 +354,8 @@ describe("InputBuilder toggle style", () => {
     expect(container.querySelector(".slider")).not.toBeNull();
   });
 
-  it("renders a radio as a switch when config.style is toggle", () => {
-    const { container, control } = build({ type: "radio", id: "pickup", name: "delivery", title: "Ambil sendiri", config: { style: "toggle" } });
+  it("renders a radio as a switch when config.view is toggle", () => {
+    const { container, control } = build({ type: "radio", id: "pickup", name: "delivery", label: "Ambil sendiri" }, { view: "toggle" });
 
     expect((control as HTMLInputElement).type).toBe("radio");
     expect(container.querySelector(".switch.control")).not.toBeNull();
@@ -356,24 +363,24 @@ describe("InputBuilder toggle style", () => {
     expect(container.querySelector("label")?.getAttribute("data-position")).toBe("right");
   });
 
-  it("keeps the native dot for a radio without the toggle style", () => {
-    const { container, control } = build({ type: "radio", id: "courier", name: "delivery", title: "Kirim kurir" });
+  it("keeps the native dot for a radio without the toggle view", () => {
+    const { container, control } = build({ type: "radio", id: "courier", name: "delivery", label: "Kirim kurir" });
 
     expect((control as HTMLInputElement).type).toBe("radio");
     expect(container.querySelector(".switch.control")).toBeNull();
   });
 
   it("does not start a toggle checked unless the schema says so", () => {
-    const off = build({ type: "radio", id: "a", name: "g", title: "A", config: { style: "toggle" } }).control;
-    const on = build({ type: "radio", id: "b", name: "g", title: "B", checked: true, config: { style: "toggle" } }).control;
+    const off = build({ type: "radio", id: "a", name: "g", label: "A" }, { view: "toggle" }).control;
+    const on = build({ type: "radio", id: "b", name: "g", label: "B", checked: true }, { view: "toggle" }).control;
 
     expect((off as HTMLInputElement).checked).toBe(false);
     expect((on as HTMLInputElement).checked).toBe(true);
   });
 
   it("keeps radio group semantics: same name, one value each", () => {
-    const first = build({ type: "radio", id: "a", name: "delivery", value: "pickup", title: "A", config: { style: "toggle" } }).control as HTMLInputElement;
-    const second = build({ type: "radio", id: "b", name: "delivery", value: "courier", title: "B", config: { style: "toggle" } }).control as HTMLInputElement;
+    const first = build({ type: "radio", id: "a", name: "delivery", value: "pickup", label: "A" }, { view: "toggle" }).control as HTMLInputElement;
+    const second = build({ type: "radio", id: "b", name: "delivery", value: "courier", label: "B" }, { view: "toggle" }).control as HTMLInputElement;
 
     expect(first.name).toBe("delivery");
     expect(second.name).toBe("delivery");
@@ -398,16 +405,19 @@ describe("input schema door (content / config)", () => {
     expect(control.getAttribute("maxlength")).toBe("40");
   });
 
-  it("still renders a legacy flat node — the shape the form adapter sends", () => {
-    const container = full({ content: { type: "select", id: "city", title: "Kota", config: { options: ["Bandung"] } } });
+  it("accepts one shape only: a flat node is not a field anymore", () => {
+    // Before stage 3 the builder lifted `config.options` and the `title` label alias out
+    // of a flat node. Both are gone: the only place a field's choices and caption live is
+    // `content`, so a node that puts them elsewhere renders without them.
+    const container = full({ content: { type: "select", id: "city", config: { options: ["Bandung"], label: "Kota" } } });
 
-    expect(container.querySelector("label")?.textContent).toBe("Kota");
-    expect(container.querySelectorAll("option[value='Bandung']")).toHaveLength(1);
+    expect(container.querySelector("label")).toBeNull();
+    expect(container.querySelectorAll("option[value='Bandung']")).toHaveLength(0);
   });
 
   it("narrows the variant: a chooser key is refused where the type has no choices", () => {
-    // The narrowing lives in the schema type: `create()` also accepts a legacy flat node,
-    // which is exactly why the check is pinned here rather than at the call site.
+    // The narrowing lives in the schema type, which is exactly why the check is pinned on
+    // a typed variable rather than at the (loosely shaped) call site.
     // @ts-expect-error — `options` only exists on a chooser (select/dropdown/picker/checkbox/radio)
     const withOptions: InputSchema<"text"> = { content: { type: "text", options: ["a"] } };
     // @ts-expect-error — `column` feeds a picker panel, nothing else
@@ -418,6 +428,30 @@ describe("input schema door (content / config)", () => {
     expect("options" in withOptions.content).toBe(true);
     expect(withColumn.content.type).toBe("text");
     expect(withChecked.content.type).toBe("text");
+  });
+
+  it("narrows the module bag: an uploader key is refused on a text field", () => {
+    const uploader: InputSchema<"file"> = {
+      content: { type: "file", id: "cv", label: "CV" },
+      config: { maxUpload: 3, csv: true, onFileSelected: () => undefined },
+    };
+    // @ts-expect-error — `maxUpload` is an uploader key; a text field offers no uploader
+    const wrong: InputSchema<"text"> = { content: { type: "text" }, config: { maxUpload: 3 } };
+    // @ts-expect-error — `apiUrl` only reaches a dropdown's fetch
+    const alsoWrong: InputSchema<"text"> = { content: { type: "text" }, config: { apiUrl: "/cities" } };
+
+    expect(uploader.config?.maxUpload).toBe(3);
+    expect(wrong.content.type).toBe("text");
+    expect(alsoWrong.content.type).toBe("text");
+  });
+
+  it("keeps the wrapper-level action set on every type", () => {
+    const text: InputSchema<"text"> = {
+      content: { type: "text", id: "a" },
+      config: { actions: ["editor"], popover: "<b>x</b>" },
+    };
+
+    expect(text.config?.actions).toEqual(["editor"]);
   });
 
   it("maps `view` onto the owner's own setting (dropdown → data-style)", () => {
@@ -497,7 +531,7 @@ describe("input sheet", () => {
 
 describe("InputBuilder help text (info)", () => {
   it("is the last child of the field, after the control", () => {
-    const { container } = build({ type: "text", id: "name", title: "Nama", info: "Helper text" });
+    const { container } = build({ type: "text", id: "name", label: "Nama", info: "Helper text" });
     const last = container.lastElementChild as HTMLElement;
 
     expect(last.tagName).toBe("SMALL");
@@ -509,7 +543,7 @@ describe("InputBuilder help text (info)", () => {
     const { container } = build({
       type: "radio",
       id: "pick",
-      title: "Pick",
+      label: "Pick",
       options: [{ value: "a", label: "A" }, { value: "b", label: "B" }],
       info: "Pick one",
     });
@@ -518,7 +552,7 @@ describe("InputBuilder help text (info)", () => {
   });
 
   it("comes after the label and after the control, never between them", () => {
-    const { container, control } = build({ type: "text", id: "name", title: "Nama", info: "Help" });
+    const { container, control } = build({ type: "text", id: "name", label: "Nama", info: "Help" });
     const children = Array.from(container.children);
     const labelIndex = children.findIndex((child) => child.tagName === "LABEL");
     const controlIndex = children.indexOf(control);

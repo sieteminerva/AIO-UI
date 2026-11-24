@@ -26,10 +26,10 @@ describe("input layer reports what is missing", () => {
 
   it("warns once for a dropdown that fell back to a native select", () => {
     const builder = new InputBuilder({ modules: [] });
-    const field = { type: "dropdown", id: "pick", title: "Pick", config: { options: ["a"] } };
+    const field = { content: { type: "dropdown", id: "pick", label: "Pick", options: ["a"] } };
 
-    builder.create({ content: field as any });
-    builder.create({ content: field as any });
+    builder.create(field as any);
+    builder.create(field as any);
 
     // Two fields, one fact: a forty-field schema must not print forty lines.
     expect(warn).toHaveBeenCalledTimes(1);
@@ -46,8 +46,8 @@ describe("input layer reports what is missing", () => {
       content: {
         type: "dropdown",
         id: "pick",
-        title: "Pick",
-        config: { options: ["a"] },
+        label: "Pick",
+        options: ["a"],
       },
     } as any);
 
@@ -55,7 +55,7 @@ describe("input layer reports what is missing", () => {
   });
 
   it("warns for a file field with no uploader, and names the module", () => {
-    new InputBuilder({ modules: [] }).create({ content: { type: "file", id: "docs", title: "Docs" } } as any);
+    new InputBuilder({ modules: [] }).create({ content: { type: "file", id: "docs", label: "Docs" } } as any);
 
     expect(warn).toHaveBeenCalledTimes(1);
     const message = String(warn.mock.calls[0][0]);
@@ -70,9 +70,9 @@ describe("input layer reports what is missing", () => {
       content: {
         type: "text",
         id: "when",
-        title: "When",
-        config: { popover: "<div>picker</div>" },
+        label: "When",
       },
+      config: { popover: "<div>picker</div>" },
     } as any);
 
     expect(warn).toHaveBeenCalledTimes(1);
@@ -81,8 +81,8 @@ describe("input layer reports what is missing", () => {
 
   it("does not warn twice for two different capabilities on one builder", () => {
     const builder = new InputBuilder({ modules: [] });
-    builder.create({ content: { type: "dropdown", id: "a", title: "A", config: { options: ["x"] } } } as any);
-    builder.create({ content: { type: "file", id: "b", title: "B" } } as any);
+    builder.create({ content: { type: "dropdown", id: "a", label: "A", options: ["x"] } } as any);
+    builder.create({ content: { type: "file", id: "b", label: "B" } } as any);
 
     const messages = warn.mock.calls.map((call: unknown[]) => String(call[0]));
     expect(messages).toHaveLength(2);
@@ -97,7 +97,7 @@ describe("input layer reports what is missing", () => {
       emit: (event: string, detail: any) => events.push([event, detail]),
     } as any);
 
-    builder.create({ content: { type: "dropdown", id: "pick", title: "Pick", config: { options: ["a"] } } } as any);
+    builder.create({ content: { type: "dropdown", id: "pick", label: "Pick", options: ["a"] } } as any);
 
     // The host emitter also carries the builder's own lifecycle events; this is the one
     // that must never be lost.
@@ -116,7 +116,7 @@ describe("input layer reports what is missing", () => {
   it("throws for a declared action set when no module can render buttons", () => {
     // A warning is not enough here: the field would render perfectly and the buttons would
     // simply never exist — a hole, not a plainer control.
-    const amount = () => ({ content: { type: "text", id: "amount", title: "Amount", config: { actions: ["editor"] } } });
+    const amount = () => ({ content: { type: "text", id: "amount", label: "Amount" }, config: { actions: ["editor"] } });
 
     expect(() => new InputBuilder({ modules: [] }).create(amount() as any)).toThrow(
       /"controls" module is not in this builder's set/,
@@ -132,9 +132,9 @@ describe("input layer reports what is missing", () => {
       content: {
         type: "text",
         id: "amount",
-        title: "Amount",
-        config: { actions: ["editor"] },
+        label: "Amount",
       },
+      config: { actions: ["editor"] },
     } as any) as HTMLElement;
 
     expect(field.querySelectorAll("button").length).toBeGreaterThan(0);

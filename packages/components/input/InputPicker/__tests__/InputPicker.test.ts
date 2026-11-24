@@ -177,15 +177,16 @@ describe("picker input module", () => {
     expect(adapter.renderControl?.({ type: "text", id: "a" } as any, host)).toBeNull();
   });
 
-  it("builds the picker through InputBuilder, reading the flat settings", () => {
+  it("builds the picker through InputBuilder, reading the module settings", () => {
     const root = new InputBuilder({ modules: [pickerInputModule] }).create({
       content: {
         type: "picker",
         id: "featureIcon",
-        title: "Pilih Ikon",
+        label: "Pilih Ikon",
         value: "gear",
-        config: { style: "icon", column: 4, options: ICONS },
+        options: ICONS,
       },
+      config: { view: "icon", column: 4 },
     } as any);
 
     const picker = inner(root);
@@ -201,8 +202,8 @@ describe("picker input module", () => {
       content: {
         type: "picker",
         id: "featureIcon",
-        title: "Pilih Ikon",
-        config: { options: ["gear", "user"] },
+        label: "Pilih Ikon",
+        options: ["gear", "user"],
       },
     } as any);
 

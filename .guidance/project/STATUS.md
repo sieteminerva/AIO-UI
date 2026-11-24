@@ -4,7 +4,8 @@
 > **only** after the user picks it — never "to orient" (`AGENT_RULES.md` §13). Rewritten each
 > session, newest on top. One card = one line + one pointer.
 >
-> Recent batches (newest first): **b72** input schema stage 2 (per-type union +`create()` wiring) ·
+> Recent batches (newest first): **b73** input schema stage 3 (strict module keys + legacy door
+gone) · **b72** input schema stage 2 (per-type union +`create()` wiring) ·
 > **b71** input schema split (stage 1 grouping) ·
 > **b70** control set: idle edit/save half rebuilt + repeater delete floor ·
 > **b69** v0.2.5 published to CDN · **b68** the eight missing package
@@ -13,15 +14,15 @@
 > in every package README · **b57** Apps Script hosting · **b52–b59** shell mount point, tab seams.
 > Older history: `git log --oneline`.
 
-### 1. Input schema refactor — stage 2 done, **uncommitted**; stage 3 next (framework band)
+### 1. Input schema refactor — stages 1–3 done; stage 3.3 (examples) next (framework band)
 
-b72 (2026-11-24): `InputSchema<T>` union + per-type narrowing (`options`/`checked`/`view`/
-`shape`/`column`/`inputmode`), `create()` overloaded and folding `{ content, config }`,
-`iBasicInputNode` deleted, `config.loading` / `config.error` wired (`@field>error` + CSS),
-`view` feeding dropdown/picker, `inputmode` widened in the matrix. Gate: check + verify green
-(992 tests). **19 files still uncommitted — commit first**, then stage 3 (per-type module keys,
-legacy-door removal, form/example migration). The doc carries the handoff, the traps and the
-executable steps. Claim row `copilot b72` is `handoff`.
+b73 (2026-11-24): module settings split into per-owner types (`iInputFileSettings` /
+`Dropdown` / `Picker` / `Actions`, `actions`+`popover` left universal on the owner's word), and
+the legacy door is gone — the form adapter splits `content`/`config`, `Input.ts` dropped the
+`title` alias, the config mirror and the `config.options` lift, `iInputDiscardedKeys` deleted,
+`INPUT_STRUCTURAL_KEYS` pruned, input+form suites migrated. Gate: check + verify green
+(994 pass, 1 skip). Next: stage 3.3, the three example folders
+(outside `tsconfig`, so no compiler ever saw them).
 → `docs/framework/TASK-INPUT-SCHEMA.md`
 
 ### 2. Release v0.2.5 — published (tooling band)

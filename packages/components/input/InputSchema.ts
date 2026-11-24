@@ -15,9 +15,6 @@
  * The groups below are the *inventory* of properties that actually exist in `Input.ts`,
  * `Attribute.ts` and the four modules, each with the code that reads it; the union
  * (`AnyInputSchema` / `InputSchema<T>`) is assembled from them at the bottom of this file.
- *
- * Anything in {@link iInputDiscardedKeys} is listed on purpose: it exists in the old node
- * but does not belong to a field. Keeping it in one interface makes the deletion reviewable.
  */
 
 import type { InputType, iBasicSelectOption, iActionType, iInputActionDefinition } from "./Input";
@@ -48,9 +45,8 @@ export interface iInputIdentity {
 /**
  * Text the visitor reads.
  *
- * `label` is the preferred caption; `title` was its legacy shorthand (see the discarded
- * block). `placeholder` is the empty-state hint; `info` is help text rendered as the last,
- * full-width child of the field.
+ * `label` is the caption. `placeholder` is the empty-state hint; `info` is help text
+ * rendered as the last, full-width child of the field.
  *
  * Read by: `InputBuilder.prepare` (label + `@field>label`), `@field>info`.
  */
@@ -233,16 +229,15 @@ export interface iInputLayout {
 }
 
 /**
- * Callbacks the field owns.
+ * Callbacks the field owns regardless of its type.
  *
- * `onFileSelected` fires with the raw picked files (only when the file module is
- * registered). `calculator` attaches a calculation strategy (usually a readonly total).
+ * `calculator` attaches a calculation strategy (usually a readonly total). The uploader's
+ * `onFileSelected` is not here: it only means anything on a `file` field, so it lives in
+ * {@link iInputFileSettings} and is refused on every other type.
  *
- * Read by: `FileUploaderInputModule.decorate`, the calculation engine in `@aio-ui/form`.
+ * Read by: the calculation engine in `@aio-ui/form`.
  */
 export interface iInputEvents {
-  /** Raw files picked in a `file` field, in browser order. */
-  onFileSelected?: (files: File[], field: iInputField) => void | Promise<void>;
   /**
    * Calculation strategy attached to this input (usually a readonly total).
    *
@@ -254,21 +249,26 @@ export interface iInputEvents {
 }
 
 /**
- * Settings consumed by the optional sub-modules.
+ * Settings consumed by the optional sub-modules — one owner type per module.
  *
- * `actions`/`popover` belong to the controls and popover modules; the dropdown keys are
- * forwarded to `DropdownBuilder`; the picker keys feed `PickerBuilder`; the uploader keys
- * drive the `@field>file` markup and the uploader instance.
+ * Splitting them is what makes a per-type schema honest: a `file` config offers uploader
+ * keys and nothing else, a `dropdown` offers its fetch/callback keys, a `picker` its panel
+ * keys. {@link iInputModuleSettingsOf} composes exactly one owner set per `content.type`.
  *
- * Read by: `InputControlsInputModule`, `PopoverInputModule`, `DropdownInputModule`,
- * `PickerInputModule`, `FileUploaderInputModule`, `InputBuilder.template` (`@field>file`).
+ * `actions`/`popover` are the exception: a button set or a popover acts on the field
+ * wrapper, whatever the type is, so {@link iInputActionsSettings} is on every variant.
  */
-export interface iInputModuleConfig {
+
+/** Action buttons and popover content — legal on every type (a wrapper-level concern). */
+export interface iInputActionsSettings {
   /** Button set declared on the field. Presets (`"editor"`, `"repeater"`) or definitions. */
   actions?: Array<iActionType | iInputActionDefinition> | Partial<Record<iActionType, Omit<iInputActionDefinition, "type">>> | null;
   /** HTML string or element attached by the popover module. */
   popover?: string | HTMLElement;
+}
 
+/** Keys forwarded to `DropdownBuilder` (`dropdown` type). */
+export interface iInputDropdownSettings {
   /**
    * @deprecated Escape hatch forwarded wholesale to `DropdownBuilder`. The named keys
    * below (`apiUrl`, `debounceDelay`, `onSelect`, `onMultiChange`) already cover the
@@ -280,12 +280,18 @@ export interface iInputModuleConfig {
   debounceDelay?: number;
   onSelect?: (value: string, id: string | null) => void;
   onMultiChange?: (items: Array<{ id: string | number; label: string }>) => void;
+}
 
-  /** Picker panel settings. The cell visual lives in `layout.view`. */
+/** Panel behaviour of a `picker` field. The cell visual lives in `layout.view`. */
+export interface iInputPickerSettings {
   expanded?: boolean;
   searchable?: boolean;
+}
 
-  /** Uploader limits and extras (presentation lives in `layout.view`). */
+/** Uploader limits, callback and extras (`file` type). Presentation lives in `layout.view`. */
+export interface iInputFileSettings {
+  /** Raw files picked in a `file` field, in browser order. */
+  onFileSelected?: (files: File[], field: iInputField) => void | Promise<void>;
   thumbnail?: boolean;
   maxUpload?: number;
   maxFileSize?: number;
@@ -293,6 +299,17 @@ export interface iInputModuleConfig {
   /** Mark the field's file as tabular so a table owner may preview it. */
   csv?: boolean;
 }
+
+/**
+ * Every module key, as the internal resolved field carries them (all owners at once).
+ *
+ * This is the union a module reader may touch; a *schema* narrows it per type through
+ * {@link iInputModuleSettingsOf}.
+ */
+export type iInputModuleConfig = iInputActionsSettings &
+  iInputDropdownSettings &
+  iInputPickerSettings &
+  iInputFileSettings;
 
 /** Every behaviour the field has: constraints, state, layout, events and module settings. */
 export interface iInputConfigNode
@@ -369,12 +386,51 @@ export type iInputConstraintOf<T extends InputType> = Omit<iInputConstraint, "in
   inputmode?: InputModeOf<T>;
 };
 
+/** Keys only one module owns — `never` on every other type, so autocomplete stays silent. */
+type iInputForeignModuleKeys = {
+  dropdown?: never;
+  apiUrl?: never;
+  debounceDelay?: never;
+  onSelect?: never;
+  onMultiChange?: never;
+  expanded?: never;
+  searchable?: never;
+  onFileSelected?: never;
+  thumbnail?: never;
+  maxUpload?: never;
+  maxFileSize?: never;
+  groupUnallowed?: never;
+  csv?: never;
+};
+
+/** The module set one type owns; a type without a module offers none. */
+type iInputModuleSettingsFor<T extends InputType> = T extends "file"
+  ? iInputFileSettings
+  : T extends "dropdown"
+  ? iInputDropdownSettings
+  : T extends "picker"
+  ? iInputPickerSettings
+  : {};
+
+/**
+ * Module settings narrowed by type: the owner's keys stay, every foreign key is `never`.
+ *
+ * The `Omit` matters — a `never` key must not intersect an owned one, or a `file` field
+ * could not declare `maxUpload`.
+ */
+export type iInputModuleSettingsOf<T extends InputType> = Omit<
+  iInputForeignModuleKeys,
+  keyof iInputModuleSettingsFor<T>
+> &
+  iInputActionsSettings &
+  iInputModuleSettingsFor<T>;
+
 /** The behaviour block for one type. */
 export type iInputConfigOf<T extends InputType> = iInputConstraintOf<T> &
   iInputState &
   iInputLayoutOf<T> &
   iInputEvents &
-  iInputModuleConfig;
+  iInputModuleSettingsOf<T>;
 
 /**
  * One variant per type, as a discriminated object keyed by `content.type`.
@@ -404,109 +460,9 @@ export type InputSchema<T extends InputType = InputType> = Extract<
 /**
  * The resolved payload `InputBuilder` and its modules read.
  *
- * `create({ content, config })` folds the two blocks into this one object (content's keys
- * at the top level plus a `config` bag), so the render pipeline and every module keep
- * reading a single flat field. The behaviour keys are also declared flat for the
- * compatibility window: a legacy node parked them at the top level, and the readers still
- * check both places. It is the internal shape, never the public schema.
+ * `create({ content, config })` folds the two blocks into this one object: content keys at
+ * the top level, behaviour in the `config` bag. That is the whole shape — there is no
+ * second spelling of a behaviour key at the top level, so a reader always knows which
+ * block it is reading from. It is the internal shape, never the public schema.
  */
-export type iInputField = iInputContentNode & iInputConfigNode & { config?: iInputConfigNode };
-
-/* ============================================================================
- * DISCARDED — present in the old flat node, not part of a field
- * ==========================================================================*/
-
-/**
- * Keys that exist on the old `iBasicInputNode` but do not describe a field.
- *
- * Kept together so the removal is one reviewable block. Reasons:
- *
- * - **Form containers** (`group`, `row`, `column`, `table`, `legend`, `description`,
- *   `infos`) are read by `FormBuilder`, not `InputBuilder`. A field cannot be a container,
- *   so they belong to the form schema, not here.
- * - **Multistep** (`steps`, `isLast`) are read by the form's multistep engine.
- * - **Cascade** (`condition`, `then`) are read by the form's cascade adapter and are
- *   **relocated, not dropped**: the form owns `iFormField = InputSchema & { condition?;
- *   then? }`, reads them there, then calls `create({ content, config })` without them.
- * - **Builder-level** (`modules`, `themeId`, `namespace`, `selectors`, `emit`, `formId`)
- *   are the *constructor* configuration, never field data — they leak in today because
- *   the old node extended `iBuilderConfig`.
- * - **Aliases / dead keys** (`title`, `class`, `range`, `createEventListener`, `icon`,
- *   `textContent`, `field`, `picker`) are either a second spelling of a live key or
- *   declared and never read.
- *
- * Typed loosely on purpose: nothing should consume this interface; it exists to be deleted.
- */
-export interface iInputDiscardedKeys {
-  /** @deprecated Form container — `FormBuilder`. */
-  group?: unknown;
-  /** @deprecated Form container — `FormBuilder`. */
-  row?: unknown;
-  /** @deprecated Form container — `FormBuilder`. */
-  column?: unknown;
-  /** @deprecated Form container — `FormBuilder` (`renderTable`). */
-  table?: unknown;
-  /** @deprecated Form group caption — `FormBuilder`. */
-  legend?: string;
-  /** @deprecated Form group note — `FormBuilder`. */
-  description?: string;
-  /** @deprecated Form group notes — `FormBuilder`. */
-  infos?: unknown;
-
-  /** @deprecated Multistep engine — not a field property. */
-  steps?: number;
-  /** @deprecated Multistep engine — not a field property. */
-  isLast?: boolean;
-
-  /**
-   * @deprecated Relocated to the form schema. The form reads it from its own
-   * `iFormField` (`InputSchema & { condition?; then? }`) and never forwards it here.
-   */
-  condition?: unknown;
-  /** @deprecated Relocated to the form schema (see `condition`). */
-  then?: unknown;
-
-  /** @deprecated Builder configuration — pass `modules` to the constructor. */
-  modules?: unknown;
-  /** @deprecated Builder configuration — constructor only. */
-  themeId?: string;
-  /** @deprecated Builder configuration — constructor only. */
-  namespace?: string | null;
-  /** @deprecated Builder configuration — constructor only. */
-  selectors?: unknown;
-  /** @deprecated Builder configuration — constructor only. */
-  emit?: unknown;
-  /** @deprecated Builder configuration — the form passes `formId` to the constructor. */
-  formId?: string | null;
-
-  /**
-   * @deprecated Second spelling of `content.label`. Read today by
-   * `InputBuilder.prepare` (`label ?? title`); migrate consumers to `label`.
-   */
-  title?: string;
-  /** @deprecated Second spelling of the old `className`; both are gone — use `config.selectors`. */
-  class?: string;
-  /**
-   * @deprecated Relocated to `config.selectors["@field"].className`. Each field is its own
-   * builder instance, so a per-field skin belongs on that instance's selectors.
-   */
-  className?: string;
-  /** @deprecated Google-sheet named range — resolved outside this layer. */
-  range?: string;
-  /** @deprecated Declared on the old node and never read by `InputBuilder`. */
-  createEventListener?: boolean;
-  /** @deprecated Declared on the old node and never read by `InputBuilder`. */
-  icon?: string;
-  /** @deprecated Declared on the old node and never read by `InputBuilder`. */
-  textContent?: string | Record<string, unknown>;
-  /** @deprecated Declared on the old node and never read by `InputBuilder`. */
-  field?: string;
-  /** @deprecated A picker setting bag that no module reads (settings are flat in config). */
-  picker?: unknown;
-
-  /**
-   * @deprecated Choices belong to `content.options`. Today the only reader is the legacy
-   * lift in `InputBuilder.resolvePayload`; remove it once consumers are migrated.
-   */
-  configOptions?: Array<string | iBasicSelectOption>;
-}
+export type iInputField = iInputContentNode & { config?: iInputConfigNode };

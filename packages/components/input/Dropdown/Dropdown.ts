@@ -747,11 +747,12 @@ class DropdownInputModule implements iInputAdapter {
 
     const payload: iDropdownContent = {
       id: field.id,
-      title: field.title,
+      title: field.label,
       placeholder: field.placeholder,
-      // Choices and multiplicity are the field's, never the config bag's.
+      // Choices and multiplicity: the choices are content, the single-vs-many flag is a
+      // constraint and lives in the config bag.
       options,
-      multiple: field.multiple === true,
+      multiple: cfg.multiple === true,
       value: field.value,
       name: field.name || field.id,
       attributes: cfg.attributes || [],
@@ -769,8 +770,8 @@ class DropdownInputModule implements iInputAdapter {
       config: {
         apiUrl: cfg.apiUrl || null,
         debounceDelay: cfg.debounceDelay,
-        // `view` is the field word; `style` is the legacy spelling of the same choice.
-        style: cfg.view || cfg.style || "select",
+        // `view` is the field's one visual word (dropdown: `select` | `datalist`).
+        style: cfg.view || "select",
         min: cfg.min,
         max: cfg.max,
         onSelect: cfg.onSelect,

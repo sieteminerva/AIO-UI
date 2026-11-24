@@ -467,8 +467,6 @@ export class PickerBuilder extends Builder<PickerElementType, iPickerConfig> {
 
 /** Field-level settings and the builder key each one feeds. */
 const SETTINGS: Array<[string, keyof iPickerConfig]> = [
-  // Legacy first, so `view` wins when a schema still carries both: the loop assigns in order.
-  ["style", "kind"],
   ["view", "kind"],
   ["column", "columns"],
   ["expanded", "expanded"],
@@ -512,8 +510,7 @@ class PickerInputModule implements iInputAdapter {
     const cfg = field.config ?? {};
     const settings: Partial<iPickerConfig> = {};
 
-    // Flat only: `config.style` / `config.column` are the same words a row and a dropdown
-    // already use, so a schema copied from a sheet needs no second spelling.
+    // Settings the picker owns, read from the field's `config` bag.
     for (const [from, to] of SETTINGS) {
       const value = cfg[from];
       if (value !== undefined) (settings as Record<string, unknown>)[to] = value;
@@ -521,12 +518,12 @@ class PickerInputModule implements iInputAdapter {
 
     const payload: iPickerPayload = {
       id: field.id,
-      title: field.label ?? field.title,
+      title: field.label,
       name: field.name || field.id,
       placeholder: field.placeholder,
       value: field.value,
       options: field.options ?? [],
-      multiple: field.multiple === true,
+      multiple: cfg.multiple === true,
     };
 
     const builder = new PickerBuilder({

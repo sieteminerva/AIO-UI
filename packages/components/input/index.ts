@@ -34,8 +34,9 @@ export type {
   InputToggleViewType, InputViewType,
   iInputChoices, iInputConfigNode, iInputConfigOf, iInputConstraint, iInputConstraintOf,
   iInputContentNode, iInputContentOf, iInputEvents, iInputField, iInputIdentity, iInputIdentityOf,
-  iInputLayout, iInputLayoutOf, iInputModuleConfig, iInputState, iInputText, iInputValue,
-  iInputValueOf,
+  iInputLayout, iInputLayoutOf, iInputActionsSettings, iInputDropdownSettings, iInputFileSettings,
+  iInputModuleConfig, iInputModuleSettingsOf, iInputPickerSettings, iInputState, iInputText,
+  iInputValue, iInputValueOf,
 } from "./InputSchema";
 
 /**

@@ -7,6 +7,52 @@ import { INPUT_MODULE_IDS } from "@aio-ui/input";
 import { reportMissing } from "@aio-ui/input";
 
 /**
+ * Keys a form field carries as *instance data* — `InputBuilder` content.
+ *
+ * Everything else on a field node is behaviour: `required`, `wide`, `view`, a module
+ * setting. `info` is here because it is text the visitor reads, not a rule.
+ */
+const FIELD_CONTENT_KEYS: readonly string[] = [
+  "type", "id", "name", "label", "placeholder", "info", "value", "checked", "options",
+];
+
+/**
+ * Keys the form engine owns and reads before a field is built.
+ *
+ * They must never reach the input schema: `condition`/`then` drive the cascade engine, and
+ * a field that carried them would hand the input layer a rule it cannot evaluate.
+ */
+const FORM_OWNED_KEYS: readonly string[] = ["condition", "then"];
+
+/** Field node split into the two blocks `InputBuilder.create()` takes. */
+interface iFieldSchema {
+  content: Record<string, any>;
+  config: Record<string, any>;
+}
+
+/**
+ * Splits one form field node into `content` and `config`.
+ *
+ * The form schema stays flat (one node, form-engine keys included); the split happens here,
+ * at the one door that talks to `InputBuilder`.
+ *
+ * @param input - Field node from the form schema.
+ * @returns `{ content, config }`, already stripped of the form-owned keys.
+ */
+function splitField(input: any): iFieldSchema {
+  const content: Record<string, any> = {};
+  const config: Record<string, any> = {};
+
+  for (const [key, value] of Object.entries(input ?? {})) {
+    if (FORM_OWNED_KEYS.includes(key)) continue;
+    if (FIELD_CONTENT_KEYS.includes(key)) content[key] = value;
+    else config[key] = value;
+  }
+
+  return { content, config };
+}
+
+/**
  * Field rendering adapter.
  *
  * @summary Owns `InputBuilder`: it creates every field the form renders, offers subtrees
@@ -44,15 +90,21 @@ class InputFormAdapter {
   /**
    * Builds one field from the input schema.
    *
-   * @param input - Basic input node or raw descriptor.
+   * @param input - Field node from the form schema (identity and text, behaviour keys,
+   *   and the form-owned `condition` / `then`).
    * @param formId - Id of the owning form, forwarded to the field markup.
    * @returns The rendered field element.
    *
-   * @summary The host's builder config comes along, so the field inherits `themeId`,
-   * `namespace` and `emit` instead of starting blank — and so does its adapter set.
+   * @summary The node is split into the two blocks `InputBuilder.create()` takes, so the
+   * input layer never has to guess which key is data and which is behaviour. The host's
+   * builder config comes along, so the field inherits `themeId`, `namespace` and `emit`
+   * instead of starting blank — and so does its adapter set.
    */
   public renderField(input: any, formId: string): HTMLElement {
-    return new InputBuilder({ ...this.#context.builderConfig, formId, modules: this.#preset } as any).create({ content: input });
+    const { content, config } = splitField(input);
+
+    return new InputBuilder({ ...this.#context.builderConfig, formId, modules: this.#preset } as any)
+      .create({ content, config } as any);
   }
 
   /**

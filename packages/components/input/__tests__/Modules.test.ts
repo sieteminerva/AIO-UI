@@ -82,8 +82,8 @@ describe("degradation without modules", () => {
       content: {
         type: type as any,
         id: `f-${type}`,
-        title: type,
-        config: { options: [{ value: "a", label: "A" }] },
+        label: type,
+        options: [{ value: "a", label: "A" }],
       },
     }) as HTMLElement;
   }

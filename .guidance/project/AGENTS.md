@@ -6,9 +6,9 @@
 
 ## Live claims
 
-| Agent       | Band      | Task                                                   | Write scope                                                           | Started    | Checkpoint                          | State   |
-| ----------- | --------- | ------------------------------------------------------ | --------------------------------------------------------------------- | ---------- | ----------------------------------- | ------- |
-| copilot b72 | Framework | Input schema: stage 2 (per-type union + create wiring) | `packages/components/input/**`, `packages/core/src/types/registry.ts` | 2026-11-24 | `docs/framework/TASK-INPUT-SCHEMA.md` | handoff |
+| Agent       | Band      | Task                                                        | Write scope                                                                              | Started    | Checkpoint                          | State |
+| ----------- | --------- | ----------------------------------------------------------- | ---------------------------------------------------------------------------------------- | ---------- | ----------------------------------- | ----- |
+| copilot b73 | Framework | Input schema: stage 3 done; stage 3.3 (examples) next | `packages/components/input/**`, `packages/components/form/Input.FormAdapter.ts`          | 2026-11-24 | `docs/framework/TASK-INPUT-SCHEMA.md` | handoff |
 
 ## Row shape
 

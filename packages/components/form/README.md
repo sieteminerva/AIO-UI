@@ -34,7 +34,7 @@ Stylesheet — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.5/packages/
     id: "group-1",
     title: "Data pengiriman",
     description: "…",
-    group: [{ type: "text", id: "name", title: "Nama" }],
+    group: [{ type: "text", id: "name", label: "Nama" }],
   },
 ];
 ```
@@ -210,8 +210,9 @@ is synchronous and never owns module I/O.
 ### Validation
 
 The rules are the fields' own DOM attributes (`required`, `pattern`, `min`, `max`, `minlength`,
-`maxlength`, `type`). Nothing is declared in `config`: the engine reads the constraints at submit
-or at `next`, so a message never appears while the user is still typing.
+`maxlength`). You declare them in the field's `config` bag; the input adapter puts them on the
+control. The engine reads the rendered attributes at submit or at `next`, so a message never
+appears while the user is still typing.
 
 ```ts
 const schema = [
@@ -219,9 +220,9 @@ const schema = [
     id: "order",
     title: "Order details",
     group: [
-      { type: "text", id: "name", title: "Name", required: true },
-      { type: "text", id: "invoice", title: "Invoice", required: true, pattern: "INV-[0-9]+" },
-      { type: "number", id: "qty", title: "Quantity", min: 1, max: 10 },
+      { type: "text", id: "name", label: "Name", config: { required: true } },
+      { type: "text", id: "invoice", label: "Invoice", config: { required: true, pattern: "INV-[0-9]+" } },
+      { type: "number", id: "qty", label: "Quantity", config: { min: 1, max: 10 } },
     ],
   },
 ];
@@ -248,12 +249,12 @@ const schema = [
   {
     id: "delivery",
     group: [
-      { type: "radio", id: "pickup", name: "delivery", value: "pickup", title: "Pickup" },
-      { type: "radio", id: "courier", name: "delivery", value: "courier", title: "Courier" },
+      { type: "radio", id: "pickup", name: "delivery", value: "pickup", label: "Pickup" },
+      { type: "radio", id: "courier", name: "delivery", value: "courier", label: "Courier" },
       {
         type: "text",
         id: "courierNote",
-        title: "Note for the courier",
+        label: "Note for the courier",
         condition: { field: "delivery", equals: "courier" },
       },
     ],
@@ -285,10 +286,10 @@ const schema = [
       {
         type: "number",
         id: "qty",
-        title: "Qty",
-        min: 0,
+        label: "Qty",
         // The formula travels with the field that carries the quantity.
         config: {
+          min: 0,
           calculator: {
             id: "line-total",
             outputId: "total",
@@ -302,8 +303,8 @@ const schema = [
           },
         },
       },
-      { type: "number", id: "price", title: "Price", min: 0 },
-      { type: "number", id: "total", title: "Total", readonly: true },
+      { type: "number", id: "price", label: "Price", config: { min: 0 } },
+      { type: "number", id: "total", label: "Total", config: { readonly: true } },
     ],
   },
 ];
@@ -322,9 +323,9 @@ the one the user is on.
 
 ```ts
 const schema = [
-  { id: "contact", title: "Step 1 · Contact", group: [{ type: "email", id: "email", title: "Email", required: true }] },
-  { id: "address", title: "Step 2 · Address", group: [{ type: "text", id: "city", title: "City", required: true }] },
-  { id: "confirm", title: "Step 3 · Confirm", group: [{ type: "checkbox", id: "agree", title: "I agree" }] },
+  { id: "contact", title: "Step 1 · Contact", group: [{ type: "email", id: "email", label: "Email", config: { required: true } }] },
+  { id: "address", title: "Step 2 · Address", group: [{ type: "text", id: "city", label: "City", config: { required: true } }] },
+  { id: "confirm", title: "Step 3 · Confirm", group: [{ type: "checkbox", id: "agree", label: "I agree" }] },
 ];
 
 build("form", {

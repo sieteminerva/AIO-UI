@@ -1,82 +1,84 @@
 # TASK — input schema (content / config split)
 
-**Band:** Framework · **Claim:** board row `copilot b72` (this file is its checkpoint) ·
+**Band:** Framework · **Claim:** board row `copilot b73` (this file is its checkpoint) ·
 **Brief:** `packages/components/input/TASK.md`
 
 ## Handoff — read this first
 
-**State:** stage 1 (`a05d408`, committed) and stage 2 (b72, **edited, not committed**) are done.
-Tree: 19 files modified + `packages/components/input/TASK.md` untracked (the owner's brief — commit
-it with the batch). Last gate run: `npm run verify` **green** (91 files, 992 pass, 1 skip).
+**State:** stages 1–3 are done and committed. b72 (stage 2) landed as `86124cd`; stage 3 lands
+as its own commit. The tree is clean. Last gate: `npm run verify` **green** (91 files,
+994 pass, 1 skip).
 
-**First action of the next session:** `git status --short`, then commit b72 with the shape in
-`AGENT_RULES.md` §15 if it is still uncommitted — the message already sketched:
-
-    feat(input): narrow the field schema per type and wire view/error/loading
-
-**Then** §Stage 3. Do **not** re-read the package: every anchor below is current.
+**Remaining: §Stage 3.3 only** — migrate `examples/demo`, `examples/gallery`,
+`examples/rajutan` (outside `tsconfig`, so the compiler does not see them yet). They still
+write flat nodes with `title` and `config.options`; at runtime those render without a caption
+and without choices, which is exactly the breakage this refactor is meant to surface. One
+batch of its own.
 
 **Traps proven in this batch (do not rediscover):**
 
-- `create()` has two overloads. The base-shaped one (`{ content?: any }`) accepts *anything*, so a
-  bad call silently picks it. Type proofs therefore assert on `InputSchema<T>` variables, never on
-  `create(...)` arguments — and an unused `@ts-expect-error` fails `tsc`.
-- `view` keeps a `(string & {})` tail, so a wrong word for the wrong owner is *autocomplete-wrong*,
-  not rejected. Closing that is stage 3 step 1.
-- `resolvePayload` mirrors the config bag onto the payload **fill-only**. A flat default
-  (`required: false`) shadows `config.required` — that bug was live in the first draft.
-- `packages/components/input/input.css` is tracked **lowercase**; on Windows `Input.css` is the same
-  file, on CI it is not.
-- `dist/**` was not rebuilt (releases rebuild).
+- `create()` **must keep** the base-shaped overload: a narrower parameter cannot override
+  `Builder.create`. It exists for assignability only; the fold above it is the only door and
+  no legacy behaviour survives in it.
+- `content.options` accepts a bare string; `resolvePayload` still maps it to
+  `{ value, label }`. That is the declared content type, not a legacy door — without the map
+  a `<select>` renders `undefined` values.
+- The form adapter is the only place a flat form node becomes a field: it splits on two
+  explicit key lists (`FIELD_CONTENT_KEYS`, `FORM_OWNED_KEYS`). Add a content key there when
+  the input content block grows.
+- Form **group/row** captions are still `title` (the form's own vocabulary). Only a node with
+  `type` is a field, and only a field uses `label`.
 - `docs/framework/api-map.json` and `docs/framework/catalogue.json` are generated:
   `node scripts/api.mjs --write` · `node scripts/catalogue.mjs --apply`.
 
-## Stage 3 — execute in order
+## Stage 3 — done
 
 ### 3.1 Strict per-type module keys
 
-`InputSchema.ts` only narrows `options`/`checked`/`view`/`shape`/`column`/`inputmode`. The brief
-(`packages/components/input/TASK.md` §2) wants the *module* bag split too, so a `file` config
-offers only uploader keys.
+`InputSchema.ts`: `iInputModuleConfig` split into `iInputActionsSettings` (`actions`,
+`popover`), `iInputDropdownSettings` (`dropdown`, `apiUrl`, `debounceDelay`, `onSelect`,
+`onMultiChange`), `iInputPickerSettings` (`expanded`, `searchable`) and `iInputFileSettings`
+(`onFileSelected` moved here from `iInputEvents`, plus `thumbnail`, `maxUpload`,
+`maxFileSize`, `groupUnallowed`, `csv`).
 
-1. Split `iInputModuleConfig` into owner types in `InputSchema.ts`:
-   `iInputActionsSettings` (`actions`, `popover`), `iInputDropdownSettings` (`apiUrl`,
-   `debounceDelay`, `onSelect`, `onMultiChange`, deprecated `dropdown` blob),
-   `iInputPickerSettings` (`expanded`, `searchable`), `iInputFileSettings` (`thumbnail`,
-   `maxUpload`, `maxFileSize`, `groupUnallowed`, `csv`, and move `onFileSelected` here from
-   `iInputEvents`).
-2. Compose them per type in `iInputConfigOf<T>`:
-   `T extends "file" ? iInputFileSettings : T extends "dropdown" ? iInputDropdownSettings :
-   T extends "picker" ? iInputPickerSettings : {}` plus `iInputActionsSettings` only where the
-   controls module can act (`actions` is legal on every type today — decide: keep it universal or
-   restrict to `actions`/`text`/`number`; **ask the owner before narrowing `actions`**).
-3. Readers are already `field.config.*` in all four modules — no runtime change expected; only
-   `FileUploader` needs `onFileSelected` moved from `config.onFileSelected` (unchanged key).
-4. Proof: extend `packages/components/input/__tests__/Input.test.ts`,
-   describe `input schema door (content / config)` with `@ts-expect-error` on
-   `InputSchema<"text">` carrying `maxUpload`, and a positive `InputSchema<"file">` with it.
+`iInputModuleSettingsOf<T>` composes one owner set per type via `iInputModuleSettingsFor<T>`
+and closes every foreign key with `never` (`Omit<iInputForeignModuleKeys, keyof …>`, so an
+owned key is never intersected with `never`). **Decision (owner, this session): `actions` /
+`popover` stay on every type** — a button set acts on the wrapper, whatever the field is.
 
-### 3.2 Drop the legacy door
+Proof (`__tests__/Input.test.ts`): `InputSchema<"file">` accepts `maxUpload` / `csv` /
+`onFileSelected`; `@ts-expect-error` on `maxUpload` and `apiUrl` for `InputSchema<"text">`;
+a text field still accepts `actions` + `popover`.
 
-1. `packages/components/form/Input.FormAdapter.ts:~55` is the only in-repo caller sending a flat
-   node (`create({ content: input })` with `input` = a form field node). Rewrite it to send
-   `{ content: { type, id, name, label, placeholder, value, checked, options }, config: { …behaviour } }`;
-   `condition` / `then` stay on the form side (locked decision above).
-2. `packages/components/input/Input.ts`: delete the base-shaped `create` overload, the
-   `config: schema.config ?? content.config` fallback, the `config.options` lift and the `title`
-   label alias in `resolvePayload`; drop the fill-only mirror loop and read `this.#input.config`
-   only. Keep `iInputField` as `iInputContentNode & { config?: iInputConfigNode }`.
-3. `InputSchema.ts`: delete `iInputDiscardedKeys` (and the stage-1 header paragraph that explains
-   it). `FieldTypes.ts`: drop the legacy entries from `INPUT_STRUCTURAL_KEYS` that no longer exist
-   (`title`, `class`, `className`, `style`, `range`, `createEventListener`, `icon`, `textContent`,
-   `field`, `picker`) once nothing reads them.
-4. Tests: `__tests__/*` still call `.create({ content: flat })` in helpers — migrate them, and the
-   legacy-flat pin in `Input.test.ts` ("still renders a legacy flat node") becomes the new shape.
+### 3.2 The legacy door is gone
 
-### 3.3 Examples (separate batch)
+- `form/Input.FormAdapter.ts`: `renderField()` splits the form node into `content`
+  (`type`, `id`, `name`, `label`, `placeholder`, `info`, `value`, `checked`, `options`) and
+  `config` (everything else), dropping the form-owned `condition` / `then`.
+- `Input.ts`: `resolvePayload` no longer reads `title`, no longer mirrors the config bag onto
+  the top level, no longer lifts `config.options`; the `rows: 3` default moved into the
+  `@field>textarea` template (`cfg.rows ?? 3`); readers use `cfg.position`, `cfg.editable`,
+  `cfg.disabled`, `cfg.required`, `cfg.view`; `#isToggleView` reads `config.view` only.
+- `InputSchema.ts`: `iInputDiscardedKeys` deleted; `iInputField` is now
+  `iInputContentNode & { config?: iInputConfigNode }`.
+- `FieldTypes.ts`: `INPUT_STRUCTURAL_KEYS` lost `title`, `class`, `className`, `style`,
+  `range`, `createEventListener`, `icon`, `textContent`, `field`, `picker`; gained `label`.
+- Modules: `Dropdown`/`Picker` read `cfg.multiple` and `field.label`; the picker `SETTINGS`
+  table lost the legacy `style` row; `Attribute.ts` editors use `label`, `view` and
+  `options`-as-content.
+- Tests: input + form suites migrated to the split schema; the "legacy flat node still
+  renders" pin became "a flat node is not a field anymore" (no label, no choices).
+- Docs: `input/README.md` and `form/README.md` show the split shape; field captions are
+  `label`, constraints sit in `config`.
 
-`examples/demo/**`, `examples/gallery/**`, `examples/rajutan/**` are outside `tsconfig`; migrate
-them last, after 3.2 lands, in one batch of their own.
+## Stage 3.3 — next (separate batch)
+
+`examples/demo/**`, `examples/gallery/**`, `examples/rajutan/**` are outside `tsconfig`, so the
+compiler never saw them during stages 1–3. Migrate them in one batch of their own: `title` →
+`label` on fields, flat behaviour keys into `config`, `config.options` → `content.options`,
+`style: "toggle"` → `view: "toggle"`, and wrap every field in `{ content, config }`. Then add
+the example folders to the typecheck scope (or a dedicated `tsc -p examples/tsconfig.json`) so
+the compiler, not a browser, proves the migration.
 
 ## Done (stage 1)
 
@@ -88,6 +90,7 @@ them last, after 3.2 lands, in one batch of their own.
 - Named view types: `InputFileViewType`, `InputDropdownViewType`, `InputPickerViewType`,
   `InputToggleViewType`, `InputToggleShapeType`, `InputViewType`.
 - `iInputDiscardedKeys` — keys that leave the field schema, each with `@deprecated` + reason.
+  **Deleted in stage 3.**
 
 ## Decisions (locked — do not re-open)
 
@@ -110,9 +113,10 @@ them last, after 3.2 lands, in one batch of their own.
 - **`iBuilderRegistry.input`** (core, `packages/core/src/types/registry.ts`): type it `any` with a
   one-line comment. Core cannot import the input package; the concrete type is enforced at the
   input package boundary. Low risk — do not stall on it.
-- **Examples** (demo/rajutan) are NOT migrated in this batch. `tsconfig` excludes `examples`, and
-  the `create()` translation keeps a flat node working at runtime via
-  `config: schema.config ?? content.config`. Migrate examples later, separately.
+- **Examples** (demo/gallery/rajutan) are NOT migrated in stages 1–3. `tsconfig` excludes
+  `examples`, so they compile nowhere and only break in the browser — which is why they are
+  stage 3.3. Since stage 3 there is no flat-node fallback at runtime, so an unmigrated example
+  loses its caption and its choices.
 
 ## Done (stage 2 — b72)
 
@@ -175,4 +179,6 @@ them last, after 3.2 lands, in one batch of their own.
 
 Stage 1: `npm run typecheck` green.
 Stage 2: `npm run check` green (api-map + catalogue refreshed) and `npm run verify` green —
-91 files, 992 tests passed, 1 skipped. **Not committed.**
+91 files, 992 tests passed, 1 skipped. Committed as `86124cd`.
+Stage 3: `npm run check` green (api-map + catalogue refreshed) and `npm run verify` green —
+91 files, 994 passed, 1 skipped.

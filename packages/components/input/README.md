@@ -42,7 +42,7 @@ never sees a picker's view word and a text field never sees `options`.
   content: {
     type: "text",            // text | number | email | password | textarea | select | …
     id: "email",
-    label: "Email address",  // `title` still works as the legacy alias
+    label: "Email address",
     placeholder: "you@example.com",
   },
   config: {
@@ -66,9 +66,10 @@ the value (`value`, `checked`) and the choices (`options`, on a chooser only).
 invalid **and** prints the message as a `@field>error` line just above `info`. `loading` puts
 the `loading` class on the control — it replaced the old `className: "loading"` shortcut.
 
-An older **flat node** (`{ type, id, title, config }`) still renders: the builder folds it
-into the same payload and uses the node's own `config` bag as the behaviour block. That is
-the shape `@aio-ui/form` sends.
+A field has exactly one spelling on each side. `label` is the caption — the old `title`
+alias is gone, and choices live in `content.options` only (a `config.options` bag is no
+longer read). `@aio-ui/form` sends this same shape: its adapter splits a flat form node into
+`content` and `config` before it calls `create()`.
 
 `config.view` is the one visual-variant word, typed per field type: `toggle` (checkbox/
 radio), `select`/`datalist` (dropdown), `icon`/`image`/`media`/`swatch` (picker) and
@@ -77,15 +78,15 @@ own `view`.
 
 ### Choices — one door for every chooser
 
-`options` and `multiple` belong to the **field**, next to `type` and `value`. One shape feeds
-`select`, `dropdown`, `picker` and a `radio`/`checkbox` group, and `multiple` means the same
-thing in all four:
+`options` is content and `multiple` is a constraint, so they sit on opposite sides of the
+same field: `content.options` feeds `select`, `dropdown`, `picker` and a `radio`/`checkbox`
+group, and `config.multiple` means the same thing in all four:
 
 ```ts
-{ type: "select", id: "size", options: ["S", "M", "L"] }
-{ type: "dropdown", id: "city", options: [{ value: "jkt", label: "Jakarta" }], multiple: true }
-{ type: "picker", id: "icon", options: ["gear", "user"], multiple: true }
-{ type: "radio", id: "ship", name: "ship", options: ["pickup", "courier"], value: "courier" }
+{ content: { type: "select", id: "size", options: ["S", "M", "L"] } }
+{ content: { type: "dropdown", id: "city", options: [{ value: "jkt", label: "Jakarta" }] }, config: { multiple: true } }
+{ content: { type: "picker", id: "icon", options: ["gear", "user"] }, config: { multiple: true } }
+{ content: { type: "radio", id: "ship", name: "ship", options: ["pickup", "courier"], value: "courier" } }
 ```
 
 A `radio`/`checkbox` field **with `options`** renders a group — one control per option, all

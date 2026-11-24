@@ -166,13 +166,12 @@ export class InputBuilder extends Builder<InputElementType, iInputConfig> {
         type: { t: "string" },
         id: { t: "string" },
         name: { t: "string" },
-        title: { t: "string" },
         label: { t: "string" },
         placeholder: { t: "string" },
         required: { t: "boolean" },
       },
     },
-    example: { type: "text", id: "email", title: "Email address", placeholder: "you@example.com" },
+    example: { type: "text", id: "email", label: "Email address", placeholder: "you@example.com" },
   };
 
   #input: iInputField = { type: "text" };
@@ -323,29 +322,25 @@ export class InputBuilder extends Builder<InputElementType, iInputConfig> {
     const inputObj = (schema ?? {}) as Record<string, any>;
 
     // 🆔 The label's `for` and the control's `id` share one value.
-    const elementId = this._sanitizeId(inputObj.id || inputObj.title || `input-${Math.random().toString(36).slice(2, 10)}`);
+    const elementId = this._sanitizeId(inputObj.id || `input-${Math.random().toString(36).slice(2, 10)}`);
 
     // Content defaults only. Behaviour defaults live in the config bag, because that is the
-    // only place the new schema writes them — a flat `required: false` here would shadow a
-    // `config.required: true` for every reader that checks the top level first.
+    // only place the schema writes them.
     const payload: iInputField = {
       type: "text",
       placeholder: "",
-      rows: 3,
       ...inputObj,
       id: elementId,
-      // `title` is the legacy label alias: still read here, never forwarded.
-      label: inputObj.label ?? inputObj.title ?? "",
+      label: inputObj.label ?? "",
       config: { attributes: [], useLabel: true, ...(inputObj.config ?? {}) },
     };
 
-    // 🪞 Mirror the behaviour bag onto the top level — fill-only, so a legacy flat key wins.
-    // Every reader downstream (the attribute pass, the textarea template, a module) then
-    // sees one value whether the schema wrote it in `config` or straight on the node.
-    for (const [key, value] of Object.entries(payload.config ?? {})) {
-      if (value !== undefined && (payload as Record<string, any>)[key] === undefined) {
-        (payload as Record<string, any>)[key] = value;
-      }
+    // 🧩 `options` accepts a bare string as `{ value, label }` — the declared content type
+    // says so, and the select template reads one shape. Choices live here and nowhere else.
+    if (Array.isArray(payload.options)) {
+      payload.options = payload.options.map((option) =>
+        typeof option === "string" ? { value: option, label: option } : option
+      );
     }
 
     if (!payload.placeholder && payload.label) {
@@ -354,37 +349,33 @@ export class InputBuilder extends Builder<InputElementType, iInputConfig> {
         : `Isi ${payload.label}`;
     }
 
-    // 🧩 `options` is the field's own list — the one place `select`, `dropdown`, `picker`
-    // and a `radio`/`checkbox` group read from. The legacy `config.options` spelling is
-    // still lifted onto the field so an older sheet keeps working, but nothing downstream
-    // ever reads the config bag for choices again.
-    const rawOptions = inputObj.options ?? inputObj.config?.options;
-    if (Array.isArray(rawOptions)) {
-      payload.options = rawOptions.map((option: any) => typeof option === "string" ? { value: option, label: option } : option);
-    }
-
     return payload;
   }
 
 
 
   /**
-   * The one door, narrowed to a field schema.
+   * The one door.
    *
-   * `{ content, config }` is folded into the flat payload the pipeline reads. A legacy flat
-   * node (`create({ content: { type, title, config } })`, what the form adapter still sends)
-   * keeps working: with no top-level `config`, the node's own bag is used. Builder
-   * configuration stays constructor-only — nothing here reaches `this.config`.
+   * `{ content, config }` is folded into the flat payload the pipeline reads — content keys
+   * at the top level, behaviour in one bag. Those are the only two blocks a field has, so
+   * the schema is the only shape this builder accepts.
    *
-   * @param schema - `InputSchema<T>` when the type is known, a legacy node otherwise.
+   * @param schema - `InputSchema<T>` when the type is known, the whole union otherwise.
    * @returns The field's root element.
    */
-  public create<const T extends InputType>(schema: InputSchema<T>): HTMLElement;
-  /** Base-shaped call: still valid for a caller holding a bare `{ content, config }`. */
+  public create<const T extends InputType>(schema?: InputSchema<T>): HTMLElement;
+  /**
+   * Assignability only: `Builder.create` takes the base shape, and a narrower parameter
+   * cannot override it. Nothing in this package calls it — the fold above is the door.
+   *
+   * @internal
+   */
   public create(schema?: { content?: any; config?: Partial<iInputConfig> }): HTMLElement;
   public create(schema?: any): HTMLElement {
-    const content = schema?.content ?? {};
-    return super.create({ content: { ...content, config: schema?.config ?? content?.config } });
+    const content = schema?.content;
+    const config = schema?.config;
+    return super.create({ content: { ...content, config } });
   }
 
   public prepare(inputObj: Partial<iInputField> & Record<string, any>, _config?: Required<iInputConfig> | undefined): HTMLElement | Record<string, any | HTMLElement> {
@@ -433,7 +424,6 @@ export class InputBuilder extends Builder<InputElementType, iInputConfig> {
     const isToggle = this.#input.type === "checkbox" || this.#input.type === "radio";
     const labelPosition =
       cfg.position
-      ?? (this.#input.position as "top" | "left" | "right" | "bottom" | undefined)
       ?? (isToggle ? "right" : undefined);
 
     const label = labelText && cfg.useLabel !== false
@@ -523,7 +513,7 @@ export class InputBuilder extends Builder<InputElementType, iInputConfig> {
     // control set locks everything else (its buttons are `edit`/`save`). The marker goes on
     // the wrapper because that is the scope a set reads, and it is one attribute instead of
     // every control kind having to know about the lock.
-    if (this.#input.editable === true || cfg.editable === true) {
+    if (cfg.editable === true) {
       wrapper.setAttribute("data-editable", "true");
     }
 
@@ -576,7 +566,7 @@ export class InputBuilder extends Builder<InputElementType, iInputConfig> {
       case "@field":
         // Cosmetic wrapper attributes. `className` left the schema: a per-field skin is
         // this instance's `config.selectors["@field"].className`.
-        if (payload?.display) el.setAttribute("data-display", payload.display ?? cfg.display);
+        if (cfg.display) el.setAttribute("data-display", cfg.display);
         break;
 
       case "@field>label":
@@ -600,7 +590,8 @@ export class InputBuilder extends Builder<InputElementType, iInputConfig> {
         break;
 
       case "@field>textarea":
-        (el as HTMLTextAreaElement).rows = payload.rows;
+        // `rows` is a constraint (`iInputConstraint.rows`), defaulted here.
+        (el as HTMLTextAreaElement).rows = cfg.rows ?? 3;
         break;
 
       case "@field>select":
@@ -693,6 +684,7 @@ export class InputBuilder extends Builder<InputElementType, iInputConfig> {
    */
   private renderChoices(wrapper: HTMLElement): void {
     const field = this.#input;
+    const cfg = field.config ?? {};
     const name = String(field.name || field.id);
     const chosen = this.choiceValues();
 
@@ -710,8 +702,8 @@ export class InputBuilder extends Builder<InputElementType, iInputConfig> {
       input.name = name;
       input.value = value;
       input.checked = chosen.includes(value);
-      if (field.disabled) input.disabled = true;
-      if (field.required) input.required = true;
+      if (cfg.disabled) input.disabled = true;
+      if (cfg.required) input.required = true;
 
       const item = document.createElement("label");
       item.className = "choice-item";
@@ -738,13 +730,12 @@ export class InputBuilder extends Builder<InputElementType, iInputConfig> {
   /**
    * Whether this field asked for the switch shell (`config.view: "toggle"`).
    *
-   * The legacy `config.style` spelling is still read, never written: `view` replaced it
-   * because `style` collided with `HTMLElement.style` and meant a different thing per type.
+   * `view` replaced the old `style` because `style` collided with `HTMLElement.style` and
+   * meant a different thing per type.
    */
   #isToggleView(): boolean {
     const bag = (this.#input.config ?? {}) as Record<string, any>;
-    const view = String(this.#input.view ?? bag.view ?? bag.style ?? "").toLowerCase();
-    return view === "toggle";
+    return String(bag.view ?? "").toLowerCase() === "toggle";
   }
 
   /**

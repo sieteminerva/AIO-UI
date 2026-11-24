@@ -96,7 +96,7 @@ describe("form adapter manifest", () => {
     const loader = new ModuleLoader("form", FORM_ADAPTER_DEFINITIONS);
     const form = new FormBuilder({ modules: loader });
 
-    const el = form.create({ content: [{ type: "text", id: "routed-field", title: "Field" }] }) as HTMLElement;
+    const el = form.create({ content: [{ type: "text", id: "routed-field", label: "Field" }] }) as HTMLElement;
     document.body.appendChild(el);
 
     const loaded = loader.loadedIds();
@@ -114,7 +114,7 @@ describe("Form.provideModules", () => {
     const form = stack();
     form.provideModules({ [INPUT_MODULE_IDS.dropdown]: adapter });
 
-    const el = form.create({ content: [{ type: "text", id: "inherited-field", title: "Field" }] }) as HTMLElement;
+    const el = form.create({ content: [{ type: "text", id: "inherited-field", label: "Field" }] }) as HTMLElement;
     document.body.appendChild(el);
 
     const input = el.querySelector<HTMLInputElement>("#inherited-field");
@@ -125,7 +125,7 @@ describe("Form.provideModules", () => {
   it("renders a plain field when no input module was provided", () => {
     const form = stack();
 
-    const el = form.create({ content: [{ type: "text", id: "default-field", title: "Field" }] }) as HTMLElement;
+    const el = form.create({ content: [{ type: "text", id: "default-field", label: "Field" }] }) as HTMLElement;
     document.body.appendChild(el);
 
     const input = el.querySelector<HTMLInputElement>("#default-field");
@@ -140,11 +140,11 @@ describe("Form.provideModules", () => {
 
     const el = form.create({
       content: [
-        { type: "text", id: "floor-text", title: "Field" },
+        { type: "text", id: "floor-text", label: "Field" },
         {
           type: "dropdown",
           id: "floor-dropdown",
-          title: "Pilih",
+          label: "Pilih",
           options: [
             { value: "a", label: "A" },
             { value: "b", label: "B" },
@@ -164,7 +164,7 @@ describe("Form.provideModules", () => {
     // replaced, so the form says why instead of failing one field at a time.
     const form = new FormBuilder({ modules: new ModuleLoader("form", []) });
 
-    expect(() => form.create({ content: [{ type: "text", id: "orphan", title: "Field" }] })).toThrow(
+    expect(() => form.create({ content: [{ type: "text", id: "orphan", label: "Field" }] })).toThrow(
       /inputFormAdapter/
     );
   });
@@ -189,7 +189,7 @@ describe("Form.provideModules", () => {
       },
     } as any);
 
-    const el = form.create({ content: [{ type: "text", id: "probe-field", title: "Field" }] }) as HTMLElement;
+    const el = form.create({ content: [{ type: "text", id: "probe-field", label: "Field" }] }) as HTMLElement;
     document.body.appendChild(el);
 
     expect(phases).toEqual(["initialize"]);
@@ -212,7 +212,7 @@ describe("hand-wired modules (no registry, no shell)", () => {
     const loader = new ModuleLoader("form", [inputFormAdapter]);
     const form = new FormBuilder({ modules: loader });
 
-    const el = form.create({ content: [{ type: "text", id: "picked-field", title: "Field" }] }) as HTMLElement;
+    const el = form.create({ content: [{ type: "text", id: "picked-field", label: "Field" }] }) as HTMLElement;
     document.body.appendChild(el);
 
     const input = el.querySelector<HTMLInputElement>("#picked-field");
@@ -231,7 +231,7 @@ describe("hand-wired modules (no registry, no shell)", () => {
 
     const el = form.create({
       content: [
-        { type: "dropdown", id: "pick", title: "Pick", config: { options: [{ value: "a", label: "A" }] } },
+        { type: "dropdown", id: "pick", label: "Pick", options: [{ value: "a", label: "A" }] },
       ],
     }) as HTMLElement;
     document.body.appendChild(el);
@@ -254,7 +254,7 @@ describe("hand-wired modules (no registry, no shell)", () => {
     expect(() =>
       form.create({
         content: [
-          { id: "group", title: "Group", actions: ["editor"], group: [{ type: "text", id: "in-group", title: "Field" }] },
+          { id: "group", title: "Group", actions: ["editor"], group: [{ type: "text", id: "in-group", label: "Field" }] },
         ],
       })
     ).toThrow(/"controls" module is not in this builder's set/);
@@ -287,7 +287,7 @@ describe("hand-wired modules (no registry, no shell)", () => {
     const form = new FormBuilder({
       modules: new ModuleLoader<iFormModuleContext, any>("form", definitions),
     });
-    const el = form.create({ content: [{ type: "text", id: "resolved-field", title: "Field" }] }) as HTMLElement;
+    const el = form.create({ content: [{ type: "text", id: "resolved-field", label: "Field" }] }) as HTMLElement;
     document.body.appendChild(el);
 
     expect(el.querySelector<HTMLInputElement>("#resolved-field")).not.toBeNull();
@@ -300,7 +300,7 @@ describe("hand-wired modules (no registry, no shell)", () => {
     const form = stack();
     form.provideModules(Object.fromEntries(definitions.map((definition) => [String(definition.id), definition])));
 
-    const el = form.create({ content: [{ type: "text", id: "routed-field", title: "Field" }] }) as HTMLElement;
+    const el = form.create({ content: [{ type: "text", id: "routed-field", label: "Field" }] }) as HTMLElement;
     document.body.appendChild(el);
 
     expect(el.querySelector<HTMLInputElement>("#routed-field")).not.toBeNull();

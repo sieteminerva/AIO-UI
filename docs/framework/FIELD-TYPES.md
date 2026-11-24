@@ -51,17 +51,17 @@ only place the original header text survives.
 
 ### Note keys
 
-| Key                           | Type       | Status   | Meaning                                               |
-| ----------------------------- | ---------- | -------- | ----------------------------------------------------- |
-| `title`                       | string     | observed | display label; written by `DataService` on first read |
-| `type`                        | field type | observed | authoritative form type; defaults to `text`           |
-| `placeholder`                 | string     | observed | input placeholder                                     |
-| `required`                    | boolean    | observed | value must be filled                                  |
+| Key                           | Type       | Status   | Meaning                                                 |
+| ----------------------------- | ---------- | -------- | ------------------------------------------------------- |
+| `title`                       | string     | observed | display label; written by `DataService` on first read   |
+| `type`                        | field type | observed | authoritative form type; defaults to `text`             |
+| `placeholder`                 | string     | observed | input placeholder                                       |
+| `required`                    | boolean    | observed | value must be filled                                    |
 | `range`                       | string     | observed | named range; echoed as a control attribute, never a key |
-| `config.skipped`              | boolean    | observed | hidden from forms; the value stays in `data`          |
-| `options`                     | string[]   | observed | resolved choice list — a **content** key of `select`   |
-| `config.sheet`, `config.cell` | storage    | observed | address of the column; GAS-only                       |
-| `maxlength`                   | number     | observed | maximum character length                              |
+| `config.skipped`              | boolean    | observed | hidden from forms; the value stays in `data`            |
+| `options`                     | string[]   | observed | resolved choice list — a **content** key of `select`    |
+| `config.sheet`, `config.cell` | storage    | observed | address of the column; GAS-only                         |
+| `maxlength`                   | number     | observed | maximum character length                                |
 
 `config.skipped` is the current flag. If a `hidden` / `system` distinction is added later it
 must live in `config` too, so the descriptor keeps one shape.

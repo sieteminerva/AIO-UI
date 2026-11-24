@@ -156,14 +156,14 @@ export interface iContentContract {
 /** One problem found while normalising a payload. Never thrown — always collected. */
 export interface iContentIssue {
   code:
-    | "INPUT_SHAPE"
-    | "INPUT_MISSING_FIELD"
-    | "INPUT_WRONG_TYPE"
-    | "INPUT_UNKNOWN_FIELD"
-    | "INPUT_BAD_ENUM"
-    | "INPUT_TOO_FEW"
-    | "INPUT_TOO_MANY"
-    | "INPUT_LEGACY_USED";
+  | "INPUT_SHAPE"
+  | "INPUT_MISSING_FIELD"
+  | "INPUT_WRONG_TYPE"
+  | "INPUT_UNKNOWN_FIELD"
+  | "INPUT_BAD_ENUM"
+  | "INPUT_TOO_FEW"
+  | "INPUT_TOO_MANY"
+  | "INPUT_LEGACY_USED";
   /** Always rooted at the payload: `content[2].title`. */
   path: string;
   expected: string;

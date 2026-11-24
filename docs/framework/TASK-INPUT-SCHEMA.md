@@ -209,7 +209,8 @@ files, 996 passed, 1 skipped; `npm run build:demo` green. Committed as `bf5b40c`
 
 ## Next
 
-Nothing left in this task. The seams the refactor left outside itself are written down, with
-file:line evidence and the release decision they need, in **`docs/framework/TASK-INPUT-LEGACY.md`**:
-the rajutan commit, the four stale `config.options` doc stops, core's `iBasicInputNode` /
-`iFormGroupNode` duplicate, and where `range` should live.
+Nothing left here, and nothing left in the seams either: **`docs/framework/TASK-INPUT-LEGACY.md`**
+closed them in b76 (rajutan committed in its own repo, `content.options` in the docs, core's
+`iBasicInputNode` / `iFormGroupNode` / `InputBuilderConfigOptions` deleted, `range` pinned as an
+attribute). The one open thread is a **release note**: the three removed types were exported by
+`@aio-ui/core`, so the next minor must list them.

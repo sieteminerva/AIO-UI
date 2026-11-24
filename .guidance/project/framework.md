@@ -6,10 +6,10 @@ Why / stages: `.guidance/plan-framework.md`. Engineering rules:
 
 ## Active (max 3)
 
-| #   | Task                     | State       | Gate                                                                                                                                                                   |
-| --- | ------------------------ | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | Theme console view (fab) | in progress | `examples/demo/src/ThemeConsole/TASKS.md` — view composed, gate green; open: page-only popover sections                                                                |
-| 2   | Inspect surface (b43)    | in progress | `inspect()` + `inspectPage()` green; open: dead relay removal, `#cleanupMap` reset                                                                                     |
+| #   | Task                        | State       | Gate                                                                                                                                                                                                                                |
+| --- | --------------------------- | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Theme console view (fab)    | in progress | `examples/demo/src/ThemeConsole/TASKS.md` — view composed, gate green; open: page-only popover sections                                                                                                                             |
+| 2   | Inspect surface (b43)       | in progress | `inspect()` + `inspectPage()` green; open: dead relay removal, `#cleanupMap` reset                                                                                                                                                  |
 | 3   | Input schema + legacy sweep | done        | b74 (`bf5b40c`) form field = input schema; b76 (`c4d1b5c`+next) core `iBasicInputNode`/`iFormGroupNode`/`InputBuilderConfigOptions` removed, docs say `content.options`, `range` pinned as an attribute; `verify` 997 pass / 1 skip |
 
 ## Next

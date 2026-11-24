@@ -6,12 +6,12 @@ the type removal. A cold session needs nothing from this file.
 
 ## Result
 
-| Item | Outcome |
-| ---- | ------- |
-| 0 | `examples/rajutan` committed in its own repo — `1008e4f refactor(app): make every form field the input schema the framework ships` (271+/205−, tree clean). |
-| 1 | `API.md` + `FIELD-TYPES.md` now say `content.options`; `range` is documented as echoed onto the control, not resolved. Only history still names the old bag (this file, the two TASK records, and `input/README.md` saying the bag is gone). |
-| 2 | **Option A taken.** `iBasicInputNode`, core's duplicate `iFormGroupNode` and `InputBuilderConfigOptions` deleted; `registry.ts` payloads (`form`, `input-controls`, `dropdown`, `input-picker`) follow the existing `input: any` door rule. `grep -rn iBasicInputNode packages docs examples` → only this doc. |
-| 3 | **Kept as an attribute.** `orchestrator`'s `range` is `engine.range` (an engine version range) and `NATIVE_FIELD_TYPES` lists `range` as a **type** — neither is the property. Nothing reads it, so no schema key was invented; `FieldTypes.test.ts` pins `range` out of `INPUT_STRUCTURAL_KEYS` and through the attribute scan. |
+| Item | Outcome                                                                                                                                                                                                                                                                                                                          |
+| ---- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0    | `examples/rajutan` committed in its own repo — `1008e4f refactor(app): make every form field the input schema the framework ships` (271+/205−, tree clean).                                                                                                                                                                      |
+| 1    | `API.md` + `FIELD-TYPES.md` now say `content.options`; `range` is documented as echoed onto the control, not resolved. Only history still names the old bag (this file, the two TASK records, and `input/README.md` saying the bag is gone).                                                                                     |
+| 2    | **Option A taken.** `iBasicInputNode`, core's duplicate `iFormGroupNode` and `InputBuilderConfigOptions` deleted; `registry.ts` payloads (`form`, `input-controls`, `dropdown`, `input-picker`) follow the existing `input: any` door rule. `grep -rn iBasicInputNode packages docs examples` → only this doc.                   |
+| 3    | **Kept as an attribute.** `orchestrator`'s `range` is `engine.range` (an engine version range) and `NATIVE_FIELD_TYPES` lists `range` as a **type** — neither is the property. Nothing reads it, so no schema key was invented; `FieldTypes.test.ts` pins `range` out of `INPUT_STRUCTURAL_KEYS` and through the attribute scan. |
 
 Gate: `npm run check` green (api-map + catalogue regenerated) and `npm run verify` green —
 92 files, 997 passed, 1 skipped. **Breaking for consumers:** the three removed types were exported
@@ -58,7 +58,7 @@ in **`content.options`**. Three places still claim otherwise:
 **Do.** Rewrite those four spots to `content.options`; keep the `range` wording (Item 3 decides
 where `range` itself lives — do not pre-empt it, just say the list lands beside the field's data).
 
-**Acceptance.** No doc *prescribes* `config.options`: after the edit, `grep -rn "config.options" docs
+**Acceptance.** No doc _prescribes_ `config.options`: after the edit, `grep -rn "config.options" docs
 packages --include=*.md` still matches the historical records (this file, `TASK-INPUT-SCHEMA.md`) and
 `packages/components/input/README.md:70`, which says the bag is gone — none of them tells a reader to
 write it.

@@ -79,6 +79,28 @@ export const INPUT_STRUCTURAL_KEYS: readonly string[] = [
   "editable",
   "actions",
   "popover",
+  // Behaviour keys from `iInputConfigNode` — rules, state and module settings. None of
+  // them is ever a DOM attribute, so the scan classifies them before the matrix is asked.
+  "view",
+  "shape",
+  "error",
+  "loading",
+  "calculator",
+  "onFileSelected",
+  "attributes",
+  "style",
+  "thumbnail",
+  "maxUpload",
+  "maxFileSize",
+  "groupUnallowed",
+  "expanded",
+  "searchable",
+  "apiUrl",
+  "debounceDelay",
+  "onSelect",
+  "onMultiChange",
+  "dropdown",
+  "csv",
   // The chooser contract, identical for select/dropdown/picker/radio/checkbox: the list
   // and the single-vs-many flag live on the field, so neither is scanned as an attribute.
   "options",
@@ -94,7 +116,7 @@ export const INPUT_STRUCTURAL_KEYS: readonly string[] = [
 export const INPUT_TYPE_REGISTRY: Record<InputType, iInputTypeDefinition> = {
   text: { control: "@field>input", attributes: [...TEXTUAL, "maxlength", "minlength", "pattern", "autocomplete", "inputmode", "value"] },
   textarea: { control: "@field>textarea", attributes: [...TEXTUAL, "rows", "cols", "maxlength", "minlength"] },
-  number: { control: "@field>input", attributes: [...TEXTUAL, "min", "max", "step", "value"] },
+  number: { control: "@field>input", attributes: [...TEXTUAL, "min", "max", "step", "inputmode", "value"] },
   select: { control: "@field>select", attributes: ["name", "required", "disabled", "multiple", "value"] },
   dropdown: { control: null, attributes: ["name", "required", "disabled", "value"] },
   picker: { control: null, attributes: ["name", "required", "disabled", "value"] },
@@ -107,10 +129,10 @@ export const INPUT_TYPE_REGISTRY: Record<InputType, iInputTypeDefinition> = {
   "datetime-local": { control: "@field>input", attributes: [...SCALAR, "min", "max"] },
   file: { control: "@field>file", attributes: ["name", "required", "disabled", "accept", "multiple"] },
   color: { control: "@field>input", attributes: [...SCALAR] },
-  email: { control: "@field>input", attributes: [...TEXTUAL, "maxlength", "minlength", "pattern", "value"] },
+  email: { control: "@field>input", attributes: [...TEXTUAL, "maxlength", "minlength", "pattern", "inputmode", "value"] },
   password: { control: "@field>input", attributes: [...TEXTUAL, "maxlength", "minlength", "pattern", "value"] },
-  url: { control: "@field>input", attributes: [...TEXTUAL, "maxlength", "pattern", "value"] },
-  tel: { control: "@field>input", attributes: [...TEXTUAL, "maxlength", "pattern", "value"] },
+  url: { control: "@field>input", attributes: [...TEXTUAL, "maxlength", "pattern", "inputmode", "value"] },
+  tel: { control: "@field>input", attributes: [...TEXTUAL, "maxlength", "pattern", "inputmode", "value"] },
   hidden: { control: "@field>input", attributes: ["name", "value", "required", "disabled"] },
 };
 

@@ -12,10 +12,9 @@
  *   Two fields of the same `type` may differ here without changing behaviour.
  * - **config** — rules and wiring: constraints, state, layout, callbacks, module settings.
  *
- * This is stage 1: the groups below are the *inventory* of properties that actually exist
- * in `Input.ts`, `Attribute.ts` and the four modules, each with the code that reads it.
- * The union (`AnyInputSchema` / `InputSchema<T>`) is assembled from these groups next.
- * Nothing imports this file yet.
+ * The groups below are the *inventory* of properties that actually exist in `Input.ts`,
+ * `Attribute.ts` and the four modules, each with the code that reads it; the union
+ * (`AnyInputSchema` / `InputSchema<T>`) is assembled from them at the bottom of this file.
  *
  * Anything in {@link iInputDiscardedKeys} is listed on purpose: it exists in the old node
  * but does not belong to a field. Keeping it in one interface makes the deletion reviewable.
@@ -89,7 +88,7 @@ export interface iInputChoices {
 }
 
 /** Everything the field *is*: identity, text, value and choices. */
-export interface iInputContent extends iInputIdentity, iInputText, iInputValue, iInputChoices { }
+export interface iInputContentNode extends iInputIdentity, iInputText, iInputValue, iInputChoices { }
 
 /* ============================================================================
  * CONFIG — how the field behaves
@@ -143,6 +142,12 @@ export interface iInputState {
   disabled?: boolean;
   readonly?: boolean;
   editable?: boolean;
+  /**
+   * Data for this field is still arriving: the control carries the `loading` class while
+   * true. It replaces the old `className: "loading"` shortcut, which cost the whole
+   * `className` key for one boolean.
+   */
+  loading?: boolean;
   /**
    * Validation state from the host.
    *
@@ -290,21 +295,122 @@ export interface iInputModuleConfig {
 }
 
 /** Every behaviour the field has: constraints, state, layout, events and module settings. */
-export interface iInputConfig
+export interface iInputConfigNode
   extends iInputConstraint,
   iInputState,
   iInputLayout,
   iInputEvents,
   iInputModuleConfig { }
 
+/* ============================================================================
+ * THE UNION — one variant per `content.type`
+ * ==========================================================================*/
+
+/**
+ * Types that offer a list of choices.
+ *
+ * `select`/`dropdown`/`picker` read it through their own control; `checkbox`/`radio` turn
+ * every option into a control on the field's `name`.
+ */
+export type InputChooserType = "select" | "dropdown" | "picker" | "checkbox" | "radio";
+
+/** Identity, with the discriminator pinned so the variant can be extracted. */
+export interface iInputIdentityOf<T extends InputType> {
+  type: T;
+  id?: string;
+  name?: string;
+}
+
+/**
+ * The data block, narrowed by type: only a toggle carries `checked`, and only a chooser
+ * carries `options` (declared `never` elsewhere so a wrong key is a compile error, not a
+ * silently ignored one).
+ */
+export type iInputContentOf<T extends InputType> = iInputIdentityOf<T> &
+  iInputText &
+  iInputValueOf<T> &
+  (T extends InputChooserType ? iInputChoices : { options?: never });
+
+/** `checked` belongs to a toggle; `value` to everything. */
+export interface iInputValueOf<T extends InputType> {
+  value?: InputValueType;
+  checked?: T extends "checkbox" | "radio" ? boolean : never;
+}
+
+/** The `view` words one type owns; `never` for a type that has no visual variant. */
+export type InputViewOf<T extends InputType> = T extends "file"
+  ? InputFileViewType
+  : T extends "dropdown"
+  ? InputDropdownViewType
+  : T extends "picker"
+  ? InputPickerViewType
+  : T extends "checkbox" | "radio"
+  ? InputToggleViewType
+  : never;
+
+/**
+ * Layout narrowed by type: `view` only offers that type's words, `shape` only reaches a
+ * toggle, `column` only a picker panel. The `(string & {})` tail keeps a project's own
+ * word legal — the compiler suggests the real set without closing the door.
+ */
+export type iInputLayoutOf<T extends InputType> = Omit<iInputLayout, "view" | "shape" | "column"> & {
+  view?: InputViewOf<T> | (string & {});
+  shape?: T extends "checkbox" | "radio" ? InputToggleShapeType | (string & {}) : never;
+  column?: T extends "picker" ? number : never;
+};
+
+/** `inputmode` is only offered where the type matrix carries the attribute. */
+export type InputModeOf<T extends InputType> = T extends "text" | "email" | "url" | "tel" | "number"
+  ? NonNullable<iInputConstraint["inputmode"]>
+  : never;
+
+/** Constraints narrowed by type (today: just `inputmode`). */
+export type iInputConstraintOf<T extends InputType> = Omit<iInputConstraint, "inputmode"> & {
+  inputmode?: InputModeOf<T>;
+};
+
+/** The behaviour block for one type. */
+export type iInputConfigOf<T extends InputType> = iInputConstraintOf<T> &
+  iInputState &
+  iInputLayoutOf<T> &
+  iInputEvents &
+  iInputModuleConfig;
+
+/**
+ * One variant per type, as a discriminated object keyed by `content.type`.
+ *
+ * `content` is required — a field with no type is not a field; `config` is optional, and
+ * `InputBuilder` fills the defaults.
+ */
+export type AnyInputSchema = {
+  [T in InputType]: { content: iInputContentOf<T>; config?: iInputConfigOf<T> };
+}[InputType];
+
+/**
+ * The public field schema: `create({ content, config })`, narrowed to one type when the
+ * caller names it (`InputSchema<"file">`) and the whole union otherwise.
+ *
+ * @example
+ * const field: InputSchema<"dropdown"> = {
+ *   content: { type: "dropdown", id: "city", label: "City", options: ["Bandung"] },
+ *   config: { view: "datalist", required: true },
+ * };
+ */
+export type InputSchema<T extends InputType = InputType> = Extract<
+  AnyInputSchema,
+  { content: { type: T } }
+>;
+
 /**
  * The resolved payload `InputBuilder` and its modules read.
  *
  * `create({ content, config })` folds the two blocks into this one object (content's keys
  * at the top level plus a `config` bag), so the render pipeline and every module keep
- * reading a single flat field. It is the internal shape, not the public schema.
+ * reading a single flat field. The behaviour keys are also declared flat for the
+ * compatibility window: a legacy node parked them at the top level, and the readers still
+ * check both places. It is the internal shape, never the public schema.
  */
-export interface iInputField extends iInputContent, iInputConfig { }
+export type iInputField = iInputContentNode & iInputConfigNode & { config?: iInputConfigNode };
 
 /* ============================================================================
  * DISCARDED — present in the old flat node, not part of a field

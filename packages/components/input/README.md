@@ -19,6 +19,7 @@ retheme it without touching markup by redeclaring a `--app-*` token on an ancest
 `--input-*` token for this component only). Nothing here is scoped under `.form`.
 
 <!-- install:begin -->
+
 ## Install
 
 Version — `0.2.5` (tag `v0.2.5`)
@@ -27,26 +28,52 @@ Version — `0.2.5` (tag `v0.2.5`)
 
 CDN (ES module, no build step) — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.5/packages/components/input/dist/index.js`
 Stylesheet — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.5/packages/components/input/dist/input.css`
+
 <!-- install:end -->
 
 ## Payload
 
+A field is two blocks: **`content`** is what the field _is_, **`config`** is how it
+_behaves_. `InputSchema<T>` narrows both to the chosen `content.type`, so a `file` field
+never sees a picker's view word and a text field never sees `options`.
+
 ```ts
 {
-  type: "text",            // text | number | email | password | textarea | select | …
-  id: "email",
-  title: "Email address",  // `label` wins over `title` when both are present
-  placeholder: "you@example.com",
-  required: true,
+  content: {
+    type: "text",            // text | number | email | password | textarea | select | …
+    id: "email",
+    label: "Email address",  // `title` still works as the legacy alias
+    placeholder: "you@example.com",
+  },
+  config: {
+    required: true,
+    maxlength: 40,
+  },
 }
 ```
 
-The payload is a **single record** (`iBasicInputNode`), not a list. Useful fields:
-`value`, `rows`/`cols` (textarea), `step` (numeric increment, defaults to `"any"`),
-`multiple`, `disabled`, `readonly`, `editable` (skips the automatic read-only lock when
-action buttons are present), `info`, `position` (`top | left | right | bottom`),
-`dropdown` (forwarded to the dropdown module), `popover`, `onFileSelected`,
-`onValueChange` and `calculator` (calculation strategy for a readonly total).
+`content` — identity (`type`, `id`, `name`), readable text (`label`, `placeholder`, `info`),
+the value (`value`, `checked`) and the choices (`options`, on a chooser only).
+
+`config` — constraints (`required`, `min`/`max`/`step`, `minlength`/`maxlength`, `pattern`,
+`accept`, `inputmode`, `rows`/`cols`, `multiple`), state (`disabled`, `readonly`, `editable`,
+`loading`, `error`), layout (`position`, `useLabel`, `display`, `wide`, `span`, `attributes`,
+`view`, `shape`, `column`), callbacks (`onFileSelected`, `calculator`) and module settings
+(`actions`, `popover`, `apiUrl`, `debounceDelay`, `onSelect`, `onMultiChange`, `expanded`,
+`searchable`, `thumbnail`, `maxUpload`, `maxFileSize`, `groupUnallowed`, `csv`).
+
+`error` is the host's validation state: `true` marks the field invalid, a string marks it
+invalid **and** prints the message as a `@field>error` line just above `info`. `loading` puts
+the `loading` class on the control — it replaced the old `className: "loading"` shortcut.
+
+An older **flat node** (`{ type, id, title, config }`) still renders: the builder folds it
+into the same payload and uses the node's own `config` bag as the behaviour block. That is
+the shape `@aio-ui/form` sends.
+
+`config.view` is the one visual-variant word, typed per field type: `toggle` (checkbox/
+radio), `select`/`datalist` (dropdown), `icon`/`image`/`media`/`swatch` (picker) and
+`list`/`thumbnails` (file). It replaced the old `style` (dropdown/toggle) and the uploader's
+own `view`.
 
 ### Choices — one door for every chooser
 
@@ -65,12 +92,6 @@ A `radio`/`checkbox` field **with `options`** renders a group — one control pe
 on the field's `name`, `radio` exclusive and `checkbox` taking several — and the group's
 caption is not a `<label for>`, because there is no single control. Without `options` the
 field is the single control it always was.
-
-`config.options` is still lifted onto the field for an older sheet, but it is deprecated:
-write the list on the field.
-
-`useLabel`, `view`, `thumbnail`, `maxUpload`, `maxFileSize`, `groupUnallowed` and
-`createEventListener` are consumed by the file module.
 
 <!-- part: id=config role=contract -->
 
@@ -109,16 +130,18 @@ flat on `config`; the choices and the multiplicity stay on the field:
 
 ```ts
 {
-  type: "picker",
-  id: "featureIcon",
-  title: "Pilih ikon",
-  value: "gear",
-  // The choices are the field's own `options` (`{ value, label }` plus `icon` / `src` /
-  // `color`), exactly the shape a select uses. A string option is `{ value, label }`.
-  options: ["gear", "user", "checkmark"],
-  multiple: false,    // several cells at once
+  content: {
+    type: "picker",
+    id: "featureIcon",
+    label: "Pilih ikon",
+    value: "gear",
+    // The choices are the field's own `options` (`{ value, label }` plus `icon` / `src` /
+    // `color`), exactly the shape a select uses. A string option is `{ value, label }`.
+    options: ["gear", "user", "checkmark"],
+    multiple: false,    // several cells at once
+  },
   config: {
-    style: "icon",      // icon | image | media | swatch — what a cell draws
+    view: "icon",       // icon | image | media | swatch — what a cell draws
     column: 6,          // grid tracks, the same word a row layout uses
     expanded: false,    // true = print the grid inline, no trigger/popover
     searchable: true,   // adds the filter box
@@ -126,7 +149,7 @@ flat on `config`; the choices and the multiplicity stay on the field:
 }
 ```
 
-`style` decides what a cell draws: `icon` (a global `i.icon.<name>` class, the option value
+`view` decides what a cell draws: `icon` (a global `i.icon.<name>` class, the option value
 by default), `image` / `media` (`src`), `swatch` (`color`). The value reaches the form through
 a hidden input named after the field, joined with commas when `multiple` is on.
 
@@ -178,25 +201,27 @@ pins the sentences.
 
 ## Nodes
 
-| Key               | Default tag | Class / note                                  |
-| ----------------- | ----------- | --------------------------------------------- |
-| `@field`          | `div`       | `field`                                       |
-| `@field>label`    | `label`     | linked with `for` to the control id           |
-| `@field>input`    | `input`     | text-like types                               |
-| `@field>textarea` | `textarea`  | `type: "textarea"`                            |
-| `@field>select`   | `select`    | plus `@field>select>option`                   |
-| `@field>checkbox` | `input`     | `type=checkbox`, wrapped in `.switch.control` |
-| `@field>radio`    | `input`     | `type=radio`                                  |
-| `@field>toggle`   | `input`     | same switch shell, opt in with `config.style` |
-| `@field>file`     | `input`     | `type=file`                                   |
-| `@field>info`     | `small`     | `info`                                        |
+| Key               | Default tag | Class / note                                           |
+| ----------------- | ----------- | ------------------------------------------------------ |
+| `@field`          | `div`       | `field`                                                |
+| `@field>label`    | `label`     | linked with `for` to the control id                    |
+| `@field>input`    | `input`     | text-like types                                        |
+| `@field>textarea` | `textarea`  | `type: "textarea"`                                     |
+| `@field>select`   | `select`    | plus `@field>select>option`                            |
+| `@field>checkbox` | `input`     | `type=checkbox`, wrapped in `.switch.control`          |
+| `@field>radio`    | `input`     | `type=radio`                                           |
+| `@field>toggle`   | `input`     | same switch shell, opt in with `config.view: "toggle"` |
+| `@field>file`     | `input`     | `type=file`                                            |
+| `@field>error`    | `small`     | `error`, from a string `config.error`                  |
+| `@field>info`     | `small`     | `info`                                                 |
 
 <!-- part: id=tokens role=contract -->
 
 ### Structure
 
-The control element follows `type`; `label`, the control and the `small.info` line are appended
-only when the payload supplies them, and action buttons add `div.controls`.
+The control element follows `type`; `label`, the control, the `small.error` line and the
+`small.info` line are appended only when the payload supplies them, and action buttons add
+`div.controls`.
 
 ```html
 <div class="field">

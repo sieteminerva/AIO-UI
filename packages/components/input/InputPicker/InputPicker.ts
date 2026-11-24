@@ -467,7 +467,9 @@ export class PickerBuilder extends Builder<PickerElementType, iPickerConfig> {
 
 /** Field-level settings and the builder key each one feeds. */
 const SETTINGS: Array<[string, keyof iPickerConfig]> = [
+  // Legacy first, so `view` wins when a schema still carries both: the loop assigns in order.
   ["style", "kind"],
+  ["view", "kind"],
   ["column", "columns"],
   ["expanded", "expanded"],
   ["searchable", "searchable"],
@@ -484,7 +486,7 @@ const SETTINGS: Array<[string, keyof iPickerConfig]> = [
  * Settings live flat on the field's `config`, next to `options`, using the same vocabulary
  * the rest of the schema already speaks:
  *
- *   `style`     — `icon | image | media | swatch` (the cell visual)
+ *   `view`      — `icon | image | media | swatch` (the cell visual)
  *   `column`    — grid track count, like a row's `column`
  *   `expanded`  — print the grid inline instead of behind the trigger's popover
  *   `searchable`, `placeholder`

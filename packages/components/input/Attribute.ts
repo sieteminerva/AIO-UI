@@ -1,4 +1,5 @@
-import { InputBuilder, type InputType, type iBasicInputNode } from "./Input";
+import { InputBuilder, type InputType } from "./Input";
+import type { iInputField } from "./InputSchema";
 import { scanInputAttributes } from "./FieldTypes";
 
 export interface iAttributeProperty {
@@ -146,7 +147,8 @@ export class InputAttributeBuilder {
   }
 
   // unified builder
-  static buildSchemaForType(inputType: InputType, header: iBasicInputNode = {}) {
+  static buildSchemaForType(inputType: InputType, header: Partial<iInputField> & { title?: string } = {}) {
+    const raw = header as Record<string, any>;
     // merge base + type defaults + user overrides
     const merged: Record<string, any> = {
       ...baseInputConfig,
@@ -194,30 +196,31 @@ export class InputAttributeBuilder {
         delete schema.value;
       }
 
-      const title = header.id
-        ? header.id.toLowerCase().replace(/[\s_]+/g, "-")
-        : header.title
-          ? header.title.toLowerCase().replace(/[\s_]+/g, "-")
+      const title = raw.id
+        ? raw.id.toLowerCase().replace(/[\s_]+/g, "-")
+        : raw.title
+          ? raw.title.toLowerCase().replace(/[\s_]+/g, "-")
           : inputType;
 
       const elementId = `${title}-${schemaDef.name}`;
 
-      let attrConfig: iBasicInputNode = {
+      // One editor field, through the same door a project uses: identity + value in
+      // `content`, the type's own settings in `config`.
+      const attrConfig: Record<string, any> = {
         type: attrType,
-        title: schemaDef.name,
-        label: schemaDef.label,
         id: elementId,
+        label: schemaDef.label ?? schemaDef.name,
         value,
-        ...(schemaDef.config ? { config: schemaDef.config } : {}),
       };
-
-      // console.log(`[${inputType} > attrConfig]`, attrConfig);
 
       schema[key] = {
         input: attrType,
         value,
         ...(schemaDef.config ? { config: schemaDef.config } : {}),
-        template: new InputBuilder().create({ content: attrConfig }),
+        template: new InputBuilder().create({
+          content: attrConfig as any,
+          config: schemaDef.config as any,
+        }),
       };
     }
 
@@ -265,8 +268,8 @@ export class InputAttributeBuilder {
     return this.scan(type, config, customAllowed).ok;
   }
 
-  static create(headers: Array<iBasicInputNode>) {
-    return headers.map((header: iBasicInputNode) => {
+  static create(headers: Array<Partial<iInputField> & { title?: string }>) {
+    return headers.map((header) => {
       // we expect each header at least has a `type`
       const type = header.type || "text";
       // const scanStatus = scanUnallowedAttrs(type, header, ["title", "type", "range", "config"]);

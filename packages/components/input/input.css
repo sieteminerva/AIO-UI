@@ -202,6 +202,26 @@ select:focus-visible {
     line-height: 1.3;
   }
 
+  /* The host's validation message (`config.error`): the same full-width line as the help
+     text, printed just above it, so a field says what is wrong before what it is for. */
+  & > .error {
+    display: block;
+    width: 100%;
+    grid-column: 1 / -1;
+    margin-top: 0.35em;
+    color: var(--input-error-color);
+    font-size: calc(var(--input-font-size) * 0.85);
+    font-weight: 500;
+    line-height: 1.3;
+  }
+
+  /* `config.error` tints the control itself, including the `error: true` case that has no
+     message child to read. Native controls only: a dropdown/picker draws its own surface. */
+  &[data-error] :is(input:not([type="checkbox"], [type="file"]), select, textarea) {
+    border-color: var(--input-error-color);
+    background-color: var(--input-error-background-color);
+  }
+
   /* 3. Labels & Base Form Controls */
   & label {
     display: block;

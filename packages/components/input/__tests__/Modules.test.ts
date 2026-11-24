@@ -80,7 +80,7 @@ describe("degradation without modules", () => {
   function render(type: string): HTMLElement {
     return new InputBuilder({ modules: [] }).create({
       content: {
-        type,
+        type: type as any,
         id: `f-${type}`,
         title: type,
         config: { options: [{ value: "a", label: "A" }] },

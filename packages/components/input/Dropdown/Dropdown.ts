@@ -1,9 +1,10 @@
 /**
  * 🧩 INPUT ADAPTER — dropdown rendering for `InputBuilder`.
  *
- * Owned by the input layer, not by `FormBuilder`. Two surfaces:
- * - `style: "select"` (default) renders a popover menu (`.menu[popover]`) anchored to the control.
- * - `style: "datalist"` renders a native `<datalist>`.
+ * Owned by the input layer, not by `FormBuilder`. Two surfaces, chosen by the field's
+ * `view` word:
+ * - `view: "select"` (default) renders a popover menu (`.menu[popover]`) anchored to the control.
+ * - `view: "datalist"` renders a native `<datalist>`.
  */
 import type { iElementProperty, iBuilderConfig, iBuilderRegistry } from "@aio-ui/core";
 import { Builder } from "@aio-ui/base";
@@ -768,7 +769,8 @@ class DropdownInputModule implements iInputAdapter {
       config: {
         apiUrl: cfg.apiUrl || null,
         debounceDelay: cfg.debounceDelay,
-        style: cfg.style || "select",
+        // `view` is the field word; `style` is the legacy spelling of the same choice.
+        style: cfg.view || cfg.style || "select",
         min: cfg.min,
         max: cfg.max,
         onSelect: cfg.onSelect,

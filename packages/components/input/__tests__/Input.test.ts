@@ -4,6 +4,7 @@ import { resolve } from "node:path";
 import { describe, expect, it, vi } from "vitest";
 
 import { InputBuilder } from "../Input";
+import type { InputSchema } from "../InputSchema";
 import { InputAttributeBuilder } from "../Attribute";
 import { INPUT_TYPE_REGISTRY, inputTypeOf, scanInputAttributes } from "../FieldTypes";
 import { INPUT_MODULE_DEFINITIONS } from "../index";
@@ -17,7 +18,7 @@ import { ModuleLoader } from "@aio-ui/module-loader";
 function build(schema: Record<string, any>, config: Record<string, any> = {}): { container: HTMLElement; control: HTMLElement } {
   // The layer ships no preset of its own since `0.2.2`, so this file states the one it
   // exercises. Degradation with no modules at all is pinned in `Modules.test.ts`.
-  const container = new InputBuilder({ modules: INPUT_MODULE_DEFINITIONS, ...config } as any).create({ content: schema }) as HTMLElement;
+  const container = new InputBuilder({ modules: INPUT_MODULE_DEFINITIONS, ...config } as any).create({ content: schema as any }) as HTMLElement;
   const control = container.querySelector("input, textarea, select") as HTMLElement;
   return { container, control };
 }
@@ -335,6 +336,17 @@ describe("input module registry", () => {
 });
 
 describe("InputBuilder toggle style", () => {
+  it("renders a radio as a switch when view is toggle", () => {
+    const container = new InputBuilder({ modules: [] } as any).create({
+      content: { type: "radio", id: "pickup", name: "delivery", label: "Ambil sendiri" },
+      config: { view: "toggle" },
+    }) as HTMLElement;
+
+    expect((container.querySelector("input") as HTMLInputElement).type).toBe("radio");
+    expect(container.querySelector(".switch.control")).not.toBeNull();
+    expect(container.querySelector(".slider")).not.toBeNull();
+  });
+
   it("renders a radio as a switch when config.style is toggle", () => {
     const { container, control } = build({ type: "radio", id: "pickup", name: "delivery", title: "Ambil sendiri", config: { style: "toggle" } });
 
@@ -370,6 +382,96 @@ describe("InputBuilder toggle style", () => {
   });
 });
 
+describe("input schema door (content / config)", () => {
+  const full = (schema: any) => new InputBuilder({ modules: INPUT_MODULE_DEFINITIONS } as any).create(schema) as HTMLElement;
+
+  it("renders a split schema: content is the field, config is its behaviour", () => {
+    const container = full({
+      content: { type: "text", id: "email", label: "Email", placeholder: "you@example.com" },
+      config: { required: true, maxlength: 40 },
+    });
+    const control = container.querySelector("input") as HTMLInputElement;
+
+    expect(container.querySelector("label")?.textContent).toBe("Email");
+    expect(container.querySelector("label")?.getAttribute("for")).toBe("email");
+    expect(control.required).toBe(true);
+    expect(control.getAttribute("maxlength")).toBe("40");
+  });
+
+  it("still renders a legacy flat node — the shape the form adapter sends", () => {
+    const container = full({ content: { type: "select", id: "city", title: "Kota", config: { options: ["Bandung"] } } });
+
+    expect(container.querySelector("label")?.textContent).toBe("Kota");
+    expect(container.querySelectorAll("option[value='Bandung']")).toHaveLength(1);
+  });
+
+  it("narrows the variant: a chooser key is refused where the type has no choices", () => {
+    // The narrowing lives in the schema type: `create()` also accepts a legacy flat node,
+    // which is exactly why the check is pinned here rather than at the call site.
+    // @ts-expect-error — `options` only exists on a chooser (select/dropdown/picker/checkbox/radio)
+    const withOptions: InputSchema<"text"> = { content: { type: "text", options: ["a"] } };
+    // @ts-expect-error — `column` feeds a picker panel, nothing else
+    const withColumn: InputSchema<"text"> = { content: { type: "text" }, config: { column: 3 } };
+    // @ts-expect-error — `checked` is a toggle's state, not a text field's
+    const withChecked: InputSchema<"text"> = { content: { type: "text", checked: true } };
+
+    expect("options" in withOptions.content).toBe(true);
+    expect(withColumn.content.type).toBe("text");
+    expect(withChecked.content.type).toBe("text");
+  });
+
+  it("maps `view` onto the owner's own setting (dropdown → data-style)", () => {
+    const container = full({
+      content: { type: "dropdown", id: "city", label: "Kota", options: ["Bandung"] },
+      config: { view: "datalist" },
+    });
+
+    expect(container.querySelector(".dropdown")?.getAttribute("data-style")).toBe("datalist");
+  });
+
+  it("maps `view` and `column` onto the picker", () => {
+    const container = full({
+      content: { type: "picker", id: "tone", label: "Tone", options: ["#ffffff"] },
+      config: { view: "swatch", column: 4 },
+    });
+    const picker = container.querySelector(".picker") as HTMLElement;
+
+    expect(picker.dataset.kind).toBe("swatch");
+    expect(picker.style.getPropertyValue("--picker-columns")).toBe("4");
+  });
+});
+
+describe("InputBuilder field state", () => {
+  const full = (schema: any) => new InputBuilder({ modules: INPUT_MODULE_DEFINITIONS } as any).create(schema) as HTMLElement;
+
+  it("puts `loading` on the control, the marker `className` used to carry", () => {
+    const container = full({ content: { type: "text", id: "name", label: "Nama" }, config: { loading: true } });
+    const control = container.querySelector("input") as HTMLElement;
+
+    expect(control.classList.contains("loading")).toBe(true);
+  });
+
+  it("renders an error message as its own child, before the help text", () => {
+    const container = full({
+      content: { type: "text", id: "name", label: "Nama", info: "Help" },
+      config: { error: "Nama wajib diisi" },
+    });
+    const children = Array.from(container.children);
+
+    expect(container.getAttribute("data-error")).toBe("Nama wajib diisi");
+    expect((children.at(-2) as HTMLElement).classList.contains("error")).toBe(true);
+    expect((children.at(-2) as HTMLElement).textContent).toBe("Nama wajib diisi");
+    expect((children.at(-1) as HTMLElement).classList.contains("info")).toBe(true);
+  });
+
+  it("marks the field invalid for `error: true` without printing a message", () => {
+    const container = full({ content: { type: "text", id: "name", label: "Nama" }, config: { error: true } });
+
+    expect(container.getAttribute("data-error")).toBe("true");
+    expect(container.querySelector(".error")).toBeNull();
+  });
+});
+
 describe("input sheet", () => {
   const sheet = readFileSync(resolve(process.cwd(), "packages/components/input/Input.css"), "utf8");
 
@@ -385,6 +487,11 @@ describe("input sheet", () => {
     // beside the control.
     expect(sheet).toContain("& > .info {");
     expect(sheet).toContain("grid-column: 1 / -1;");
+  });
+
+  it("gives the error message the same full-width line as the help text", () => {
+    expect(sheet).toContain("& > .error {");
+    expect(sheet).toContain("color: var(--input-error-color);");
   });
 });
 

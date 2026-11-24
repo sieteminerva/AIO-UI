@@ -11,7 +11,8 @@
  * duplicates the group rather than a single input. `<form>` is deliberately not a scope:
  * a control set that can delete or clone the whole form is a footgun, not a feature.
  */
-import type { iActionType, iBasicInputNode, iInputActionContext, iInputActionDefinition } from "../Input";
+import type { iActionType, iInputActionContext, iInputActionDefinition } from "../Input";
+import type { iInputField } from "../InputSchema";
 import type { iBuilderConfig, iElementProperty } from "@aio-ui/core";
 import { Builder } from "@aio-ui/base";
 import { collectFormValues } from "../FormValues";
@@ -36,7 +37,7 @@ export interface iInputControlsConfig {
   // Daftar aksi tombol yang ingin dimunculkan disamping input
   actions: iInputActionDefinition[];
   // Field asal, untuk konteks aksi. `null` ketika scope-nya sebuah grup.
-  input?: iBasicInputNode | null;
+  input?: iInputField | null;
   /** Element the set acts on: a `.field` wrapper or a `<fieldset>` group. */
   scope?: HTMLElement | null;
   /** Legacy name for `scope`; still honoured so old call sites keep working. */

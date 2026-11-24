@@ -56,7 +56,8 @@ export interface iBuilderRegistry {
   rating: any;
   article: any;
   tab: any;
-  input: iBasicInputNode;
+  /** `InputSchema<T>` from `@aio-ui/input`; core cannot import a component package, so the concrete shape is enforced at that package's door. */
+  input: any;
   "product-card": iBasicNode;
   /** The composed catalog: grid ⇄ detail, owned by `ProductBuilder`. */
   product: iBasicNode | iBuilderContent[];

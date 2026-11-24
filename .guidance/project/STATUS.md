@@ -4,7 +4,8 @@
 > **only** after the user picks it — never "to orient" (`AGENT_RULES.md` §13). Rewritten each
 > session, newest on top. One card = one line + one pointer.
 >
-> Recent batches (newest first): **b71** input schema split (stage 1 grouping) ·
+> Recent batches (newest first): **b72** input schema stage 2 (per-type union +`create()` wiring) ·
+> **b71** input schema split (stage 1 grouping) ·
 > **b70** control set: idle edit/save half rebuilt + repeater delete floor ·
 > **b69** v0.2.5 published to CDN · **b68** the eight missing package
 > READMEs · **b67** publish-side followers · **b65–b66** per-package versions · **b64** registry regen to 37
@@ -12,13 +13,15 @@
 > in every package README · **b57** Apps Script hosting · **b52–b59** shell mount point, tab seams.
 > Older history: `git log --oneline`.
 
-### 1. Input schema refactor — stage 1 landed, stage 2 next (framework band)
+### 1. Input schema refactor — stage 2 done, **uncommitted**; stage 3 next (framework band)
 
-b71 (2026-11-24, `a05d408`): `packages/components/input/InputSchema.ts` groups every live field
-property into `content` / `config` (type-only; nothing imports it yet), adds the per-owner `view`
-types, and parks the keys that leave a field in `iInputDiscardedKeys`. Stage 2 — per-type
-`InputSchema<T>`, `create()` wiring, module/attribute/test updates — executes directly from the
-task doc. Claim board row `copilot b71` is `handoff`.
+b72 (2026-11-24): `InputSchema<T>` union + per-type narrowing (`options`/`checked`/`view`/
+`shape`/`column`/`inputmode`), `create()` overloaded and folding `{ content, config }`,
+`iBasicInputNode` deleted, `config.loading` / `config.error` wired (`@field>error` + CSS),
+`view` feeding dropdown/picker, `inputmode` widened in the matrix. Gate: check + verify green
+(992 tests). **19 files still uncommitted — commit first**, then stage 3 (per-type module keys,
+legacy-door removal, form/example migration). The doc carries the handoff, the traps and the
+executable steps. Claim row `copilot b72` is `handoff`.
 → `docs/framework/TASK-INPUT-SCHEMA.md`
 
 ### 2. Release v0.2.5 — published (tooling band)

@@ -1,6 +1,6 @@
 # TASK — colour tokens before v0.2.6
 
-**Status:** T1 done, T2 done, plus the dropdown/picker seam work the owner asked for mid-task.
+**Status:** T1, T2, T3 done, plus the dropdown/picker seam work the owner asked for mid-task.
 Priority: **colouring is the top blocker before the v0.2.6 release.**
 **Owner direction:** the agent executes the stages; the owner then reviews each component and
 points at the colour it wants changed. Do not wait for per-component approval to start the root.
@@ -48,7 +48,7 @@ git reset --hard color-pre-full-2026-11-25   # then: git push --force-with-lease
 | T1 | Root `light-dark()` rewrite + spinner mask + skeleton derive | `packages/styles/src/variables.css`, spinner consumers (`Dropdown.css`, `Masonry.css`, `Tab.css`, `examples/demo/src/style.css`) | **done (b86)** |
 | T2 | Form path text/border tokens | `packages/components/input/{Input.css,InputControls,FileUploader,Dropdown}`, `form/Form.css` | **done (b87, b91)** |
 | T2b | Popup = one sheet with the control (owner request) | `input/Input.css`, `input/Dropdown/{Dropdown.css,Dropdown.ts}`, `form/Form.css` | **done (b88–b91)** |
-| T3 | Hardcoded-palette components | `article/Article.css`, `table/Table.css`, `message/Message.css`, `carousel/Carousel.css`, `tab/Tab.css` | **not started** |
+| T3 | Hardcoded-palette components | `article/Article.css`, `table/Table.css`, `message/Message.css`, `carousel/Carousel.css`, `tab/Tab.css` | **done (b92)** |
 | T4 | Theme packages set the mode | `packages/themes/{cyberpunk,horizontal}/src/*.ts` (`activate()` → `shell.dataset.mode = "dark"`, `shell.style.colorScheme = "dark"`) | **not started** |
 | T5 | CSS lint test | new `packages/components/__tests__/colour-literals.test.ts` (no raw literal except the allowlist above) | **not started** |
 
@@ -124,16 +124,24 @@ that touches a package TypeScript file, an `exports` map, or a README still runs
 - **b91** `5605022` — native picker mirrors from its REAL height
   (`getComputedStyle(select, "::picker(select)").height`); `select:not(:open)` rests on
   `--input-border-color` like every other control.
+- **b92** — T3: **Article** (`--article-*` all derive from `--app-*`; glyph/link accents route
+  through `--article-primary-ui`, fill only for `active-page`; shadows → `--app-shadow-*`),
+  **Table** (`darkgoldenrod` + `white/black/grey/#925408/#f3f3f3` mixes → `--app-*`, row banding
+  and hover as `color-mix(primary N%, transparent)`), **Message** (Semantic-UI pastels →
+  `--app-status-*-fill` wash + `--app-status-*` border + `--app-text-color` ink, shadows app),
+  **Tab** (three `rgba(255,255,255,*)` washes → `text 6% transparent`, `--app-shadow-soft`,
+  `--app-border-color`), **Carousel** (media overlays kept, marked as the §4 allowlist).
+  Proof (dev server HMR + measured computed styles, light ↔ dark): Article card bg
+  `oklch(.99)`↔`oklch(.25)`, title ink `L .38`↔`.89`; Table header ink `L .25`↔`.97` with a
+  mode-neutral `brand 30%` hairline; Message error/warning ink `L .38`↔`.89` with the solid border
+  flipping `#b07c00`↔`#f5c53d`; Tab tokens resolve to `text 6%` / `border-color` / app shadow.
 
 ## Next (cold start)
 
-1. **T3** — `article/Article.css`, `table/Table.css`, `message/Message.css`, `carousel/Carousel.css`,
-   `tab/Tab.css`: replace the literal palettes with `--app-*` or `color-mix()` of them. Keep the
-   intentional overlays (modal backdrop, lightbox) and mark them.
-2. **T4** — `packages/themes/{cyberpunk,horizontal}/src/*.ts` `activate()` must set
+1. **T4** — `packages/themes/{cyberpunk,horizontal}/src/*.ts` `activate()` must set
    `shell.dataset.mode` + `shell.style.colorScheme`.
-3. **T5** — `packages/components/__tests__/colour-literals.test.ts` with the allowlist from
-   contract §4.
+2. **T5** — `packages/components/__tests__/colour-literals.test.ts` with the allowlist from
+   contract §4 (Carousel overlays are marked and belong on it).
 4. **Leftover**: `packages/components/masonry/README.md` + `docs/framework/catalogue.json` still
    show the pre-b86 `background-image: var(--app-spinner-content)` snippet (the catalogue snippet
    is curated, not generated from source).

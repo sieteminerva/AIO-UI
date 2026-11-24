@@ -16,7 +16,19 @@
 > in every package README · **b57** Apps Script hosting · **b52–b59** shell mount point, tab seams.
 > Older history: `git log --oneline`.
 
-### 1. Input schema + legacy sweep — done, one release note owed (framework band)
+### 1. Input & form polish — not started; three defects before the release (framework band)
+
+Owner-reported after b74/b76: **(A)** a form field's `.wide` / `span` share of a row is not
+honoured in full (`FormLayout.ts` + `Form.css:38-63`); **(B)** `config.footer` is appended
+(`Form.ts:661-666`, `@form>footer` → `.form-footer`) and no rule styles it; **(C)** the
+`select`/`dropdown` popup is clipped near the viewport edge or inside `overflow: hidden` — fix by
+CSS Anchor Positioning + Native Popover (`input.css` §5.2 line 440 `position-try-fallbacks: none`,
+§10.3 `:1067`, `Dropdown/Dropdown.ts`), keeping `::picker(select)` and `.menu` visually identical.
+Each item needs a measurement, not an eyeball.
+**Open:** nothing started; the release waits for all three.
+→ `docs/framework/TASK-INPUT-POLISH.md`
+
+### 2. Input schema + legacy sweep — done, one release note owed (framework band)
 
 b74 (`bf5b40c`) made a form field node the input schema `{ content, config }`; b76 closed the seams
 it left: rajutan committed in its own repo (`1008e4f`), `API.md`/`FIELD-TYPES.md` now say
@@ -27,21 +39,15 @@ following the existing `input: any` door rule. `range` stays an attribute, pinne
 **Open:** the three removed types were public — the next minor release note must list them.
 → `docs/framework/TASK-INPUT-LEGACY.md` · `docs/framework/TASK-INPUT-SCHEMA.md`
 
-### 2. Release v0.2.5 — published (tooling band)
+### 3. Release — the next minor waits on the polish (tooling band)
 
-b69 shipped v0.2.5 (2026-11-24): 37 packages at `0.2.5`, branch `releases` + tag `v0.2.5` pushed,
-`check:live` **6/6 → 200**. The note name is a pre-release (`store` / `profile` / `blog` absent).
-Remaining: only the optional GitHub Release asset upload (`GITHUB_TOKEN`).
+v0.2.5 is published and probed (`docs/releases/v0.2.5.md`). The next release is the one that ships
+the polish above **and** the breaking note from b76 (three types removed from `@aio-ui/core`).
+Owner orders the publish; `docs/live-cdn-repo.md` is the ritual.
 → `docs/releases/v0.2.5.md` · `.guidance/project/framework.md` §Next
 
-### 3. Rajutan app — published site
-
-Batch 57 landed **hosting**: `action:"deploy"` (`orchestrator/apps-script/Deploy.js`) commits the
-emitted files and enables Pages, so a job returns a hosted `data.live` + `data.repo` (proof:
-`https://sieteminerva.github.io/test_site_rajutan/` serving `Kriya B57`). Next: per-site repos
-(token with Administration) + `data[].endpoint`; then auth.
-Open: `/exec` is unauthenticated (`CLIENT_TOKEN` unset, `public/sw.js` never registered).
-→ `orchestrator/mechanism.md` §1–§11 · `.guidance/project/generator.md` §Next
+_Retired from the logbook (batch 57 landed, still live): rajutan hosting → `orchestrator/mechanism.md`
+§1–§11 · `.guidance/project/generator.md` §Next._
 
 ## Map
 

@@ -10,10 +10,13 @@ Why / stages: `.guidance/plan-framework.md`. Engineering rules:
 | --- | --------------------------- | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 1   | Theme console view (fab)    | in progress | `examples/demo/src/ThemeConsole/TASKS.md` — view composed, gate green; open: page-only popover sections                                                                                                                             |
 | 2   | Inspect surface (b43)       | in progress | `inspect()` + `inspectPage()` green; open: dead relay removal, `#cleanupMap` reset                                                                                                                                                  |
-| 3   | Input schema + legacy sweep | done        | b74 (`bf5b40c`) form field = input schema; b76 (`c4d1b5c`+next) core `iBasicInputNode`/`iFormGroupNode`/`InputBuilderConfigOptions` removed, docs say `content.options`, `range` pinned as an attribute; `verify` 997 pass / 1 skip |
+| 3   | Input & form polish         | not started | 3 owner-reported defects: `.wide`/`span` layout, unstyled `config.footer`, clipped `select`/`dropdown` popup (CSS anchor + native popover) → `docs/framework/TASK-INPUT-POLISH.md` |
 
 ## Next
 
+- **Input & form polish — the release blocker.** A `.wide`/`span` layout · B `config.footer` styling ·
+  C `select`/`dropdown` popup clipping (CSS anchor positioning + native popover). Each needs a
+  measured proof. → `docs/framework/TASK-INPUT-POLISH.md`
 - **Release the input breaking change.** b76 removed `iBasicInputNode`, `iFormGroupNode` and
   `InputBuilderConfigOptions` from `@aio-ui/core` — type-only, no runtime change, but a public
   removal: the next minor (0.3.0 line) must say so. Owner orders the release.

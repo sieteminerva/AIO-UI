@@ -4,7 +4,8 @@
 > **only** after the user picks it — never "to orient" (`AGENT_RULES.md` §13). Rewritten each
 > session, newest on top. One card = one line + one pointer.
 >
-> Recent batches (newest first): **b81** popup flip + form footer · **b80** repeater
+> Recent batches (newest first): **b84** UI-safe stroke · **b83** inline-code chip ·
+> **b82** text contrast · **b81** popup flip + form footer · **b80** repeater
 > `removable`/`hideOnSource` · **b79** `wide` is a percentage of the row · **b78** a container
 > honours the share (group + cascade) · **b76** core drops the input node types
 > · **b74** stage 3.3: form schema = input schema, examples migrated
@@ -18,27 +19,26 @@
 > in every package README · **b57** Apps Script hosting · **b52–b59** shell mount point, tab seams.
 > Older history: `git log --oneline`.
 
-### 1. Release — everything landed, waiting on the owner's order (tooling band)
+### 1. Colour tokens — top priority before v0.2.6 (framework band)
 
-The input & form work is closed: **b78/b79** `wide` is a percentage of the row (`column` is only
-the line cap, `span` retired), **b80/b81** the repeater source flags (`removable`,
-`hideOnSource`), **b81** the footer rule and the popup flip (CSS Anchor Positioning + Native
-Popover, `--flip-top`), and **b76** removed three public types from `@aio-ui/core`
-(`iBasicInputNode`, `iFormGroupNode`, `InputBuilderConfigOptions`). Their task docs are deleted —
-the contracts now live in `packages/components/{form,input}/README.md`.
-**Open:** the next minor must list the removed types and the `span` removal; owner orders the
-publish, `docs/live-cdn-repo.md` is the ritual.
+Root + per-component colour is being rebuilt so light / dark / colour-theme all read: one
+`light-dark()` root, a UI-stroke strength (`--app-primary-ui` / `--app-accent-ui`), ink-derived
+chips. Landed b82–b84 (text cap, inline-code chip, 3:1 stroke). **Open:** T1 root rewrite, T2 form
+path, T3 Article/Table/Message, T4 theme `data-mode`, T5 literal lint. Restore checkpoint: tag
+`color-pre-full-2026-11-25` / branch `color-restore-pre-full` (547973e).
+→ `docs/framework/TASK-color-tokens.md`
+
+### 2. Release — everything landed, waiting on the owner's order (tooling band)
+
+Input & form work is closed (b76/b78/b79/b80/b81). **Open:** the next minor lists the removed
+`@aio-ui/core` types and the `span` removal; owner orders the publish. Colour tokens must land
+first (card 1). Owner orders; `docs/live-cdn-repo.md` is the ritual.
 → `.guidance/project/framework.md` §Next · `docs/releases/v0.2.5.md`
 
-### 2. Theme console view (fab) — in progress (framework band)
+### 3. Theme console view (fab) — in progress (framework band)
 
 View composed, gate green; open: page-only popover sections.
 → `examples/demo/src/ThemeConsole/TASKS.md`
-
-### 3. Inspect surface — in progress (framework band)
-
-`inspect()` + `inspectPage()` green; open: dead relay removal, `#cleanupMap` reset.
-→ `.guidance/project/framework.md` §Active
 
 _Retired from the logbook (batch 57 landed, still live): rajutan hosting → `orchestrator/mechanism.md`
 §1–§11 · `.guidance/project/generator.md` §Next._

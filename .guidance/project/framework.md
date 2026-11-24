@@ -10,9 +10,12 @@ Why / stages: `.guidance/plan-framework.md`. Engineering rules:
 | --- | ------------------------ | ----------- | ------------------------------------------------------------------------------------------------------- |
 | 1   | Theme console view (fab) | in progress | `examples/demo/src/ThemeConsole/TASKS.md` — view composed, gate green; open: page-only popover sections |
 | 2   | Inspect surface (b43)    | in progress | `inspect()` + `inspectPage()` green; open: dead relay removal, `#cleanupMap` reset                      |
-| 3   | Colour tokens (b82)      | in progress | one `light-dark()` root + per-component text contrast; code-block ink is the reported defect      |
+| 3   | Colour tokens (b82–b84)  | in progress | priority before v0.2.6 → `docs/framework/TASK-color-tokens.md`; T1 root rewrite next           |
 
 ## Next
+
+- **Colour tokens before v0.2.6** — execute T1–T5 in `docs/framework/TASK-color-tokens.md`.
+  Root rewrite first, then the form path. Restore tag `color-pre-full-2026-11-25` (547973e).
 
 - **Release the input breaking change.** b76 removed `iBasicInputNode`, `iFormGroupNode` and
   `InputBuilderConfigOptions` from `@aio-ui/core` (type-only, but public), b79 removed `span` from

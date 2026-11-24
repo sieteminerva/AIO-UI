@@ -6,9 +6,7 @@
 
 ## Live claims
 
-| Agent | Band | Task | Write scope | Started | Checkpoint | State |
-| --- | --- | --- | --- | --- | --- | --- |
-| copilot b82 | Framework | Colour tokens: one light-dark root, per-component text contrast | `packages/styles/src/variables.css`, `packages/components/**/*.css`, `packages/themes/**`, `examples/demo/src/ColorTheme/**`, `docs/framework/TASK-color-tokens.md` | 2026-11-25 | `/memories/session/color-tokens.md` | active |
+_No live writer._
 
 ## Row shape
 

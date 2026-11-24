@@ -4,7 +4,8 @@
 > **only** after the user picks it — never "to orient" (`AGENT_RULES.md` §13). Rewritten each
 > session, newest on top. One card = one line + one pointer.
 >
-> Recent batches (newest first): **b97** class files are PascalCase — CSS specifiers renamed ·
+> Recent batches (newest first): **b98** catalogue drift from a formatter blank line ·
+> **b97** class files are PascalCase — CSS specifiers renamed ·
 > **b96** Pages workflow red on Linux — `Input.css` vs `input.css` ·
 > **b95** v0.2.6 published (colour pass + closed input surface) ·
 > **b94** colour-literal lint (T5) · **b93** cyberpunk theme pins
@@ -49,6 +50,11 @@ letter-for-letter export check in `packaging.test.ts`.
 `Dropdown.css`, `FileUploader.css`, `InputControls.css`, `InputPicker.css` and `IdAddress.css`
 (was `input.css`, `dropdown.css`, `file-uploader.css`, `controls.css`, `picker.css`,
 `id-address.css`). `v0.2.6` keeps serving the lowercase names.
+
+**Formatter trap (b98):** a blank line inserted before `<!-- install:end -->` in two package
+READMEs made `check:catalogue` stale, and CI run #52 died on it while the local gate (run before
+the formatting) was green. `node temp/case-guard.cjs` now emulates a case-sensitive FS for every
+check script — that is how the stale catalogue surfaced locally.
 
 ### 3. Theme console view (fab) — in progress (framework band)
 

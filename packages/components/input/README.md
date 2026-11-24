@@ -28,7 +28,6 @@ Version — `0.2.6` (tag `v0.2.6`)
 
 CDN (ES module, no build step) — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.6/packages/components/input/dist/index.js`
 Stylesheet — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.6/packages/components/input/dist/input.css`
-
 <!-- install:end -->
 
 ## Payload

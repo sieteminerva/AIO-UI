@@ -391,18 +391,18 @@
       max-width: 500px;
 
       border: 1px solid var(--input-border-color);
-      border-radius: var(--input-border-radius);
+      /* attached: `position-area` puts it flush under the control, so the shared edge
+         belongs to the popup (square corners, no top border) and the sheet unrolls from
+         that seam instead of sliding in. */
+      border-top: none;
+      border-radius: 0 0 var(--input-border-radius) var(--input-border-radius);
       transition-delay: var(--input-dropdown-transition-delay, 30ms);
       background-color: var(--input-popover-background-color);
       backdrop-filter: blur(12px);
       color: inherit;
 
-      /* `position-area` already places it; the extra `top: anchor(bottom)` overlapped
-         the control to merge the seam, and `translateY(-80%)` then threw it back over
-         the field on open. Both are gone: a card sits one gap below the control and
-         simply rises into place. */
-      margin-block-start: var(--input-popup-distance, 4px);
-      transform: translateY(calc(var(--input-popup-distance, 4px) * -1));
+      transform-origin: top;
+      transform: scaleY(0);
       transition: all 150ms ease;
       transition-behavior: allow-discrete;
 
@@ -415,7 +415,7 @@
         z-index: 10;
         opacity: 1;
         transition-delay: var(--input-dropdown-transition-delay, 30ms);
-        transform: translateY(0);
+        transform: scaleY(1);
         scrollbar-width: thin;
         box-shadow: var(--app-shadow-soft, 0 14px 20px rgba(92, 60, 20, 0.12));
         background-color: var(--input-background-color);
@@ -482,7 +482,7 @@
           &:popover-open {
             display: block;
             opacity: 0;
-            transform: translateY(calc(var(--input-popup-distance, 4px) * -1));
+            transform: scaleY(0);
           }
         }
       }

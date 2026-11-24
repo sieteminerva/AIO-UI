@@ -397,7 +397,9 @@ select:focus-visible {
       transition-delay: var(--input-dropdown-transition-delay, 30ms);
       transform: translateY(0);
       outline: none;
-      /* the popup is its own card now (§5.2), so the control keeps its radius */
+      outline: none;
+      /* the picker is the bottom half of one box now: its own corners are squared above,
+         so the control squares below to match */
       box-shadow: var(--app-shadow-soft, 0 12px 35px -8px rgba(92, 60, 20, 0.12));
       /* scrollbar-gutter: stable; */
       scrollbar-width: thin;
@@ -406,6 +408,8 @@ select:focus-visible {
 
     &:open {
       border-color: var(--input-border-color);
+      border-bottom-left-radius: 0;
+      border-bottom-right-radius: 0;
     }
   }
 
@@ -430,13 +434,18 @@ select:focus-visible {
     inset: auto;
     left: anchor(left);
     width: anchor-size(width);
-    /* A detached card, one gap away in BOTH directions: the seam-merge that used to
-       live here could only be correct while the popup opened downward — flipped, its
-       missing `border-top` became the outer edge. `--flip-top` mirrors the gap exactly,
-       so the two directions are indistinguishable. */
-    top: calc(anchor(bottom) + var(--input-popup-distance, 4px));
+    /* ATTACHED, not a floating card: the popup sits flush on the control and the two
+       read as ONE box. The seam is shared — the control drops its bottom border and its
+       bottom corners while open, the popup drops its top border and its top corners, and
+       the 1px overlap hides the doubled line. `[data-placement="above"]` below mirrors
+       every one of those edges when the popup has to open upward. */
+    top: calc(anchor(bottom) - 1px);
     border: 1px solid var(--input-border-color);
-    border-radius: var(--input-border-radius);
+    border-top: none;
+    border-radius: 0 0 var(--input-border-radius) var(--input-border-radius);
+    /* The sheet unrolls out of the seam: origin on the shared edge, so `scaleY` grows it
+       from the control instead of sliding a floating card across the page. */
+    transform-origin: top;
     box-shadow: var(--app-shadow-soft, 0 12px 35px -8px rgba(92, 60, 20, 0.12));
     max-height: calc((var(--input-min-height) * 4) + 10px);
     opacity: 0;
@@ -446,6 +455,21 @@ select:focus-visible {
     text-overflow: ellipsis;
     outline: none;
     position-try-fallbacks: --flip-top, flip-block;
+  }
+
+  /* Opened upward: mirror the seam (square bottom corners, no bottom border) and keep the
+     outer top edge closed. `.menu` carries `data-placement` written by `Dropdown`; the
+     native `::picker(select)` has no such hook, so it keeps the downward seam and lets
+     `--flip-top` move it (the platform picker rarely flips). */
+  & .dropdown[data-style] > .menu[data-placement="above"] {
+    top: auto;
+    bottom: calc(anchor(top) - 1px);
+    position-try-fallbacks: none;
+    border-top: 1px solid var(--input-border-color);
+    border-bottom: none;
+    border-radius: var(--input-border-radius) var(--input-border-radius) 0 0;
+    /* grows upward out of the seam it shares with the control's top edge */
+    transform-origin: bottom;
   }
 
   & select option,
@@ -604,8 +628,20 @@ select:focus-visible {
       background-color: var(--input-background-color);
     }
 
+    /* Open = the control and the popup are one box: the bottom corners (and the bottom
+       border) belong to the popup now. Closed, these rules stop matching and the control
+       gets its radius back. */
     &:has(.menu.visible) {
       border-color: var(--input-border-color);
+      border-bottom-left-radius: 0;
+      border-bottom-right-radius: 0;
+    }
+
+    &:has(.menu.visible[data-placement="above"]) {
+      border-bottom-left-radius: var(--input-border-radius);
+      border-bottom-right-radius: var(--input-border-radius);
+      border-top-left-radius: 0;
+      border-top-right-radius: 0;
     }
 
     &:has(> .tags > .badge) > input[type="text"]::placeholder {
@@ -723,15 +759,15 @@ select:focus-visible {
       box-shadow: var(--app-shadow-soft, 0 12px 35px -8px rgba(92, 60, 20, 0.12));
       pointer-events: none;
       opacity: 0;
-      /* plain rise from the anchor: the card keeps its own border and radius in
-         every direction, so the entrance must not scale it to hide a seam. */
-      transform: translateY(calc(var(--input-popup-distance, 4px) * -1));
+      /* Unrolls from the seam (§5.2 sets the origin): a slide would show a gap under an
+         attached sheet, so the growth IS the animation. */
+      transform: scaleY(0);
       transition: all var(--input-popup-duration, 150ms) var(--input-popup-easing, ease);
       transition-delay: var(--input-dropdown-transition-delay, 30ms);
 
       &:is(.visible) {
         opacity: 1;
-        transform: translateY(0);
+        transform: scaleY(1);
         pointer-events: auto;
         padding: 0;
       }
@@ -1066,10 +1102,9 @@ select:focus-visible {
     & > select:open::picker(select) {
       display: block;
       opacity: 0;
-      /* A detached card (§5.2) enters by rising 4px, not by growing from the seam:
-         the old `scaleY(0%) scaleX(99.7%)` made the picker 0.3% narrower to hide the
-         side borders it shared with the control — borders it no longer shares. */
-      transform: translateY(calc(var(--input-popup-distance, 4px) * -1));
+      /* the picker unrolls from the seam (§5.2: `transform-origin: top`) instead of
+         sliding: an attached sheet cannot move without showing a gap. */
+      transform: scaleY(0);
     }
   }
 }

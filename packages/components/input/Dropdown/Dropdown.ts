@@ -384,6 +384,14 @@ export class DropdownBuilder extends Builder<DropdownElementType, iDropdownConfi
       bindBoxClick();
       bindOutside();
       if (!menu.matches(":popover-open")) menu.showPopover();
+      // 🔁 The menu is one sheet with the control, and the seam is mirrored when it has to
+      // open upward: CSS squares the corners that touch the control and drops that border
+      // edge, chosen by `data-placement`. Reset to the default first — measuring while the
+      // previous `above` styling is still on would place it above and then agree with
+      // itself (a self-fulfilling flip).
+      menu.dataset.placement = "below";
+      const own = box()?.getBoundingClientRect();
+      if (own && menu.getBoundingClientRect().top < own.top) menu.dataset.placement = "above";
       // Tambahkan .visible pada frame berikutnya agar animasi masuk terlihat
       requestAnimationFrame(() => menu.classList.add("visible"));
       input.setAttribute("aria-expanded", "true");

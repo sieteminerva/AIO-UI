@@ -507,7 +507,7 @@ describe("InputBuilder field state", () => {
 });
 
 describe("input sheet", () => {
-  const sheet = readFileSync(resolve(process.cwd(), "packages/components/input/Input.css"), "utf8");
+  const sheet = readFileSync(resolve(process.cwd(), "packages/components/input/input.css"), "utf8");
 
   it("styles the choice group, so an option row is not the text-field skin", () => {
     // A `radio` input falls into the shared text-control rule; the choice group restores

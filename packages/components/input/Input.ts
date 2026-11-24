@@ -831,7 +831,7 @@ export class InputBuilder extends Builder<InputElementType, iInputConfig> {
  * height there is no estimate left — the comparison below is the same one the platform
  * makes (fits below, else above), so the mirrored seam lands on the right edge at every
  * scroll position. The result is written as `data-placement`, the same contract `.menu`
- * uses, and read by `select[data-placement="above"]` in `Input.css`.
+ * uses, and read by `select[data-placement="above"]` in `input.css`.
  */
 const watchedPickers = new WeakSet<HTMLSelectElement>();
 
@@ -889,7 +889,7 @@ class PopoverInputModule implements iInputAdapter {
 
     if (!popover.hasAttribute("popover")) popover.setAttribute("popover", "manual");
 
-    // Same shared, field-scoped anchor name the CSS expects (see `.field` in Input.css).
+    // Same shared, field-scoped anchor name the CSS expects (see `.field` in input.css).
     const anchor = "--field-dropdown-anchor";
     if (anchor) {
       control.style.setProperty("anchor-name", anchor);

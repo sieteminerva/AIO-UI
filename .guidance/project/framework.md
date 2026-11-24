@@ -10,7 +10,7 @@ Why / stages: `.guidance/plan-framework.md`. Engineering rules:
 | --- | ------------------------ | ----------- | ------------------------------------------------------------------------------------------------------- |
 | 1   | Theme console view (fab) | in progress | `examples/demo/src/ThemeConsole/TASKS.md` — view composed, gate green; open: page-only popover sections |
 | 2   | Inspect surface (b43)    | in progress | `inspect()` + `inspectPage()` green; open: dead relay removal, `#cleanupMap` reset                      |
-| 3   | Colour tokens (b82–b94)  | shipped     | T1–T5 shipped in v0.2.6 → `docs/framework/TASK-color-tokens.md`; open: owner taste pass |
+| 3   | Colour tokens (b82–b94)  | shipped     | T1–T5 shipped in v0.2.6 → `docs/framework/TASK-color-tokens.md`; open: owner taste pass                 |
 
 ## Next
 
@@ -32,6 +32,15 @@ Why / stages: `.guidance/plan-framework.md`. Engineering rules:
   carries an `inspect()` assertion (report-only first, gate once covered).
 
 ## Landed (newest first)
+
+- **Batch 96 (2026-11-25)** — the Pages workflow went red on Linux (`Input.test.ts` 510 read
+  `packages/components/input/Input.css`; the tree tracks `input.css`, and Windows answers
+  `existsSync`/`readFileSync` case-insensitively) — red since run #46, unrelated to v0.2.6. Fix:
+  the literal is lowercase, the four working-tree names in `input/` that had drifted
+  (`Input.css`, `Input.css.d.ts`, `InputControls.css*`) now match the index, and
+  `packaging.test.ts` gains a letter-for-letter check (directory listing vs `exports`) so a
+  renamed sheet fails locally instead of on the runner. Proof: guard fails on a forced
+  `Input.css` rename and passes after; `npm run verify` 1046 pass / 1 skip.
 
 - **Batch 95 (2026-11-25)** — v0.2.6 published. Whole family → `0.2.6`, install blocks
   regenerated in 37 READMEs, `masonry/README.md` spinner snippet now mirrors

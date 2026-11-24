@@ -4,7 +4,8 @@
 > **only** after the user picks it — never "to orient" (`AGENT_RULES.md` §13). Rewritten each
 > session, newest on top. One card = one line + one pointer.
 >
-> Recent batches (newest first): **b95** v0.2.6 published (colour pass + closed input surface) ·
+> Recent batches (newest first): **b96** Pages workflow red on Linux — `Input.css` vs `input.css` ·
+> **b95** v0.2.6 published (colour pass + closed input surface) ·
 > **b94** colour-literal lint (T5) · **b93** cyberpunk theme pins
 > dark mode · **b92** Article/Table/Message/Tab palettes → `--app-*` · **b91** select rests on the
 > input border hue · **b90** picker
@@ -14,8 +15,7 @@
 > form footer · **b80** repeater `removable`/`hideOnSource` · **b79** `wide` is a percentage of the
 > row · **b78** a container honours the share (group + cascade) · **b76** core drops the input node
 > types · **b74** stage 3.3: form schema = input schema, examples migrated · **b73** input schema
-> stage 3 (strict module keys + legacy door gone) · **b72** input schema stage 2 (per-type union
-> +`create()` wiring) · **b71** input schema split (stage 1 grouping) · **b70** control set: idle
+> stage 3 (strict module keys + legacy door gone) · **b72** input schema stage 2 (per-type union +`create()` wiring) · **b71** input schema split (stage 1 grouping) · **b70** control set: idle
 > edit/save half rebuilt + repeater delete floor · **b69** v0.2.5 published to CDN · **b68** the
 > eight missing package READMEs · **b67** publish-side followers · **b65–b66** per-package versions.
 > Older history: `git log --oneline`.
@@ -39,6 +39,10 @@ taste, not algorithm) and a picker-upward re-check when a tab is visible; the
 the three breaking removals (core field node types, `span`, repeater floor). **Open:** only the
 optional GitHub Release asset upload (needs `GITHUB_TOKEN`), and the official release still waits
 for `store` / `profile` / `blog`. → `docs/releases/v0.2.6.md` · `docs/live-cdn-repo.md`
+
+The **Pages workflow** was red since run #46 (not caused by the release): `Input.test.ts` read
+`Input.css` while the tree tracks `input.css` — Windows hides the difference. Fixed in b96, plus a
+letter-for-letter export check in `packaging.test.ts`.
 
 ### 3. Theme console view (fab) — in progress (framework band)
 

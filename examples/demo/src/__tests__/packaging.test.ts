@@ -14,7 +14,7 @@
  * Both are manifest facts, so they are testable without building anything.
  */
 import { existsSync, readFileSync, readdirSync } from "node:fs";
-import { join } from "node:path";
+import { basename, dirname, join } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
@@ -74,6 +74,15 @@ describe("stylesheet exports", () => {
       const declaration = join(dir, `${sheet.replace(/^\.\//, "")}.d.ts`);
       expect(existsSync(declaration)).toBe(true);
       expect(readFileSync(declaration, "utf8")).toMatch(/export\s*\{\s*\}/);
+    });
+
+    // Windows and macOS answer `existsSync` case-insensitively, so a sheet renamed on disk
+    // (`Input.css`) while the `exports` map keeps `input.css` looks healthy locally and 404s
+    // on the Linux runner. Comparing the directory listing is letter-for-letter.
+    it(`${manifest.name}${subpath === "." ? "" : subpath} — the file name matches the export`, () => {
+      const relative = sheet.replace(/^\.\//, "");
+      const entries = readdirSync(join(dir, dirname(relative)));
+      expect(entries).toContain(basename(relative));
     });
   }
 });

@@ -6,7 +6,7 @@
 // ======================================================================
 
 import type { iModuleDefinition } from "@aio-ui/module-loader";
-import { applyRowSpan, childSpanOf } from "../FormLayout";
+import { applyRowSpan, arrangeRow, childWideOf } from "../FormLayout";
 import { FORM_MODULE_IDS } from "../FormModuleTypes";
 import type {
   CascadeBlockedInfo,
@@ -373,7 +373,8 @@ export class FormCascade {
   #stampSpan(element: HTMLElement, item: any, parent: HTMLElement | null): void {
     const column = Number(parent?.dataset.column);
     if (!Number.isFinite(column) || column <= 0) return;
-    applyRowSpan(element, childSpanOf(item, column));
+    applyRowSpan(element, childWideOf(item));
+    arrangeRow(parent!, column);
   }
 
   /** Aktifkan engine: delegasi input/change + sync + gate awal */

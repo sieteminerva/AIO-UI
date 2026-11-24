@@ -13,27 +13,33 @@
  * ] }
  * ```
  *
- * The numbers here are pure: `declaredColumns`, `columnsOf` and `spanOf` decide the grid,
+ * The numbers here are pure: `wideOf`, `declaredColumns` and `arrangeRow` decide the grid,
  * the caller writes the attributes. That keeps the arithmetic testable without a DOM.
  *
- * One contract for every container (a row **and** a group that declares `column`):
+ * **One way to size a field: `wide` is a percentage of the row.** A container is a
+ * 100-unit grid; `wide: 20` takes a fifth, `wide: 100` takes the row. There is no column
+ * arithmetic and no `span` — an integer span could not express 20/40/40 anyway.
  *
- * | `wide`            | columns spanned                                   |
- * | ----------------- | ------------------------------------------------- |
- * | absent / invalid  | 1                                                 |
- * | `"auto"`, `"full"`| every column                                      |
- * | `0 < n ≤ 1`       | fraction of the row (`0.5` = half)                |
- * | `n > 1`           | percentage of the row (`50` = half, `33` = third) |
- * | `"50%"`           | the same percentage, written with a sign          |
+ * | `wide`             | share of the row                     |
+ * | ------------------ | ------------------------------------ |
+ * | absent / invalid   | 100 (the whole row)                  |
+ * | `"auto"`, `"full"` | 100                                  |
+ * | `0 < n ≤ 1`        | fraction (`0.5` = `50`)              |
+ * | `n > 1`            | percentage (`20`, `100`)             |
+ * | `"40%"`            | the same percentage, with a sign     |
  *
- * A percentage is rounded to the nearest whole column and clamped to `1..columns`, so a
- * child can never ask for more room than the row has — it wraps instead.
+ * `column` no longer divides the space; it is the **cap on items per line**. A line holds
+ * at most `column` children, whatever their widths, so the fourth child of `column: 3`
+ * drops to the next line. Widths that add up past 100 simply overflow the row.
  */
 
-/** Column count used when a row does not say. */
+/** The whole row: the unit every `wide` is measured in. */
+export const WIDE_FULL = 100;
+
+/** Column cap used when a row does not say. */
 export const DEFAULT_ROW_COLUMNS = 2;
 
-/** Upper bound, so a value from a spreadsheet cannot produce a 200-column grid. */
+/** Upper bound, so a value from a spreadsheet cannot produce a 200-column line. */
 export const MAX_ROW_COLUMNS = 16;
 
 /** A child of a row: a field, a nested row, or a fieldset group. */
@@ -45,30 +51,28 @@ export type iFormRowChild =
 /**
  * A row container.
  *
- * `column` is the **count of columns**; a child's width comes from `wide` (`50` → half,
- * `"auto"` → full row) or from an explicit `span`.
+ * `column` caps how many children a line holds; a child's width comes from `wide`
+ * (a percentage of the row).
  */
 export interface iFormRowNode {
-  /** Column count. Defaults to {@link DEFAULT_ROW_COLUMNS}. */
+  /** Line cap. Defaults to {@link DEFAULT_ROW_COLUMNS}. */
   column?: number;
-  /** Children, in order. They wrap automatically when they do not fit. */
+  /** Children, in order. They wrap to the next line once a line is full. */
   row: iFormRowChild[];
-  /** Heading, rendered as `.title` spanning every column. */
+  /** Heading, rendered as `.title` spanning the row. */
   label?: string;
-  /** Optional note, rendered as `.desc` spanning every column. */
+  /** Optional note, rendered as `.desc` spanning the row. */
   description?: string;
   id?: string;
   className?: string;
   /** Width of this row inside a parent row: percentage, fraction, or `"auto"`. */
   wide?: number | string | null;
-  /** Explicit column span, wins over `wide`. */
-  span?: number;
   /** Cascade condition, same shape as a group's. */
   condition?: unknown;
 }
 
 /**
- * Clamps the column count into a usable range.
+ * Clamps the column cap into a usable range.
  *
  * @param value - `column` from the schema; anything non-numeric falls back to the default.
  * @returns Integer between 1 and {@link MAX_ROW_COLUMNS}.
@@ -81,13 +85,13 @@ export function columnsOf(value: unknown): number {
 }
 
 /**
- * Reads the column count a container declares.
+ * Reads the line cap a container declares.
  *
- * A row always forms a grid (it falls back to {@link DEFAULT_ROW_COLUMNS}); a group only
+ * A row always caps its lines (it falls back to {@link DEFAULT_ROW_COLUMNS}); a group only
  * does when it says `column`, because a plain fieldset is a one-column stack by design.
  *
  * @param node - Row or group schema node.
- * @returns The column count, or `0` when the node declares no grid.
+ * @returns The cap, or `0` when the node declares no grid.
  */
 export function declaredColumns(node: unknown): number {
   const column = (node as Record<string, any> | null | undefined)?.column;
@@ -96,81 +100,114 @@ export function declaredColumns(node: unknown): number {
 }
 
 /**
- * Clamps a raw span into `1..columns`.
- *
- * The one place the bounds live: `wide`, an explicit `span`, and the cascade's late build
- * all pass through here, so no caller can write a span the grid cannot hold.
- *
- * @param value - Span in columns, before bounds.
- * @param columns - Column count of the container.
- * @returns Integer between 1 and `columns`.
- */
-export function clampSpan(value: unknown, columns: number): number {
-  const total = Math.max(1, Math.round(columns));
-  const span = Number(value);
-  if (!Number.isFinite(span)) return 1;
-  return Math.min(total, Math.max(1, Math.round(span)));
-}
-
-/**
- * Turns a `wide` hint into a column span.
+ * Turns a `wide` hint into a percentage of the row.
  *
  * Four spellings are accepted, because a schema read from a sheet writes whatever the
- * author typed: `"auto"` / `"full"` (the whole row), a fraction (`0.5` = half), a
- * percentage (`50` = half, `33` = a third), and the same percentage with a sign (`"50%"`).
+ * author typed: `"auto"` / `"full"` (the whole row), a fraction (`0.5` = 50), a percentage
+ * (`20`, `100`), and the same percentage with a sign (`"40%"`). Anything unreadable means
+ * the whole row, which is also what "not written" means.
  *
  * @param wide - Width hint from `config.wide` (or the node's own `wide`).
- * @param columns - Column count of the container this child lives in.
- * @returns Span between 1 and `columns`.
+ * @returns Integer between 1 and {@link WIDE_FULL}.
  */
-export function spanOf(wide: unknown, columns: number): number {
-  const total = Math.max(1, Math.round(columns));
-
-  if (wide === "auto" || wide === "full") return total;
+export function wideOf(wide: unknown): number {
+  if (wide === "auto" || wide === "full") return WIDE_FULL;
 
   const numeric = typeof wide === "number" ? wide : Number(String(wide ?? "").replace("%", "").trim());
-  if (!Number.isFinite(numeric) || numeric <= 0) return 1;
+  if (!Number.isFinite(numeric) || numeric <= 0) return WIDE_FULL;
 
-  const ratio = numeric <= 1 ? numeric : numeric / 100;
-  return clampSpan(ratio * total, total);
+  const percent = numeric <= 1 ? numeric * 100 : numeric;
+  return Math.min(WIDE_FULL, Math.max(1, Math.round(percent)));
 }
 
 /**
- * Applies a span to a child element.
+ * Resolves the share a container child asked for.
+ *
+ * @param child - Row child node.
+ * @returns Percentage of the row between 1 and {@link WIDE_FULL}.
+ */
+export function childWideOf(child: unknown): number {
+  if (!child || typeof child !== "object") return WIDE_FULL;
+  const node = child as Record<string, any>;
+  return wideOf(node.config?.wide ?? node.wide);
+}
+
+/**
+ * Applies a share to a child element.
  *
  * `data-span` is the human/debug marker; `--span` carries the number, because CSS cannot
  * read an attribute inside `grid-column: span …`.
  *
  * @param element - Child element of a row container.
- * @param span - Column span, already clamped by {@link spanOf}.
+ * @param wide - Percentage of the row, already resolved by {@link wideOf}.
  */
-export function applyRowSpan(element: HTMLElement, span: number): void {
-  element.dataset.span = String(span);
-  element.style.setProperty("--span", String(span));
+export function applyRowSpan(element: HTMLElement, wide: number): void {
+  element.dataset.span = String(wide);
+  element.style.setProperty("--span", String(wide));
 }
 
 /**
  * Declares the grid of a row container.
  *
  * @param element - Row container.
- * @param columns - Column count, already clamped by {@link columnsOf}.
+ * @param columns - Line cap, already clamped by {@link columnsOf}.
  */
 export function applyRowColumns(element: HTMLElement, columns: number): void {
   element.dataset.column = String(columns);
-  element.style.setProperty("--items", String(columns));
 }
 
 /**
- * Resolves the span a row child asked for, explicit `span` first, then `wide`.
+ * Places every child of a container on its line.
  *
- * @param child - Row child node.
- * @param columns - Column count of the parent row.
- * @returns Span between 1 and `columns`.
+ * Widths are percentages of a 100-unit grid, so placement is explicit: the cursor walks
+ * the children, adds `wide` units, and starts a new line when the cap is reached **or**
+ * when the next share would pass 100. That is how "the fourth child of a `column: 3` row
+ * starts the next line" is guaranteed — CSS auto-placement wraps by width alone and would
+ * let a fourth child try to fit.
+ *
+ * A share that would pass 100 starts a new line instead of overflowing: a placement past
+ * track 100 would make CSS create implicit tracks, which silently shrink every explicit
+ * one (the whole row loses its percentages). Headings and anything the layout does not
+ * know (a control set, raw markup) take a full line of their own.
+ *
+ * @param container - Row or column group.
+ * @param columns - Line cap; `0` means "no cap, one line".
  */
-export function childSpanOf(child: unknown, columns: number): number {
-  if (!child || typeof child !== "object") return 1;
-  const node = child as Record<string, any>;
+export function arrangeRow(container: HTMLElement, columns: number): void {
+  const cap = columns > 0 ? columns : Number.MAX_SAFE_INTEGER;
+  let line = 1;
+  let count = 0;
+  let used = 0;
 
-  if (node.span !== undefined && node.span !== null) return clampSpan(node.span, columns);
-  return spanOf(node.config?.wide ?? node.wide, columns);
+  for (const child of Array.from(container.children)) {
+    if (!(child instanceof HTMLElement)) continue;
+
+    const isField = child.matches(".field, .form-group");
+    if (!isField) {
+      // A heading, a note, a control set, raw markup: its own full-width line.
+      if (count > 0) {
+        line += 1;
+        count = 0;
+        used = 0;
+      }
+      child.style.gridRow = String(line);
+      child.style.gridColumn = "1 / -1";
+      line += 1;
+      count = 0;
+      used = 0;
+      continue;
+    }
+
+    const wide = Number(child.style.getPropertyValue("--span")) || WIDE_FULL;
+    if (count >= cap || (used > 0 && used + wide > WIDE_FULL)) {
+      line += 1;
+      count = 0;
+      used = 0;
+    }
+
+    child.style.gridRow = String(line);
+    child.style.gridColumn = `${used + 1} / span ${wide}`;
+    used += wide;
+    count += 1;
+  }
 }

@@ -8,13 +8,13 @@
    ========================================================================== */
 
 /* A child's share of its container is resolved once, in FormLayout, and written as
-   `--span`. Registered here so it does NOT inherit: an element the layout never stamped
-   (a legend, an action set, a child of a nested container) falls back to one column
-   instead of borrowing its container's share and overflowing the grid. */
+   `--span` (1..100). Registered here so it does NOT inherit: an element the layout never
+   stamped (a legend, an action set, a child of a nested container) falls back to the whole
+   row instead of borrowing its container's share and overflowing the grid. */
 @property --span {
   syntax: "<integer>";
   inherits: false;
-  initial-value: 1;
+  initial-value: 100;
 }
 
 /* 4. Native Fieldset & Structural Legends */
@@ -41,44 +41,49 @@
 }
 
 /* ==========================================================================
-   7b. Row Layout (inline field groups)
+   7b. Row Layout (inline field groups) — one way to size a field
    --------------------------------------------------------------------------
-   A row is a layout container, not a fieldset: fields (and nested rows) in a
-   grid of `--items` columns. Children wrap by themselves once the declared
-   columns are used up, and each child's width comes from `--span` (set by
-   FormLayout from `config.wide`: 50 = half, "auto" = full row).
+   `wide` is a percentage of the row. FormLayout resolves it into `--span`
+   (1..100) and places each child on a 100-unit grid with an explicit
+   `grid-column: <start> / span <wide>` (`arrangeRow`), so 20/40/40 is exactly
+   20/40/40 and a fourth child drops to the next line. `column` is only the
+   line cap; it no longer divides the space. A share that would pass 100 starts
+   a new line too: placing past track 100 would create implicit tracks and
+   shrink every explicit one.
 
-   The hook is `[data-column]`, written by `applyRowColumns` — no extra class,
-   and it keeps the single-field inline variant (`.field.group[data-display]`)
-   untouched. Child selectors carry the full `.field.group` prefix because the
-   base field block (`.native.form .field`, `.field:is(.group) .field`) sets
-   `display: block; width: 100%` and would win otherwise.
+   The gutter lives inside each share (`padding-inline`): a `column-gap` would
+   be added on top of the percentages and push a 20/40/40 line past 100.
+
+   The hook is `[data-column]`, written by `applyRowColumns` — a row always has
+   it, a group only when it declares `column`. Child selectors carry the full
+   `.field.group` prefix because the base field block (`.native.form .field`,
+   `.field:is(.group) .field`) sets `display: block; width: 100%` and would win.
    ========================================================================== */
-
-.field.group[data-column] {
+.field.group[data-column],
+.form > fieldset.form-group[data-column] {
   display: grid;
-  grid-template-columns: repeat(var(--items, 2), minmax(0, 1fr));
-  gap: 0.25em 1em;
+  grid-template-columns: repeat(100, minmax(0, 1fr));
+  column-gap: 0;
+  row-gap: 0.25em;
   align-items: start;
-  width: 100%;
-  margin-bottom: 1em;
 
   /* A child is a grid cell, not a block: no full width, no bottom margin. */
   & > .field,
   & > .field.group[data-column],
-  & > .form-group {
+  & > .form-group[data-column] {
     display: block;
     width: auto;
     min-width: 0;
     margin-bottom: 0;
-    grid-column: span var(--span, 1);
+    padding-inline: calc(var(--row-gutter, 1em) / 2);
+    grid-column: span var(--span, 100);
   }
 
-  /* Row heading and note read across the whole row. */
+  /* Heading and note read across the whole line (and line up with the fields). */
   & > .title,
   & > .desc {
-    grid-column: 1 / -1;
     margin-bottom: 0;
+    padding-inline: calc(var(--row-gutter, 1em) / 2);
   }
 
   & > .title {
@@ -89,59 +94,31 @@
   & > .form-group {
     border: none;
     padding: 0;
+    padding-inline: calc(var(--row-gutter, 1em) / 2);
     margin: 0;
     min-inline-size: 0;
   }
 }
 
-/* ==========================================================================
-   7c. Group Grid (the same columns, one level up)
-   --------------------------------------------------------------------------
-   A group is a one-column stack by default; declaring `column: 2` opts it into
-   the row contract, so FormLayout stamps the same `--items` / `--span` and this
-   sheet reads only those. `column` is the count, `config.wide` the child share.
-   ========================================================================== */
-.form > fieldset.form-group[data-column] {
-  grid-template-columns: repeat(var(--items, 2), minmax(0, 1fr));
-  align-items: start;
-
-  /* A child is a grid cell: the base fieldset rule would keep it 100% wide and
-     give a grid child an unwanted bottom margin. */
-  & > .field,
-  & > .field.group[data-column],
-  & > .form-group[data-column] {
-    width: auto;
-    min-width: 0;
-    margin-bottom: 0;
-    grid-column: span var(--span, 1);
-  }
-
-  /* Legend and note read across the whole group. */
-  & > .title,
-  & > .desc {
-    grid-column: 1 / -1;
-  }
+/* A row keeps its bottom margin; a column group keeps the fieldset's padding. */
+.field.group[data-column] {
+  width: 100%;
+  margin-bottom: 1em;
 }
 
 @media (max-width: 640px) {
-  .field.group[data-column] {
-    grid-template-columns: 1fr;
-
-    & > .field,
-    & > .field.group[data-column],
-    & > .form-group {
-      grid-column: auto;
-    }
-  }
-
-  /* A column group stacks too: one narrow column is the only honest layout. */
+  /* One narrow column is the only honest layout: the placement is inline, so the
+     collapse has to win over it. */
+  .field.group[data-column],
   .form > fieldset.form-group[data-column] {
     grid-template-columns: 1fr;
 
     & > .field,
     & > .field.group[data-column],
     & > .form-group[data-column] {
-      grid-column: auto;
+      grid-column: 1 / -1 !important;
+      grid-row: auto !important;
+      padding-inline: 0;
     }
   }
 }

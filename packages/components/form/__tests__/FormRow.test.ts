@@ -41,11 +41,10 @@ describe("form rows", () => {
     expect(row.classList.contains("row")).toBe(false);
   });
 
-  it("declares its column count for the grid", () => {
+  it("declares its line cap for the grid", () => {
     const row = renderForm(schema).querySelector(".field.group[data-column]") as HTMLElement;
 
     expect(row.dataset.column).toBe("2");
-    expect(row.style.getPropertyValue("--items")).toBe("2");
   });
 
   it("renders the label as a heading that spans the row", () => {
@@ -55,14 +54,14 @@ describe("form rows", () => {
     expect(title?.textContent).toBe("Identitas");
   });
 
-  it("applies each child's width as a column span", () => {
+  it("applies each child's width as a share of the row", () => {
     const row = renderForm(schema).querySelector(".field.group[data-column]") as HTMLElement;
-    const fields = [...row.querySelectorAll(":scope > .field")];
+    const fields = [...row.querySelectorAll(":scope > .field")] as HTMLElement[];
 
     expect(fields).toHaveLength(3);
-    expect((fields[0] as HTMLElement).dataset.span).toBe("1");
-    expect((fields[2] as HTMLElement).dataset.span).toBe("2");
-    expect((fields[2] as HTMLElement).style.getPropertyValue("--span")).toBe("2");
+    expect(fields[0].dataset.span).toBe("50");
+    expect(fields[2].dataset.span).toBe("100");
+    expect(fields[2].style.getPropertyValue("--span")).toBe("100");
   });
 
   it("keeps every field intact inside the row", () => {
@@ -96,9 +95,9 @@ describe("form rows", () => {
 
     expect(inner).not.toBeNull();
     expect(inner.dataset.column).toBe("1");
-    expect(inner.dataset.span).toBe("1");
+    expect(inner.dataset.span).toBe("50");
     expect(inner.querySelectorAll(":scope > .field")).toHaveLength(2);
-    expect((outer.querySelector("#province") as HTMLElement).closest(".field")?.getAttribute("data-span")).toBe("1");
+    expect((outer.querySelector("#province") as HTMLElement).closest(".field")?.getAttribute("data-span")).toBe("100");
   });
 
   it("still lets a plain group render a fieldset", () => {
@@ -137,41 +136,89 @@ describe("form rows", () => {
     expect(form.querySelectorAll("fieldset.form-group > .field:not(.group)")).toHaveLength(0);
   });
 
-  it("gives a three-column row its thirds", () => {
+  it("lays 20/40/40 out exactly, and drops a fourth child to the next line", () => {
     const form = renderForm([
       {
-        id: "thirds",
+        id: "share",
         column: 3,
         row: [
-          { content: { type: "text", id: "a", label: "A" }, config: { wide: 33 } },
-          { content: { type: "text", id: "b", label: "B" }, config: { wide: "33%" } },
-          { content: { type: "text", id: "c", label: "C" }, config: { wide: 33 } },
-          { content: { type: "text", id: "d", label: "D" }, config: { wide: 100 } },
+          { content: { type: "text", id: "a", label: "A" }, config: { wide: 20 } },
+          { content: { type: "text", id: "b", label: "B" }, config: { wide: 40 } },
+          { content: { type: "text", id: "c", label: "C" }, config: { wide: 40 } },
+          { content: { type: "text", id: "d", label: "D" }, config: { wide: 20 } },
         ],
       },
     ]);
     const row = form.querySelector(".field.group[data-column]") as HTMLElement;
-    const spans = [...row.querySelectorAll(":scope > .field")].map((el) => (el as HTMLElement).dataset.span);
+    const fields = [...row.querySelectorAll(":scope > .field")] as HTMLElement[];
 
-    expect(row.style.getPropertyValue("--items")).toBe("3");
-    expect(spans).toEqual(["1", "1", "1", "3"]);
+    // Percentages, not rounded columns: 20 / 40 / 40 is what the schema asked for.
+    expect(fields.map((el) => el.dataset.span)).toEqual(["20", "40", "40", "20"]);
+    expect(fields.map((el) => el.style.gridColumn)).toEqual([
+      "1 / span 20",
+      "21 / span 40",
+      "61 / span 40",
+      // The line is full (100 units) and the cap is 3: the fourth starts line two.
+      "1 / span 20",
+    ]);
+    expect(fields.map((el) => el.style.gridRow)).toEqual(["1", "1", "1", "2"]);
   });
 
-  it("never lets a child ask for more columns than the row has", () => {
+  it("honours the line cap even when the widths would still fit", () => {
     const form = renderForm([
       {
-        id: "clamp",
+        id: "cap",
         column: 2,
         row: [
-          { content: { type: "text", id: "one", label: "One" }, span: 7 },
-          { content: { type: "text", id: "two", label: "Two" }, span: 0 },
+          { content: { type: "text", id: "a", label: "A" }, config: { wide: 20 } },
+          { content: { type: "text", id: "b", label: "B" }, config: { wide: 20 } },
+          { content: { type: "text", id: "c", label: "C" }, config: { wide: 20 } },
         ],
       },
     ]);
     const row = form.querySelector(".field.group[data-column]") as HTMLElement;
-    const spans = [...row.querySelectorAll(":scope > .field")].map((el) => (el as HTMLElement).style.getPropertyValue("--span"));
+    const fields = [...row.querySelectorAll(":scope > .field")] as HTMLElement[];
 
-    expect(spans).toEqual(["2", "1"]);
+    expect(fields.map((el) => el.style.gridRow)).toEqual(["1", "1", "2"]);
+    expect(fields[2].style.gridColumn).toBe("1 / span 20");
+  });
+
+  it("starts a new line when a share would pass 100", () => {
+    const form = renderForm([
+      {
+        id: "over",
+        column: 3,
+        row: [
+          { content: { type: "text", id: "a", label: "A" }, config: { wide: 60 } },
+          { content: { type: "text", id: "b", label: "B" }, config: { wide: 60 } },
+        ],
+      },
+    ]);
+    const row = form.querySelector(".field.group[data-column]") as HTMLElement;
+    const fields = [...row.querySelectorAll(":scope > .field")] as HTMLElement[];
+
+    // 60 + 60 would create implicit tracks and shrink the whole row, so the second wraps.
+    expect(fields[1].style.gridColumn).toBe("1 / span 60");
+    expect(fields[1].style.gridRow).toBe("2");
+  });
+
+  it("gives a child that says nothing the whole row", () => {
+    const form = renderForm([
+      {
+        id: "full",
+        column: 1,
+        row: [
+          { content: { type: "text", id: "a", label: "A" }, config: { wide: 50 } },
+          { content: { type: "text", id: "b", label: "B" } },
+        ],
+      },
+    ]);
+    const row = form.querySelector(".field.group[data-column]") as HTMLElement;
+    const fields = [...row.querySelectorAll(":scope > .field")] as HTMLElement[];
+
+    expect(fields[1].dataset.span).toBe("100");
+    expect(fields[1].style.gridColumn).toBe("1 / span 100");
+    expect(fields[1].style.gridRow).toBe("2");
   });
 });
 
@@ -194,19 +241,19 @@ describe("group columns", () => {
     },
   ];
 
-  it("declares its column count on the fieldset", () => {
+  it("declares its line cap on the fieldset", () => {
     const group = renderForm(schema).querySelector("fieldset.form-group") as HTMLElement;
 
     expect(group.dataset.column).toBe("2");
-    expect(group.style.getPropertyValue("--items")).toBe("2");
   });
 
   it("stamps every child with its share of the grid", () => {
     const group = renderForm(schema).querySelector("fieldset.form-group") as HTMLElement;
     const fields = [...group.querySelectorAll(":scope > .field")] as HTMLElement[];
 
-    expect(fields.map((el) => el.dataset.span)).toEqual(["1", "1", "2"]);
-    expect(fields[2].style.getPropertyValue("--span")).toBe("2");
+    expect(fields.map((el) => el.dataset.span)).toEqual(["50", "50", "100"]);
+    expect(fields[2].style.getPropertyValue("--span")).toBe("100");
+    expect(fields.map((el) => el.style.gridColumn)).toEqual(["1 / span 50", "51 / span 50", "1 / span 100"]);
   });
 
   it("leaves a group without `column` a plain stack", () => {
@@ -226,15 +273,15 @@ describe("group columns", () => {
 describe("form sheet reads the resolved span", () => {
   const sheet = readFileSync(resolve(process.cwd(), "packages/components/form/Form.css"), "utf8");
 
-  it("defines the row grid from --items and the child share from --span", () => {
-    expect(sheet).toMatch(/^\.field\.group\[data-column\] \{/m);
-    expect(sheet).toMatch(/grid-template-columns: repeat\(var\(--items, 2\), minmax\(0, 1fr\)\)/);
-    expect(sheet).toMatch(/grid-column: span var\(--span, 1\)/);
+  it("defines the row grid in row units and the child share from --span", () => {
+    expect(sheet).toMatch(/^\.field\.group\[data-column\],/m);
+    expect(sheet).toMatch(/grid-template-columns: repeat\(100, minmax\(0, 1fr\)\)/);
+    expect(sheet).toMatch(/grid-column: span var\(--span, 100\)/);
   });
 
   it("gives a column group the same grid", () => {
-    expect(sheet).toMatch(/^\.form > fieldset\.form-group\[data-column\] \{/m);
-    expect(sheet).toMatch(/\.form > fieldset\.form-group\[data-column\] \{[\s\S]*?grid-column: span var\(--span, 1\)/);
+    expect(sheet).toMatch(/^\s*\.form > fieldset\.form-group\[data-column\] \{/m);
+    expect(sheet).toMatch(/\.form > fieldset\.form-group\[data-column\] \{[\s\S]*?grid-column: span var\(--span, 100\)/);
   });
 
   it("keeps --span from inheriting into a nested container", () => {

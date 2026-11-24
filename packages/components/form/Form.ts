@@ -14,7 +14,7 @@ import type { InputModuleItem, InputModulePreset } from "@aio-ui/input";
 import { ModuleLoader } from "@aio-ui/module-loader";
 import { inputFormAdapter } from "./Input.FormAdapter";
 import { dropdownInputModule } from "@aio-ui/input/dropdown";
-import { DEFAULT_ROW_COLUMNS, applyRowColumns, applyRowSpan, childSpanOf, declaredColumns } from "./FormLayout";
+import { DEFAULT_ROW_COLUMNS, applyRowColumns, applyRowSpan, arrangeRow, childWideOf, declaredColumns } from "./FormLayout";
 import { collectFormValues } from "@aio-ui/input";
 import type { HttpService } from "@aio-ui/http-service";
 import type { iFormMessages } from "./FormMessages";
@@ -760,7 +760,7 @@ export class FormBuilder extends Builder<FormElementType, iFormConfig> {
         // The same `--span` a row child gets: a group that declared `column` owns the grid,
         // so every child states its share of it. A held (conditional) child is stamped by
         // the cascade when it is built.
-        if (columns && element) applyRowSpan(element, childSpanOf(innerInput, columns));
+        if (columns && element) applyRowSpan(element, childWideOf(innerInput));
       });
     }
 
@@ -774,6 +774,8 @@ export class FormBuilder extends Builder<FormElementType, iFormConfig> {
     // 🧩 A group can carry its own control set (add/edit/save/search). The form only
     // offers the fieldset; the controls module owns the buttons and what they do.
     this.#appendActions(fieldset, groupInput);
+
+    if (columns) arrangeRow(fieldset, columns);
 
     return fieldset;
   }
@@ -839,13 +841,15 @@ export class FormBuilder extends Builder<FormElementType, iFormConfig> {
       const submitBtn = this.scanForSubmitButton(element, formId);
       if (submitBtn) this.submitButtonId = submitBtn.id;
 
-      applyRowSpan(element, childSpanOf(child, columns));
+      applyRowSpan(element, childWideOf(child));
       container.appendChild(element);
     });
 
     // 🧩 A row is a scope too (it is a layout container, not a group, but its children can
     // be a record). Same offer as `renderGroup`: the controls module owns the buttons.
     this.#appendActions(container, rowInput);
+
+    arrangeRow(container, columns);
 
     return container;
   }

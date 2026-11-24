@@ -228,7 +228,7 @@ describe("cascade keeps a child's share of its row", () => {
 
       if (mode === "hidden") {
         const held = form.querySelector("#memo")!.closest(".field") as HTMLElement;
-        expect(held.dataset.span).toBe("2");
+        expect(held.dataset.span).toBe("100");
       }
 
       const ref = form.querySelector("#ref") as HTMLInputElement;
@@ -237,8 +237,9 @@ describe("cascade keeps a child's share of its row", () => {
       await tick();
 
       const memo = form.querySelector("#memo")!.closest(".field") as HTMLElement;
-      expect(memo.dataset.span).toBe("2");
-      expect(memo.style.getPropertyValue("--span")).toBe("2");
+      expect(memo.dataset.span).toBe("100");
+      expect(memo.style.getPropertyValue("--span")).toBe("100");
+      expect(memo.style.gridColumn).toBe("1 / span 100");
     });
   }
 });

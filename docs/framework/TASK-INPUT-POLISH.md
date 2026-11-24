@@ -1,63 +1,55 @@
 # TASK — input & form polish before the next release
 
 **Band:** Framework · **Claim:** none yet — take a row before the first edit · **Brief:** this file
-**Status:** A **done (b78)**. Order matters: **B → C, then the release** (the release also owes the
-note for the three types `@aio-ui/core` stopped exporting in b76).
+**Status:** A **done (b78, revised in b79)**. Order matters: **B → C, then the release** (the
+release also owes the note for the three types `@aio-ui/core` stopped exporting in b76).
 
 Three defects the owner reported after the b74/b76 refactor. Each one is a "looks wired, does not
 work" case, so each needs a measurement, not an eyeball (`AGENT_RULES.md` §16).
 
-## A — form `.wide` / `span` layout is not implemented in full
+## A — a field's width is one number: `wide` is a percentage of the row
 
-**Landed — b78.** The root cause was not the arithmetic but the *containers*: only a row
-consumed the share. A `group` (`fieldset`) never called FormLayout, so a documented
-`column: 2` group (the demo's `#form/calculation`) rendered a one-column stack with no
-`--span` at all; and a cascade-held child was built outside the row loop, so its
-`config.wide` was never stamped.
+**Landed — b78 + b79.** Two faults, one cause: only a row consumed the share, and the share was
+expressed as an integer column span — which cannot render `20 / 40 / 40` on a 3-column row (it
+rounded to `1 / 1 / 1`).
 
-- `FormLayout.ts` — one contract: `spanOf` (fraction, percent, `"50%"`, `"auto"`/`"full"`)
-  and `clampSpan` (the only bounds), `declaredColumns` (a row always grids, a group only
-  when it says `column`), `childSpanOf` (explicit `span` wins, then `wide`).
-- `Form.ts` — `renderGroup` lays its children out when `column` is declared, using the
-  same `applyRowColumns` + `applyRowSpan` a row uses; `renderRow` reads `declaredColumns`.
-- `adapters/Cascade.ts` — `#stampSpan` writes the share on a child built later (both hold
-  modes), from the container's `data-column` and the item's `wide`/`span`.
-- `Form.css` — `@property --span { inherits: false }` so a share never leaks into a nested
-  container; new `7c. Group Grid` block reads only `--items` / `--span`; the 640px query
-  collapses both grids.
-- `FormSchema.ts` / `README.md` — `column` on a group is the contract now (the old
-  “a group ignores it” JSDoc was stale); one share spelling table in both places.
+**Final contract (b79, owner's decision).**
 
-**Measured (browser, demo dev server, 2026-11-24):**
-- `#form/calculation` (group, `column: 2`): fieldset 700px → Qty 314px, Harga 314px,
-  Total 646px (`span 2`); before b78 the same group was `grid-template-columns: none` and
-  the fields stacked 646px each.
-- `#form/layout` (row, `column: 2`): row 704px, two `span 1` children 343px each
-  (`(704 − 18 gap) / 2`), the `"auto"` child 704px (`span 2`).
+- `wide` is a **percentage of the row** and the only width knob; the 16-grid / integer span system
+  is retired. `20`, `"40%"`, `0.5` (fraction), `"auto"` / `100` (full). **Absent = the whole row.**
+- `column` is **only the line cap**: the fourth child of a `column: 3` row starts the next line.
+  It no longer divides space.
+- A share that would pass 100 starts a new line instead of overflowing: a placement past track 100
+  makes CSS create implicit tracks, which silently shrink every explicit one (the whole row loses
+  its percentages). Measured before the guard: `#form/layout` `grid-template-columns` grew to 150
+  tracks and the `wide: 50` children rendered 293px instead of 352px.
+- The gutter lives inside each share (`padding-inline: gutter/2`, `column-gap: 0`): a real
+  `column-gap` would be added on top of the percentages and push a 20/40/40 line past 100.
 
-## A — original brief (kept for the contract)
+**Where it lives.**
 
-**Symptom.** A field's share of a form row is documented as `wide: 50` (half) / `"auto"` (full row)
-/ an explicit `span`, but the rendered grid does not honour it faithfully.
+- `FormLayout.ts` — `wideOf` (the only arithmetic), `childWideOf`, `declaredColumns` (line cap),
+  `applyRowSpan` (writes `--span` 1..100), `arrangeRow` (explicit `grid-row` + `grid-column`).
+- `Form.ts` — `renderGroup` lays out a `column` group with the same writers a row uses; both call
+  `arrangeRow` once the children (and a control set) are in.
+- `adapters/Cascade.ts` — a child built later is stamped and the container re-arranged (both hold
+  modes).
+- `Form.css` — `@property --span { inherits: false; initial-value: 100 }`; one grid block for
+  `.field.group[data-column]` and `.form > fieldset.form-group[data-column]` reading a
+  100-track grid; the 640px query collapses both.
+- `FormSchema.ts` / `README.md` — `column` = line cap, `wide` = percentage, `span` gone.
 
-**Where.**
-- `packages/components/form/FormLayout.ts` — `columnsOf()`, `childSpanOf()`, `applyRowSpan()`,
-  `applyRowColumns()` (imported at `Form.ts:17`).
-- `packages/components/form/Form.ts:785` (`columnsOf(rowInput.column)`),
-  `:827` (`applyRowSpan(element, childSpanOf(child, columns))`).
-- `packages/components/form/Form.css:38-63` — the grid consumes `grid-column: span var(--span, 1)`;
-  the comment there is the contract ("50 = half, `\"auto\"` = full row").
-- `docs/framework/TASK-INPUT-SCHEMA.md` and `form/README.md` both promise that contract.
+**Measured (browser, demo dev server, 2026-11-24, after b79).**
 
-**Do.** Decide the intended arithmetic once (`wide` is a percentage of the row → `span` in columns,
-`"auto"` = every column, absent = 1), write it in `FormLayout.ts` as one function, and make the CSS
-read only the resolved `--span`. Cover: `wide: 50` on a 2-column row (half), `wide: 100`/`"auto"`
-(full), `wide: 33` on 3 columns, a child wider than the remaining columns (wrap, never overflow),
-and a nested row.
-
-**Acceptance.** A test in `packages/components/form/__tests__/FormRow.test.ts` asserting the
-resolved `--span` **and** the measured `gridColumn` on each child; plus a browser number for one
-real demo row (e.g. "2 children, columns: 2, wide: 50 → each 50% of 640px = 320px").
+- `#form/layout` (row, `column: 2`, widths 50/50/100/50/50): row 704px, 100 tracks, children
+  352 / 352 / 704 / 352 / 352 → **exactly 50/50/100/50/50**; the 100-unit child starts line 3 and
+  the next pair line 4.
+- `#form/calculation` (group, `column: 2`): fieldset 700px → 323 / 323 / 646 (50/50/100 of the
+  646px content box).
+- `#form/fields` `types-choice` (group, `column: 2`, no `wide`): every child 646px (full line) —
+  the b78 side effect where an unwritten width became half is gone.
+- `#form/input` `row-record` (row with a control set): fields 323 / 323 then 646; the control set
+  takes its own full-width line instead of a cell.
 
 ## B — `config.footer` is appended but unstyled
 
@@ -86,6 +78,7 @@ CSS Anchor Positioning + the Native Popover API, keeping `select::picker(select)
 `.dropdown[data-style] > .menu` visually identical.
 
 **Where (current line numbers).**
+
 - `packages/components/input/input.css` §5.2 SHARED POPUP SURFACE — the rule at `:410-449` holds the
   shared surface; `position-try-fallbacks: none;` sits at **`:440`** and must go.
 - §10.3 SELECT MODE — `:1067` (`& > select:open::picker(select)`).
@@ -94,6 +87,7 @@ CSS Anchor Positioning + the Native Popover API, keeping `select::picker(select)
   toggled.
 
 **Do.**
+
 1. **Per-field anchor.** `.field { anchor-scope: --field-dropdown-anchor; }`; the trigger sets
    `anchor-name: --field-dropdown-anchor;` and `container-type: anchored;`; the surface sets
    `position-anchor: --field-dropdown-anchor;`. No generated ids.
@@ -107,7 +101,7 @@ CSS Anchor Positioning + the Native Popover API, keeping `select::picker(select)
 4. **Top layer.** Give `.dropdown[data-style] > .menu` `popover="auto"` in `Dropdown.ts` and drive
    open/close with `showPopover()` / `hidePopover()` (light-dismiss + Esc come free); the CSS accepts
    `:popover-open` beside `.visible`. Keep the `@starting-style` + `transition-behavior:
-   allow-discrete` choreography working in both directions.
+allow-discrete` choreography working in both directions.
 5. **Keep §5.2's rule split.** `select::picker(select)` and `.dropdown[data-style] > .menu` stay
    separate standalone rules where they differ — a selector list that is invalid for one kind kills
    both.

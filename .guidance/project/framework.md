@@ -6,11 +6,11 @@ Why / stages: `.guidance/plan-framework.md`. Engineering rules:
 
 ## Active (max 3)
 
-| #   | Task                        | State       | Gate                                                                                                                                                                                                                                |
-| --- | --------------------------- | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | Theme console view (fab)    | in progress | `examples/demo/src/ThemeConsole/TASKS.md` — view composed, gate green; open: page-only popover sections                                                                                                                             |
-| 2   | Inspect surface (b43)       | in progress | `inspect()` + `inspectPage()` green; open: dead relay removal, `#cleanupMap` reset                                                                                                                                                  |
-| 3   | Input & form polish         | in progress | A `.wide`/`span` **done (b78)**, measured on `#form/calculation` + `#form/layout`; open: B `config.footer` styling, C clipped `select`/`dropdown` popup → `docs/framework/TASK-INPUT-POLISH.md` |
+| #   | Task                     | State       | Gate                                                                                                                                                                                            |
+| --- | ------------------------ | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Theme console view (fab) | in progress | `examples/demo/src/ThemeConsole/TASKS.md` — view composed, gate green; open: page-only popover sections                                                                                         |
+| 2   | Inspect surface (b43)    | in progress | `inspect()` + `inspectPage()` green; open: dead relay removal, `#cleanupMap` reset                                                                                                              |
+| 3   | Input & form polish         | in progress | A layout **done (b78, contract revised b79)**, measured on the demo; open: B `config.footer` styling, C clipped `select`/`dropdown` popup → `docs/framework/TASK-INPUT-POLISH.md` |
 
 ## Next
 
@@ -31,6 +31,13 @@ Why / stages: `.guidance/plan-framework.md`. Engineering rules:
 
 ## Landed (newest first)
 
+- **Batch 79 (2026-11-24)** — one way to size a field: `wide` is a percentage of the row (20/40/40 is
+  exactly 20/40/40), absent = the whole row, the integer `span` and the 16-grid are retired, and
+  `column` is only the line cap (the 4th child of `column: 3` starts the next line). Placement is
+  explicit (`arrangeRow` writes `grid-row`/`grid-column`), the gutter sits inside each share, and a
+  share that would pass 100 wraps instead of creating implicit tracks that shrink the row. Proof:
+  `#form/layout` 704px → 352/352/704/352/352; calc group 700px → 323/323/646; `types-choice` full
+  lines; `check` + `verify` green.
 - **Batch 78 (2026-11-24)** — the `.wide`/`span` share is honoured by every container, not only a
   row. `FormLayout` keeps one contract (`spanOf` + `clampSpan` + `declaredColumns`), `renderGroup`
   lays out a `column` group with the same writer a row uses, the cascade stamps a late-built

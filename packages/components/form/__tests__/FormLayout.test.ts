@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import { DEFAULT_ROW_COLUMNS, MAX_ROW_COLUMNS, childSpanOf, clampSpan, columnsOf, declaredColumns, spanOf } from "../FormLayout";
+import { DEFAULT_ROW_COLUMNS, MAX_ROW_COLUMNS, WIDE_FULL, childWideOf, columnsOf, declaredColumns, wideOf } from "../FormLayout";
 
 /**
- * Row arithmetic, without a DOM: the numbers decide the grid, so they are the part worth
- * pinning down first. `wide` accepts three spellings because a sheet schema writes
- * whatever the author typed.
+ * Row arithmetic, without a DOM. `wide` is a percentage of the row — one way to size a
+ * field — and `column` is only the cap on items per line. Both are numbers, so they are
+ * pinned here before the renderer touches them.
  */
 describe("columnsOf", () => {
   it("defaults to two columns", () => {
@@ -24,53 +24,37 @@ describe("columnsOf", () => {
   });
 });
 
-describe("spanOf", () => {
-  it("treats a number as a percentage of the row", () => {
-    expect(spanOf(50, 2)).toBe(1);
-    expect(spanOf(33, 3)).toBe(1);
-    expect(spanOf(66, 3)).toBe(2);
-    expect(spanOf(25, 4)).toBe(1);
+describe("wideOf", () => {
+  it("reads a number as a percentage of the row", () => {
+    expect(wideOf(20)).toBe(20);
+    expect(wideOf(40)).toBe(40);
+    expect(wideOf(50)).toBe(50);
+    expect(wideOf(100)).toBe(100);
   });
 
   it("reads the same percentage written with a sign", () => {
-    expect(spanOf("50%", 2)).toBe(1);
-    expect(spanOf("50%", 4)).toBe(2);
-    expect(spanOf("100%", 3)).toBe(3);
-    expect(spanOf(" 66% ", 3)).toBe(2);
+    expect(wideOf("20%")).toBe(20);
+    expect(wideOf("40%")).toBe(40);
+    expect(wideOf(" 66% ")).toBe(66);
   });
 
-  it("gives 100 the whole row, like auto", () => {
-    expect(spanOf(100, 2)).toBe(2);
-    expect(spanOf(100, 3)).toBe(3);
+  it("reads a fraction as a share of the row", () => {
+    expect(wideOf(0.5)).toBe(50);
+    expect(wideOf(0.25)).toBe(25);
+    expect(wideOf(1)).toBe(100);
   });
 
-  it("treats a fraction as a share of the row", () => {
-    expect(spanOf(0.5, 2)).toBe(1);
-    expect(spanOf(0.5, 4)).toBe(2);
-    expect(spanOf(1, 4)).toBe(4);
+  it('gives "auto" and "full" the whole row', () => {
+    expect(wideOf("auto")).toBe(WIDE_FULL);
+    expect(wideOf("full")).toBe(WIDE_FULL);
   });
 
-  it('gives "auto" the whole row', () => {
-    expect(spanOf("auto", 2)).toBe(2);
-    expect(spanOf("auto", 5)).toBe(5);
-    expect(spanOf("full", 3)).toBe(3);
-  });
-
-  it("falls back to one column and never exceeds the row", () => {
-    expect(spanOf(undefined, 3)).toBe(1);
-    expect(spanOf("abc", 3)).toBe(1);
-    expect(spanOf(0, 3)).toBe(1);
-    expect(spanOf(300, 3)).toBe(3);
-  });
-});
-
-describe("clampSpan", () => {
-  it("keeps a span inside the row", () => {
-    expect(clampSpan(2, 3)).toBe(2);
-    expect(clampSpan(9, 3)).toBe(3);
-    expect(clampSpan(0, 3)).toBe(1);
-    expect(clampSpan(-4, 3)).toBe(1);
-    expect(clampSpan("abc", 3)).toBe(1);
+  it("means the whole row when nothing usable is written", () => {
+    expect(wideOf(undefined)).toBe(WIDE_FULL);
+    expect(wideOf(null)).toBe(WIDE_FULL);
+    expect(wideOf("abc")).toBe(WIDE_FULL);
+    expect(wideOf(0)).toBe(WIDE_FULL);
+    expect(wideOf(300)).toBe(WIDE_FULL);
   });
 });
 
@@ -84,18 +68,14 @@ describe("declaredColumns", () => {
   });
 });
 
-describe("childSpanOf", () => {
+describe("childWideOf", () => {
   it("reads wide from config first, then from the node", () => {
-    expect(childSpanOf({ config: { wide: 50 } }, 2)).toBe(1);
-    expect(childSpanOf({ wide: "auto" }, 3)).toBe(3);
+    expect(childWideOf({ config: { wide: 50 } })).toBe(50);
+    expect(childWideOf({ wide: "auto" })).toBe(WIDE_FULL);
   });
 
-  it("lets an explicit span win over wide", () => {
-    expect(childSpanOf({ span: 2, config: { wide: 50 } }, 2)).toBe(2);
-  });
-
-  it("returns one column for a child that says nothing", () => {
-    expect(childSpanOf({ content: { type: "text" } }, 3)).toBe(1);
-    expect(childSpanOf("raw html", 3)).toBe(1);
+  it("gives the whole row to a child that says nothing", () => {
+    expect(childWideOf({ content: { type: "text" } })).toBe(WIDE_FULL);
+    expect(childWideOf("raw html")).toBe(WIDE_FULL);
   });
 });

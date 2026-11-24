@@ -57,7 +57,7 @@ a field node is the input package's contract, not this one.
 | `group`           | group      | Fieldset children                                                           |
 | `row`             | row        | Inline children — layout, not a fieldset                                    |
 | `label`           | row        | Title rendered above the row (`@form>row>title`)                            |
-| `column`          | group, row | Column count for the layout                                                 |
+| `column`          | group, row | Line cap: how many children one line holds                                  |
 | `actions`         | group, row | Action words rendered in the corner: `search`, `copy`, `editor`, `repeater` |
 | `actionsPosition` | group, row | Where those buttons sit (`config.position` is the older spelling)           |
 
@@ -65,8 +65,9 @@ A field node **is** the input schema — `{ content, config }` — so its keys (
 `content.label`, `config.required`, `config.wide`, `config.csv`, …) belong to `@aio-ui/input`;
 this package adds only the cascade rule `condition` beside the two blocks. It reads `config.wide`
 whenever it lays a container out: a **row** always grids, a **group** only when it declares
-`column`. The share is one contract in both — `50` / `"50%"` = half, `0.5` = half, `"auto"` /
-`100` = the whole row, absent = one column, rounded to whole columns and clamped to the count.
+`column`. `wide` is a **percentage of the row** and the only way to size a field — `20`, `"40%"`,
+`0.5` (fraction), `"auto"` / `100` (the whole row); **absent means the whole row**. `column` is
+only the line cap, so the fourth child of a `column: 3` row starts the next line.
 
 <!-- part: id=config role=contract -->
 

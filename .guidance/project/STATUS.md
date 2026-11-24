@@ -4,7 +4,8 @@
 > **only** after the user picks it — never "to orient" (`AGENT_RULES.md` §13). Rewritten each
 > session, newest on top. One card = one line + one pointer.
 >
-> Recent batches (newest first): **b78** a container honours `wide`/`span` (group + cascade) ·
+> Recent batches (newest first): **b79** `wide` is a percentage of the row (span retired, `column`
+> = line cap) · **b78** a container honours `wide`/`span` (group + cascade) ·
 > **b76** core drops the input node types + docs say `content.options`
 > · **b74** stage 3.3: form schema = input schema, examples migrated
 > · **b73** input schema stage 3 (strict module keys + legacy door
@@ -19,16 +20,17 @@
 
 ### 1. Input & form polish — A done; B (footer) and C (popup) before the release (framework band)
 
-Owner-reported after b74/b76. **(A) `.wide`/`span` share — landed in b78**: only a row consumed it,
-so a `column` group stacked and a cascade-held child lost its `wide`; `FormLayout` now owns one
-contract (`spanOf`/`clampSpan`/`declaredColumns`), `renderGroup` and the cascade write the same
-`--span`, and `@property --span { inherits: false }` keeps it out of nested containers. Measured:
-calc group 700px → 314/314/646; layout row 704px → 343/343/704. **(B)** `config.footer` is appended
-(`Form.ts:661-666`) and no rule styles it. **(C)** the `select`/`dropdown` popup is clipped near the
-viewport edge or inside `overflow: hidden` — fix by CSS Anchor Positioning + Native Popover
-(`input.css` §5.2 `:440`, §10.3 `:1067`, `Dropdown/Dropdown.ts`), keeping `::picker(select)` and
-`.menu` visually identical. Each item needs a measurement, not an eyeball.
-**Open:** B and C not started; the release waits for both.
+Owner-reported after b74/b76. **(A) layout — landed b78, contract revised in b79**: `wide` is now a
+**percentage of the row** (the only width knob; integer `span` and the 16-grid retired), absent =
+full row, and `column` is only the **line cap** (4th child of `column: 3` starts the next line).
+A share that would pass 100 wraps instead of creating implicit tracks. Measured on the demo: layout
+row 704px → 352/352/704/352/352; calc group 700px → 323/323/646; `types-choice` (no `wide`) full
+lines. **(B)** `config.footer` is appended (`Form.ts:661-666`) and no rule styles it. **(C)** the
+`select`/`dropdown` popup is clipped near the viewport edge or inside `overflow: hidden` — fix by CSS
+Anchor Positioning + Native Popover (`input.css` §5.2 `:440`, §10.3 `:1067`, `Dropdown/Dropdown.ts`),
+keeping `::picker(select)` and `.menu` visually identical. Each item needs a measurement.
+**Open:** B and C not started; the release waits for both. Also queued from b79's review: repeater
+config (`minItems`→`removable`, `atMin`→`hideOnSource`).
 → `docs/framework/TASK-INPUT-POLISH.md`
 
 ### 2. Input schema + legacy sweep — done, one release note owed (framework band)

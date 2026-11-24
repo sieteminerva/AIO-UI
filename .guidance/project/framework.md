@@ -10,13 +10,13 @@ Why / stages: `.guidance/plan-framework.md`. Engineering rules:
 | --- | ------------------------ | ----------- | ------------------------------------------------------------------------------------------------------- |
 | 1   | Theme console view (fab) | in progress | `examples/demo/src/ThemeConsole/TASKS.md` — view composed, gate green; open: page-only popover sections |
 | 2   | Inspect surface (b43)    | in progress | `inspect()` + `inspectPage()` green; open: dead relay removal, `#cleanupMap` reset                      |
-| 3   | Colour tokens (b82–b93)  | in progress | priority before v0.2.6 → `docs/framework/TASK-color-tokens.md`; T1–T4 landed, T5 next |
+| 3   | Colour tokens (b82–b94)  | in progress | T1–T5 landed → `docs/framework/TASK-color-tokens.md`; open: owner taste pass + spinner snippet |
 
 ## Next
 
-- **Colour tokens before v0.2.6** — T1–T4 landed (b86–b93). Next: **T5** (literal lint) and a
-  **T3 taste pass** (owner points at the colour to change). Restore tag
-  `color-pre-full-2026-11-25` (547973e). → `docs/framework/TASK-color-tokens.md`
+- **Colour tokens before v0.2.6** — T1–T5 landed (b86–b94). Only the **T3 taste pass** is open
+  (owner reviews colours; taste, not algorithm), plus the `masonry/README.md` spinner snippet.
+  Restore tag `color-pre-full-2026-11-25` (547973e). → `docs/framework/TASK-color-tokens.md`
 
 - **Release the input breaking change.** b76 removed `iBasicInputNode`, `iFormGroupNode` and
   `InputBuilderConfigOptions` from `@aio-ui/core` (type-only, but public), b79 removed `span` from

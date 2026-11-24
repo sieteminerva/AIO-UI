@@ -69,7 +69,8 @@
     /* The hover state is a shade of the same accent, so it follows a themed accent too. */
     &:hover {
       transform: scale(1.05);
-      background: color-mix(in srgb, var(--fab-accent-color) 85%, #000000);
+      /* Shade toward the deep surface (deep in both modes) instead of a raw #000. */
+      background: color-mix(in srgb, var(--fab-accent-color) 85%, var(--app-surface-deep));
     }
   }
 

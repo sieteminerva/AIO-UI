@@ -50,7 +50,7 @@ git reset --hard color-pre-full-2026-11-25   # then: git push --force-with-lease
 | T2b | Popup = one sheet with the control (owner request) | `input/Input.css`, `input/Dropdown/{Dropdown.css,Dropdown.ts}`, `form/Form.css` | **done (b88–b91)** |
 | T3 | Hardcoded-palette components | `article/Article.css`, `table/Table.css`, `message/Message.css`, `carousel/Carousel.css`, `tab/Tab.css` | **done (b92)** |
 | T4 | Theme packages set the mode | `packages/themes/cyberpunk/src/CyberpunkTheme.ts` (done); `horizontal` intentionally neutral | **done (b93)** |
-| T5 | CSS lint test | new `packages/components/__tests__/colour-literals.test.ts` (no raw literal except the allowlist above) | **not started** |
+| T5 | CSS lint test | `packages/components/__tests__/colour-literals.test.ts` (no raw literal except the allowlist above) | **done (b94)** |
 
 ### T1 notes (do first)
 
@@ -141,16 +141,21 @@ that touches a package TypeScript file, an `exports` map, or a README still runs
   layout theme with no palette**, so it deliberately does NOT force a mode — forcing dark would
   paint a light layout dark. Proof: the cyberpunk test asserts `dataset.mode`/`colorScheme`;
   `npm run check` green.
+- **b94** — T5: `packages/components/__tests__/colour-literals.test.ts` walks every source sheet
+  under `packages/components` (no `dist`/`__tests__`), strips comments + `url()` + `var()`
+  fallbacks, skips shadow/backdrop/lightbox declarations, and flags any remaining hex/rgb/hsl or
+  named colour. Allowlist = Modal/Masonry/Carousel overlays + the CodeBlock paper/ink pair.
+  `fab-menu` `color-mix(…, #000000)` → `var(--app-surface-deep)`. Proof:
+  `npx vitest run packages/components/__tests__/colour-literals.test.ts → 1/1`; `npm run check`
+  green.
 
 ## Next (cold start)
 
-1. **T5** — `packages/components/__tests__/colour-literals.test.ts` with the allowlist from
-   contract §4 (Carousel overlays are marked and belong on it).
-2. **T3 taste pass** — the palettes compile and flip, but the *taste* is not settled; the owner
+1. **T3 taste pass** — the palettes compile and flip, but the *taste* is not settled; the owner
    reviews each component and points at the colour to change (Article/Table/Message first).
-3. **Leftover**: `packages/components/masonry/README.md` + `docs/framework/catalogue.json` still
+2. **Leftover**: `packages/components/masonry/README.md` + `docs/framework/catalogue.json` still
    show the pre-b86 `background-image: var(--app-spinner-content)` snippet (the catalogue snippet
    is curated, not generated from source).
-4. **Verify when a tab is visible**: the native picker's upward seam (`data-placement` from the
+3. **Verify when a tab is visible**: the native picker's upward seam (`data-placement` from the
    real picker height) was only proved with the page backgrounded — re-check by opening a
    `<select>` near the viewport bottom.

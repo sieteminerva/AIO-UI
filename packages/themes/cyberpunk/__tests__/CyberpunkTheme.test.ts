@@ -2,9 +2,16 @@ import { describe, expect, it } from "vitest";
 
 import { CyberpunkTheme } from "../src/CyberpunkTheme";
 
-/** A shell stand-in: this theme only flips `dataset.theme`. */
+/** A shell stand-in: this theme flips `dataset.theme` and pins the mode. */
 function createShell() {
-  return { dataset: {} as DOMStringMap };
+  const style: Record<string, string> = {};
+  (style as any).removeProperty = (prop: string) => {
+    delete style[prop];
+    // CSSStyleDeclaration maps `color-scheme` to the camelCase `colorScheme`.
+    const camel = prop.replace(/-([a-z])/g, (_m, c: string) => c.toUpperCase());
+    delete style[camel];
+  };
+  return { dataset: {} as DOMStringMap, style };
 }
 
 describe("CyberpunkTheme", () => {
@@ -21,6 +28,14 @@ describe("CyberpunkTheme", () => {
     expect(shell.dataset.theme).toBe("cyberpunk");
   });
 
+  it("pins the dark mode so light-dark() and dark blocks resolve", () => {
+    const shell = createShell();
+    new CyberpunkTheme().activate(shell as unknown as HTMLElement, []);
+
+    expect(shell.dataset.mode).toBe("dark");
+    expect(shell.style.colorScheme).toBe("dark");
+  });
+
   it("leaves the shell as it found it", () => {
     const theme = new CyberpunkTheme();
     const shell = createShell();
@@ -29,10 +44,13 @@ describe("CyberpunkTheme", () => {
     theme.deactivate(shell as unknown as HTMLElement);
 
     expect(shell.dataset.theme).toBeUndefined();
+    expect(shell.dataset.mode).toBeUndefined();
+    expect(shell.style.colorScheme).toBeUndefined();
   });
 
   it("does not strip a marker another theme owns", () => {
-    const shell = { dataset: { theme: "horizontal" } as DOMStringMap };
+    const shell = createShell();
+    shell.dataset.theme = "horizontal";
     new CyberpunkTheme().deactivate(shell as unknown as HTMLElement);
 
     expect(shell.dataset.theme).toBe("horizontal");

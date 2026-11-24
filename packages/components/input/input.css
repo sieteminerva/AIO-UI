@@ -25,26 +25,34 @@
   --input-primary-color: var(--app-primary-color, darkgoldenrod);
   --input-accent-color: var(--app-accent-color, rgba(184, 135, 11, 0.384));
 
-  /* The neutral paper every field tint is mixed onto. Not an app surface: --app-surface-strong
-     is pure white and --app-surface-muted is a warm translucent wash, so neither is this value.
-     `-soft` is the same paper at 80% alpha — the alpha sites inside color-mix() blend against
-     it, so it is a separate token, not the same colour rounded. */
-  --input-paper: rgb(245, 244, 244);
-  --input-paper-soft: rgb(245, 244, 244, 0.8);
+  /* The neutral paper every field tint is mixed onto: the theme's own strong surface, so a
+     light field tints toward white and a dark one toward the dark card instead of both
+     mixing into `rgb(245,244,244)` (which painted a light wash on a dark page).
+     `-soft` is the same paper at 80% alpha — the alpha sites inside color-mix() blend
+     against it, so it is a separate token, not the same colour rounded. */
+  --input-paper: var(--app-surface-strong, #ffffff);
+  --input-paper-soft: color-mix(in srgb, var(--app-surface-strong, #ffffff) 80%, transparent);
 
   /* A 1px stroke is non-text UI (WCAG 1.4.11): read the UI-safe shade of the brand, not the
      fill colour — a light primary teal is ~2.5:1 on a light surface and disappears. */
   --input-border-color: var(--app-primary-ui, var(--input-primary-color));
 
-  --input-text-color: color-mix(in srgb, var(--input-accent-color) 30%, var(--input-primary-color) 45%);
-  --input-label-color: var(--input-accent-color);
-  --input-text-color-light: color-mix(in srgb, var(--input-primary-color) 40%, white 50%);
-  --input-text-color-hover: color-mix(in srgb, var(--input-primary-color) 40%, black 30%);
-  --input-placeholder-color: color-mix(in srgb, grey 15%, var(--input-text-color) 30%);
+  /* Text is not decoration: the ink stays the theme's text colour with a brand whisper
+     (22%), so a pale brand cannot paint body text below 4.5:1. The label is small caps, so
+     it leans on the muted ink and only borrows 30% of the body ink to clear the same floor —
+     a brand tint there would only LOWER the ratio on a pale theme. */
+  --input-text-color: color-mix(in srgb, var(--app-text-color) 78%, var(--input-primary-color) 22%);
+  --input-label-color: color-mix(in srgb, var(--app-text-accent-color) 70%, var(--app-text-color) 30%);
+  /* A lift and a sink of the brand, anchored to the theme's ink instead of a fixed
+     white/black: on a dark page "lift" must mean lighter and "sink" darker, and only an
+     anchor that flips with `color-scheme` can say that. */
+  --input-text-color-light: color-mix(in srgb, var(--input-primary-color) 40%, var(--app-surface-strong) 50%);
+  --input-text-color-hover: color-mix(in srgb, var(--input-primary-color) 40%, var(--app-text-color) 30%);
+  --input-placeholder-color: color-mix(in srgb, var(--app-text-accent-color) 15%, var(--input-text-color) 30%);
 
-  --input-background-color: color-mix(in srgb, var(--input-accent-color) 30%, #fff 100%);
-  --input-background-color-hover: color-mix(in srgb, var(--input-accent-color) 50%, #fff 15%);
-  --input-picker-background: color-mix(in srgb, var(--input-background-color) 100%, #fff 90%);
+  --input-background-color: color-mix(in srgb, var(--input-accent-color) 30%, var(--app-surface-strong) 100%);
+  --input-background-color-hover: color-mix(in srgb, var(--input-accent-color) 50%, var(--app-surface-strong) 15%);
+  --input-picker-background: color-mix(in srgb, var(--input-background-color) 100%, var(--app-surface-strong) 90%);
   /* tag chips printed inside a multi-select field (Dropdown.css) */
   --input-tag-background: var(--app-surface-muted, #e0e1e2);
   --input-tag-text-color: var(--app-text-color, rgba(0, 0, 0, 0.6));
@@ -96,9 +104,6 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-mode="light"]) {
     --input-border-color: var(--app-border-color, rgba(229, 164, 67, 0.22));
-    --input-text-color: var(--app-text-color, #f3ede2);
-    --input-label-color: var(--app-text-accent-color, #bfaea0);
-    --input-placeholder-color: rgba(191, 174, 160, 0.5);
     --input-background-color: transparent;
     --input-picker-background: var(--app-surface-strong, #231b14);
     --input-number-spin-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 20'%3E%3Cpath d='M6 1 10 7H2z' fill='%23bfaea0'/%3E%3Cpath d='M6 19 2 13h8z' fill='%23bfaea0'/%3E%3C/svg%3E");
@@ -107,9 +112,6 @@
 
 :root[data-mode="dark"] {
   --input-border-color: var(--app-border-color, rgba(229, 164, 67, 0.22));
-  --input-text-color: var(--app-text-color, #f3ede2);
-  --input-label-color: var(--app-text-accent-color, #bfaea0);
-  --input-placeholder-color: rgba(191, 174, 160, 0.5);
   --input-background-color: transparent;
   --input-picker-background: var(--app-surface-strong, #231b14);
   --input-number-spin-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 20'%3E%3Cpath d='M6 1 10 7H2z' fill='%23bfaea0'/%3E%3Cpath d='M6 19 2 13h8z' fill='%23bfaea0'/%3E%3C/svg%3E");
@@ -362,12 +364,7 @@ select:focus-visible {
       color var(--input-popup-duration, 250ms);
     border-color: var(--input-border-color);
     /* border-width/border-style SENGAJA tidak di-declare di sini:
-         sudah dijamin oleh shared surface §5.2 (popup) & core §3 (select).
-         Re-declare di 0-4-1 akan mengalahkan rule ATTACHED §5.2
-         (border-top: none) → border atas picker nyala lagi saat open. */
-    border-bottom-left-radius: 0;
-    border-bottom-right-radius: 0;
-    border-bottom-color: transparent;
+         sudah dijamin oleh shared surface §5.2 (popup) & core §3 (select). */
   }
 
   & select {
@@ -398,18 +395,17 @@ select:focus-visible {
     &:open::picker(select) {
       opacity: 1;
       transition-delay: var(--input-dropdown-transition-delay, 30ms);
-      transform: translateY(0) scaleY(1) scaleX(1);
+      transform: translateY(0);
       outline: none;
-      border-radius: 0 0 var(--input-border-radius) var(--input-border-radius);
-      box-shadow: 0 2px 3px 0 color-mix(in srgb, var(--input-accent-color) 30%, var(--input-primary-color) 45%);
+      /* the popup is its own card now (§5.2), so the control keeps its radius */
+      box-shadow: var(--app-shadow-soft, 0 12px 35px -8px rgba(92, 60, 20, 0.12));
       /* scrollbar-gutter: stable; */
       scrollbar-width: thin;
       overflow-x: hidden;
     }
 
     &:open {
-      border-bottom-left-radius: 0;
-      border-bottom-right-radius: 0;
+      border-color: var(--input-border-color);
     }
   }
 
@@ -426,30 +422,30 @@ select:focus-visible {
     padding: 0;
     margin: 0;
     scrollbar-width: thin;
-    scrollbar-color: var(--input-accent-color) color-mix(in srgb, grey 10%, var(--input-accent-color) 5%);
+    scrollbar-color: var(--input-accent-color)
+      color-mix(in srgb, var(--app-text-accent-color) 10%, var(--input-accent-color) 5%);
     background-color: var(--input-background-color);
     color: var(--input-text-color);
     backdrop-filter: blur(12px);
     inset: auto;
     left: anchor(left);
     width: anchor-size(width);
-    top: calc(anchor(bottom) - 1px);
-    border: 1px solid var(--input-primary-color);
+    /* A detached card, one gap away in BOTH directions: the seam-merge that used to
+       live here could only be correct while the popup opened downward — flipped, its
+       missing `border-top` became the outer edge. `--flip-top` mirrors the gap exactly,
+       so the two directions are indistinguishable. */
+    top: calc(anchor(bottom) + var(--input-popup-distance, 4px));
+    border: 1px solid var(--input-border-color);
     border-radius: var(--input-border-radius);
+    box-shadow: var(--app-shadow-soft, 0 12px 35px -8px rgba(92, 60, 20, 0.12));
     max-height: calc((var(--input-min-height) * 4) + 10px);
     opacity: 0;
-    transform-origin: top;
     transition-behavior: allow-discrete;
     white-space: nowrap;
     overflow-x: hidden;
     text-overflow: ellipsis;
     outline: none;
     position-try-fallbacks: --flip-top, flip-block;
-  }
-
-  & select::picker(select),
-  & .dropdown[data-style] > .menu {
-    border-top: none;
   }
 
   & select option,
@@ -469,7 +465,7 @@ select:focus-visible {
     text-transform: capitalize;
 
     &:hover {
-      color: color-mix(in srgb, grey 30%, var(--input-text-color) 35%);
+      color: color-mix(in srgb, var(--app-text-accent-color) 30%, var(--input-text-color) 35%);
       background-color: color-mix(in srgb, var(--input-primary-color) 10%, var(--input-accent-color) 5%);
     }
   }
@@ -502,11 +498,10 @@ select:focus-visible {
       color: var(--input-error-color);
       box-shadow: none;
     }
-    /* border-top: none kini berasal dari shared popup surface §5.2; border
-         penuh di sini akan mengaktifkannya kembali → tekan eksplisit */
+    /* border kini utuh di semua sisi (shared popup surface §5.2), jadi tidak ada
+         "border-top: none" yang perlu ditekan ulang */
     & select:open::picker(select) {
       border: 1px solid var(--input-error-color);
-      border-top: none;
       color: var(--input-error-color);
       box-shadow: none;
     }
@@ -541,7 +536,7 @@ select:focus-visible {
     transition-behavior: allow-discrete;
     transition-delay: var(--input-dropdown-transition-delay, 30ms);
     cursor: pointer;
-    color: var(--primary-border-color);
+    color: var(--input-border-color);
     transition:
       transform 200ms,
       opacity 200ms;
@@ -591,14 +586,14 @@ select:focus-visible {
     clear: both;
     /* padding: 0.2em 0.3em; */
     background-color: var(--input-background-color);
-    border: 1px solid var(--input-accent-color);
+    border: 1px solid var(--input-border-color);
     border-radius: var(--input-border-radius);
     cursor: pointer;
     transition: 200ms;
     min-height: var(--input-min-height);
 
     &:focus-within {
-      border-color: var(--input-text-color-light);
+      border-color: var(--input-border-color);
     }
 
     &:is(:hover, :active, :focus, :focus-visible) {
@@ -610,9 +605,7 @@ select:focus-visible {
     }
 
     &:has(.menu.visible) {
-      border-bottom-left-radius: 0;
-      border-bottom-right-radius: 0;
-      border-color: var(--input-primary-color);
+      border-color: var(--input-border-color);
     }
 
     &:has(> .tags > .badge) > input[type="text"]::placeholder {
@@ -727,21 +720,20 @@ select:focus-visible {
     & > .menu {
       position: fixed;
       overflow-y: auto;
-      border-top-left-radius: 0;
-      border-top-right-radius: 0;
-      box-shadow: 0px 1px 2px 0 color-mix(in srgb, var(--input-accent-color) 30%, var(--input-primary-color) 45%);
+      box-shadow: var(--app-shadow-soft, 0 12px 35px -8px rgba(92, 60, 20, 0.12));
       pointer-events: none;
-      transform: translateY(calc(var(--input-popup-distance, 4px) * -1)) scaleY(0%);
+      opacity: 0;
+      /* plain rise from the anchor: the card keeps its own border and radius in
+         every direction, so the entrance must not scale it to hide a seam. */
+      transform: translateY(calc(var(--input-popup-distance, 4px) * -1));
       transition: all var(--input-popup-duration, 150ms) var(--input-popup-easing, ease);
       transition-delay: var(--input-dropdown-transition-delay, 30ms);
 
       &:is(.visible) {
         opacity: 1;
-        transform: translateY(0) scaleY(1);
+        transform: translateY(0);
         pointer-events: auto;
         padding: 0;
-        border-top-left-radius: 0;
-        border-top-right-radius: 0;
       }
 
       & .no-results {
@@ -978,7 +970,7 @@ select:focus-visible {
         display: block;
         background-color: var(--input-background-color);
         border: 1px solid var(--input-text-color-light);
-        box-shadow: 0px 0px 3px 1px inset rgba(46, 46, 44, 0.1);
+        box-shadow: 0px 0px 3px 1px inset var(--app-border-color);
         transition: 0.4s;
 
         &:before {
@@ -991,8 +983,8 @@ select:focus-visible {
           border: 1px solid var(--input-primary-color);
           background: radial-gradient(
             circle,
-            color-mix(in srgb, var(--input-primary-color) 100%, #fff 50%) 100%,
-            color-mix(in srgb, var(--input-primary-color) 60%, #fff 20%) 0%
+            color-mix(in srgb, var(--input-primary-color) 100%, var(--app-surface-strong) 50%) 100%,
+            color-mix(in srgb, var(--input-primary-color) 60%, var(--app-surface-strong) 20%) 0%
           );
           transition: 0.4s;
         }
@@ -1015,19 +1007,19 @@ select:focus-visible {
       }
 
       & > input:is([type="checkbox"], [type="radio"]):checked ~ .slider {
-        background-color: color-mix(in hsl, var(--input-background-color) 30%, rgba(90, 90, 90, 0.6) 40%);
-        box-shadow: 0px 0px 2px 1px inset rgba(46, 46, 44, 0.1);
+        background-color: color-mix(in hsl, var(--input-background-color) 30%, var(--app-text-accent-color) 40%);
+        box-shadow: 0px 0px 2px 1px inset var(--app-border-color);
         /* border: 1px solid var(--input-border-color); */
       }
       & > input:is([type="checkbox"], [type="radio"]) ~ .slider::before {
         box-shadow:
-          -1px 0px 1px 1px rgba(20, 20, 12, 0.1),
-          -1px -1px 1px 0px rgba(20, 20, 12, 0.1);
+          -1px 0px 1px 1px color-mix(in srgb, var(--app-text-color) 12%, transparent),
+          -1px -1px 1px 0px color-mix(in srgb, var(--app-text-color) 12%, transparent);
       }
       & > input:is([type="checkbox"], [type="radio"]):checked ~ .slider:before {
         box-shadow:
-          1px 0px 1px 1px rgba(20, 20, 12, 0.1),
-          2px 0px 1px 0px rgba(20, 20, 12, 0.1);
+          1px 0px 1px 1px color-mix(in srgb, var(--app-text-color) 12%, transparent),
+          2px 0px 1px 0px color-mix(in srgb, var(--app-text-color) 12%, transparent);
         transform: translateX(20px);
       }
     }
@@ -1074,7 +1066,10 @@ select:focus-visible {
     & > select:open::picker(select) {
       display: block;
       opacity: 0;
-      transform: translateY(calc(var(--input-popup-distance, 4px) * -1)) scaleY(0%) scaleX(99.7%);
+      /* A detached card (§5.2) enters by rising 4px, not by growing from the seam:
+         the old `scaleY(0%) scaleX(99.7%)` made the picker 0.3% narrower to hide the
+         side borders it shared with the control — borders it no longer shares. */
+      transform: translateY(calc(var(--input-popup-distance, 4px) * -1));
     }
   }
 }
@@ -1089,7 +1084,8 @@ select:focus-visible {
 ------------------------------------------------------------------ */
 @position-try --flip-top {
   inset: auto;
+  top: auto;
   left: anchor(left);
   width: anchor-size(width);
-  bottom: calc(anchor(top) - 1px);
+  bottom: calc(anchor(top) + var(--input-popup-distance, 4px));
 }

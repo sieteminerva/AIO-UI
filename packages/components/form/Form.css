@@ -23,7 +23,8 @@
   gap: 1em;
   margin-bottom: 1em;
   padding: 1.2em 1.5em 1.5em 1.5em;
-  border: 1px solid var(--input-primary-color);
+  /* a 1px line is non-text UI: the UI-safe brand shade, not the fill colour */
+  border: 1px solid var(--input-border-color);
   border-radius: var(--input-border-radius);
   /* background-color: var(--primary-background-color); */
   & legend {
@@ -336,7 +337,7 @@
         & option {
           transition: all 100ms;
           &:hover {
-            color: color-mix(in srgb, grey 30%, var(--input-text-color) 35%);
+            color: color-mix(in srgb, var(--app-text-accent-color) 30%, var(--input-text-color) 35%);
             background-color: color-mix(in srgb, var(--input-primary-color) 10%, var(--input-accent-color) 5%);
           }
         }
@@ -384,26 +385,28 @@
     min-height: var(--input-line-height);
     & > .input-popover {
       position-area: bottom span-right;
-      margin: unset;
       inset: unset;
       appearance: base-select;
-      top: anchor(bottom);
       opacity: 0;
       max-width: 500px;
 
-      border: 1px solid var(--input-primary-color);
+      border: 1px solid var(--input-border-color);
       border-radius: var(--input-border-radius);
       transition-delay: var(--input-dropdown-transition-delay, 30ms);
       background-color: var(--input-popover-background-color);
       backdrop-filter: blur(12px);
       color: inherit;
 
-      transform-origin: top;
-      transform: translateY(0) translateX(0) scaleY(0%) scaleX(99.7%);
+      /* `position-area` already places it; the extra `top: anchor(bottom)` overlapped
+         the control to merge the seam, and `translateY(-80%)` then threw it back over
+         the field on open. Both are gone: a card sits one gap below the control and
+         simply rises into place. */
+      margin-block-start: var(--input-popup-distance, 4px);
+      transform: translateY(calc(var(--input-popup-distance, 4px) * -1));
       transition: all 150ms ease;
       transition-behavior: allow-discrete;
 
-      box-shadow: 0 14px 20px rgba(136, 135, 81, 0.356);
+      box-shadow: var(--app-shadow-soft, 0 14px 20px rgba(92, 60, 20, 0.12));
       display: block;
       padding: 0.75em 0.5em 0.5em 0.5em;
       overflow-x: hidden;
@@ -412,9 +415,9 @@
         z-index: 10;
         opacity: 1;
         transition-delay: var(--input-dropdown-transition-delay, 30ms);
-        transform: translateY(-80%) translateX(0) scaleY(1) scaleX(1);
+        transform: translateY(0);
         scrollbar-width: thin;
-        box-shadow: 0 2px 3px 0 var(--input-primary-color);
+        box-shadow: var(--app-shadow-soft, 0 14px 20px rgba(92, 60, 20, 0.12));
         background-color: var(--input-background-color);
       }
 
@@ -472,14 +475,14 @@
       & .field select:open::picker(select) {
         display: block;
         opacity: 0;
-        transform: translateY(calc(var(--input-popup-distance, 4px) * -1)) translateX(-25%) scaleY(0%) scaleX(99.7%);
+        transform: translateY(calc(var(--input-popup-distance, 4px) * -1));
         transition-delay: var(--input-dropdown-transition-delay, 30ms);
 
         & > .input-popover {
           &:popover-open {
             display: block;
             opacity: 0;
-            transform: translateY(0) translateX(0) scaleY(0%) scaleX(99.7%);
+            transform: translateY(calc(var(--input-popup-distance, 4px) * -1));
           }
         }
       }
@@ -609,7 +612,7 @@
     cursor: pointer;
     text-align: center;
     vertical-align: middle;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--app-shadow-soft, 0 4px 6px rgba(92, 60, 20, 0.08));
     transition:
       background 0.2s ease,
       transform 0.1s ease;
@@ -668,7 +671,7 @@
 
     &:is(.back, .next, .submit):hover {
       background-color: color-mix(in srgb, var(--input-primary-color) 10%, var(--input-accent-color) 5%);
-      color: color-mix(in srgb, grey 30%, var(--input-text-color) 35%);
+      color: color-mix(in srgb, var(--app-text-accent-color) 30%, var(--input-text-color) 35%);
     }
 
     &:active {
@@ -693,7 +696,7 @@
       }
     }
     &:is(.download):hover {
-      color: color-mix(in srgb, grey 30%, var(--input-text-color) 35%);
+      color: color-mix(in srgb, var(--app-text-accent-color) 30%, var(--input-text-color) 35%);
     }
   }
 }

@@ -1,21 +1,20 @@
 /* ==========================================================================
    Code Block (.code-block)
-   One dark "paper" panel per source snippet: a caption, then `pre > code`.
+   One deep "paper" panel per source snippet: a caption, then `pre > code`.
 
-   The two base colours are deliberately LITERAL in both light and dark mode. A code
-   block is paper with ink of its own — it is not a surface of the page — so it does not
-   derive from `--app-surface-*`; doing so would invert it with the theme and turn it
-   into a second card. Only the corner radius joins the app contract.
+   The paper is DEEP in both modes (a code panel is not a surface of the page), but it is
+   not a fixed black box: it derives from `--app-surface-deep`, which is stained with the
+   live `--app-primary-color`. Swap the theme and the panel changes hue with it. Ink comes
+   from `--app-text-on-deep`; contrast is the contract, and the pair clears 4.5:1.
    ========================================================================== */
 
 :root,
 [data-theme] {
-  --code-block-background: #14100c;
-  /* Ink and paper are a fixed pair on purpose (a code panel is its own surface, not the
-     page's). Contrast is the contract: #e9e2d8 on #14100c = 14.7:1. The label/action
-     alphas are raised so the quiet rows still clear 4.5:1 on that same paper. */
-  --code-block-text-color: #e9e2d8;
-  --code-block-label-color: rgba(233, 226, 216, 0.72);
+  --code-block-background: var(--app-surface-deep, #171310);
+  /* Ink follows the paper, and every quiet row is an alpha of the SAME ink, so a retheme
+     moves the whole panel as one piece and no row can drift out of contrast on its own. */
+  --code-block-text-color: var(--app-text-on-deep, #f0e9de);
+  --code-block-label-color: color-mix(in srgb, var(--code-block-text-color) 72%, transparent);
   --code-block-radius: var(--app-component-border-radius, 1rem);
   --code-block-padding: 0.9rem 1rem;
   --code-block-font-family: ui-monospace, monospace;
@@ -25,14 +24,14 @@
   --code-block-label-letter-spacing: 0.08em;
   --code-block-gap: 0.5rem;
   --code-block-label-gap: 0.35rem;
-  --code-block-action-color: rgba(233, 226, 216, 0.8);
-  --code-block-action-hover-color: #e9e2d8;
-  --code-block-action-background: rgba(233, 226, 216, 0.08);
-  --code-block-action-hover-background: rgba(233, 226, 216, 0.16);
+  --code-block-action-color: color-mix(in srgb, var(--code-block-text-color) 80%, transparent);
+  --code-block-action-hover-color: var(--code-block-text-color);
+  --code-block-action-background: color-mix(in srgb, var(--code-block-text-color) 8%, transparent);
+  --code-block-action-hover-background: color-mix(in srgb, var(--code-block-text-color) 16%, transparent);
   --code-block-action-padding: 0.3rem 0.6rem;
   --code-block-action-gap: 0.35rem;
   --code-block-action-radius: calc(var(--code-block-radius) * 0.5);
-  --code-block-edit-outline: 1px solid rgba(233, 226, 216, 0.45);
+  --code-block-edit-outline: 1px solid color-mix(in srgb, var(--code-block-text-color) 45%, transparent);
 }
 
 /* Several labelled blocks in one call: they stack, they do not touch. */

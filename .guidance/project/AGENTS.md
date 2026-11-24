@@ -6,9 +6,9 @@
 
 ## Live claims
 
-| Agent    | Band      | Task                                                       | Write scope                                                                                                                         | Started    | Checkpoint                          | State  |
-| -------- | --------- | ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | ---------- | ----------------------------------- | ------ |
-| copilot b86 | Framework | Colour tokens before v0.2.6 — T1 root `light-dark()` rewrite | `packages/styles/src/variables.css`, `packages/components/input/{input.css,Input.css,Dropdown/Dropdown.css}`, `packages/components/form/Form.css`, `packages/components/{skeleton/Skeleton.css,masonry/Masonry.css,tab/Tab.css}`, `examples/demo/src/style.css` | 2026-11-25 | `/memories/session/color-tokens.md` | active |
+| Agent       | Band      | Task                                                    | Write scope                                                                                                                                                                                                                                           | Started    | Checkpoint                          | State  |
+| ----------- | --------- | ------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- | ----------------------------------- | ------ |
+| copilot b86 | Framework | Colour tokens before v0.2.6 — T2 form path + deep panel | `packages/styles/src/variables.css`, `packages/components/input/{Input.css,InputControls/InputControls.css,Dropdown/Dropdown.css,FileUploader/FileUploader.css}`, `packages/components/form/Form.css`, `packages/components/code-block/CodeBlock.css` | 2026-11-25 | `/memories/session/color-tokens.md` | active |
 
 ## Row shape
 

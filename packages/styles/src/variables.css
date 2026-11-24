@@ -63,6 +63,14 @@
   --app-surface-strong: light-dark(#ffffff, #231b14);
   --app-surface-muted: light-dark(rgba(244, 238, 226, 0.7), rgba(38, 30, 23, 0.65));
 
+  /* A panel that is DEEP in every mode — a code block is paper of its own, never the page
+     surface — but stained with the brand, so a cyan theme gets a cyan-tinted panel instead
+     of one black box for every theme. `light-dark()` picks the depth; the `color-mix()` on
+     top lets the live `--app-primary-color` through, so a theme swap re-stains it.
+     `--app-text-on-deep` is the ink that sits on it: the pair clears 4.5:1 by construction. */
+  --app-surface-deep: color-mix(in oklab, light-dark(#171310, #2a2119) 84%, var(--app-primary-color) 16%);
+  --app-text-on-deep: color-mix(in srgb, light-dark(#f0e9de, #f6efe4) 96%, var(--app-primary-color) 4%);
+
   /* Placeholder bone for a builder's `loading()` mockup. It is the one colour that has to
      exist BEFORE a component's own sheet does, so it belongs to this contract and not to a
      component layer. Derived from the brand fill, so no theme can forget to emit it and it

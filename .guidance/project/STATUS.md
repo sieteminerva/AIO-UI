@@ -21,7 +21,8 @@ b74 (2026-11-24): stage 3.3 landed — the form field node **is** the input sche
 config }` (+ form-owned `condition`/`then`), the adapter splits nothing, and `@aio-ui/form`
 publishes `FormField`/`FormNode` so a stale key is a compile error. Demo, gallery and the
 rajutan app migrated; `typecheck:examples` joined `check`; `iBasicSelectOption.color` added.
-Gate: check + verify green (994 pass, 1 skip). Rajutan carries its own commit in its repo.
+Gate: check + verify green (996 pass, 1 skip); `build:demo` green.
+**Open:** nothing here; the rajutan commit itself, then a release card if ordered.
 → `docs/framework/TASK-INPUT-SCHEMA.md`
 
 ### 2. Release v0.2.5 — published (tooling band)

@@ -10,10 +10,12 @@ Why / stages: `.guidance/plan-framework.md`. Engineering rules:
 | --- | ------------------------ | ----------- | ------------------------------------------------------------------------------------------------------- |
 | 1   | Theme console view (fab) | in progress | `examples/demo/src/ThemeConsole/TASKS.md` — view composed, gate green; open: page-only popover sections |
 | 2   | Inspect surface (b43)    | in progress | `inspect()` + `inspectPage()` green; open: dead relay removal, `#cleanupMap` reset                      |
-| 3   | Input schema split (b73) | handoff     | stages 1–3 landed (`86124cd`, `9d79f9f`); open: stage 3.3 examples from `docs/framework/TASK-INPUT-SCHEMA.md` |
+| 3   | Input schema split (b74) | done        | stages 1–3.3 landed (`86124cd`, `9d79f9f`, `bf5b40c`); form field node = input schema `{ content, config }`; gate `check` + `verify` 996 pass / 1 skip → `docs/framework/TASK-INPUT-SCHEMA.md` |
 
 ## Next
 
+- **Rajutan app commit** — `examples/rajutan` (its own repo) carries the migrated wizard +
+  `FormEditor` uncommitted; `tsc -p examples/rajutan/tsconfig.json` is clean. Commit there.
 - **Release v0.2.5 — published (b69, 2026-11-24).** Branch `releases` + tag `v0.2.5` pushed and
   probed 6/6 → 200; CDN stays **versioned**. Only the optional GitHub Release asset upload
   (`GITHUB_TOKEN`) remains → `docs/releases/v0.2.5.md`. The official release still waits for the

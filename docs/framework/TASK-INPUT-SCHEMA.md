@@ -1,7 +1,10 @@
 # TASK — input schema (content / config split)
 
-**Band:** Framework · **Claim:** board row `copilot b73` (this file is its checkpoint) ·
+**Band:** Framework · **Claim:** board row `copilot b74` (this file is its checkpoint) ·
 **Brief:** `packages/components/input/TASK.md`
+
+**Status:** done — stages 1, 2, 3 and 3.3 landed (`86124cd`, `9d79f9f`, `bf5b40c`). Gate:
+`npm run check` + `npm run verify` green (91 files, 996 pass, 1 skip); `npm run build:demo` green.
 
 ## Handoff — read this first
 
@@ -68,7 +71,6 @@ a text field still accepts `actions` + `popover`.
   `label`, constraints sit in `config`.
 
 ## Stage 3.3 — done (b74)
-
 **One shape, everywhere.** The form field node is now the input schema itself —
 `{ content, config }` — plus the form's own `condition` / `then` beside the two blocks. The adapter
 no longer splits a flat node (`splitField()` and its two key lists are gone); it reads the blocks
@@ -201,3 +203,16 @@ Stage 2: `npm run check` green (api-map + catalogue refreshed) and `npm run veri
 91 files, 992 tests passed, 1 skipped. Committed as `86124cd`.
 Stage 3: `npm run check` green (api-map + catalogue refreshed) and `npm run verify` green —
 91 files, 994 passed, 1 skipped.
+Stage 3.3: `npm run check` green (api-map + catalogue refreshed), `npm run verify` green — 91
+files, 996 passed, 1 skipped; `npm run build:demo` green. Committed as `bf5b40c`.
+
+## Next
+
+Nothing in this task. The remaining work sits in two other places:
+
+1. **Rajutan commit** — `examples/rajutan` is its own repository; `src/content/wizard.ts` and
+   `src/Components/form-editor/FormEditor.ts` hold the migrated shapes uncommitted, and
+   `npx tsc --noEmit -p examples/rajutan/tsconfig.json` is clean. Commit there, not here.
+2. **Follow-ups the migration surfaced** (not started, no owner): `Attribute.ts` still exposes a
+   `range` property that is not part of any schema block (it lands in `config.attributes`), and
+   `InputControls`/`FormEditor` no longer receive `disableDefault` — a key nothing reads since b72.

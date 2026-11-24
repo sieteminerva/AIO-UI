@@ -11,8 +11,11 @@
 :root,
 [data-theme] {
   --code-block-background: #14100c;
+  /* Ink and paper are a fixed pair on purpose (a code panel is its own surface, not the
+     page's). Contrast is the contract: #e9e2d8 on #14100c = 14.7:1. The label/action
+     alphas are raised so the quiet rows still clear 4.5:1 on that same paper. */
   --code-block-text-color: #e9e2d8;
-  --code-block-label-color: rgba(233, 226, 216, 0.62);
+  --code-block-label-color: rgba(233, 226, 216, 0.72);
   --code-block-radius: var(--app-component-border-radius, 1rem);
   --code-block-padding: 0.9rem 1rem;
   --code-block-font-family: ui-monospace, monospace;
@@ -22,7 +25,7 @@
   --code-block-label-letter-spacing: 0.08em;
   --code-block-gap: 0.5rem;
   --code-block-label-gap: 0.35rem;
-  --code-block-action-color: rgba(233, 226, 216, 0.7);
+  --code-block-action-color: rgba(233, 226, 216, 0.8);
   --code-block-action-hover-color: #e9e2d8;
   --code-block-action-background: rgba(233, 226, 216, 0.08);
   --code-block-action-hover-background: rgba(233, 226, 216, 0.16);

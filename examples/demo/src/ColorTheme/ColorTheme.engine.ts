@@ -63,6 +63,13 @@ export class ColorThemeEngine {
   static readonly MIX_TARGETS: readonly MixTarget[] = ["auto", "tint", "shade", "alpha", "accent", "primary", "complement"];
   static readonly DEFAULT_MIXER: MixerSettings = { mode: "oklch" };
   static readonly DEFAULT_BASES: BaseColors = { primary: "#53afc6", accent: "#d747b0" };
+  /**
+   * Body ink is not decoration: past this share of the brand colour, text stops being
+   * text. A preset or a slider may ask for 75% (the `chocolaris`/`green-bliss` presets
+   * did), which painted the whole page in the brand hue at ~3:1 on its surface. The cap
+   * keeps a visible brand tint while the body stays legible in every theme.
+   */
+  static readonly MAX_TEXT_MIX = 25;
   static readonly RAMP_STOPS = ["50", "100", "200", "300", "400", "500", "600", "700", "800", "900"] as const;
 
   /**
@@ -371,7 +378,9 @@ export class ColorThemeEngine {
     const mixOf = (color: string, pct: number, into: string, name?: string) => {
       const override = name ? overrides[name] : undefined;
       // Range inputs bind strings, so never trust the raw override values.
-      const amount = ColorThemeEngine.toNumber(override?.amount, pct);
+      const requested = ColorThemeEngine.toNumber(override?.amount, pct);
+      // One guard the sliders cannot pass: body text keeps a readable ink floor.
+      const amount = name === "text" ? Math.min(requested, ColorThemeEngine.MAX_TEXT_MIX) : requested;
       // Hue rotation is a PRE-transform of the source color, so it is applied
       // *before* the `color-mix()` interpolation and is therefore independent of
       // the mix space. It is emitted as CSS relative color syntax so the token
@@ -424,7 +433,12 @@ export class ColorThemeEngine {
         : `linear-gradient(175deg, ${pageTop} 0%, ${pageMid} 45%, ${pageBottom} 100%)`,
       "--app-surface-background-color": `color-mix(in oklab, ${surfacePanel} ${dark ? 78 : 82}%, transparent)`,
       "--app-surface-strong": surface,
-      "--app-surface-muted": `color-mix(in oklab, ${mix(8, "#f4eee2")} ${dark ? 62 : 80}%, transparent)`,
+      // The muted wash must start from a paper of its OWN mode: mixing into the light
+      // `#f4eee2` paper in dark mode produced a light beige behind in-line code and any
+      // `-muted` surface, so light text sank into it. Same wash, mode-correct base.
+      "--app-surface-muted": `color-mix(in oklab, ${mix(8, dark ? "#1c1611" : "#f4eee2")} ${dark ? 62 : 80}%, transparent)`,
+      // Skeleton must be emitted too, or a generated theme keeps the warm default patch.
+      "--app-skeleton-bg": dark ? "rgba(255, 249, 240, 0.1)" : "rgba(146, 84, 8, 0.12)",
       "--app-text-accent-color": dark ? mix(24, "#cfc5b8") : mix(30, "#6e5f51"),
       "--app-border-color": mix(dark ? 34 : 30, "transparent", "border"),
       "--app-border-focus": bases.primary,
@@ -550,7 +564,14 @@ export class ColorThemeEngine {
       const l = light[key] ?? dark[key];
       const d = dark[key] ?? light[key];
       // 📎 Identical across modes → plain declaration; differing → zipped.
-      zipped[key] = l === d ? l : `light-dark(${l}, ${d})`;
+      // `light-dark()` accepts `<color>` only: a gradient or a shadow list pasted into
+      // it is dropped by CSS at computed-value time. Those ride `variants` (see
+      // `splitTokens`), so this helper keeps the light value and never emits them.
+      zipped[key] = l === d
+        ? l
+        : ColorThemeEngine.isColorToken(l) && ColorThemeEngine.isColorToken(d)
+          ? `light-dark(${l}, ${d})`
+          : l;
     }
     return zipped;
   }

@@ -6,10 +6,11 @@ Why / stages: `.guidance/plan-framework.md`. Engineering rules:
 
 ## Active (max 3)
 
-| #   | Task                     | State       | Gate                                                                                                   |
-| --- | ------------------------ | ----------- | ------------------------------------------------------------------------------------------------------ |
+| #   | Task                     | State       | Gate                                                                                                    |
+| --- | ------------------------ | ----------- | ------------------------------------------------------------------------------------------------------- |
 | 1   | Theme console view (fab) | in progress | `examples/demo/src/ThemeConsole/TASKS.md` — view composed, gate green; open: page-only popover sections |
 | 2   | Inspect surface (b43)    | in progress | `inspect()` + `inspectPage()` green; open: dead relay removal, `#cleanupMap` reset                      |
+| 3   | Colour tokens (b82)      | in progress | one `light-dark()` root + per-component text contrast; code-block ink is the reported defect      |
 
 ## Next
 

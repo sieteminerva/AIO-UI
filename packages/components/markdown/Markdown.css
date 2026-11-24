@@ -13,7 +13,12 @@
   --markdown-muted-color: var(--app-text-accent-color, #6e5f51);
   --markdown-border-color: var(--app-border-color, #e2e2e6);
   --markdown-accent-color: var(--app-primary-color, #925408);
-  --markdown-inline-surface: var(--app-surface-muted, #f4eee2);
+  /* In-line code (`backticks`) must never sink into its own wash. `--app-surface-muted`
+     is the tempting chip, but it is only a wash — under a generated theme it used to
+     resolve to a light paper in dark mode, so light ink vanished. The solid surface is
+     the one token pair the app already promises matches `--app-text-color` (the WCAG
+     "body text on surface" row), so the chip can never be less readable than the body. */
+  --markdown-inline-surface: var(--app-surface-strong, #f4eee2);
   --markdown-font-size: 0.9rem;
   --markdown-line-height: 1.65;
   --markdown-inline-font-size: 0.85em;

@@ -31,6 +31,12 @@ Why / stages: `.guidance/plan-framework.md`. Engineering rules:
 
 ## Landed (newest first)
 
+- **Batch 80 (2026-11-24)** — a repeater's first row is its **source** and is never deletable
+  (it carries the record the clones copy); clones follow `removable` (default `true`) and
+  `hideOnSource` hides the source's button instead of leaving it disabled. `minItems`/`atMin`
+  are gone (the count-based floor could not express "keep index 0"). Tests, `INPUT-ACTIONS.md`,
+  `InputControls.css` comments and the demo label follow. Proof: `InputControls.test.ts` 28/28,
+  `check` + `verify` green (92 files, 1011 pass, 1 skip).
 - **Batch 79 (2026-11-24)** — one way to size a field: `wide` is a percentage of the row (20/40/40 is
   exactly 20/40/40), absent = the whole row, the integer `span` and the 16-grid are retired, and
   `column` is only the line cap (the 4th child of `column: 3` starts the next line). Placement is

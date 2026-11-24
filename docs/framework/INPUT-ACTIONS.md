@@ -95,31 +95,31 @@ quantity). `InputBuilder` writes the marker as `data-editable="true"` on the fie
 and the set skips any control whose ancestor carries it, so it also works per field inside
 a locked group. `config.editable` is accepted as well as the node-level key.
 
-## The repeater floor
+## The repeater source
 
-A set is a **repeater** when it declares `add` _and_ `delete`. Removing the last item is
-usually a mistake, so `delete` stops at `minItems` (default `1`) and the buttons of the
-whole family agree on the count: after an `add` or a `delete`, every sibling's delete
-button is refreshed.
+A set is a **repeater** when it declares `add` _and_ `delete`. The first item — the row the
+first Add was clicked from, index 0 of the family — is the **source**: it carries the record
+every clone copies, so it is never deletable. Clones are, by default; every sibling's button
+is refreshed whenever one arrives or leaves.
 
 ```ts
 config: {
-  actions: ["add", { type: "delete", label: "Hapus", minItems: 0 }];
+  actions: ["add", { type: "delete", label: "Hapus", hideOnSource: true }];
 }
 ```
 
-| Option     | Default   | Meaning                                                                       |
-| ---------- | --------- | ----------------------------------------------------------------------------- |
-| `minItems` | `1`       | How many items must survive. `0` allows emptying the repeater completely.     |
-| `atMin`    | `disable` | `disable` keeps the button visible but inert; `hide` takes it out of the row. |
+| Option         | Default | Meaning                                                                |
+| -------------- | ------- | ---------------------------------------------------------------------- |
+| `removable`    | `true`  | Whether a **clone** may be removed. `false` keeps every clone as well. |
+| `hideOnSource` | `false` | Hide the source's button instead of leaving it disabled.               |
 
 A family is the set of sibling scopes carrying the same `data-repeat` signature
 (`tag.class…`, written before the host adds its state classes and copied to every clone).
 Two repeaters of the same shape directly under one parent are therefore one family.
 
-The floor only exists inside a repeater: a lone `delete` (no `add`) ignores `minItems` and
-removes its scope whatever the count. A stale button — a sibling removed outside the set —
-still hits the guard, which logs once and re-refreshes the family instead of deleting.
+The source rule only exists inside a repeater: a lone `delete` (no `add`) has no family and
+removes its scope. A stale button — a sibling removed outside the set — still hits the guard,
+which logs once and re-refreshes the family instead of deleting.
 
 ## `search`
 

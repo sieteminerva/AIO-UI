@@ -177,7 +177,7 @@ export const InputControlSet: iFormGroupNode = {
             }
           }
         ],
-      editable: true
+        editable: true
       }
     },
     {
@@ -186,9 +186,9 @@ export const InputControlSet: iFormGroupNode = {
         id: "test-2",
         label: "Test Text",
         placeholder: "Pilih mana saja",
-          options: [
-            "A", "B", "C", "D"
-          ]
+        options: [
+          "A", "B", "C", "D"
+        ]
       },
       config: {
         actions: [
@@ -222,12 +222,37 @@ export const InputControlSet: iFormGroupNode = {
             }
           }
         ],
-      editable: true
+        editable: true
       }
     },
     // A group is a scope for the control set: `search` reads the whole fieldset with the
     // same vocabulary a submit uses, and reports it through `context.result` + a `search`
     // event on the fieldset.
+    {
+      content: {
+        type: "text",
+        id: "test-editor-action",
+        label: "Test Text",
+        placeholder: "Isi apa aja"
+      },
+      config: {
+        actions: [{ type: "editor", onClick: () => { } }],
+        // editable: true
+      }
+    },
+    {
+      content: {
+        type: "dropdown",
+        id: "test-repeater-action",
+        label: "Test Text",
+        placeholder: "Isi apa aja",
+        options: ["A", "B", "C", "D"]
+      },
+      config: {
+        actions: [{ type: "repeater", onClick: () => { }, hideOnSource: true }],
+        // editable: true
+      }
+    },
     {
       id: "lookup",
       title: "Cari pesanan lama",
@@ -280,14 +305,14 @@ export const DropdownSet: iFormGroupNode = {
         id: "test-dropdown-single",
         label: "Satu pilihan (style=select)",
         placeholder: "Ketik atau pilih satu...",
-          options: [
-            { value: "jakarta", label: "Jakarta" },
-            { value: "bandung", label: "Bandung" },
-            { value: "surabaya", label: "Surabaya" },
-            { value: "yogyakarta", label: "Yogyakarta" },
-            { value: "bali", label: "Bali" },
-            { value: "makassar", label: "Makassar" }
-          ]
+        options: [
+          { value: "jakarta", label: "Jakarta" },
+          { value: "bandung", label: "Bandung" },
+          { value: "surabaya", label: "Surabaya" },
+          { value: "yogyakarta", label: "Yogyakarta" },
+          { value: "bali", label: "Bali" },
+          { value: "makassar", label: "Makassar" }
+        ]
       },
       config: {
         view: "select",
@@ -325,7 +350,7 @@ export const DropdownSet: iFormGroupNode = {
         onMultiChange: (items: any[]) => {
           console.log("[Dropdown multi] onMultiChange", items);
         },
-      multiple: true
+        multiple: true
       }
     },
   ]
@@ -480,90 +505,90 @@ export const fieldTypesSchema: readonly FormNode[] = [
           id: "t-picker",
           label: "picker (icon)",
           value: "gear",
-            options: [
-              "gear", "hand swipe", "inbox", "user",
-              "user list", "user settings",
-              "checkmark circle",
-              "checkmark",
-              "cross circle",
-              "close",
-              "edit",
-              "plus",
-              "plus circle",
-              "plus square",
-              "trash",
-              "three dots framed",
-              "three dots horizontal",
-              "three dots square vertical",
-              "three dots vertical",
-              "hamburger",
-              "paper clip",
-              "search",
-              "arrow left",
-              "arrow right",
-              "arrow left circle",
-              "arrow right circle",
-              "double arrow left",
-              "double arrow right",
-              "expand arrow",
-              "bell warning",
-              "bell",
-              "error",
-              "info",
-              "notification",
-              "text edit",
-              "download file",
-              "add file circle",
-              "adobe illustrator file",
-              "adobe pdf file",
-              "adobe photoshop file",
-              "copy file round",
-              "copy file",
-              "css file",
-              "csv file",
-              "file sheets",
-              "doc file",
-              "edit file round",
-              "edit file",
-              "file edit",
-              "file outline dotted",
-              "file",
-              "add file",
-              "html file",
-              "javascript file",
-              "jpg file",
-              "json file",
-              "mp3 file",
-              "mp4 file",
-              "png file",
-              "svg file",
-              "txt file",
-              "xls file",
-              "zip file",
-              "add folder circle",
-              "add folder",
-              "folder",
-              "adobe illustrator logo",
-              "adobe photoshop logo",
-              "google logo",
-              "github logo",
-              "weburl",
-              "instagram logo",
-              "itunes logo",
-              "qrcode",
-              "scan qrcode",
-              "barcode",
-              "add cart",
-              "cart",
-              "expand",
-              "recycled",
-              "rotate",
-              "write mail",
-              "moon dark",
-              "moon sleep",
-              "moon sun",
-              "sunrise",
-            ]
+          options: [
+            "gear", "hand swipe", "inbox", "user",
+            "user list", "user settings",
+            "checkmark circle",
+            "checkmark",
+            "cross circle",
+            "close",
+            "edit",
+            "plus",
+            "plus circle",
+            "plus square",
+            "trash",
+            "three dots framed",
+            "three dots horizontal",
+            "three dots square vertical",
+            "three dots vertical",
+            "hamburger",
+            "paper clip",
+            "search",
+            "arrow left",
+            "arrow right",
+            "arrow left circle",
+            "arrow right circle",
+            "double arrow left",
+            "double arrow right",
+            "expand arrow",
+            "bell warning",
+            "bell",
+            "error",
+            "info",
+            "notification",
+            "text edit",
+            "download file",
+            "add file circle",
+            "adobe illustrator file",
+            "adobe pdf file",
+            "adobe photoshop file",
+            "copy file round",
+            "copy file",
+            "css file",
+            "csv file",
+            "file sheets",
+            "doc file",
+            "edit file round",
+            "edit file",
+            "file edit",
+            "file outline dotted",
+            "file",
+            "add file",
+            "html file",
+            "javascript file",
+            "jpg file",
+            "json file",
+            "mp3 file",
+            "mp4 file",
+            "png file",
+            "svg file",
+            "txt file",
+            "xls file",
+            "zip file",
+            "add folder circle",
+            "add folder",
+            "folder",
+            "adobe illustrator logo",
+            "adobe photoshop logo",
+            "google logo",
+            "github logo",
+            "weburl",
+            "instagram logo",
+            "itunes logo",
+            "qrcode",
+            "scan qrcode",
+            "barcode",
+            "add cart",
+            "cart",
+            "expand",
+            "recycled",
+            "rotate",
+            "write mail",
+            "moon dark",
+            "moon sleep",
+            "moon sun",
+            "sunrise",
+          ]
         },
         config: {
           view: "icon",
@@ -589,7 +614,7 @@ export const fieldTypesSchema: readonly FormNode[] = [
         config: {
           view: "swatch",
           column: 8,
-        multiple: true
+          multiple: true
         }
       },
       { content: { type: "checkbox", id: "t-checkbox", label: "checkbox" }, config: { position: "right" } },
@@ -637,9 +662,10 @@ export const validationSchema: readonly FormNode[] = [
           label: "Invoice (pattern INV-…)",
           placeholder: "INV-001"
         },
-        config: { wide: 50,
-        required: true,
-        pattern: "INV-[0-9]+"
+        config: {
+          wide: 50,
+          required: true,
+          pattern: "INV-[0-9]+"
         }
       },
       { content: { type: "number", id: "v-qty", label: "Jumlah 1–10" }, config: { wide: 50, required: true, min: 1, max: 10 } },
@@ -722,7 +748,7 @@ export const calculationSchema: readonly FormNode[] = [
               total: getNumber("calc-qty") * getNumber("calc-price"),
             }),
           },
-        min: 0
+          min: 0
         }
       },
       { content: { type: "number", id: "calc-price", label: "Harga satuan" }, config: { wide: 50, min: 0 } },

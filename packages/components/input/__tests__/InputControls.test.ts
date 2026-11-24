@@ -404,76 +404,63 @@ describe("repeated scope", () => {
   });
 });
 
-describe("repeater delete floor", () => {
+describe("repeater source", () => {
   const repeater = (deleteAction: Record<string, any> = { type: "delete", label: "Hapus", onClick: () => undefined }) => [
     { type: "add", label: "Tambah", onClick: () => undefined },
     deleteAction,
   ];
 
-  it("keeps the last item and brings the survivor's button back when a copy arrives", () => {
+  it("keeps the source row and lets a clone go", () => {
     const { fieldset } = group();
     const node = controls(fieldset, repeater());
     const add = node.querySelector("button.add") as HTMLButtonElement;
-    const del = node.querySelector("button.delete") as HTMLButtonElement;
-    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    const sourceDelete = node.querySelector("button.delete") as HTMLButtonElement;
+
+    // The source carries the record the clones copy: inert from the first render.
+    expect(sourceDelete.disabled).toBe(true);
+    expect(sourceDelete.hidden).toBe(false);
 
     add.click();
     const clone = document.querySelectorAll("fieldset.form-group")[1] as HTMLElement;
-    expect(document.querySelectorAll("fieldset.form-group")).toHaveLength(2);
-    expect(del.disabled).toBe(false);
-    expect((clone.querySelector("button.delete") as HTMLButtonElement).disabled).toBe(false);
+    const cloneDelete = clone.querySelector("button.delete") as HTMLButtonElement;
+    expect(cloneDelete.disabled).toBe(false);
+    expect(sourceDelete.disabled).toBe(true);
 
-    (clone.querySelector("button.delete") as HTMLButtonElement).click();
+    cloneDelete.click();
     expect(document.querySelectorAll("fieldset.form-group")).toHaveLength(1);
-    expect(del.disabled).toBe(true);
-    expect(warn).toHaveBeenCalled();
-
-    warn.mockRestore();
   });
 
-  it("still refuses a stale button, and says why", () => {
+  it("hides the source button when the action says hideOnSource", () => {
     const { fieldset } = group();
-    controls(fieldset, repeater());
-    (fieldset.querySelector("button.add") as HTMLButtonElement).click();
+    const node = controls(fieldset, repeater({ type: "delete", label: "Hapus", hideOnSource: true, onClick: () => undefined }));
+    const sourceDelete = node.querySelector("button.delete") as HTMLButtonElement;
 
-    // The copy vanishes without the set's bookkeeping, so the survivor's button is stale.
-    (document.querySelectorAll("fieldset.form-group")[1] as HTMLElement).remove();
-    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
-
-    (fieldset.querySelector("button.delete") as HTMLButtonElement).click();
-
-    expect(document.querySelectorAll("fieldset.form-group")).toHaveLength(1);
-    expect(warn).toHaveBeenCalledWith(expect.stringContaining("minItems: 0"));
-    warn.mockRestore();
+    expect(sourceDelete.hidden).toBe(true);
+    expect(sourceDelete.disabled).toBe(true);
   });
 
-  it("lets a repeater be emptied when the action says minItems: 0", () => {
+  it("keeps every clone when the action says removable: false", () => {
     const { fieldset } = group();
-    controls(fieldset, repeater({ type: "delete", label: "Hapus", minItems: 0, onClick: () => undefined }));
+    const node = controls(fieldset, repeater({ type: "delete", label: "Hapus", removable: false, onClick: () => undefined }));
+    (node.querySelector("button.add") as HTMLButtonElement).click();
 
-    (fieldset.querySelector("button.delete") as HTMLButtonElement).click();
-
-    expect(document.querySelector("fieldset.form-group")).toBeNull();
-  });
-
-  it("hides the delete button at the floor when atMin asks for it", () => {
-    const { fieldset } = group();
-    controls(fieldset, repeater({ type: "delete", label: "Hapus", atMin: "hide", onClick: () => undefined }));
-    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
-
-    (fieldset.querySelector("button.add") as HTMLButtonElement).click();
     const clone = document.querySelectorAll("fieldset.form-group")[1] as HTMLElement;
-    (clone.querySelector("button.delete") as HTMLButtonElement).click();
-
-    const survivor = fieldset.querySelector("button.delete") as HTMLButtonElement;
-    expect(survivor.hidden).toBe(true);
-    expect(survivor.disabled).toBe(true);
-    warn.mockRestore();
+    expect((clone.querySelector("button.delete") as HTMLButtonElement).disabled).toBe(true);
+    expect((node.querySelector("button.delete") as HTMLButtonElement).disabled).toBe(true);
   });
 
-  it("leaves a lone delete alone: there is no family to count", () => {
+  it("titles explain why the source cannot go", () => {
     const { fieldset } = group();
-    controls(fieldset, [{ type: "delete", label: "Hapus", minItems: 1, onClick: () => undefined }]);
+    const node = controls(fieldset, repeater());
+    const sourceDelete = node.querySelector("button.delete") as HTMLButtonElement;
+
+    expect(sourceDelete.title).toBe("The source row cannot be deleted");
+    expect(node.querySelector("button.add") as HTMLButtonElement).not.toBeNull();
+  });
+
+  it("leaves a lone delete alone: there is no family", () => {
+    const { fieldset } = group();
+    controls(fieldset, [{ type: "delete", label: "Hapus", onClick: () => undefined }]);
 
     (fieldset.querySelector("button.delete") as HTMLButtonElement).click();
 

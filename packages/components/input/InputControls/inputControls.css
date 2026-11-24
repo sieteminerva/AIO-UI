@@ -130,7 +130,7 @@
 
     &[position="right"],
     &[data-position="right"] {
-      /* "Last" means last *visible*: a hidden member (`atMin: "hide"`) is still a DOM
+      /* "Last" means last *visible*: a hidden member (`hideOnSource`) is still a DOM
          child, and it must not hand its radius to a node that has left the row. */
       & button:not([hidden]):not(:has(~ button:not([hidden]))) {
         border-top-right-radius: var(--input-border-radius, 4px);
@@ -190,7 +190,7 @@
         opacity: 0.45;
       }
 
-      /* A `atMin: "hide"` delete must really leave the row: the author `display: inline-flex`
+      /* A `hideOnSource` delete must really leave the row: the author `display: inline-flex`
          above would otherwise beat the browser's `[hidden]` rule. */
       &[hidden] {
         display: none;

@@ -187,7 +187,7 @@ export class InputControlsBuilder extends Builder<InputControlsElementType> {
     // the survivor's button, and a scope rendered at the floor must start inert.
     this.#markRepeat(scope, actions);
     if (actions.some((action) => action.type === "delete" || action.type === "remove")) {
-      this.#refreshDelete(this.#family(scope));
+      this.#refreshDelete(this.#family(scope), { scope, controls });
     }
   }
 
@@ -445,47 +445,51 @@ export class InputControlsBuilder extends Builder<InputControlsElementType> {
 
     // The sibling that was the last item now has company: its delete button has to come
     // back before anyone clicks it.
-    this.#refreshDelete(this.#family(clone), true);
+    this.#refreshDelete(this.#family(clone));
 
     return clone;
   }
 
   /**
-   * Removes a scope, unless that would take a repeater below its floor.
+   * Removes a scope, unless it is the source of a repeater or the set is fixed.
    *
    * @param scope - Field or group.
-   * @param action - The `delete` definition, which may set `minItems`.
-   * @returns `false` when the scope is a form or the family is already at its floor.
+   * @param action - The `delete` definition, which may set `removable`.
+   * @returns `false` when the scope is a form, the repeater's source, or a fixed set.
    *
    * @summary Never a whole form: a control set edits records, it does not delete the
    * container the visitor is filling in.
    *
-   * A **repeater** (a set that declares `add` too) keeps at least `minItems` items — the
-   * default is 1, because the row that carries the Add button also carries the form's
-   * data, and an empty repeater is almost never what the visitor meant. `minItems: 0` is
-   * the explicit switch for "emptying it is allowed". Outside a repeater `minItems` is
-   * ignored: there is no family to count, so the old remove-the-scope behaviour stays.
+   * A **repeater** (a set that declares `add` too) has one **source** instance — the row
+   * the first Add was clicked from, index 0 of the family. It is what the clones copy, so it
+   * is never deletable; `removable: false` extends that to the clones. Outside a repeater
+   * the old remove-the-scope behaviour stays: there is no family to protect.
    */
   protected delete(scope: HTMLElement, action?: iInputActionDefinition): boolean {
     if (scope.tagName === "FORM") return false;
 
     const repeat = Boolean(scope.dataset.repeat);
     const family = repeat ? this.#family(scope) : [scope];
-    const min = action?.minItems ?? 1;
 
-    // A stale button (a sibling removed outside the set) still reaches this guard, which
-    // is why the warning lives here and not only in the refresh.
-    if (repeat && family.length <= min) {
-      console.warn(
-        `[input-controls] delete refused: the repeater keeps at least ${min} item(s). ` +
-        "Declare minItems: 0 on the delete action to allow emptying it."
-      );
-      this.#refreshDelete(family);
-      return false;
+    if (repeat) {
+      const isSource = family[0] === scope;
+      const removable = action?.removable ?? true;
+
+      // A stale button (a sibling removed outside the set) still reaches this guard, which
+      // is why the warning lives here and not only in the refresh.
+      if (isSource || !removable) {
+        console.warn(
+          isSource
+            ? "[input-controls] delete refused: the source row of a repeater stays."
+            : "[input-controls] delete refused: this repeater declares removable: false."
+        );
+        this.#refreshDelete(family);
+        return false;
+      }
     }
 
     scope.remove();
-    if (repeat) this.#refreshDelete(family, true);
+    if (repeat) this.#refreshDelete(family);
     return true;
   }
 
@@ -793,42 +797,48 @@ export class InputControlsBuilder extends Builder<InputControlsElementType> {
   }
 
   /**
-   * Makes every delete button of a family agree on the count.
+   * The delete button of a set that is still being built.
+   *
+   * @param controls - The `.controls` node `initialize` is wiring.
+   * @returns Its delete/remove button, or `null`.
+   *
+   * @summary `initialize` runs before the host appends the node, so the first state pass
+   * cannot find the button under the scope yet.
+   */
+  #pendingDelete(controls: HTMLElement): HTMLButtonElement | null {
+    return controls.querySelector<HTMLButtonElement>(":scope > button.delete, :scope > button.remove");
+  }
+
+  /**
+   * Makes every delete button of a family agree on which rows may go.
    *
    * @param members - Scopes of the family; a just-removed one may still be listed.
-   * @param announce - Warn once when the family has reached its floor. Used after an
-   *   `add`/`delete`, never on first render (a page that opens with one item is not a
-   *   mistake worth a console line per mount).
+   * @param pending - The set `initialize` is wiring, not yet inside its scope.
    *
-   * @summary A guard that only the clicked button knows about is not a guard: the sibling
-   * that stayed behind has to learn that it is now the last item, and the one that got
-   * company has to become deletable again. Each member's own `minItems`/`atMin` decide how
-   * it looks, so a schema can differ between sets.
+   * @summary A guard that only the clicked button knows about is not a guard: every
+   * sibling has to learn the same rule. The **source** (first in the family) is always
+   * blocked; clones follow the action's `removable`, and `hideOnSource` takes the source's
+   * button out of the row instead of leaving it greyed out.
    */
-  #refreshDelete(members: HTMLElement[], announce = false): void {
+  #refreshDelete(members: HTMLElement[], pending?: { scope: HTMLElement; controls: HTMLElement }): void {
     const family = members.filter((member) => member.isConnected);
 
     for (const member of family) {
-      const button = this.#deleteButton(member);
+      const button = this.#deleteButton(member)
+        ?? (pending && member === pending.scope ? this.#pendingDelete(pending.controls) : null);
       if (!button) continue;
 
       const action = button.__payload?.action as iInputActionDefinition | undefined;
-      const min = action?.minItems ?? 1;
-      const atMin = family.length <= min;
+      const repeat = Boolean(member.dataset.repeat);
+      const isSource = repeat && member === family[0];
+      const removable = action?.removable ?? true;
+      const blocked = repeat && (isSource || !removable);
 
-      button.hidden = atMin && action?.atMin === "hide";
-      button.disabled = atMin;
-      button.title = atMin
-        ? `At least ${min} item(s) must remain`
+      button.hidden = blocked && isSource && (action?.hideOnSource ?? false);
+      button.disabled = blocked;
+      button.title = blocked
+        ? (isSource ? "The source row cannot be deleted" : "This repeater keeps every row")
         : `Click to ${action?.label ?? "delete"}`;
-    }
-
-    if (announce && family.some((member) => (this.#deleteButton(member)?.disabled ?? false))) {
-      const first = this.#deleteButton(family[0])?.__payload?.action as iInputActionDefinition | undefined;
-      console.warn(
-        `[input-controls] repeater is at its minimum (${first?.minItems ?? 1}): delete is ` +
-        `${first?.atMin === "hide" ? "hidden" : "disabled"} until another item is added.`
-      );
     }
   }
 

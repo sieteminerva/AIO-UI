@@ -4,7 +4,8 @@
 > **only** after the user picks it — never "to orient" (`AGENT_RULES.md` §13). Rewritten each
 > session, newest on top. One card = one line + one pointer.
 >
-> Recent batches (newest first): **b79** `wide` is a percentage of the row (span retired, `column`
+> Recent batches (newest first): **b80** repeater `removable`/`hideOnSource` (source row) ·
+> **b79** `wide` is a percentage of the row (span retired, `column`
 > = line cap) · **b78** a container honours `wide`/`span` (group + cascade) ·
 > **b76** core drops the input node types + docs say `content.options`
 > · **b74** stage 3.3: form schema = input schema, examples migrated
@@ -29,8 +30,8 @@ lines. **(B)** `config.footer` is appended (`Form.ts:661-666`) and no rule style
 `select`/`dropdown` popup is clipped near the viewport edge or inside `overflow: hidden` — fix by CSS
 Anchor Positioning + Native Popover (`input.css` §5.2 `:440`, §10.3 `:1067`, `Dropdown/Dropdown.ts`),
 keeping `::picker(select)` and `.menu` visually identical. Each item needs a measurement.
-**Open:** B and C not started; the release waits for both. Also queued from b79's review: repeater
-config (`minItems`→`removable`, `atMin`→`hideOnSource`).
+**Open:** B and C not started; the release waits for both. Repeater config landed in b80
+(`minItems`→`removable`, `atMin`→`hideOnSource`).
 → `docs/framework/TASK-INPUT-POLISH.md`
 
 ### 2. Input schema + legacy sweep — done, one release note owed (framework band)

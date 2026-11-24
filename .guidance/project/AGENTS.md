@@ -6,9 +6,7 @@
 
 ## Live claims
 
-| Agent       | Band      | Task                                                                          | Write scope                                                                                                                                                                                                                                           | Started    | Checkpoint                          | State  |
-| ----------- | --------- | ----------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- | ----------------------------------- | ------ |
-| copilot b78 | Framework | Input & form polish — A: a `wide`/`span` share is honoured by every container | `packages/components/form/{FormLayout.ts,Form.ts,Form.css,FormSchema.ts,README.md}`, `packages/components/form/adapters/Cascade.ts`, `packages/components/form/__tests__/{FormRow,FormLayout,Cascade}.test.ts`, `docs/framework/TASK-INPUT-POLISH.md` | 2026-11-24 | `/memories/session/input-polish.md` | active |
+_No live writer._
 
 ## Row shape
 

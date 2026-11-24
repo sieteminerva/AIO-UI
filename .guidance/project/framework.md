@@ -6,20 +6,18 @@ Why / stages: `.guidance/plan-framework.md`. Engineering rules:
 
 ## Active (max 3)
 
-| #   | Task                     | State       | Gate                                                                                                                                                                              |
-| --- | ------------------------ | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | Theme console view (fab) | in progress | `examples/demo/src/ThemeConsole/TASKS.md` — view composed, gate green; open: page-only popover sections                                                                           |
-| 2   | Inspect surface (b43)    | in progress | `inspect()` + `inspectPage()` green; open: dead relay removal, `#cleanupMap` reset                                                                                                |
-| 3   | Input & form polish         | done        | A layout (b79), B footer + C popup flip (b81), repeater source (b80); only the release is left → `docs/framework/TASK-INPUT-POLISH.md` |
+| #   | Task                     | State       | Gate                                                                                                   |
+| --- | ------------------------ | ----------- | ------------------------------------------------------------------------------------------------------ |
+| 1   | Theme console view (fab) | in progress | `examples/demo/src/ThemeConsole/TASKS.md` — view composed, gate green; open: page-only popover sections |
+| 2   | Inspect surface (b43)    | in progress | `inspect()` + `inspectPage()` green; open: dead relay removal, `#cleanupMap` reset                      |
 
 ## Next
 
-- **Input & form polish — the release blocker.** B `config.footer` styling · C `select`/`dropdown`
-  popup clipping (CSS anchor positioning + native popover). Each needs a measured proof.
-  A (the `.wide`/`span` share) landed in b78. → `docs/framework/TASK-INPUT-POLISH.md`
 - **Release the input breaking change.** b76 removed `iBasicInputNode`, `iFormGroupNode` and
-  `InputBuilderConfigOptions` from `@aio-ui/core` — type-only, no runtime change, but a public
-  removal: the next minor (0.3.0 line) must say so. Owner orders the release.
+  `InputBuilderConfigOptions` from `@aio-ui/core` (type-only, but public), b79 removed `span` from
+  `iInputLayout`, and the repeater flags replaced `minItems`/`atMin`: the next minor must list all
+  three. The contracts live in `packages/components/{form,input}/README.md`; owner orders the
+  publish.
 - **Release v0.2.5 — published (b69, 2026-11-24).** Branch `releases` + tag `v0.2.5` pushed and
   probed 6/6 → 200; CDN stays **versioned**. Only the optional GitHub Release asset upload
   (`GITHUB_TOKEN`) remains → `docs/releases/v0.2.5.md`. The official release still waits for the
@@ -34,7 +32,7 @@ Why / stages: `.guidance/plan-framework.md`. Engineering rules:
 - **Batch 81 (2026-11-24)** — the two remaining owner-reported defects. **Footer:**
   `.form > .form-footer` gets the note-line rule it never had (`--form-footer-*` from the app
   layer), measured 704px right-aligned under `#form/layout`. **Popup:** `position-try-fallbacks:
-  none` → `--flip-top, flip-block` (surface + picker panel), one `--field-dropdown-anchor` with
+none` → `--flip-top, flip-block` (surface + picker panel), one `--field-dropdown-anchor` with
   `anchor-scope` on `.field` (generated anchor ids gone), and a probe proving the menu opens
   upward and stays inside the viewport. The trigger-border mirror is not reachable (try rules
   take placing/sizing only; `anchored()` does not match the anchor), documented instead. `span`

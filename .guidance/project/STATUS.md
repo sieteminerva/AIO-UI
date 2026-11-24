@@ -18,38 +18,27 @@
 > in every package README · **b57** Apps Script hosting · **b52–b59** shell mount point, tab seams.
 > Older history: `git log --oneline`.
 
-### 1. Input & form polish — done (b78–b81); the release is next (framework band)
+### 1. Release — everything landed, waiting on the owner's order (tooling band)
 
-Owner-reported after b74/b76. **(A) layout — landed b78, contract revised in b79**: `wide` is now a
-**percentage of the row** (the only width knob; integer `span` and the 16-grid retired), absent =
-full row, and `column` is only the **line cap** (4th child of `column: 3` starts the next line).
-A share that would pass 100 wraps instead of creating implicit tracks. Measured on the demo: layout
-row 704px → 352/352/704/352/352; calc group 700px → 323/323/646; `types-choice` (no `wide`) full
-lines. **(B)** `config.footer` is appended (`Form.ts:661-666`) and no rule styles it. **(C)** the
-`select`/`dropdown` popup is clipped (C) — **b81** gave the footer its note-line rule and made the
-surface flip upward (`position-try-fallbacks: --flip-top, flip-block`, one `anchor-scope`d name)
-via CSS Anchor Positioning + Native Popover. Repeater config landed in b80. Measurements and the
-one honest limitation (the trigger border cannot mirror the flip) sit in the task doc.
-**Open:** nothing on this card; the next release must ship it plus the b76 type removals.
-→ `docs/framework/TASK-INPUT-POLISH.md`
+The input & form work is closed: **b78/b79** `wide` is a percentage of the row (`column` is only
+the line cap, `span` retired), **b80/b81** the repeater source flags (`removable`,
+`hideOnSource`), **b81** the footer rule and the popup flip (CSS Anchor Positioning + Native
+Popover, `--flip-top`), and **b76** removed three public types from `@aio-ui/core`
+(`iBasicInputNode`, `iFormGroupNode`, `InputBuilderConfigOptions`). Their task docs are deleted —
+the contracts now live in `packages/components/{form,input}/README.md`.
+**Open:** the next minor must list the removed types and the `span` removal; owner orders the
+publish, `docs/live-cdn-repo.md` is the ritual.
+→ `.guidance/project/framework.md` §Next · `docs/releases/v0.2.5.md`
 
-### 2. Input schema + legacy sweep — done, one release note owed (framework band)
+### 2. Theme console view (fab) — in progress (framework band)
 
-b74 (`bf5b40c`) made a form field node the input schema `{ content, config }`; b76 closed the seams
-it left: rajutan committed in its own repo (`1008e4f`), `API.md`/`FIELD-TYPES.md` now say
-`content.options`, and `@aio-ui/core` no longer declares a field node — `iBasicInputNode`, its
-duplicate `iFormGroupNode` and `InputBuilderConfigOptions` are gone, the four registry payloads
-following the existing `input: any` door rule. `range` stays an attribute, pinned by
-`FieldTypes.test.ts`. Gate: check + verify green (92 files, 997 pass, 1 skip).
-**Open:** the three removed types were public — the next minor release note must list them.
-→ `docs/framework/TASK-INPUT-LEGACY.md` · `docs/framework/TASK-INPUT-SCHEMA.md`
+View composed, gate green; open: page-only popover sections.
+→ `examples/demo/src/ThemeConsole/TASKS.md`
 
-### 3. Release — the next minor waits on the polish (tooling band)
+### 3. Inspect surface — in progress (framework band)
 
-v0.2.5 is published and probed (`docs/releases/v0.2.5.md`). The next release is the one that ships
-the polish above **and** the breaking note from b76 (three types removed from `@aio-ui/core`).
-Owner orders the publish; `docs/live-cdn-repo.md` is the ritual.
-→ `docs/releases/v0.2.5.md` · `.guidance/project/framework.md` §Next
+`inspect()` + `inspectPage()` green; open: dead relay removal, `#cleanupMap` reset.
+→ `.guidance/project/framework.md` §Active
 
 _Retired from the logbook (batch 57 landed, still live): rajutan hosting → `orchestrator/mechanism.md`
 §1–§11 · `.guidance/project/generator.md` §Next._

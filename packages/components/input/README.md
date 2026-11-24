@@ -76,6 +76,25 @@ radio), `select`/`datalist` (dropdown), `icon`/`image`/`media`/`swatch` (picker)
 `list`/`thumbnails` (file). It replaced the old `style` (dropdown/toggle) and the uploader's
 own `view`.
 
+### Width — `wide` is a percentage of the row
+
+`config.wide` is the **only** width knob: `20`, `"40%"`, `0.5` (fraction) or `"auto"` / `100`
+(the whole row); absent means the whole row. The old `span` key is **gone** — a column span
+cannot express `20 / 40 / 40`, so the form lays a 100-unit grid out from the percentage
+(`@aio-ui/form` owns the placement; see its README).
+
+### Action set — `config.actions`
+
+`config.actions` takes names (`"editor"` = edit+save, `"repeater"` = add+delete) or objects
+`{ type, label?, icon?, onClick, … }`. Two flags belong to the **`delete`** of a repeater:
+
+| Flag           | Default | Meaning                                                                         |
+| -------------- | ------- | ------------------------------------------------------------------------------- |
+| `removable`    | `true`  | Whether the **source** row (index 0, the one Add was first clicked from) may be deleted. `false` locks it; clones are always free. |
+| `hideOnSource` | `false` | Hide the source's delete button (a look; `removable: false` is what locks it).   |
+
+The old `minItems` / `atMin` pair is gone: counting rows could not say "keep index 0".
+
 ### Choices — one door for every chooser
 
 `options` is content and `multiple` is a constraint, so they sit on opposite sides of the

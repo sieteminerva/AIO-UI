@@ -110,8 +110,8 @@ config: {
 
 | Option         | Default | Meaning                                                                        |
 | -------------- | ------- | ------------------------------------------------------------------------------ |
-| `removable`    | `true`  | Whether the **source** row may be deleted. `false` locks it; clones stay free.  |
-| `hideOnSource` | `false` | Hide the source's button (a look; `removable: false` is what makes it inert).   |
+| `removable`    | `true`  | Whether the **source** row may be deleted. `false` locks it; clones stay free. |
+| `hideOnSource` | `false` | Hide the source's button (a look; `removable: false` is what makes it inert).  |
 
 A family is the set of sibling scopes carrying the same `data-repeat` signature
 (`tag.class…`, written before the host adds its state classes and copied to every clone).

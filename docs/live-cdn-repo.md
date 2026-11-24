@@ -3,15 +3,14 @@
 Operational guide for the published `@aio-ui/*` packages: what is live, which repository and tag
 serve it, the commands that publish it, and the checks that must pass before anything is pushed.
 
-Last verified: **2026-11-22** — the published tag is **`v0.2.4`**, cut before the surface refactor
-(**39 packages**, mode B, jsDelivr `200`). The current source surface is **76 rows over 37
-packages** (`49b3b45` + `b55b5aa`); those artefacts are regenerated in the `releases` worktree and
-**not published yet** (STATUS card #2). Probed on `v0.2.4`: `registry.json`, `aio-ui.min.js`,
-`aio-ui.min.css` and `raw/releases/v0.2.4/aio-ui-form-0.2.4.tgz` all return `200`, and the CDN
-`checksums.txt` is byte-identical to the local one. Tags `v0.2.1` … `v0.2.4` exist; the earlier
-ones (`v0.1.0`, `v0.1.1`, `v0.2.0`) were deleted when the repository was renamed, because their
-content named the old repository and jsDelivr pins a served tag permanently — a fix ships as a
-**new version** (§8). Installing from a clone is §3, the branch README is §2.1.
+Last verified: **2026-11-25** — the published tag is **`v0.2.6`** (**37 packages**, 76 subpath
+rows, mode B, jsDelivr `200`). Probed on `v0.2.6`: `registry.json`, `aio-ui{,.min}.{js,css}` and
+`raw/releases/v0.2.6/aio-ui-base-0.2.6.tgz` all return `200` (`check:live` 6/6), the package
+modules and stylesheets answer `200`, and the CDN `checksums.txt` is byte-identical to the local
+one. Tags `v0.2.1` … `v0.2.6` exist; the earlier ones (`v0.1.0`, `v0.1.1`, `v0.2.0`) were deleted
+when the repository was renamed, because their content named the old repository and jsDelivr pins
+a served tag permanently — a fix ships as a **new version** (§8). Installing from a clone is §3,
+the branch README is §2.1.
 
 > **Branch rename (2026-11-18).** The orphan branch is now **`releases`**, not `cdn`; it carries
 > both the unpacked tree (jsDelivr import maps) and each version's `v<version>/*.tgz`, so one
@@ -19,6 +18,13 @@ content named the old repository and jsDelivr pins a served tag permanently — 
 > on `main`) and `temp/` is scratch only. `@cdn` URLs are retired — use `@releases` or the tag.
 > GitHub release assets are no longer part of the flow: a tarball is a file on the branch.
 
+> **`v0.2.6` published (2026-11-25).** 37 packages, **mode B** (declared: every internal edge is a
+> tarball URL), 1.33 MB total, heaviest `input` 0.23 MB; branch root `aio-ui{,.min}.{js,css}`
+> (`min.js` 539.1 kB, `min.css` 374.3 kB). `publish-releases` (branch `9d830be`) then
+> `publish-cdn` (branch `f255d82`, tag `v0.2.6`); `check:live` 6/6 → `200`, package probes `200`,
+> published and local `checksums.txt` agree on `aio-ui-input-0.2.6.tgz` (`ed3ffe28…30ffdb`).
+> → `docs/releases/v0.2.6.md`
+>
 > **`v0.2.4` published (2026-11-21).** 39 packages, **mode B** (declared: every internal edge is a
 > tarball URL). Mode A was produced first and refused by the size gate — 34.07 MB total, heaviest
 > tarball `table` 3.80 MB against the 2.00 MB budget. Mode B: 1.29 MB total, heaviest `input`
@@ -48,9 +54,9 @@ content named the old repository and jsDelivr pins a served tag permanently — 
 | Default branch | `main` — source only; `dist/` is gitignored                                                    |
 | CDN branch     | `releases` — orphan branch: the unpacked tree at the root **and** `v<version>/*.tgz` beside it |
 | Local checkout | `<repo>/releases` — a git worktree of that branch, ignored on `main`                           |
-| Version tag    | `v0.2.4` — the current published tag (pre-refactor, 39 packages)                               |
-| CDN base       | `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.4/`                                      |
-| Branch README  | `…@v0.2.4/README.md` — generated at publish time, see §2.1                                     |
+| Version tag    | `v0.2.6` — the current published tag (37 packages, 76 subpath rows)                            |
+| CDN base       | `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.6/`                                      |
+| Branch README  | `…@v0.2.6/README.md` — generated at publish time, see §2.1                                     |
 | Install URL    | `…/raw/releases/v<version>/aio-ui-<name>-<version>.tgz` — no GitHub release asset to upload    |
 | Packages       | 37 (4 framework roots, 22 components, 7 modules, 3 themes, 1 kit)                              |
 
@@ -67,31 +73,31 @@ installs a package and one ref serves it to the browser.
 ## 2. Live URLs
 
 ```text
-registry     https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.4/registry.json
-layout       https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.4/layout.json
-checksums    https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.4/checksums.txt
-readme       https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.4/README.md
+registry     https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.6/registry.json
+layout       https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.6/layout.json
+checksums    https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.6/checksums.txt
+readme       https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.6/README.md
 
 # bare package root → <dir>/<entry>
-@aio-ui/core         …@v0.2.4/packages/core/dist/index.js
-@aio-ui/form         …@v0.2.4/packages/components/form/dist/index.js
+@aio-ui/core         …@v0.2.6/packages/core/dist/index.js
+@aio-ui/form         …@v0.2.6/packages/components/form/dist/index.js
 
 # exact export subpath → <dir>/<real file>
 @aio-ui/form/validation-adapter
-    …@v0.2.4/packages/components/form/dist/adapters/Validation.js
+    …@v0.2.6/packages/components/form/dist/adapters/Validation.js
 @aio-ui/input/dropdown
-    …@v0.2.4/packages/components/input/dist/Dropdown/Dropdown.js
+    …@v0.2.6/packages/components/input/dist/Dropdown/Dropdown.js
 
 # stylesheet → dist/ (never the source root)
 @aio-ui/form/Form.css
-    …@v0.2.4/packages/components/form/dist/Form.css
+    …@v0.2.6/packages/components/form/dist/Form.css
 ```
 
 URL = `base` + `layout[pkg].dir` + the file from that package's `exports` map. Prefixes alone
 (`@aio-ui/utilities/` → `…/utilities/dist/`) cannot add `.js`; the import map therefore carries
 every exact subpath too (`emit.ts` → `createCdnResolver().exact()`).
 
-`@v0.2.4` is the current published tag. jsDelivr also accepts `@0.2.4` (it normalises), but
+`@v0.2.6` is the current published tag. jsDelivr also accepts `@0.2.6` (it normalises), but
 generated sites always use the tag name recorded as `engine.resolved`.
 
 ### 2.1 Branch README
@@ -102,8 +108,8 @@ package table is generated from `registry.json` at publish time (name, directory
 release asset), so it cannot go stale; the rest covers import-map refs, offline install from the
 release assets with the peer closure, updates, and tag immutability.
 
-Verified at publish time: `curl -sI …@v0.2.4/README.md` → `200`, body reported `Version 0.2.4` /
-`Packages 39` (the pre-refactor count). The regenerated tree reports **37**.
+Verified at publish time: `curl -sI …@v0.2.6/README.md` → `200`, body reports `Version 0.2.6` /
+`Packages 37` (the `v0.2.4` one reported `0.2.4` / `39`).
 
 ## 3. Installing locally (the packages are not on npm)
 
@@ -203,7 +209,7 @@ any package that did not exist before.
 
 Generated from `orchestrator/layout.json`, so it matches what the resolver and the CDN serve.
 The CDN URL of any row is the tag base + `Directory` + the file, e.g.
-`…@v0.2.4/packages/components/code-block/dist/index.js`.
+`…@v0.2.6/packages/components/code-block/dist/index.js`.
 
 | Package                    | Directory                           | Entry (`exports["."]`) | Stylesheet subpath                                                                                                                                                                                                                                    |
 | -------------------------- | ----------------------------------- | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -466,12 +472,9 @@ Never push `main` to the old `rajutan` remote.
 
 ## 9. Pre-flight checklist
 
-Last published: **`v0.2.4`** — 2026-11-21, branch `releases` at `5eeee94`, **39** packages, mode B,
-`v0.2.4/` = 39 tarballs + the bundled pair + `registry.json` / `layout.json` / `checksums.txt`.
-
-Regenerated since (surface refactor, **not published**): `releases/v0.2.4/` = 37 packages /
-76 rows, 41 files, 1.28 MB — commit and publish it with `publish-releases.mjs --apply` then
-`publish-cdn.mjs --apply`.
+Last published: **`v0.2.6`** — 2026-11-25, branch `releases` at `f255d82`, **37** packages, mode B,
+`v0.2.6/` = 37 tarballs + the bundled pair + `registry.json` / `layout.json` / `checksums.txt`
+(41 files, 1.33 MB). `v0.2.5` (2026-11-24) published the same surface before the colour pass.
 
 **One tag per release; package versions may differ from it.** The folder is `v<tag>/`, the
 tarball is `aio-ui-<package>-<package version>.tgz`, and `registry.packages[name].version` records

@@ -10,19 +10,18 @@ Why / stages: `.guidance/plan-framework.md`. Engineering rules:
 | --- | ------------------------ | ----------- | ------------------------------------------------------------------------------------------------------- |
 | 1   | Theme console view (fab) | in progress | `examples/demo/src/ThemeConsole/TASKS.md` — view composed, gate green; open: page-only popover sections |
 | 2   | Inspect surface (b43)    | in progress | `inspect()` + `inspectPage()` green; open: dead relay removal, `#cleanupMap` reset                      |
-| 3   | Colour tokens (b82–b94)  | in progress | T1–T5 landed → `docs/framework/TASK-color-tokens.md`; open: owner taste pass + spinner snippet |
+| 3   | Colour tokens (b82–b94)  | shipped     | T1–T5 shipped in v0.2.6 → `docs/framework/TASK-color-tokens.md`; open: owner taste pass |
 
 ## Next
 
-- **Colour tokens before v0.2.6** — T1–T5 landed (b86–b94). Only the **T3 taste pass** is open
-  (owner reviews colours; taste, not algorithm), plus the `masonry/README.md` spinner snippet.
-  Restore tag `color-pre-full-2026-11-25` (547973e). → `docs/framework/TASK-color-tokens.md`
+- **Colour tokens after v0.2.6** — T1–T5 shipped (b95). Only the **T3 taste pass** is open
+  (owner reviews colours; taste, not algorithm), plus a picker-upward re-check when a tab is
+  visible. Restore tag `color-pre-full-2026-11-25` (547973e). → `docs/framework/TASK-color-tokens.md`
 
-- **Release the input breaking change.** b76 removed `iBasicInputNode`, `iFormGroupNode` and
-  `InputBuilderConfigOptions` from `@aio-ui/core` (type-only, but public), b79 removed `span` from
-  `iInputLayout`, and the repeater flags replaced `minItems`/`atMin`: the next minor must list all
-  three. The contracts live in `packages/components/{form,input}/README.md`; owner orders the
-  publish.
+- **Input breaking changes — shipped in v0.2.6 (b95).** The note lists all three: b76 removed
+  `iBasicInputNode`, `iFormGroupNode` and `InputBuilderConfigOptions` from `@aio-ui/core`, b79
+  removed `span` from `iInputLayout`, and the repeater flags replaced `minItems`/`atMin`.
+  → `docs/releases/v0.2.6.md`
 - **Release v0.2.5 — published (b69, 2026-11-24).** Branch `releases` + tag `v0.2.5` pushed and
   probed 6/6 → 200; CDN stays **versioned**. Only the optional GitHub Release asset upload
   (`GITHUB_TOKEN`) remains → `docs/releases/v0.2.5.md`. The official release still waits for the
@@ -33,6 +32,15 @@ Why / stages: `.guidance/plan-framework.md`. Engineering rules:
   carries an `inspect()` assertion (report-only first, gate once covered).
 
 ## Landed (newest first)
+
+- **Batch 95 (2026-11-25)** — v0.2.6 published. Whole family → `0.2.6`, install blocks
+  regenerated in 37 READMEs, `masonry/README.md` spinner snippet now mirrors
+  `mask-image: var(--masonry-spinner)`, release note `docs/releases/v0.2.6.md` written with the
+  three breaking removals. Artefacts: 37 tarballs / 1.33 MB (mode B), 41 files, checksums OK.
+  `publish-releases` → `9d830be`, `publish-cdn` → `f255d82` + tag `v0.2.6`; `check:live` 6/6,
+  package probes 200. Side fix: `readme.skeleton.test.ts` counted `packages/components/__tests__`
+  (added by b94) as a package and read a missing README — now only folders with a `package.json`.
+  Proof: `verify:pkgs` green, `release.test.ts` 16 pass / 1 skip, probes above.
 
 - **Batch 81 (2026-11-24)** — the two remaining owner-reported defects. **Footer:**
   `.form > .form-footer` gets the note-line rule it never had (`--form-footer-*` from the app

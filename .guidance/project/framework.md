@@ -6,21 +6,17 @@ Why / stages: `.guidance/plan-framework.md`. Engineering rules:
 
 ## Active (max 3)
 
-| #   | Task                     | State       | Gate                                                                                                                               |
-| --- | ------------------------ | ----------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | Release automation (b68) | landed      | READMEs written for the last 8 packages (37/37 install blocks); the release itself is Tooling — `TASK-release-automation.md` §Next |
-| 2   | Theme console view (fab) | in progress | `examples/demo/src/ThemeConsole/TASKS.md` — view composed, gate green; open: page-only popover sections                            |
-| 3   | Inspect surface (b43)    | in progress | `inspect()` + `inspectPage()` green; open: dead relay removal, `#cleanupMap` reset                                                 |
+| #   | Task                     | State       | Gate                                                                                                    |
+| --- | ------------------------ | ----------- | ------------------------------------------------------------------------------------------------------- |
+| 1   | Theme console view (fab) | in progress | `examples/demo/src/ThemeConsole/TASKS.md` — view composed, gate green; open: page-only popover sections |
+| 2   | Inspect surface (b43)    | in progress | `inspect()` + `inspectPage()` green; open: dead relay removal, `#cleanupMap` reset                      |
 
 ## Next
 
-- **Release v0.2.5 — owner ordered it.** b60–b68 are landed on this band's side (session prompt
-  opt-in, `release-doc.mjs`, per-package versions, and the eight READMEs written in b68). The
-  chain lives in `docs/framework/TASK-release-automation.md` §Next and runs under the **Tooling**
-  band (`scripts/**`, `releases/`, `docs/releases/`). CDN stays **versioned** (owner, 2026-11-24).
-- **Publish v0.2.5 — ordered, no longer deferred.** Push order `publish-releases` →
-  `publish-cdn` → `publish-assets` (needs `GITHUB_TOKEN`) → `git push origin main`. It ships as a
-  pre-release; the official release still waits for the `store` / `profile` / `blog` references.
+- **Release v0.2.5 — published (b69, 2026-11-24).** Branch `releases` + tag `v0.2.5` pushed and
+  probed 6/6 → 200; CDN stays **versioned**. Only the optional GitHub Release asset upload
+  (`GITHUB_TOKEN`) remains → `docs/releases/v0.2.5.md`. The official release still waits for the
+  `store` / `profile` / `blog` references.
 - **Surface generator** — `scripts/surface.mjs --write/--check` to replace 37 hand-edited export
   maps and fail a subpath excluded by `files[]`. Optional, not a blocker. → `packages/TASKS.md`
 - **Proof reports** — `scripts/proof.mjs --report` lists every component package and whether it
@@ -28,6 +24,10 @@ Why / stages: `.guidance/plan-framework.md`. Engineering rules:
 
 ## Landed (newest first)
 
+- **Batch 69 (2026-11-24)** — v0.2.5 published: 37 packages at `0.2.5`, branch `releases` + tag
+  `v0.2.5` pushed, `check:live` 6/6 → 200; every package README carries an install block; the
+  release-automation task doc deleted (§13). Proof: `verify:pkgs` 956 pass / 17 skip, `check`
+  green, probe 6/6.
 - **Batch 59 (2026-11-24)** — three seams closed. (1) **Tab nesting**: lookups are scoped to the
   instance's own menu/body children and ids come from a per-instance `uid`, so a nested tab no
   longer answers the parent's menu nor collides on `tabpanel-gen-*`. (2) **Message root**: the

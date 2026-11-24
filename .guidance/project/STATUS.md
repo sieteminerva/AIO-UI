@@ -15,7 +15,7 @@
 b69 shipped v0.2.5 (2026-11-24): 37 packages at `0.2.5`, branch `releases` + tag `v0.2.5` pushed,
 `check:live` **6/6 → 200**. The note name is a pre-release (`store` / `profile` / `blog` absent).
 Remaining: only the optional GitHub Release asset upload (`GITHUB_TOKEN`).
-→ `docs/releases/v0.2.5.md` · `docs/framework/TASK-release-automation.md` §Next
+→ `docs/releases/v0.2.5.md` · `.guidance/project/framework.md` §Next
 
 ### 2. Rajutan app — published site
 

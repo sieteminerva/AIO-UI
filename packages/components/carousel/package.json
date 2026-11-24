@@ -1,6 +1,6 @@
 {
   "name": "@aio-ui/carousel",
-  "version": "0.2.5",
+  "version": "0.2.6",
   "type": "module",
   "files": [
     "dist",
@@ -8,8 +8,8 @@
     "*.css"
   ],
   "peerDependencies": {
-    "@aio-ui/base": "^0.2.5",
-    "@aio-ui/core": "^0.2.5"
+    "@aio-ui/base": "^0.2.6",
+    "@aio-ui/core": "^0.2.6"
   },
   "exports": {
     ".": {

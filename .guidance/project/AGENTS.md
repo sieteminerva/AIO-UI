@@ -6,7 +6,9 @@
 
 ## Live claims
 
-_No live writer._
+| Agent        | Band    | Task                                 | Write scope                                                                   | Started    | Checkpoint                        | State  |
+| ------------ | ------- | ------------------------------------ | ----------------------------------------------------------------------------- | ---------- | --------------------------------- | ------ |
+| copilot b95  | Tooling | Release v0.2.6 (whole family bump)   | `packages/*/*/package.json`, `releases/**`, `docs/releases/**`, `docs/live-cdn-repo.md`, `packages/components/masonry/README.md`, `.guidance/project/STATUS.md` | 2026-11-25 | `.guidance/project/STATUS.md`     | active |
 
 ## Row shape
 

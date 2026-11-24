@@ -1,13 +1,13 @@
 {
   "name": "@aio-ui/theme-cyberpunk",
-  "version": "0.2.5",
+  "version": "0.2.6",
   "type": "module",
   "files": [
     "dist",
     "src"
   ],
   "peerDependencies": {
-    "@aio-ui/core": "^0.2.5"
+    "@aio-ui/core": "^0.2.6"
   },
   "exports": {
     ".": {

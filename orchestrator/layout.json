@@ -202,7 +202,7 @@
     "stylesRoot": "dist",
     "subpaths": {
       ".": "dist/index.js",
-      "./index.css": "index.css"
+      "./index.css": "dist/index.css"
     }
   },
   "@aio-ui/section": {

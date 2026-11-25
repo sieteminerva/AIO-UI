@@ -32,7 +32,7 @@ export declare class InputControlsBuilder extends Builder<InputControlsElementTy
     #private;
     readonly builderId = "input-controls";
     readonly name = "input-controls";
-    /** Matches the host's key (`@aio-ui/input/controls.css`): resolution is by basename. */
+    /** Matches the host's key (`@aio-ui/input/InputControls.css`): resolution is by basename. */
     readonly stylesheet: string;
     constructor(config: iBuilderConfig<InputControlsElementType>);
     /**

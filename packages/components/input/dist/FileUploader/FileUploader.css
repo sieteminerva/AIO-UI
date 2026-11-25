@@ -430,7 +430,7 @@
    * The control is a flex row: the selector button and the filename label are two boxes of
    * different heights, and only the control knows the row's true middle.
    *
-   * This sheet owns the whole box — `input.css` no longer paints a file control as a text
+   * This sheet owns the whole box — `Input.css` no longer paints a file control as a text
    * input (a file control replaces its own inner layout, so a shared `display: block` would
    * each time win or lose depending on which of the two sheets the loader injected last).
    */

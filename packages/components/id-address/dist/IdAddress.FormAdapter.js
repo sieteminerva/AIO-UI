@@ -1,5 +1,5 @@
 import { FORM_MODULE_IDS } from "@aio-ui/form";
-import { IdAddressBuilder } from "./id-address-builder.js";
+import { IdAddressBuilder } from "./IdAddressBuilder.js";
 /**
  * Address picker adapter.
  *

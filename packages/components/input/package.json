@@ -1,6 +1,6 @@
 {
   "name": "@aio-ui/input",
-  "version": "0.2.6",
+  "version": "0.2.7",
   "type": "module",
   "files": [
     "dist",
@@ -16,15 +16,15 @@
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
-    "./input.css": {
-      "types": "./input.css.d.ts",
-      "default": "./input.css"
+    "./Input.css": {
+      "types": "./Input.css.d.ts",
+      "default": "./Input.css"
     },
     "./dropdown": {
       "types": "./dist/Dropdown/Dropdown.d.ts",
       "default": "./dist/Dropdown/Dropdown.js"
     },
-    "./dropdown.css": {
+    "./Dropdown.css": {
       "types": "./Dropdown/Dropdown.css.d.ts",
       "default": "./Dropdown/Dropdown.css"
     },
@@ -32,7 +32,7 @@
       "types": "./dist/FileUploader/FileUploader.d.ts",
       "default": "./dist/FileUploader/FileUploader.js"
     },
-    "./file-uploader.css": {
+    "./FileUploader.css": {
       "types": "./FileUploader/FileUploader.css.d.ts",
       "default": "./FileUploader/FileUploader.css"
     },
@@ -40,15 +40,15 @@
       "types": "./dist/InputControls/InputControls.d.ts",
       "default": "./dist/InputControls/InputControls.js"
     },
-    "./controls.css": {
-      "types": "./InputControls/inputControls.css.d.ts",
-      "default": "./InputControls/inputControls.css"
+    "./InputControls.css": {
+      "types": "./InputControls/InputControls.css.d.ts",
+      "default": "./InputControls/InputControls.css"
     },
     "./picker": {
       "types": "./dist/InputPicker/InputPicker.d.ts",
       "default": "./dist/InputPicker/InputPicker.js"
     },
-    "./picker.css": {
+    "./InputPicker.css": {
       "types": "./InputPicker/InputPicker.css.d.ts",
       "default": "./InputPicker/InputPicker.css"
     }
@@ -58,9 +58,9 @@
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "@aio-ui/base": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.6/aio-ui-base-0.2.6.tgz",
-    "@aio-ui/core": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.6/aio-ui-core-0.2.6.tgz",
-    "@aio-ui/module-loader": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.6/aio-ui-module-loader-0.2.6.tgz",
-    "@aio-ui/utilities": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.6/aio-ui-utilities-0.2.6.tgz"
+    "@aio-ui/base": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.7/aio-ui-base-0.2.7.tgz",
+    "@aio-ui/core": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.7/aio-ui-core-0.2.7.tgz",
+    "@aio-ui/module-loader": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.7/aio-ui-module-loader-0.2.7.tgz",
+    "@aio-ui/utilities": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.7/aio-ui-utilities-0.2.7.tgz"
   }
 }

@@ -12,7 +12,7 @@ and disposes on teardown.
 
 <!-- part: id=payload -->
 
-**The builder is an element factory.** It assembles the markup below, and `input.css` only targets
+**The builder is an element factory.** It assembles the markup below, and `Input.css` only targets
 those classes and tokens. The CSS therefore behaves like a plain CSS library: the same nesting and
 class names written by hand are styled identically. Customise it by overriding a selector, or
 retheme it without touching markup by redeclaring a `--app-*` token on an ancestor (or one
@@ -22,12 +22,12 @@ retheme it without touching markup by redeclaring a `--app-*` token on an ancest
 
 ## Install
 
-Version — `0.2.5` (tag `v0.2.5`)
+Version — `0.2.6` (tag `v0.2.6`)
 
-    npm install https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.5/aio-ui-input-0.2.5.tgz
+    npm install https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.6/aio-ui-input-0.2.6.tgz
 
-CDN (ES module, no build step) — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.5/packages/components/input/dist/index.js`
-Stylesheet — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.5/packages/components/input/dist/input.css`
+CDN (ES module, no build step) — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.6/packages/components/input/dist/index.js`
+Stylesheet — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.6/packages/components/input/dist/input.css`
 
 <!-- install:end -->
 
@@ -268,7 +268,7 @@ trigger's own border does not mirror the flip (it is the anchor, not an anchored
 it cannot query the chosen fallback); the menu overlaps the trigger by 1px, so the seam
 reads as one line in both directions.
 
-Every token is declared **once**, on `:root, [data-theme]`, in `input.css`. `[data-theme]`
+Every token is declared **once**, on `:root, [data-theme]`, in `Input.css`. `[data-theme]`
 is required: a theme puts `--app-*` on the shell element, and a custom property is
 substituted where it is _declared_. Never redeclare these per `.field` — the whole subtree
 would inherit the copy and any ancestor override would be shadowed.
@@ -326,11 +326,13 @@ one derived from the field layer so a theme retunes the picker with the field:
 | `--picker-gap`              | literal 0.35rem (component-private) |
 | `--picker-panel-max-height` | literal 16rem (component-private)   |
 
-**Metrics and motion** (`input.css`)
+**Metrics and motion** (`Input.css`)
 
 `--input-font-size`, `--input-label-size` (`0.75 × font-size`), `--input-border-radius`,
-`--input-line-height`, `--input-icon-size`, `--input-min-height`, `--input-picker-height`
-(`3 × line-height`), `--input-dropdown-arrow-content` (SVG data URI),
+`--input-line-height`, `--input-control-line` (`1.3 × line-height`), `--input-control-height`
+(`font-size × control-line` — the box one text control occupies, so a toggle field measures
+like any other), `--input-icon-size`, `--input-min-height` (one line of the _field_),
+`--input-picker-height` (`3 × line-height`), `--input-dropdown-arrow-content` (SVG data URI),
 `--input-dropdown-transition-delay`, `--input-popup-duration`, `--input-popup-easing`,
 `--input-popup-distance`.
 
@@ -342,8 +344,8 @@ in the app layer as `--app-spinner-content`.
 ## Wiring checklist
 
 1. `"input"` is already in `iBuilderRegistry` (`packages/core/src/types/registry.ts`).
-2. Map `@aio-ui/input`, `@aio-ui/input/input.css` and every sub-module subpath you use
-   (`./dropdown`, `./dropdown.css`, `./picker`, `./picker.css`, `./controls`, `./controls.css`,
-   `./file-uploader`, `./file-uploader.css`, `./popover/module`) in the host asset map — every
+2. Map `@aio-ui/input`, `@aio-ui/input/Input.css` and every sub-module subpath you use
+   (`./dropdown`, `./Dropdown.css`, `./picker`, `./InputPicker.css`, `./controls`, `./InputControls.css`,
+   `./file-uploader`, `./FileUploader.css`, `./popover/module`) in the host asset map — every
    exact `exports` key, since a prefix cannot add `.js`.
 3. List it in the host's route plan: `registerModule(components, [{ route, components: ["input"] }])`.

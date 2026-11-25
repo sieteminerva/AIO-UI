@@ -62,7 +62,7 @@ export declare class PickerBuilder extends Builder<PickerElementType, iPickerCon
     readonly builderId = "input-picker";
     readonly name = "input-picker";
     /** Short specifier the package maps to `InputPicker.css` — the file-uploader pattern. */
-    readonly stylesheet = "./picker.css";
+    readonly stylesheet = "./InputPicker.css";
     config: Required<iPickerConfig>;
     constructor(config?: Partial<iPickerConfig>);
     /** The selection as plain strings — what the hidden input and the form see. */

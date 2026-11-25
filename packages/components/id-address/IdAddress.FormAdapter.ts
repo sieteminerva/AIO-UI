@@ -1,7 +1,7 @@
 import type { iModuleDefinition } from "@aio-ui/module-loader";
 import type { iFormModuleContext } from "@aio-ui/form";
 import { FORM_MODULE_IDS } from "@aio-ui/form";
-import { IdAddressBuilder } from "./id-address-builder";
+import { IdAddressBuilder } from "./IdAddressBuilder";
 
 /**
  * Address picker adapter.

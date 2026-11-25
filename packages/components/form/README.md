@@ -16,16 +16,14 @@ retheme it without touching markup by redeclaring a `--app-*` token on an ancest
 `--form-*` token for this component only). A field's own markup belongs to `@aio-ui/input`.
 
 <!-- install:begin -->
-
 ## Install
 
-Version — `0.2.5` (tag `v0.2.5`)
+Version — `0.2.6` (tag `v0.2.6`)
 
-    npm install https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.5/aio-ui-form-0.2.5.tgz
+    npm install https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.6/aio-ui-form-0.2.6.tgz
 
-CDN (ES module, no build step) — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.5/packages/components/form/dist/index.js`
-Stylesheet — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.5/packages/components/form/dist/Form.css`
-
+CDN (ES module, no build step) — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.6/packages/components/form/dist/index.js`
+Stylesheet — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.6/packages/components/form/dist/Form.css`
 <!-- install:end -->
 
 ## Payload
@@ -57,7 +55,7 @@ a field node is the input package's contract, not this one.
 | `group`           | group      | Fieldset children                                                           |
 | `row`             | row        | Inline children — layout, not a fieldset                                    |
 | `label`           | row        | Title rendered above the row (`@form>row>title`)                            |
-| `column`          | group, row | Line cap: how many children one line holds                                  |
+| `column`          | group, row | Line cap **and** default share: children divide the line equally           |
 | `actions`         | group, row | Action words rendered in the corner: `search`, `copy`, `editor`, `repeater` |
 | `actionsPosition` | group, row | Where those buttons sit (`config.position` is the older spelling)           |
 
@@ -66,8 +64,10 @@ A field node **is** the input schema — `{ content, config }` — so its keys (
 this package adds only the cascade rule `condition` beside the two blocks. It reads `config.wide`
 whenever it lays a container out: a **row** always grids, a **group** only when it declares
 `column`. `wide` is a **percentage of the row** and the only way to size a field — `20`, `"40%"`,
-`0.5` (fraction), `"auto"` / `100` (the whole row); **absent means the whole row**. `column` is
-only the line cap, so the fourth child of a `column: 3` row starts the next line.
+`0.5` (fraction), `"auto"` / `100` (the whole row). **Absent `wide` means an equal share of the
+line**: three children under `column: 3` are a third each (34/33/33), and a fourth — or any child
+that no longer fits — starts the next line and takes it whole. Declare `wide` only when a line
+should be uneven; `column` is also the cap, so the fourth child of a `column: 3` row wraps.
 
 <!-- part: id=config role=contract -->
 

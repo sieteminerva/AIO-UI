@@ -4,10 +4,10 @@ import { type iInputAdapter, type iInputModuleContext } from "../InputModuleType
  * Where this sheet is fetched from, spelled as the host keys it.
  *
  * Resolution falls back to the file name, so this must end in the same name the host
- * uses (`@aio-ui/input/file-uploader.css`) — `"./FileUploader.css"` matched nothing and
+ * uses (`@aio-ui/input/FileUploader.css`) — `"./file-uploader.css"` matched nothing and
  * the uploader rendered unstyled without an error.
  */
-export declare const FILE_UPLOADER_STYLESHEET = "./file-uploader.css";
+export declare const FILE_UPLOADER_STYLESHEET = "./FileUploader.css";
 interface FileUploaderConfigMessages {
     selectedFiles: (count: number) => string;
     readyFiles: (count: number) => string;

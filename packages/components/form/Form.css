@@ -2,7 +2,7 @@
    Form chrome — layout and lifecycle only.
 
    Field styling (wrapper, label, control, toggle shell) moved to
-   @aio-ui/input/input.css: a field must look the same outside a form, and the
+   @aio-ui/input/Input.css: a field must look the same outside a form, and the
    form must not be a prerequisite for it. What is left here is form-only:
    rows, fieldsets, action sets, multistep, inline variants, cascade visibility.
    ========================================================================== */
@@ -66,18 +66,36 @@
   grid-template-columns: repeat(100, minmax(0, 1fr));
   column-gap: 0;
   row-gap: 0.25em;
-  align-items: start;
+  /* `end` is safe now that a toggle field measures the same as any other field, but a row
+     reads labels first: top-aligned keeps every caption on one line. */
+  align-items: end;
 
-  /* A child is a grid cell, not a block: no full width, no bottom margin. */
+  /* A child is a grid cell, not a block: no full width, no bottom margin.
+     `display` is split off on purpose. A toggle shell is a grid of its own (Input.css §8),
+     and a blanket `display: block` on every child (0,4,0) outranks that shell (0,2,0 /
+     0,3,0), stacking its label above the switch and neutralising `data-position`. */
   & > .field,
   & > .field.group[data-column],
   & > .form-group[data-column] {
-    display: block;
     width: auto;
     min-width: 0;
     margin-bottom: 0;
     padding-inline: calc(var(--row-gutter, 1em) / 2);
     grid-column: span var(--span, 100);
+  }
+
+  /* Block only where a block is wanted: a nested row/group keeps its own grid. */
+  & > .field:not(:has(> .switch.control)),
+  & > .field.group[data-column],
+  & > .form-group[data-column] {
+    display: block;
+  }
+
+  /* A toggle keeps the shell's grid: the label sits beside the switch, per
+     `label[data-position]`, instead of above it. Declared after the block rule so the
+     two never depend on source order between sheets. */
+  & > .field:has(> .switch.control) {
+    display: grid;
   }
 
   /* Heading and note read across the whole line (and line up with the fields). */
@@ -147,7 +165,7 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: center;
   gap: 0.5em;
   margin-top: 1em;
   padding-top: 0.75em;

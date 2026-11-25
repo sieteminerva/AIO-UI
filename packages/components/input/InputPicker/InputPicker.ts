@@ -111,7 +111,7 @@ export class PickerBuilder extends Builder<PickerElementType, iPickerConfig> {
   readonly builderId = "input-picker";
   readonly name = "input-picker";
   /** Short specifier the package maps to `InputPicker.css` — the file-uploader pattern. */
-  readonly stylesheet = "./picker.css";
+  readonly stylesheet = "./InputPicker.css";
 
   public config: Required<iPickerConfig>;
 

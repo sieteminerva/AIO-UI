@@ -15,12 +15,12 @@ selector, or retheme it without touching markup by redeclaring a `--app-*` token
 <!-- install:begin -->
 ## Install
 
-Version — `0.2.5` (tag `v0.2.5`)
+Version — `0.2.6` (tag `v0.2.6`)
 
-    npm install https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.5/aio-ui-carousel-0.2.5.tgz
+    npm install https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.6/aio-ui-carousel-0.2.6.tgz
 
-CDN (ES module, no build step) — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.5/packages/components/carousel/dist/index.js`
-Stylesheet — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.5/packages/components/carousel/dist/Carousel.css`
+CDN (ES module, no build step) — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.6/packages/components/carousel/dist/index.js`
+Stylesheet — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.6/packages/components/carousel/dist/Carousel.css`
 <!-- install:end -->
 
 ## Payload

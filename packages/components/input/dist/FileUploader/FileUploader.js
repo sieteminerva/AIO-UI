@@ -12,10 +12,10 @@ import { INPUT_MODULE_IDS } from "../InputModuleTypes.js";
  * Where this sheet is fetched from, spelled as the host keys it.
  *
  * Resolution falls back to the file name, so this must end in the same name the host
- * uses (`@aio-ui/input/file-uploader.css`) — `"./FileUploader.css"` matched nothing and
+ * uses (`@aio-ui/input/FileUploader.css`) — `"./file-uploader.css"` matched nothing and
  * the uploader rendered unstyled without an error.
  */
-export const FILE_UPLOADER_STYLESHEET = "./file-uploader.css";
+export const FILE_UPLOADER_STYLESHEET = "./FileUploader.css";
 /**
  * @class
  * @classdesc

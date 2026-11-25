@@ -1,6 +1,6 @@
 {
   "name": "@aio-ui/dom-renderer",
-  "version": "0.2.6",
+  "version": "0.2.7",
   "type": "module",
   "description": "The DOM renderer alone — one generated file, no workspace imports.",
   "files": [

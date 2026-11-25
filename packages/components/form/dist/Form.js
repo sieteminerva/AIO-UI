@@ -5,7 +5,7 @@ import { INPUT_MODULE_IDS } from "@aio-ui/input";
 import { ModuleLoader } from "@aio-ui/module-loader";
 import { inputFormAdapter } from "./Input.FormAdapter.js";
 import { dropdownInputModule } from "@aio-ui/input/dropdown";
-import { DEFAULT_ROW_COLUMNS, applyRowColumns, applyRowSpan, arrangeRow, childWideOf, declaredColumns } from "./FormLayout.js";
+import { DEFAULT_ROW_COLUMNS, applyRowColumns, applyRowSpan, arrangeRow, declaredColumns, declaredWideOf } from "./FormLayout.js";
 import { collectFormValues } from "@aio-ui/input";
 // Sentences live in one module; re-exported here so a host that already imports
 // the form entry can reach them without a second specifier.
@@ -549,10 +549,12 @@ export class FormBuilder extends Builder {
                     element = inputEl;
                 }
                 // The same `--span` a row child gets: a group that declared `column` owns the grid,
-                // so every child states its share of it. A held (conditional) child is stamped by
-                // the cascade when it is built.
-                if (columns && element)
-                    applyRowSpan(element, childWideOf(innerInput));
+                // so every child that declares `wide` states its share of it. A child that declares
+                // nothing stays unstamped — `arrangeRow` gives it an equal slice of its line. A held
+                // (conditional) child is stamped by the cascade when it is built.
+                const share = declaredWideOf(innerInput);
+                if (columns && element && share !== null)
+                    applyRowSpan(element, share);
             });
         }
         // Handle submit button per group level if specified
@@ -629,7 +631,9 @@ export class FormBuilder extends Builder {
             const submitBtn = this.scanForSubmitButton(element, formId);
             if (submitBtn)
                 this.submitButtonId = submitBtn.id;
-            applyRowSpan(element, childWideOf(child));
+            const share = declaredWideOf(child);
+            if (share !== null)
+                applyRowSpan(element, share);
             container.appendChild(element);
         });
         // 🧩 A row is a scope too (it is a layout container, not a group, but its children can

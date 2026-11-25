@@ -160,7 +160,7 @@ export interface iInputConfig extends iBuilderConfig<InputElementType> {
 export class InputBuilder extends Builder<InputElementType, iInputConfig> {
   readonly builderId: keyof iBuilderRegistry = "input";
   readonly name: keyof iBuilderRegistry = "input";
-  readonly stylesheet: string = "./input.css";
+  readonly stylesheet: string = "./Input.css";
 
   /** One field node. The vocabulary itself lives in `InputSchema.ts`; this stays open. */
   static readonly contract: iContentContract = {

@@ -493,7 +493,7 @@ export class IdAddressBuilder {
 
     // The package ships its own state sheet (loading/error on the controls it decorates).
     // A host that declares no loader simply gets the unstyled states — never a crash.
-    void ensureStylesheet("./id-address.css").catch(() => null);
+    void ensureStylesheet("./IdAddress.css").catch(() => null);
 
     this._initialized = true;
     this._destroyed = false;

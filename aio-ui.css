@@ -2533,7 +2533,7 @@ section:is(.article) {
    Form chrome — layout and lifecycle only.
 
    Field styling (wrapper, label, control, toggle shell) moved to
-   @aio-ui/input/input.css: a field must look the same outside a form, and the
+   @aio-ui/input/Input.css: a field must look the same outside a form, and the
    form must not be a prerequisite for it. What is left here is form-only:
    rows, fieldsets, action sets, multistep, inline variants, cascade visibility.
    ========================================================================== */
@@ -2597,18 +2597,36 @@ section:is(.article) {
   grid-template-columns: repeat(100, minmax(0, 1fr));
   column-gap: 0;
   row-gap: 0.25em;
-  align-items: start;
+  /* `end` is safe now that a toggle field measures the same as any other field, but a row
+     reads labels first: top-aligned keeps every caption on one line. */
+  align-items: end;
 
-  /* A child is a grid cell, not a block: no full width, no bottom margin. */
+  /* A child is a grid cell, not a block: no full width, no bottom margin.
+     `display` is split off on purpose. A toggle shell is a grid of its own (Input.css §8),
+     and a blanket `display: block` on every child (0,4,0) outranks that shell (0,2,0 /
+     0,3,0), stacking its label above the switch and neutralising `data-position`. */
   & > .field,
   & > .field.group[data-column],
   & > .form-group[data-column] {
-    display: block;
     width: auto;
     min-width: 0;
     margin-bottom: 0;
     padding-inline: calc(var(--row-gutter, 1em) / 2);
     grid-column: span var(--span, 100);
+  }
+
+  /* Block only where a block is wanted: a nested row/group keeps its own grid. */
+  & > .field:not(:has(> .switch.control)),
+  & > .field.group[data-column],
+  & > .form-group[data-column] {
+    display: block;
+  }
+
+  /* A toggle keeps the shell's grid: the label sits beside the switch, per
+     `label[data-position]`, instead of above it. Declared after the block rule so the
+     two never depend on source order between sheets. */
+  & > .field:has(> .switch.control) {
+    display: grid;
   }
 
   /* Heading and note read across the whole line (and line up with the fields). */
@@ -2678,7 +2696,7 @@ section:is(.article) {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: center;
   gap: 0.5em;
   margin-top: 1em;
   padding-top: 0.75em;
@@ -3263,6 +3281,307 @@ section:is(.article) {
   to {
     opacity: 1;
     transform: scale(1);
+  }
+}
+
+/* ==========================================================================
+   Header — article heading block
+   Reading order: icon → title → subtitle → meta → (optional) divider.
+   Every value derives from an `--app-*` token, so a theme retunes the block
+   without touching this sheet.
+   ========================================================================== */
+
+/* Component token layer — declared once per document. Redeclare a `--header-*`
+   on an ancestor to retheme this block alone. */
+:root,
+[data-theme] {
+  --header-title-color: var(--app-text-heading-color, #1a140e);
+  --header-text-color: var(--app-text-accent-color, #6e5f51);
+  /* `currentColor` = the root's ink, so `config.selectors["@header"].color` (an inline
+     `color` on the root) still reaches the subtitle and the meta line. A configured part
+     colour replaces the keyword with a real value and wins over that inline ink. */
+  --header-subtitle-color: currentColor;
+  --header-meta-color: currentColor;
+  --header-accent-color: var(--app-primary-color, darkgoldenrod);
+  --header-divider-color: var(--app-border-color, rgba(168, 137, 102, 0.28));
+
+  /* Surface tokens — the shape layer an `appearance` reads, never a palette of its own. */
+  --header-surface-bg: var(--app-surface-strong, #ffffff);
+  --header-surface-border: var(--app-border-color, rgba(168, 137, 102, 0.28));
+  --header-surface-radius: var(--app-component-border-radius, 0.75rem);
+  --header-surface-shadow: var(--app-shadow-soft, 0 12px 35px -8px rgba(92, 60, 20, 0.08));
+  --header-editorial-font: var(--app-font-heading-formal, Georgia, "Times New Roman", serif);
+
+  --header-title-size: var(--app-font-size-2xl, 1.65rem);
+  --header-title-size-huge: var(--app-font-size-3xl, 2.25rem);
+  --header-title-size-medium: var(--app-font-size-xl, 1.35rem);
+  --header-title-size-small: var(--app-font-size-lg, 1.15rem);
+  --header-subtitle-size: var(--app-font-size-base, 1rem);
+  --header-meta-size: var(--app-font-size-sm, 0.85rem);
+  --header-icon-size: 1.5rem;
+  --header-line-height: 1.1;
+}
+
+/* The root is a real `<header>`; keeping the tag in the root selector stops this
+   sheet from restyling a `.header` element another component owns. Every rule
+   nests under it. */
+header.header {
+  /* Spacing and the icon block follow the TYPE SCALE, not a page-level gap. These live here
+     and not in the `:root` layer on purpose: a `var()` there would resolve against the root's
+     title size, so `data-size="small"` would still get the `huge` gap. Same for the icon: a
+     glyph beside an `huge` heading is a big block; beside a `small` one, a small block. */
+  --header-title-measure: var(--header-title-size);
+  /* ~0.35 of the title, clamped at both ends so a long/short heading cannot open a canyon. */
+  --header-gap: clamp(0.35rem, calc(var(--header-title-measure) * 0.35), 0.5rem);
+  --header-icon-block: calc(var(--header-title-measure) * 2.5);
+  /* A surface's padding is the block's own breathing room, so it follows the same scale. */
+  --header-surface-pad: calc(var(--header-gap) * 2);
+  display: grid;
+  gap: var(--header-gap);
+  row-gap: calc(var(--header-gap) * 0.5);
+  color: var(--header-text-color);
+  /* `alignment` is a config decision, so the default has to be *stated*: without this the
+     block inherits `text-align` from whatever centred container it lands in, and
+     `data-alignment="left"` (the default) would be a no-op. */
+  text-align: left;
+
+  & .icon {
+    font-size: var(--header-icon-size);
+    line-height: 1;
+    color: var(--header-accent-color);
+  }
+
+  /* Icon placement. `config.iconPosition` writes `data-position` on the `<i>` itself, so the
+     sheet keys off the glyph and the markup keeps one reading order
+     (icon → title → subtitle → meta → divider). `top` is that order already: nothing to
+     place. A placement is an attribute, never an inline style. */
+
+  /* Under the heading pair, above the meta line. `order` moves the glyph only; the DOM
+     stays in reading order, so the accessible order never changes. */
+  &:has(> .icon[data-position="bottom"]) {
+    & > .icon {
+      order: 1;
+    }
+
+    & > .meta,
+    & > .divider {
+      order: 2;
+    }
+  }
+
+  /* Beside the text column: two columns, the glyph and its text. The glyph lives in a block
+     as tall as the stack it stands beside — title, subtitle and meta — but it is inset from
+     that block's edges: a square one `0.8 × --header-icon-block` wide, centred on the stack.
+     Flush to the column edge it read as clipped; the room is the column's, not a padding,
+     because a mask/`background` icon paints the whole box it is given. */
+  &:has(> .icon[data-position="left"]),
+  &:has(> .icon[data-position="right"]) {
+    align-items: start;
+
+    & > .icon {
+      align-self: center;
+      justify-self: center;
+      width: calc(var(--header-icon-block) * 0.8);
+      height: auto;
+      /* Square: the glyph is as tall as it is wide, whichever technique draws it (a font
+         glyph reads `font-size`, a mask/`background` glyph fills the box). */
+      aspect-ratio: 1;
+      font-size: calc(var(--header-icon-block) * 0.8);
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      /* One row per line of the stack: title, subtitle, meta. An absent line is not a row,
+         so each `:has()` below drops the span to the lines that are actually there — a
+         span past the last row would add an empty implicit row and its gap. */
+      grid-row: 1 / span 3;
+    }
+
+    &:not(:has(> .subtitle)) > .icon {
+      grid-row: 1 / span 2;
+    }
+
+    &:not(:has(> .meta)) > .icon {
+      grid-row: 1 / span 2;
+    }
+
+    /* A lone heading has no stack to span: the glyph takes the one row it labels. */
+    &:not(:has(> .subtitle)):not(:has(> .meta)) > .icon {
+      grid-row: 1;
+    }
+
+    /* The divider is the one line of the block, not of the text column. */
+    & > .divider {
+      grid-column: 1 / -1;
+    }
+  }
+
+  &:has(> .icon[data-position="left"]) {
+    grid-template-columns: var(--header-icon-block) 1fr;
+
+    & > .icon {
+      grid-column: 1;
+    }
+
+    & > .title,
+    & > .subtitle,
+    & > .meta {
+      grid-column: 2;
+    }
+  }
+
+  &:has(> .icon[data-position="right"]) {
+    grid-template-columns: 1fr var(--header-icon-block);
+
+    & > .icon {
+      grid-column: 2;
+    }
+
+    & > .title,
+    & > .subtitle,
+    & > .meta {
+      grid-column: 1;
+    }
+  }
+
+  & .title {
+    margin: 0;
+    font-size: var(--header-title-measure);
+    line-height: var(--header-line-height);
+    color: var(--header-title-color);
+    text-wrap: balance;
+  }
+
+  & .subtitle {
+    margin: 0;
+    font-size: var(--header-subtitle-size);
+    line-height: 1.6;
+    color: var(--header-subtitle-color);
+  }
+
+  & .meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem 0.85rem;
+    font-size: var(--header-meta-size);
+    color: var(--header-meta-color);
+
+    /* A bullet between entries. `*` because an entry may be a builder-made span or a
+       caller-owned `<time>`/`<strong>` element. */
+    & > * + *::before {
+      content: "•";
+      margin-inline-end: 0.5rem;
+      opacity: 0.5;
+    }
+
+    & strong {
+      color: var(--header-title-color);
+    }
+
+    & time {
+      font-variant-numeric: tabular-nums;
+    }
+  }
+
+  & .divider {
+    display: block;
+    height: 1px;
+    background: var(--header-divider-color);
+  }
+
+  /* ── Appearance: the block's SHAPE ───────────────────────────────────────────
+     A variant decides how the stack sits (plain, in a box, on a surface, in a magazine
+     column); it never invents a palette. Every colour it paints is a `--header-*` token
+     that already derives from `--app-*`, so a theme still owns the look. `glass`,
+     `brutalist`, `cyberpunk` are themes: they retune the tokens, not this attribute. */
+  &[data-appearance="bordered"],
+  &[data-appearance="block"] {
+    padding: var(--header-surface-pad);
+    border-radius: var(--header-surface-radius);
+  }
+
+  /* Outline: the stroke alone, no fill — the page's own background shows through. */
+  &[data-appearance="bordered"] {
+    border: 1px solid var(--header-surface-border);
+  }
+
+  /* Filled: the same box, on a theme surface, lifted by the theme's soft shadow. */
+  &[data-appearance="block"] {
+    background: var(--header-surface-bg);
+    box-shadow: var(--header-surface-shadow);
+  }
+
+  /* Editorial: a magazine column — a rule opens the block, the heading takes the theme's
+     formal face (when it has one), and the meta line reads as an uppercase byline. */
+  &[data-appearance="editorial"] {
+    border-block-start: 2px solid var(--header-divider-color);
+    padding-block-start: var(--header-surface-pad);
+    font-family: var(--header-editorial-font);
+
+    & .title {
+      letter-spacing: -0.02em;
+    }
+
+    & .meta {
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+  }
+
+  /* Size scales the title — and, through `--header-title-measure`, the gap and the icon
+     block. The heading level itself comes from `config.size` (Header.engine.ts maps it to an
+     `hN` tag). */
+  &[data-size="huge"] {
+    --header-title-measure: var(--header-title-size-huge);
+    & .title {
+      line-height: calc(var(--header-line-height) + 0);
+    }
+  }
+
+  &[data-size="medium"] {
+    --header-title-measure: var(--header-title-size-medium);
+    & .title {
+      line-height: calc(var(--header-line-height) - 0.2);
+    }
+  }
+
+  &[data-size="small"] {
+    --header-title-measure: var(--header-title-size-small);
+    & .title {
+      line-height: calc(var(--header-line-height) - 0.3);
+    }
+  }
+
+  /* Alignment is a config decision, written as an attribute — no inline style. */
+  &[data-alignment="center"] {
+    text-align: center;
+
+    & .meta {
+      justify-content: center;
+    }
+  }
+
+  &[data-alignment="right"] {
+    text-align: right;
+
+    & .meta {
+      justify-content: flex-end;
+    }
+  }
+
+  &[data-alignment="justify"] {
+    text-align: justify;
+  }
+}
+
+@media (max-width: 480px) {
+  header.header {
+    /* Narrow screens cap the scale: one measure drives the title, the gap and the icon, so
+       the whole block shrinks together instead of just the words. */
+    &[data-size] {
+      --header-title-measure: var(--header-title-size-medium);
+    }
   }
 }
 
@@ -3898,7 +4217,7 @@ section:is(.article) {
    * The control is a flex row: the selector button and the filename label are two boxes of
    * different heights, and only the control knows the row's true middle.
    *
-   * This sheet owns the whole box — `input.css` no longer paints a file control as a text
+   * This sheet owns the whole box — `Input.css` no longer paints a file control as a text
    * input (a file control replaces its own inner layout, so a shared `display: block` would
    * each time win or lose depending on which of the two sheets the loader injected last).
    */
@@ -4035,6 +4354,14 @@ fieldset.inline-style .field:has(input[type="file"]),
   --input-label-size: calc(var(--input-font-size) * 0.75);
   --input-border-radius: 0.55em;
   --input-line-height: 1.6;
+  /* One line box for every text control. The shared control rule (§3) and the toggle band
+     (§8) both read it, so a field holding a switch is exactly as tall as one holding an
+     input — the row's `align-items` has nothing to compensate for. */
+  --input-control-line: calc(var(--input-line-height) * 1.3);
+  /* The height a text control actually occupies: its line box at `--input-font-size`.
+     `--input-min-height` is one line of the FIELD (a different leading), so it cannot
+     answer "how tall is an input" — a switch band sized with it came out 7px short. */
+  --input-control-height: calc(var(--input-font-size) * var(--input-control-line));
   --input-icon-size: 24px;
   --input-min-height: 1lh;
   --input-picker-height: calc(3 * var(--input-line-height, 37px));
@@ -4263,7 +4590,7 @@ select:focus-visible {
     width: 100%;
     max-width: 100%;
     min-height: var(--input-min-height);
-    line-height: calc(var(--input-line-height) * 1.3);
+    line-height: var(--input-control-line);
     padding: 0 1em;
     font-size: var(--input-font-size);
     border-width: 1px;
@@ -4994,43 +5321,65 @@ select:focus-visible {
    ========================================================================== */
 .field,
 .field:is(.group) {
-  &:has(.switch.control) {
+  /* The shell is a DIRECT child of the field (`InputBuilder` appends `inputEl.__outer`), so
+     the match is a child: a row/group that merely *contains* a toggle must not become a
+     grid itself (which stole the row's own `grid-template-columns`). */
+  &:has(> .switch.control) {
     /* Block-level grid, not inline-grid: a switch field spans the row like every other
        field. The tracks fill the row (the switch stays 48px, the label takes the rest), so a
        full-width `info` child really spans the field. */
     display: grid;
     align-items: center;
     justify-content: start;
-    gap: 0.5em 0.25em;
+    /* No row gap: the label's own margin holds the seam, exactly like a plain field, so a
+       `top` label sits at the same height as its neighbours' labels. The column gap is
+       only for the inline positions. */
+    gap: 0 0.25em;
     width: 100%;
-    height: auto;
+    /* The band the switch centres in: one text-control line box, the same height an input
+       occupies. The switch itself stays 48×28, but its track is as tall as a neighbouring
+       input, so the whole field measures label + control — identical to a plain field.
+       Pinning the FIELD to `--input-min-height` (one line) instead squeezed two tracks into
+       one and pushed a `top` switch 38px past the field's own box. */
     &:has(> label[data-position="top"]) {
       grid-template-areas: "label" "control";
       grid-template-columns: 1fr;
+      grid-template-rows: auto var(--input-control-height);
+      & > label {
+        margin-bottom: 0.25em;
+      }
     }
     &:has(> label[data-position="left"]) {
       grid-template-areas: "label control";
       grid-template-columns: max-content 1fr;
+      grid-template-rows: var(--input-control-height);
     }
     &:has(> label[data-position="right"]) {
       grid-template-areas: "control label";
       grid-template-columns: max-content 1fr;
+      grid-template-rows: var(--input-control-height);
     }
     &:has(> label[data-position="bottom"]) {
       grid-template-areas: "control" "label";
       grid-template-columns: 1fr;
+      grid-template-rows: var(--input-control-height) auto;
+      & > label {
+        margin-top: 0.25em;
+      }
     }
+    /* A toggle's caption is a field label, so it reads exactly like one: same size, weight,
+       colour and leading. It used to be a 0.7em caption with its own padding, which made a
+       `top` toggle taller than every field beside it. */
     & > label {
       grid-area: label;
-      margin-bottom: 0;
-      margin-right: 0;
-      padding: 5px 2px;
-      color: var(--input-text-color);
-      font-size: calc(var(--input-font-size) * 0.7);
+      margin: 0;
+      padding: 0;
+      color: var(--input-label-color);
+      font-size: var(--input-label-size);
       font-weight: 600;
+      line-height: inherit;
       cursor: pointer;
       user-select: none;
-      align-content: center;
     }
     & > .switch.control,
     & > .switch.control > input:is([type="checkbox"], [type="radio"]) {
@@ -5144,6 +5493,14 @@ select:focus-visible {
       accent-color: var(--input-primary-color);
     }
   }
+}
+
+/* A toggle nested in a group keeps its grid. The base field block also styles a nested
+   field (`.field:is(.group) .field`, 0,3,0), which outranks the shell's own
+   `.field:has(> .switch.control)` (0,2,0); every other shell declaration still applies, so
+   only `display` has to be restated at that specificity. */
+.field:is(.group) .field:has(> .switch.control) {
+  display: grid;
 }
 
 @starting-style {
@@ -6453,9 +6810,23 @@ section:is(.masonry),
     font-size: clamp(1.2rem, 1.1rem + 0.5vw, 1.45rem);
     font-weight: 800;
     & > a {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
       color: var(--menu-heading-color);
       text-decoration: none;
       font-weight: 800;
+    }
+    /* A logo is an icon, not a banner. Without this the <img> takes the width of its
+       container — on a phone the brand column is the whole bar, so the favicon rendered
+       square and hundreds of pixels wide. `height` in `em` follows the brand type size. */
+    & .brand-image {
+      display: block;
+      width: auto;
+      height: 1.6em;
+      max-width: none;
+      flex: 0 0 auto;
+      object-fit: contain;
     }
   }
 
@@ -6615,16 +6986,19 @@ section:is(.masonry),
   &[data-multilevel="always"] .item.submenu.open > .menus,
   /* `click`: the builder flips the `open` class, so the sheet has nothing to guess. */
   &[data-multilevel="click"] .item.submenu.open > .menus,
+  /* `hover`: hover is the enhancement, but a click (a tap, a keyboard Enter) pins the same
+     `open` class — a touch screen never hovers, so without this the panel was unreachable. */
+  &[data-multilevel="hover"] .item.submenu.open > .menus,
   /* `hover`: the branch, the gap bridge, or the panel itself keeps it open — the panel is a
      child of the branch, so crossing into it must not drop the state. The glyph turns on the
-     same trigger, because in this mode no `open` class is ever written. */
+     same trigger. */
   &[data-multilevel="hover"] .item.submenu:hover > .menus,
   &[data-multilevel="hover"] .item.submenu > .menus:hover,
   &[data-multilevel="hover"] .item.submenu:focus-within > .menus {
     display: block;
   }
 
-  &[data-multilevel="hover"] .item.submenu:is(:hover, :focus-within) > a > i.icon {
+  &[data-multilevel="hover"] .item.submenu:is(:hover, :focus-within, .open) > a > i.icon {
     transform: rotate(90deg);
   }
 }
@@ -6657,8 +7031,13 @@ section:is(.masonry),
     }
 
     /* Below the hamburger there is no bar to hang a popover off, so a branch opens in
-       place as an inset list. */
-    & .item > .menus {
+       place as an inset list.
+
+       The extra `.nav` is load-bearing: the base popover rule is `.nav:is([position^="top"])
+       .item > .menus` (four class-levels), so this override at `.nav .item > .menus` (three)
+       lost and the panel stayed `absolute`, overflowing the strip's `overflow-y: hidden` —
+       it existed in the DOM and could not be seen. */
+    &.nav .item > .menus {
       position: static;
       min-width: 0;
       margin: 0.15rem 0 0.35rem;
@@ -6806,12 +7185,12 @@ aside:has(> .nav[data-position*="sticky"]) {
     }
 
     /*
-     * A branch is open in compact, whatever its activation. A column has the vertical room,
-     * and `hover` cannot happen on a touch screen — a `hover` branch would otherwise render
-     * as a heading with nothing under it. This is the sidebar shape, applied to every
-     * position; above the breakpoint each position keeps the behaviour it asked for.
+     * A branch follows its `open` state in compact too. It used to be forced open ("a
+     * column has the vertical room"), but a touch screen has no hover to close it — the
+     * panel could never be collapsed. The builder now toggles `open` on tap, so gating on
+     * it is what makes a phone behave like a disclosure.
      */
-    & .item.submenu > .menus {
+    & .item.submenu.open > .menus {
       display: block;
     }
   }

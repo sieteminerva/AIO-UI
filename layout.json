@@ -108,13 +108,22 @@
       "./validation-adapter": "dist/adapters/Validation.js"
     }
   },
+  "@aio-ui/header": {
+    "dir": "packages/components/header",
+    "entry": "dist/index.js",
+    "stylesRoot": "dist",
+    "subpaths": {
+      ".": "dist/index.js",
+      "./Header.css": "dist/Header.css"
+    }
+  },
   "@aio-ui/id-address": {
     "dir": "packages/components/id-address",
     "entry": "dist/index.js",
     "stylesRoot": "dist",
     "subpaths": {
       ".": "dist/index.js",
-      "./id-address.css": "dist/id-address.css"
+      "./IdAddress.css": "dist/IdAddress.css"
     }
   },
   "@aio-ui/input": {
@@ -123,15 +132,15 @@
     "stylesRoot": "dist",
     "subpaths": {
       ".": "dist/index.js",
-      "./input.css": "dist/input.css",
+      "./Input.css": "dist/Input.css",
       "./dropdown": "dist/Dropdown/Dropdown.js",
-      "./dropdown.css": "dist/Dropdown/Dropdown.css",
+      "./Dropdown.css": "dist/Dropdown/Dropdown.css",
       "./file-uploader": "dist/FileUploader/FileUploader.js",
-      "./file-uploader.css": "dist/FileUploader/FileUploader.css",
+      "./FileUploader.css": "dist/FileUploader/FileUploader.css",
       "./controls": "dist/InputControls/InputControls.js",
-      "./controls.css": "dist/InputControls/inputControls.css",
+      "./InputControls.css": "dist/InputControls/InputControls.css",
       "./picker": "dist/InputPicker/InputPicker.js",
-      "./picker.css": "dist/InputPicker/InputPicker.css"
+      "./InputPicker.css": "dist/InputPicker/InputPicker.css"
     }
   },
   "@aio-ui/markdown": {

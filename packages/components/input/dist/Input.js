@@ -37,7 +37,7 @@ const BOOLEAN_ATTRIBUTES = new Set(["required", "disabled", "readonly", "multipl
 export class InputBuilder extends Builder {
     builderId = "input";
     name = "input";
-    stylesheet = "./input.css";
+    stylesheet = "./Input.css";
     /** One field node. The vocabulary itself lives in `InputSchema.ts`; this stays open. */
     static contract = {
         schema: {

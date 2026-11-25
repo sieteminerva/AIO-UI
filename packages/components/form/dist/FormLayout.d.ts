@@ -20,17 +20,21 @@
  * 100-unit grid; `wide: 20` takes a fifth, `wide: 100` takes the row. There is no column
  * arithmetic and no `span` — an integer span could not express 20/40/40 anyway.
  *
- * | `wide`             | share of the row                     |
- * | ------------------ | ------------------------------------ |
- * | absent / invalid   | 100 (the whole row)                  |
- * | `"auto"`, `"full"` | 100                                  |
- * | `0 < n ≤ 1`        | fraction (`0.5` = `50`)              |
- * | `n > 1`            | percentage (`20`, `100`)             |
- * | `"40%"`            | the same percentage, with a sign     |
+ * | `wide`             | share of the row                                  |
+ * | ------------------ | ------------------------------------------------- |
+ * | absent             | equal share of the line (`column: 3` → a third),  |
+ * |                    | or 100 when the child has to start a new line      |
+ * | invalid            | 100                                               |
+ * | `"auto"`, `"full"` | 100                                               |
+ * | `0 < n ≤ 1`        | fraction (`0.5` = `50`)                           |
+ * | `n > 1`            | percentage (`20`, `100`)                          |
+ * | `"40%"`            | the same percentage, with a sign                  |
  *
- * `column` no longer divides the space; it is the **cap on items per line**. A line holds
- * at most `column` children, whatever their widths, so the fourth child of `column: 3`
- * drops to the next line. Widths that add up past 100 simply overflow the row.
+ * `column` is both the **cap on items per line** and the default share: a child that
+ * declares nothing takes an equal slice of its line (100 / `column`, the remainder spread
+ * from the left), so three children under `column: 3` are a third each. A fourth child no
+ * longer fits, and a child that starts a new line takes it whole — `wide` is only needed
+ * when a line should be uneven.
  */
 /** The whole row: the unit every `wide` is measured in. */
 export declare const WIDE_FULL = 100;
@@ -99,6 +103,17 @@ export declare function wideOf(wide: unknown): number;
  */
 export declare function childWideOf(child: unknown): number;
 /**
+ * The share a child declares, or `null` when it declares none.
+ *
+ * `null` is not "the whole row": a container that declares `column` gives such a child an
+ * equal slice of its line (see {@link arrangeRow}). Only an explicit word — including
+ * `"auto"` / `"full"` — pins a width.
+ *
+ * @param child - Row child node.
+ * @returns Percentage of the row, or `null` when `wide` was never written.
+ */
+export declare function declaredWideOf(child: unknown): number | null;
+/**
  * Applies a share to a child element.
  *
  * `data-span` is the human/debug marker; `--span` carries the number, because CSS cannot
@@ -128,6 +143,10 @@ export declare function applyRowColumns(element: HTMLElement, columns: number): 
  * track 100 would make CSS create implicit tracks, which silently shrink every explicit
  * one (the whole row loses its percentages). Headings and anything the layout does not
  * know (a control set, raw markup) take a full line of their own.
+ *
+ * A child that declares no `wide` (`--span` was never stamped) takes an equal slice of the
+ * line: what is left, split over the slots still open on it. Three fields under
+ * `column: 3` become 34/33/33; the fourth no longer fits and takes the whole next line.
  *
  * @param container - Row or column group.
  * @param columns - Line cap; `0` means "no cap, one line".

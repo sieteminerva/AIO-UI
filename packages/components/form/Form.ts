@@ -14,7 +14,7 @@ import type { InputModuleItem, InputModulePreset } from "@aio-ui/input";
 import { ModuleLoader } from "@aio-ui/module-loader";
 import { inputFormAdapter } from "./Input.FormAdapter";
 import { dropdownInputModule } from "@aio-ui/input/dropdown";
-import { DEFAULT_ROW_COLUMNS, applyRowColumns, applyRowSpan, arrangeRow, childWideOf, declaredColumns } from "./FormLayout";
+import { DEFAULT_ROW_COLUMNS, applyRowColumns, applyRowSpan, arrangeRow, declaredColumns, declaredWideOf } from "./FormLayout";
 import { collectFormValues } from "@aio-ui/input";
 import type { HttpService } from "@aio-ui/http-service";
 import type { iFormMessages } from "./FormMessages";
@@ -758,9 +758,11 @@ export class FormBuilder extends Builder<FormElementType, iFormConfig> {
         }
 
         // The same `--span` a row child gets: a group that declared `column` owns the grid,
-        // so every child states its share of it. A held (conditional) child is stamped by
-        // the cascade when it is built.
-        if (columns && element) applyRowSpan(element, childWideOf(innerInput));
+        // so every child that declares `wide` states its share of it. A child that declares
+        // nothing stays unstamped — `arrangeRow` gives it an equal slice of its line. A held
+        // (conditional) child is stamped by the cascade when it is built.
+        const share = declaredWideOf(innerInput);
+        if (columns && element && share !== null) applyRowSpan(element, share);
       });
     }
 
@@ -841,7 +843,8 @@ export class FormBuilder extends Builder<FormElementType, iFormConfig> {
       const submitBtn = this.scanForSubmitButton(element, formId);
       if (submitBtn) this.submitButtonId = submitBtn.id;
 
-      applyRowSpan(element, childWideOf(child));
+      const share = declaredWideOf(child);
+      if (share !== null) applyRowSpan(element, share);
       container.appendChild(element);
     });
 

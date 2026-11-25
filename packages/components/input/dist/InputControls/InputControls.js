@@ -13,8 +13,8 @@ const NOT_DATA_TYPES = new Set(["button", "submit", "reset", "image", "hidden"])
 export class InputControlsBuilder extends Builder {
     builderId = "input-controls";
     name = "input-controls";
-    /** Matches the host's key (`@aio-ui/input/controls.css`): resolution is by basename. */
-    stylesheet = "./controls.css";
+    /** Matches the host's key (`@aio-ui/input/InputControls.css`): resolution is by basename. */
+    stylesheet = "./InputControls.css";
     /** Lock state per control as it was before the set locked it, restored on save. */
     #editableState = new WeakMap();
     /** Scopes already listening for Enter-to-search. */

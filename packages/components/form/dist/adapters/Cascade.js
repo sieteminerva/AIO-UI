@@ -4,7 +4,7 @@
 // lalu attach(form) sekali. Evaluasi, mount/unmount, gerbang tombol next,
 // dan delegasi listener berjalan di dalam engine, tanpa membebani Form.ts.
 // ======================================================================
-import { applyRowSpan, arrangeRow, childWideOf } from "../FormLayout.js";
+import { applyRowSpan, arrangeRow, declaredWideOf } from "../FormLayout.js";
 import { FORM_MODULE_IDS } from "../FormModuleTypes.js";
 /**
  * Cascade engine.
@@ -357,7 +357,10 @@ export class FormCascade {
         const column = Number(parent?.dataset.column);
         if (!Number.isFinite(column) || column <= 0)
             return;
-        applyRowSpan(element, childWideOf(item));
+        // A child with no `wide` is left unstamped: `arrangeRow` gives it an equal slice.
+        const share = declaredWideOf(item);
+        if (share !== null)
+            applyRowSpan(element, share);
         arrangeRow(parent, column);
     }
     /** Aktifkan engine: delegasi input/change + sync + gate awal */

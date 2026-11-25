@@ -61,7 +61,7 @@ export class PickerBuilder extends Builder {
     builderId = "input-picker";
     name = "input-picker";
     /** Short specifier the package maps to `InputPicker.css` — the file-uploader pattern. */
-    stylesheet = "./picker.css";
+    stylesheet = "./InputPicker.css";
     config;
     /** Current selection, in pick order. */
     #selected = [];

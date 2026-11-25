@@ -3423,6 +3423,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 			if (selector.textContent && selector.textContent !== "") el.textContent = selector.textContent;
 			applyAttrDictionary$1(el, selector.attrs);
 			applyAttributeList$1(el, selector.attributes);
+			if (selector.color) el.style.color = selector.color;
 		}
 	};
 	/**
@@ -5211,7 +5212,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 	* Default shape per key. Themes and callers override this through `config.selectors`,
 	* which is why the tests lock it: the contract is checkable without a DOM.
 	*/
-	var DEFAULT_SELECTORS$5 = {
+	var DEFAULT_SELECTORS$6 = {
 		"@container": {
 			tagName: "div",
 			className: "badge-widget"
@@ -5280,7 +5281,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 				themeId: "default",
 				namespace: null,
 				emit: () => {},
-				selectors: DEFAULT_SELECTORS$5,
+				selectors: DEFAULT_SELECTORS$6,
 				emphasis: false
 			};
 			this.config = this.resolveConfig(defaultConfig, config);
@@ -6827,6 +6828,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 			if (selector.textContent && selector.textContent !== "") el.textContent = selector.textContent;
 			applyAttrDictionary$1(el, selector.attrs);
 			applyAttributeList$1(el, selector.attributes);
+			if (selector.color) el.style.color = selector.color;
 		}
 	};
 	/**
@@ -7468,7 +7470,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 	* holds one or more panels); the panel itself is a real `pre`, so a caller that only knows
 	* "this is code" still gets a correct element even when it overrides the wrapper.
 	*/
-	var DEFAULT_SELECTORS$4 = {
+	var DEFAULT_SELECTORS$5 = {
 		"@container": {
 			tagName: "section",
 			className: "code-block"
@@ -7601,7 +7603,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 				themeId: "default",
 				namespace: null,
 				emit: () => {},
-				selectors: DEFAULT_SELECTORS$4,
+				selectors: DEFAULT_SELECTORS$5,
 				actions: []
 			};
 			this.config = this.resolveConfig(defaultConfig, config);
@@ -11177,10 +11179,10 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 	* Where this sheet is fetched from, spelled as the host keys it.
 	*
 	* Resolution falls back to the file name, so this must end in the same name the host
-	* uses (`@aio-ui/input/file-uploader.css`) — `"./FileUploader.css"` matched nothing and
+	* uses (`@aio-ui/input/FileUploader.css`) — `"./file-uploader.css"` matched nothing and
 	* the uploader rendered unstyled without an error.
 	*/
-	var FILE_UPLOADER_STYLESHEET$1 = "./file-uploader.css";
+	var FILE_UPLOADER_STYLESHEET$1 = "./FileUploader.css";
 	/**
 	* @class
 	* @classdesc
@@ -12711,9 +12713,9 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 			_defineProperty(this, "name", "input-controls");
 			_defineProperty(
 				this,
-				/** Matches the host's key (`@aio-ui/input/controls.css`): resolution is by basename. */
+				/** Matches the host's key (`@aio-ui/input/InputControls.css`): resolution is by basename. */
 				"stylesheet",
-				"./controls.css"
+				"./InputControls.css"
 			);
 			_classPrivateFieldInitSpec(this, _editableState$1, /* @__PURE__ */ new WeakMap());
 			_classPrivateFieldInitSpec(this, _searchBound$1, /* @__PURE__ */ new WeakSet());
@@ -13598,7 +13600,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 				this,
 				/** Short specifier the package maps to `InputPicker.css` — the file-uploader pattern. */
 				"stylesheet",
-				"./picker.css"
+				"./InputPicker.css"
 			);
 			_defineProperty(this, "config", void 0);
 			_classPrivateFieldInitSpec(this, _selected$1, []);
@@ -14782,7 +14784,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 			_classPrivateMethodInitSpec(this, _InputBuilder_brand$1);
 			_defineProperty(this, "builderId", "input");
 			_defineProperty(this, "name", "input");
-			_defineProperty(this, "stylesheet", "./input.css");
+			_defineProperty(this, "stylesheet", "./Input.css");
 			_classPrivateFieldInitSpec(this, _input$1, { type: "text" });
 			_classPrivateFieldInitSpec(this, _loader$3, void 0);
 			_classPrivateFieldInitSpec(this, _live$1, void 0);
@@ -15883,15 +15885,21 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 		return Math.min(100, Math.max(1, Math.round(percent)));
 	}
 	/**
-	* Resolves the share a container child asked for.
+	* The share a child declares, or `null` when it declares none.
+	*
+	* `null` is not "the whole row": a container that declares `column` gives such a child an
+	* equal slice of its line (see {@link arrangeRow}). Only an explicit word — including
+	* `"auto"` / `"full"` — pins a width.
 	*
 	* @param child - Row child node.
-	* @returns Percentage of the row between 1 and {@link WIDE_FULL}.
+	* @returns Percentage of the row, or `null` when `wide` was never written.
 	*/
-	function childWideOf$1(child) {
-		if (!child || typeof child !== "object") return 100;
+	function declaredWideOf$1(child) {
+		if (!child || typeof child !== "object") return null;
 		const node = child;
-		return wideOf$1(node.config?.wide ?? node.wide);
+		const wide = node.config?.wide ?? node.wide;
+		if (wide === void 0 || wide === null || wide === "") return null;
+		return wideOf$1(wide);
 	}
 	/**
 	* Applies a share to a child element.
@@ -15929,14 +15937,25 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 	* one (the whole row loses its percentages). Headings and anything the layout does not
 	* know (a control set, raw markup) take a full line of their own.
 	*
+	* A child that declares no `wide` (`--span` was never stamped) takes an equal slice of the
+	* line: what is left, split over the slots still open on it. Three fields under
+	* `column: 3` become 34/33/33; the fourth no longer fits and takes the whole next line.
+	*
 	* @param container - Row or column group.
 	* @param columns - Line cap; `0` means "no cap, one line".
 	*/
 	function arrangeRow$1(container, columns) {
-		const cap = columns > 0 ? columns : Number.MAX_SAFE_INTEGER;
+		const capped = columns > 0;
+		const cap = capped ? columns : Number.MAX_SAFE_INTEGER;
 		let line = 1;
 		let count = 0;
 		let used = 0;
+		/** Equal slice of the space left on this line, over the slots still open on it. */
+		const slot = () => {
+			if (!capped) return 100;
+			const open = Math.max(1, cap - count);
+			return Math.max(1, Math.ceil((100 - used) / open));
+		};
 		for (const child of Array.from(container.children)) {
 			if (!(child instanceof HTMLElement)) continue;
 			if (!child.matches(".field, .form-group")) {
@@ -15952,12 +15971,15 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 				used = 0;
 				continue;
 			}
-			const wide = Number(child.style.getPropertyValue("--span")) || 100;
+			const stated = Number(child.style.getPropertyValue("--span")) || 0;
+			let wide = stated || slot();
 			if (count >= cap || used > 0 && used + wide > 100) {
 				line += 1;
 				count = 0;
 				used = 0;
+				wide = stated || 100;
 			}
+			applyRowSpan$1(child, wide);
 			child.style.gridRow = String(line);
 			child.style.gridColumn = `${used + 1} / span ${wide}`;
 			used += wide;
@@ -16460,7 +16482,8 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 					fieldset.append(inputEl);
 					element = inputEl;
 				}
-				if (columns && element) applyRowSpan$1(element, childWideOf$1(innerInput));
+				const share = declaredWideOf$1(innerInput);
+				if (columns && element && share !== null) applyRowSpan$1(element, share);
 			});
 			if (groupInput.submitButton) {
 				const submitBtn = this.render("@form>actions>submit", {
@@ -16517,7 +16540,8 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 				if (!element) return;
 				const submitBtn = this.scanForSubmitButton(element, formId);
 				if (submitBtn) this.submitButtonId = submitBtn.id;
-				applyRowSpan$1(element, childWideOf$1(child));
+				const share = declaredWideOf$1(child);
+				if (share !== null) applyRowSpan$1(element, share);
 				container.appendChild(element);
 			});
 			_assertClassBrand(_FormBuilder_brand$1, this, _appendActions$1).call(this, container, rowInput);
@@ -17790,7 +17814,8 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 	function _stampSpan$1(element, item, parent) {
 		const column = Number(parent?.dataset.column);
 		if (!Number.isFinite(column) || column <= 0) return;
-		applyRowSpan$1(element, childWideOf$1(item));
+		const share = declaredWideOf$1(item);
+		if (share !== null) applyRowSpan$1(element, share);
 		arrangeRow$1(parent, column);
 	}
 	/**
@@ -18319,6 +18344,269 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 		messageDraft: () => messageDraft$1,
 		resolveStyle: () => resolveStyle$1
 	});
+	// packages/components/header/Header.kit.ts
+	var DEFAULT_SELECTORS$4 = {
+		"@header": {
+			tagName: "header",
+			className: "header"
+		},
+		"@header>icon": {
+			tagName: "i",
+			className: "icon"
+		},
+		"@header>title": {
+			tagName: "h3",
+			className: "title"
+		},
+		"@header>subtitle": {
+			tagName: "p",
+			className: "subtitle"
+		},
+		"@header>meta": {
+			tagName: "div",
+			className: "meta"
+		},
+		"@header>meta>item": { tagName: "span" },
+		"@header>divider": {
+			tagName: "span",
+			className: "divider"
+		}
+	};
+	// packages/components/header/Header.engine.ts
+	var HEADING_BY_SIZE = {
+		huge: "h2",
+		medium: "h4",
+		normal: "h3",
+		small: "h5"
+	};
+	/** The size the sheet and the heading default to — `h3`, the default render. */
+	var DEFAULT_SIZE = "normal";
+	/** The heading element a size renders. Unknown sizes fall back to the default. */
+	function headingFor(size) {
+		return HEADING_BY_SIZE[size] ?? HEADING_BY_SIZE["normal"];
+	}
+	/** The `itemprop` a metadata key earns when `config.structuredData` is on. */
+	var ITEMPROP = {
+		author: "author",
+		date: "datePublished",
+		published: "datePublished",
+		updated: "dateModified"
+	};
+	function itempropFor(key) {
+		return ITEMPROP[key.toLowerCase()];
+	}
+	/** The `{ textContent, className }` form: a span the builder creates from the value. */
+	function isPairValue(value) {
+		return !!value && typeof value === "object" && typeof value.textContent === "string" && typeof value.className === "string";
+	}
+	/** A caller-owned element (a `<time datetime>`, a `<strong>`): appended as-is. */
+	function isElementValue(value) {
+		return typeof HTMLElement !== "undefined" && value instanceof HTMLElement;
+	}
+	/** One `[key, value]` pair per property, in the object's own order. */
+	function metaEntries(metadata) {
+		if (!metadata || typeof metadata !== "object" || Array.isArray(metadata)) return [];
+		return Object.entries(metadata);
+	}
+	/** The text of a scalar or pair value; a live element brings its own text. */
+	function textOf(value) {
+		if (typeof value === "string") return value;
+		return isPairValue(value) ? value.textContent : "";
+	}
+	// packages/components/header/Header.ts
+	/** The component token each `config.color` field retunes. */
+	var COLOR_TOKEN = {
+		title: "--header-title-color",
+		subtitle: "--header-subtitle-color",
+		icon: "--header-accent-color",
+		metadata: "--header-meta-color",
+		block: "--header-surface-bg",
+		border: "--header-surface-border"
+	};
+	var HeaderBuilder = class extends Builder$1 {
+		/**
+		* 🪶 LOADING MOCKUP — an icon block, a headline, a subtitle line and the meta row.
+		*/
+		loading() {
+			return Skeleton$1.create({
+				shape: "stack",
+				children: [
+					{
+						shape: "row",
+						gap: "0.5rem",
+						children: [{
+							shape: "circle",
+							width: "1.5rem"
+						}, {
+							shape: "bone",
+							width: "60%",
+							height: "2rem"
+						}]
+					},
+					{
+						shape: "line",
+						width: "40%"
+					},
+					{
+						shape: "line",
+						width: "70%"
+					}
+				]
+			});
+		}
+		constructor(config = {}) {
+			super();
+			_defineProperty(this, "builderId", "header");
+			_defineProperty(this, "name", "header");
+			_defineProperty(this, "stylesheet", "./Header.css");
+			_defineProperty(this, "config", void 0);
+			const defaultConfig = {
+				themeId: "default",
+				namespace: null,
+				emit: () => {},
+				selectors: {
+					...DEFAULT_SELECTORS$4,
+					"@header>title": {
+						...DEFAULT_SELECTORS$4["@header>title"],
+						tagName: headingFor(config.size)
+					}
+				},
+				useDivider: false,
+				size: DEFAULT_SIZE,
+				appearance: "normal",
+				alignment: "left",
+				iconPosition: "top",
+				structuredData: false,
+				color: {}
+			};
+			this.config = this.resolveConfig(defaultConfig, config);
+		}
+		/**
+		* Build the block in reading order: icon → title → subtitle → meta → divider.
+		* An absent part is not appended at all (no empty `<p>`, no empty `.meta`).
+		*/
+		prepare(data) {
+			const content = data ?? {};
+			const root = this.render("@header", content);
+			if (!root) throw new Error("[Builder:header] selector \"@header\" is missing");
+			if (content.icon) {
+				const icon = this.render("@header>icon", content);
+				if (icon) root.appendChild(icon);
+			}
+			if (content.title) {
+				const title = this.render("@header>title", content);
+				if (title) root.appendChild(title);
+			}
+			if (content.subtitle) {
+				const subtitle = this.render("@header>subtitle", content);
+				if (subtitle) root.appendChild(subtitle);
+			}
+			const entries = metaEntries(content.metadata);
+			if (entries.length) {
+				const meta = this.render("@header>meta", content);
+				if (meta) {
+					for (const [key, value] of entries) {
+						if (isElementValue(value)) {
+							meta.appendChild(value);
+							continue;
+						}
+						const item = this.render("@header>meta>item", {
+							key,
+							value
+						});
+						if (item) meta.appendChild(item);
+					}
+					root.appendChild(meta);
+				}
+			}
+			if (this.config.useDivider) {
+				const divider = this.render("@header>divider", content);
+				if (divider) root.appendChild(divider);
+			}
+			return this.load("@header");
+		}
+		/**
+		* Hydration valve: text and attributes only. Children are their own keys, appended by
+		* `prepare()`.
+		*/
+		template(typeKey, el, payload) {
+			switch (typeKey) {
+				case "@header":
+					el.dataset.size = this.config.size;
+					el.dataset.appearance = this.config.appearance;
+					el.dataset.alignment = this.config.alignment;
+					if (this.config.structuredData) {
+						el.setAttribute("itemscope", "");
+						el.setAttribute("itemtype", "https://schema.org/Article");
+					}
+					for (const [part, ink] of Object.entries(this.config.color ?? {})) {
+						if (!ink) continue;
+						el.style.setProperty(COLOR_TOKEN[part], ink);
+					}
+					break;
+				case "@header>icon":
+					el.setAttribute("aria-hidden", "true");
+					el.setAttribute("focusable", "false");
+					el.dataset.position = this.config.iconPosition;
+					if (payload?.icon) el.className = `${payload.icon} icon`;
+					break;
+				case "@header>title":
+					el.textContent = payload?.title ?? "";
+					if (this.config.structuredData) el.setAttribute("itemprop", "headline");
+					break;
+				case "@header>subtitle":
+					el.textContent = payload?.subtitle ?? "";
+					break;
+				case "@header>meta>item": {
+					const key = String(payload?.key ?? "");
+					const value = payload?.value;
+					if (key) el.classList.add(key);
+					if (isPairValue(value) && value.className) el.classList.add(value.className);
+					el.textContent = textOf(value);
+					if (this.config.structuredData) {
+						const itemprop = itempropFor(key);
+						if (itemprop) el.setAttribute("itemprop", itemprop);
+					}
+					break;
+				}
+				case "@header>divider": el.setAttribute("aria-hidden", "true");
+			}
+		}
+		/** No interaction: a heading block is content. */
+		initialize() {}
+	};
+	_defineProperty(HeaderBuilder, "contract", {
+		schema: {
+			t: "record",
+			open: true,
+			of: {
+				title: {
+					t: "string",
+					req: true
+				},
+				subtitle: { t: "string" },
+				icon: { t: "string" },
+				metadata: {
+					t: "record",
+					open: true
+				}
+			}
+		},
+		example: {
+			title: "Merawat kaos katun agar tidak melar",
+			subtitle: "Example subtitle",
+			icon: "user",
+			metadata: {
+				author: {
+					textContent: "Oleh: Rina",
+					className: "author"
+				},
+				date: "12 Januari 2026"
+			}
+		}
+	});
+	// packages/components/header/index.ts
+	var header_exports = /* @__PURE__ */ __exportAll({ HeaderBuilder: () => HeaderBuilder });
 	// packages/modules/http-service/HttpService.ts
 	var HttpService$1 = class {
 		constructor(config = {}) {
@@ -19482,7 +19770,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 		if (key === "formatted_address") return typeof value === "string";
 		return false;
 	}
-	// packages/components/id-address/id-address-builder.ts
+	// packages/components/id-address/IdAddressBuilder.ts
 	var ADDRESS_LEVELS = [
 		"propinsi",
 		"kota",
@@ -19884,7 +20172,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 				console.warn("IdAddressBuilder already initialized.");
 				return;
 			}
-			ensureStylesheet$1("./id-address.css").catch(() => null);
+			ensureStylesheet$1("./IdAddress.css").catch(() => null);
 			this._initialized = true;
 			this._destroyed = false;
 			let containerEl = null;
@@ -20957,15 +21245,21 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 		return Math.min(100, Math.max(1, Math.round(percent)));
 	}
 	/**
-	* Resolves the share a container child asked for.
+	* The share a child declares, or `null` when it declares none.
+	*
+	* `null` is not "the whole row": a container that declares `column` gives such a child an
+	* equal slice of its line (see {@link arrangeRow}). Only an explicit word — including
+	* `"auto"` / `"full"` — pins a width.
 	*
 	* @param child - Row child node.
-	* @returns Percentage of the row between 1 and {@link WIDE_FULL}.
+	* @returns Percentage of the row, or `null` when `wide` was never written.
 	*/
-	function childWideOf(child) {
-		if (!child || typeof child !== "object") return 100;
+	function declaredWideOf(child) {
+		if (!child || typeof child !== "object") return null;
 		const node = child;
-		return wideOf(node.config?.wide ?? node.wide);
+		const wide = node.config?.wide ?? node.wide;
+		if (wide === void 0 || wide === null || wide === "") return null;
+		return wideOf(wide);
 	}
 	/**
 	* Applies a share to a child element.
@@ -21003,14 +21297,25 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 	* one (the whole row loses its percentages). Headings and anything the layout does not
 	* know (a control set, raw markup) take a full line of their own.
 	*
+	* A child that declares no `wide` (`--span` was never stamped) takes an equal slice of the
+	* line: what is left, split over the slots still open on it. Three fields under
+	* `column: 3` become 34/33/33; the fourth no longer fits and takes the whole next line.
+	*
 	* @param container - Row or column group.
 	* @param columns - Line cap; `0` means "no cap, one line".
 	*/
 	function arrangeRow(container, columns) {
-		const cap = columns > 0 ? columns : Number.MAX_SAFE_INTEGER;
+		const capped = columns > 0;
+		const cap = capped ? columns : Number.MAX_SAFE_INTEGER;
 		let line = 1;
 		let count = 0;
 		let used = 0;
+		/** Equal slice of the space left on this line, over the slots still open on it. */
+		const slot = () => {
+			if (!capped) return 100;
+			const open = Math.max(1, cap - count);
+			return Math.max(1, Math.ceil((100 - used) / open));
+		};
 		for (const child of Array.from(container.children)) {
 			if (!(child instanceof HTMLElement)) continue;
 			if (!child.matches(".field, .form-group")) {
@@ -21026,12 +21331,15 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 				used = 0;
 				continue;
 			}
-			const wide = Number(child.style.getPropertyValue("--span")) || 100;
+			const stated = Number(child.style.getPropertyValue("--span")) || 0;
+			let wide = stated || slot();
 			if (count >= cap || used > 0 && used + wide > 100) {
 				line += 1;
 				count = 0;
 				used = 0;
+				wide = stated || 100;
 			}
+			applyRowSpan(child, wide);
 			child.style.gridRow = String(line);
 			child.style.gridColumn = `${used + 1} / span ${wide}`;
 			used += wide;
@@ -21562,7 +21870,8 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 					fieldset.append(inputEl);
 					element = inputEl;
 				}
-				if (columns && element) applyRowSpan(element, childWideOf(innerInput));
+				const share = declaredWideOf(innerInput);
+				if (columns && element && share !== null) applyRowSpan(element, share);
 			});
 			if (groupInput.submitButton) {
 				const submitBtn = this.render("@form>actions>submit", {
@@ -21619,7 +21928,8 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 				if (!element) return;
 				const submitBtn = this.scanForSubmitButton(element, formId);
 				if (submitBtn) this.submitButtonId = submitBtn.id;
-				applyRowSpan(element, childWideOf(child));
+				const share = declaredWideOf(child);
+				if (share !== null) applyRowSpan(element, share);
 				container.appendChild(element);
 			});
 			_assertClassBrand(_FormBuilder_brand, this, _appendActions).call(this, container, rowInput);
@@ -22850,7 +23160,8 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 	function _stampSpan(element, item, parent) {
 		const column = Number(parent?.dataset.column);
 		if (!Number.isFinite(column) || column <= 0) return;
-		applyRowSpan(element, childWideOf(item));
+		const share = declaredWideOf(item);
+		if (share !== null) applyRowSpan(element, share);
 		arrangeRow(parent, column);
 	}
 	/**
@@ -24084,10 +24395,10 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 	* Where this sheet is fetched from, spelled as the host keys it.
 	*
 	* Resolution falls back to the file name, so this must end in the same name the host
-	* uses (`@aio-ui/input/file-uploader.css`) — `"./FileUploader.css"` matched nothing and
+	* uses (`@aio-ui/input/FileUploader.css`) — `"./file-uploader.css"` matched nothing and
 	* the uploader rendered unstyled without an error.
 	*/
-	var FILE_UPLOADER_STYLESHEET = "./file-uploader.css";
+	var FILE_UPLOADER_STYLESHEET = "./FileUploader.css";
 	/**
 	* @class
 	* @classdesc
@@ -25618,9 +25929,9 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 			_defineProperty(this, "name", "input-controls");
 			_defineProperty(
 				this,
-				/** Matches the host's key (`@aio-ui/input/controls.css`): resolution is by basename. */
+				/** Matches the host's key (`@aio-ui/input/InputControls.css`): resolution is by basename. */
 				"stylesheet",
-				"./controls.css"
+				"./InputControls.css"
 			);
 			_classPrivateFieldInitSpec(this, _editableState, /* @__PURE__ */ new WeakMap());
 			_classPrivateFieldInitSpec(this, _searchBound, /* @__PURE__ */ new WeakSet());
@@ -26490,7 +26801,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 				this,
 				/** Short specifier the package maps to `InputPicker.css` — the file-uploader pattern. */
 				"stylesheet",
-				"./picker.css"
+				"./InputPicker.css"
 			);
 			_defineProperty(this, "config", void 0);
 			_classPrivateFieldInitSpec(this, _selected, []);
@@ -27356,7 +27667,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 			_classPrivateMethodInitSpec(this, _InputBuilder_brand);
 			_defineProperty(this, "builderId", "input");
 			_defineProperty(this, "name", "input");
-			_defineProperty(this, "stylesheet", "./input.css");
+			_defineProperty(this, "stylesheet", "./Input.css");
 			_classPrivateFieldInitSpec(this, _input, { type: "text" });
 			_classPrivateFieldInitSpec(this, _loader, void 0);
 			_classPrivateFieldInitSpec(this, _live, void 0);
@@ -30143,7 +30454,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 				icon: payload?.icon ?? "icon arrow right",
 				onClick: (event) => {
 					event.preventDefault();
-					if (activation === "click") this.toggleSubmenu(item);
+					if (activation !== "always") this.toggleSubmenu(item);
 					payload?.onClick?.(event);
 				}
 			});
@@ -36374,7 +36685,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 	}
 	// temp/bundle/entry.js
 	var AioUI = {
-		version: "0.2.6",
+		version: "0.2.7",
 		packages: {
 			accordion: accordion_exports,
 			animations: animations_exports,
@@ -36388,6 +36699,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 			fabMenu: fab_menu_exports,
 			footer: footer_exports,
 			form: form_exports,
+			header: header_exports,
 			httpService: http_service_exports,
 			idAddress: id_address_exports,
 			input: input_exports,
@@ -36498,6 +36810,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 	AioUI.FORM_ADAPTER_DEFINITIONS = FORM_ADAPTER_DEFINITIONS$1;
 	AioUI.FORM_ADAPTER_IDS = FORM_ADAPTER_IDS$1;
 	AioUI.inputFormAdapter = inputFormAdapter$1;
+	AioUI.HeaderBuilder = HeaderBuilder;
 	AioUI.HttpService = HttpService$1;
 	AioUI.IdAddressBuilder = IdAddressBuilder;
 	AioUI.IdAddressAdapterAio = IdAddressAdapterAio;

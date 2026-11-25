@@ -10,11 +10,11 @@ import { DefaultTheme, CyberpunkTheme, HorizontalTheme } from "@aio-ui/themes";
 <!-- install:begin -->
 ## Install
 
-Version — `0.2.5` (tag `v0.2.5`)
+Version — `0.2.6` (tag `v0.2.6`)
 
-    npm install https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.5/aio-ui-themes-0.2.5.tgz
+    npm install https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.6/aio-ui-themes-0.2.6.tgz
 
-CDN (ES module, no build step) — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.5/packages/kits/themes/dist/index.js`
+CDN (ES module, no build step) — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.6/packages/kits/themes/dist/index.js`
 <!-- install:end -->
 
 ## Why an aggregator

@@ -938,6 +938,12 @@ export class Builder {
         // 4. 🧙‍♂️ SAFE ATTRS: dictionary `attrs` + array `attributes` (shared utils)
         applyAttrDictionary(el, selector.attrs);
         applyAttributeList(el, selector.attributes);
+        // 5. 🎨 INK OVERRIDE: a selector may name the element's own `color`. Written inline so it
+        //    beats the sheet's `color` (a token included) — this is what turns
+        //    `config.selectors[key].color` into a general door for any component's main ink.
+        if (selector.color) {
+            el.style.color = selector.color;
+        }
     }
 }
 _a = Builder;

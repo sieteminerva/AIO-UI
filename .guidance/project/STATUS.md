@@ -3,7 +3,7 @@
 > Orientation only: read the cards, report them, ask which card. Open a card's detail doc
 > **only** after the user picks it — never "to orient" (`AGENT_RULES.md` §13). Rewritten each
 > session, newest on top. One card = one line + one pointer.
->
+
 ### No open cards
 
 All previously queued work is closed. To start a card, take the owner's request (or the band

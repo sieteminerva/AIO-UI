@@ -330,6 +330,7 @@
         "HeaderBuilder"
       ],
       "types": [
+        "iHeaderColor",
         "iHeaderConfig",
         "iHeaderContent",
         "iHeaderMeta",

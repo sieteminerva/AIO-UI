@@ -6,7 +6,9 @@
 
 ## Live claims
 
-_No live writer._
+| Agent        | Band      | Task                                  | Write scope                                              | Started    | Checkpoint                  | State  |
+| ------------ | --------- | ------------------------------------- | -------------------------------------------------------- | ---------- | --------------------------- | ------ |
+| copilot b107 | Framework | Release v0.2.7 (38 pkgs, mode B)      | `releases/`, `docs/releases/v0.2.7.md`, `docs/live-cdn-repo.md`, `.guidance/project/*` | 2026-11-26 | `.guidance/project/STATUS.md` | active |
 
 ## Row shape
 

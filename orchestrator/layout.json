@@ -107,6 +107,15 @@
       "./validation-adapter": "dist/adapters/Validation.js"
     }
   },
+  "@aio-ui/header": {
+    "dir": "packages/components/header",
+    "entry": "dist/index.js",
+    "stylesRoot": "dist",
+    "subpaths": {
+      ".": "dist/index.js",
+      "./Header.css": "dist/Header.css"
+    }
+  },
   "@aio-ui/id-address": {
     "dir": "packages/components/id-address",
     "entry": "dist/index.js",

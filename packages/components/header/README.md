@@ -46,12 +46,12 @@ either a builder-owned span or an element you constructed.
 | ---------------- | ----------------------- | ------------------------------------------------------------------------------------------------- |
 | `useDivider`     | `false`                 | Append the closing line after `.meta` (a boolean; the sheet draws it).                            |
 | `size`           | `"normal"`              | `huge \| normal \| medium \| small`; also picks the heading level (see `## Nodes`).               |
-| `appearance`     | `"normal"`              | The block's shape: `normal \| bordered \| block \| editorial` (see `## Appearance`).              |
+| `appearance`     | `"normal"`              | The block's shape: `normal \| bordered \| block \| editorial` (see `### Appearance`).              |
 | `alignment`      | `"left"`                | `center \| left \| right \| justify`, as `data-alignment` on the root.                            |
 | `iconPosition`   | `"top"`                 | `top \| left \| right \| bottom`, as `data-position` on `i.icon` (the reading order never moves). |
 | `structuredData` | `false`                 | Opt-in `itemscope itemtype="https://schema.org/Article"` + `itemprop` on title/meta.              |
 | `color`          | `{}`                    | Per-part ink `{ title, subtitle, icon, metadata, block, border }`; each field writes one token.   |
-| `selectors`      | see `DEFAULT_SELECTORS` | Per-key tag/class **and `color`** override (see `## Ink`).                                         |
+| `selectors`      | see `DEFAULT_SELECTORS` | Per-key tag/class **and `color`** override (see `### Ink`).                                         |
 | `themeId`        | `"default"`             | Passed through to the theme.                                                                      |
 | `namespace`      | `null`                  | Prefix for generated ids.                                                                         |
 
@@ -73,7 +73,7 @@ still derives from `--app-*`), so `{}` is "exactly what the theme says". Each gi
 is written as a custom property on the root — a theme or an ancestor rule can still
 override it, which an inline `color` on a child could not express.
 
-## Appearance
+### Appearance
 
 `appearance` is the block's **shape**, not its palette. `glass`, `brutalist`, `cyberpunk`,
 gradient/aura are **themes**: they retune tokens for the whole page. An appearance only
@@ -93,7 +93,7 @@ token — so a theme retunes the result and `themeId` can still target this comp
 has none, the component falls back to a serif stack — it never breaks, it only loses the
 flavour.
 
-## Ink
+### Ink
 
 Two doors, in two orders of specificity:
 

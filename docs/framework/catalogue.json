@@ -1777,7 +1777,7 @@
           "examples": [
             {
               "lang": "ts",
-              "code": "{\n  content: {\n    title: \"Merawat kaos katun agar tidak melar\",\n    subtitle: \"Example subtitle\",\n    icon: \"user\",\n    metadata: {\n      author: { textContent: \"Oleh: Rina\", className: \"author\" },\n      date: \"<time datetime=\\\"2026-01-12\\\">12 Januari 2026</time>\", // an HTMLElement\n    },\n  },\n  config: { useDivider: true, size: \"huge\", alignment: \"left\" },\n}"
+              "code": "{\n  content: {\n    title: \"Merawat kaos katun agar tidak melar\",\n    subtitle: \"Example subtitle\",\n    icon: \"user\",\n    metadata: {\n      author: { textContent: \"Oleh: Rina\", className: \"author\" },\n      date: \"<time datetime=\\\"2026-01-12\\\">12 Januari 2026</time>\", // an HTMLElement\n    },\n  },\n  config: { useDivider: true, size: \"huge\", alignment: \"left\", iconPosition: \"left\", appearance: \"block\" },\n}"
             }
           ],
           "tables": [
@@ -1813,7 +1813,7 @@
           ]
         },
         "Config": {
-          "text": "`size` decides the heading tag: `huge → h1`, `normal → h3`, `medium → h4`, `small → h5`.\nTwo `<h1>`s on one page is an SEO defect, so the page picks the size that matches its\noutline. A caller that needs a level the size map does not offer overrides\n`selectors[\"@header>title\"].tagName` directly.\n\n`iconPosition` is a placement, not a re-order: the DOM keeps icon → title → subtitle → meta\n→ divider, and the sheet reads `i.icon[data-position]`. `top` (the default) is that order\nas-is; `left`/`right` stand the glyph beside the title + subtitle as a block as tall as\nboth, glyph centred on that block's middle line; `bottom` puts it under the subtitle, above\nthe meta line. `.meta` and `.divider` always stay full-width lines of the block.",
+          "text": "`size` decides the heading tag: `huge → h2`, `normal → h3`, `medium → h4`, `small → h5`.\nTwo `<h1>`s on one page is an SEO defect, so the page picks the size that matches its\noutline. A caller that needs a level the size map does not offer overrides\n`selectors[\"@header>title\"].tagName` directly.\n\n`iconPosition` is a placement, not a re-order: the DOM keeps icon → title → subtitle → meta\n→ divider, and the sheet reads `i.icon[data-position]`. `top` (the default) is that order\nas-is; `left`/`right` stand the glyph beside the text stack as a block as tall as the\ntitle, subtitle **and** meta it centres on; `bottom` puts it under the subtitle, above the\nmeta line. Beside the glyph the text column holds the title, the subtitle **and** the meta\nline, so `.meta` starts on the title's left edge; only `.divider` stays a full-width line of\nthe block.\n\n`color` is ink, not a theme: an omitted field keeps the sheet's `--header-*` token (which\nstill derives from `--app-*`), so `{}` is \"exactly what the theme says\". Each given field\nis written as a custom property on the root — a theme or an ancestor rule can still\noverride it, which an inline `color` on a child could not express.\n\n### Appearance\n\n`appearance` is the block's **shape**, not its palette. `glass`, `brutalist`, `cyberpunk`,\ngradient/aura are **themes**: they retune tokens for the whole page. An appearance only\ndecides how the stack sits, and every colour it paints still comes from a `--header-*`\ntoken — so a theme retunes the result and `themeId` can still target this component alone.\n\n`bordered` and `block` share one padding (`--header-surface-pad`) and one radius\n(`--header-surface-radius`); only the fill and the stroke differ. `editorial` reads\n`--header-editorial-font`, which a theme can point at its own formal face; when the theme\nhas none, the component falls back to a serif stack — it never breaks, it only loses the\nflavour.\n\n### Ink\n\nTwo doors, in two orders of specificity:\n\n1. **`config.color`** — the component's own vocabulary. Each field (`title`, `subtitle`,\n   `icon`, `metadata`, `block`, `border`) writes one `--header-*` token on the root, so a\n   descendant can still restyle around it and a theme can retune the rest.\n2. **`config.selectors[key].color`** — the general door every builder offers. It writes an\n   inline `color` on that exact element, so it beats the sheet (and the token) — an escape\n   hatch for one instance, not a palette. `selectors[\"@header\"].color` repaints the block's\n   base ink; the subtitle and the meta line read `currentColor`, so they follow it unless\n   `config.color.subtitle` / `.metadata` names them explicitly.",
           "examples": [],
           "tables": [
             {
@@ -1836,7 +1836,7 @@
                 {
                   "option": "`appearance`",
                   "default": "`\"normal\"`",
-                  "meaning": "Room for more words later; `normal` is the only one now."
+                  "meaning": "The block's shape: `normal | bordered | block | editorial` (see `### Appearance`)."
                 },
                 {
                   "option": "`alignment`",
@@ -1854,9 +1854,14 @@
                   "meaning": "Opt-in `itemscope itemtype=\"https://schema.org/Article\"` + `itemprop` on title/meta."
                 },
                 {
+                  "option": "`color`",
+                  "default": "`{}`",
+                  "meaning": "Per-part ink `{ title, subtitle, icon, metadata, block, border }`; each field writes one token."
+                },
+                {
                   "option": "`selectors`",
                   "default": "see `DEFAULT_SELECTORS`",
-                  "meaning": "Per-key tag/class override."
+                  "meaning": "Per-key tag/class **and `color`** override (see `### Ink`)."
                 },
                 {
                   "option": "`themeId`",
@@ -1867,6 +1872,30 @@
                   "option": "`namespace`",
                   "default": "`null`",
                   "meaning": "Prefix for generated ids."
+                }
+              ]
+            },
+            {
+              "columns": [
+                "Appearance",
+                "Shape"
+              ],
+              "rows": [
+                {
+                  "appearance": "`normal`",
+                  "shape": "Plain stack, no surface (the default)."
+                },
+                {
+                  "appearance": "`bordered`",
+                  "shape": "The stack inside an outline box — `1px` stroke, no fill, the page shows through."
+                },
+                {
+                  "appearance": "`block`",
+                  "shape": "The stack on a filled theme surface, lifted by the theme's soft shadow."
+                },
+                {
+                  "appearance": "`editorial`",
+                  "shape": "Magazine column: a rule opens the block, the formal face, the meta line as an uppercase byline."
                 }
               ]
             }
@@ -1936,7 +1965,7 @@
           ]
         },
         "Tokens": {
-          "text": "Colours are declared once on `:root, [data-theme]` in `Header.css`; each derives from an app\ntoken with a literal fallback, so a theme retunes the app token and this sheet follows.\nRedeclare a `--header-*` colour token on an ancestor to retheme this component alone.\n\nThe sizes that follow the type scale — `--header-gap`, `--header-icon-block` — are computed on\nthe block itself from `--header-title-measure` (the title size in use, so `data-size` moves\nthem). They cannot live in the `:root` layer: a `var()` there would resolve against the root's\ntitle size and every `data-size` would keep the default gap. Retune them on the block (a\nselector at least as specific as `header.header`).",
+          "text": "Colours are declared once on `:root, [data-theme]` in `Header.css`; each derives from an app\ntoken with a literal fallback, so a theme retunes the app token and this sheet follows.\nRedeclare a `--header-*` colour token on an ancestor to retheme this component alone.\n\nThe sizes that follow the type scale — `--header-gap`, `--header-icon-block`,\n`--header-surface-pad` — are computed on the block itself from `--header-title-measure` (the\ntitle size in use, so `data-size` moves them). They cannot live in the `:root` layer: a\n`var()` there would resolve against the root's title size and every `data-size` would keep\nthe default gap. Retune them on the block (a selector at least as specific as\n`header.header`).",
           "examples": [],
           "tables": [
             {
@@ -1959,17 +1988,57 @@
                 {
                   "token": "`--header-text-color`",
                   "derivesFrom": "`--app-text-accent-color`",
-                  "usedFor": "Subtitle/meta ink"
+                  "usedFor": "Base ink for subtitle and meta"
+                },
+                {
+                  "token": "`--header-subtitle-color`",
+                  "derivesFrom": "`currentColor` (root ink)",
+                  "usedFor": "Subtitle ink (`config.color.subtitle` writes it)"
+                },
+                {
+                  "token": "`--header-meta-color`",
+                  "derivesFrom": "`currentColor` (root ink)",
+                  "usedFor": "Meta ink (`config.color.metadata` writes it)"
                 },
                 {
                   "token": "`--header-accent-color`",
                   "derivesFrom": "`--app-primary-color`",
-                  "usedFor": "Icon ink"
+                  "usedFor": "Icon ink (`config.color.icon` writes it)"
                 },
                 {
                   "token": "`--header-divider-color`",
                   "derivesFrom": "`--app-border-color`",
-                  "usedFor": "Closing line"
+                  "usedFor": "Closing line; the `editorial` top rule"
+                },
+                {
+                  "token": "`--header-surface-bg`",
+                  "derivesFrom": "`--app-surface-strong`",
+                  "usedFor": "`block` fill (`config.color.block` writes it)"
+                },
+                {
+                  "token": "`--header-surface-border`",
+                  "derivesFrom": "`--app-border-color`",
+                  "usedFor": "`bordered` stroke (`config.color.border` writes it)"
+                },
+                {
+                  "token": "`--header-surface-radius`",
+                  "derivesFrom": "`--app-component-border-radius`",
+                  "usedFor": "`bordered` / `block` corner radius"
+                },
+                {
+                  "token": "`--header-surface-shadow`",
+                  "derivesFrom": "`--app-shadow-soft`",
+                  "usedFor": "`block` lift"
+                },
+                {
+                  "token": "`--header-surface-pad`",
+                  "derivesFrom": "`--header-gap` × 2",
+                  "usedFor": "Inner padding of `bordered` / `block`, and the editorial top space"
+                },
+                {
+                  "token": "`--header-editorial-font`",
+                  "derivesFrom": "`--app-font-heading-formal`",
+                  "usedFor": "`editorial` face (serif fallback when the theme has none)"
                 },
                 {
                   "token": "`--header-title-size`",

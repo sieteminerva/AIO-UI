@@ -11,6 +11,7 @@ import { CodeBlockBuilder } from "@aio-ui/code-block";
 import { FabMenuBuilder } from "@aio-ui/fab-menu";
 import { FooterBuilder } from "@aio-ui/footer";
 import { FormBuilder } from "@aio-ui/form";
+import { HeaderBuilder } from "@aio-ui/header";
 import { InputBuilder } from "@aio-ui/input";
 import { MarkdownBuilder } from "@aio-ui/markdown";
 import { MasonryBuilder } from "@aio-ui/masonry";
@@ -44,6 +45,7 @@ const builders: Array<[string, { contract?: iContentContract }]> = [
   ["fab-menu", FabMenuBuilder],
   ["footer", FooterBuilder],
   ["form", FormBuilder],
+  ["header", HeaderBuilder],
   ["input", InputBuilder],
   ["markdown", MarkdownBuilder],
   ["masonry", MasonryBuilder],
@@ -61,7 +63,7 @@ const builders: Array<[string, { contract?: iContentContract }]> = [
 
 describe("declared content contracts", () => {
   it("covers every builder in the band", () => {
-    expect(builders).toHaveLength(21);
+    expect(builders).toHaveLength(22);
   });
 
   for (const [name, builder] of builders) {

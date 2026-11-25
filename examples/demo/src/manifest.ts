@@ -125,6 +125,26 @@ export const DEMO: iDemoEntry[] = [
     note: "scaffolded: node scripts/new-component.mjs badge",
   },
   {
+    // An article heading block: one record, with the metadata line looped from an object.
+    // `size` also picks the heading level — `huge` renders `<h1>`.
+    name: "header",
+    path: "@aio-ui/header",
+    stylesheet: "@aio-ui/header/Header.css",
+    category: "content",
+    tier: "intermediate",
+    kind: "element",
+    payload: {
+      title: "Merawat kaos katun agar tidak melar",
+      subtitle: "Panduan singkat untuk menjaga bentuk dan warna kaos favorit.",
+      icon: "user",
+      metadata: {
+        author: { textContent: "Oleh: Rina", className: "author" },
+        date: { textContent: "12 Januari 2026", className: "date" },
+      },
+    },
+    config: { useDivider: true, size: "huge", alignment: "left" },
+  },
+  {
     name: "accordion",
     path: "@aio-ui/accordion",
     stylesheet: "@aio-ui/accordion/Accordion.css",

@@ -1,0 +1,29 @@
+{
+  "name": "@aio-ui/header",
+  "version": "0.2.7",
+  "type": "module",
+  "files": [
+    "dist",
+    "*.ts",
+    "*.css"
+  ],
+  "peerDependencies": {
+    "@aio-ui/base": "^0.2.7",
+    "@aio-ui/core": "^0.2.7"
+  },
+  "exports": {
+    ".": {
+      "development": "./index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./Header.css": {
+      "types": "./Header.css.d.ts",
+      "default": "./Header.css"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "prepublishOnly": "npm run build"
+  }
+}

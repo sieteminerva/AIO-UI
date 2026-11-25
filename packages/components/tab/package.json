@@ -1,6 +1,6 @@
 {
   "name": "@aio-ui/tab",
-  "version": "0.2.6",
+  "version": "0.2.7",
   "type": "module",
   "files": [
     "dist",
@@ -8,8 +8,8 @@
     "*.css"
   ],
   "peerDependencies": {
-    "@aio-ui/base": "^0.2.6",
-    "@aio-ui/core": "^0.2.6"
+    "@aio-ui/base": "^0.2.7",
+    "@aio-ui/core": "^0.2.7"
   },
   "exports": {
     ".": {

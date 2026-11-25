@@ -323,6 +323,19 @@
         "iFormTableTarget"
       ]
     },
+    "@aio-ui/header": {
+      "kind": "package",
+      "barrel": "./index.ts",
+      "values": [
+        "HeaderBuilder"
+      ],
+      "types": [
+        "iHeaderConfig",
+        "iHeaderContent",
+        "iHeaderMeta",
+        "iHeaderMetaValue"
+      ]
+    },
     "@aio-ui/http-service": {
       "kind": "package",
       "barrel": "./index.ts",

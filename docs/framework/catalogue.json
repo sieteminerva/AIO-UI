@@ -1767,6 +1767,236 @@
         }
       }
     },
+    "header": {
+      "package": "@aio-ui/header",
+      "title": "Header",
+      "lead": "An article-style heading block: an icon, a title, a subtitle and one metadata line.\nThe root is a real `<header>`, so the markup is the page's SEO surface — one heading,\nmachine-readable dates, and decoration that never enters the accessible name.",
+      "sections": {
+        "Payload": {
+          "text": "A metadata value is one of:\n\n- a `string` — a `<span class=\"{key}\">` with that text (`textContent`);\n- `{ textContent, className }` — a `<span class=\"{key} {className}\">` with that text;\n- an `HTMLElement` — appended as-is into `.meta`. The caller owns its class, text and\n  attributes. This is the only way to ship a machine-readable date: pass a\n  `<time datetime=\"…\">`, built by the caller, so the value comes from the schema and is\n  never parsed out of a prose label.\n\nThe builder never writes HTML from a string: text is always `textContent`, and markup is\neither a builder-owned span or an element you constructed.",
+          "examples": [
+            {
+              "lang": "ts",
+              "code": "{\n  content: {\n    title: \"Merawat kaos katun agar tidak melar\",\n    subtitle: \"Example subtitle\",\n    icon: \"user\",\n    metadata: {\n      author: { textContent: \"Oleh: Rina\", className: \"author\" },\n      date: \"<time datetime=\\\"2026-01-12\\\">12 Januari 2026</time>\", // an HTMLElement\n    },\n  },\n  config: { useDivider: true, size: \"huge\", alignment: \"left\" },\n}"
+            }
+          ],
+          "tables": [
+            {
+              "columns": [
+                "Field",
+                "Type",
+                "Rule"
+              ],
+              "rows": [
+                {
+                  "field": "`title`",
+                  "type": "`string`",
+                  "rule": "Required. Rendered verbatim as the single heading — never truncated."
+                },
+                {
+                  "field": "`subtitle`",
+                  "type": "`string`",
+                  "rule": "Optional. A `<p>`; no `<h*>` lives here but the title."
+                },
+                {
+                  "field": "`icon`",
+                  "type": "`string`",
+                  "rule": "Optional glyph class; `icon` is appended (`\"user\"` → `user icon`)."
+                },
+                {
+                  "field": "`metadata`",
+                  "type": "`Record<string, string | iHeaderMeta | HTMLElement>`",
+                  "rule": "One entry per property, in the object's own order."
+                }
+              ]
+            }
+          ]
+        },
+        "Config": {
+          "text": "`size` decides the heading tag: `huge → h1`, `normal → h3`, `medium → h4`, `small → h5`.\nTwo `<h1>`s on one page is an SEO defect, so the page picks the size that matches its\noutline. A caller that needs a level the size map does not offer overrides\n`selectors[\"@header>title\"].tagName` directly.",
+          "examples": [],
+          "tables": [
+            {
+              "columns": [
+                "Option",
+                "Default",
+                "Meaning"
+              ],
+              "rows": [
+                {
+                  "option": "`useDivider`",
+                  "default": "`false`",
+                  "meaning": "Append the closing line after `.meta` (a boolean; the sheet draws it)."
+                },
+                {
+                  "option": "`size`",
+                  "default": "`\"normal\"`",
+                  "meaning": "`huge | normal | medium | small`; also picks the heading level (see `## Nodes`)."
+                },
+                {
+                  "option": "`appearance`",
+                  "default": "`\"normal\"`",
+                  "meaning": "Room for more words later; `normal` is the only one now."
+                },
+                {
+                  "option": "`alignment`",
+                  "default": "`\"left\"`",
+                  "meaning": "`center | left | right | justify`, as `data-alignment` on the root."
+                },
+                {
+                  "option": "`structuredData`",
+                  "default": "`false`",
+                  "meaning": "Opt-in `itemscope itemtype=\"https://schema.org/Article\"` + `itemprop` on title/meta."
+                },
+                {
+                  "option": "`selectors`",
+                  "default": "see `DEFAULT_SELECTORS`",
+                  "meaning": "Per-key tag/class override."
+                },
+                {
+                  "option": "`themeId`",
+                  "default": "`\"default\"`",
+                  "meaning": "Passed through to the theme."
+                },
+                {
+                  "option": "`namespace`",
+                  "default": "`null`",
+                  "meaning": "Prefix for generated ids."
+                }
+              ]
+            }
+          ]
+        },
+        "Nodes": {
+          "text": "An `HTMLElement` metadata value is not wrapped: it is appended straight into `.meta`, so\nit does not use `@header>meta>item`.\n\n### Structure",
+          "examples": [
+            {
+              "lang": "html",
+              "code": "<header class=\"header\" data-size=\"normal\" data-appearance=\"normal\" data-alignment=\"left\">\n  <i class=\"user icon\" aria-hidden=\"true\" focusable=\"false\"></i>\n  <h3 class=\"title\">Merawat kaos katun agar tidak melar</h3>\n  <p class=\"subtitle\">Example subtitle</p>\n  <div class=\"meta\">\n    <span class=\"author\">Oleh: Rina</span>\n    <time datetime=\"2026-01-12\">12 Januari 2026</time>\n  </div>\n  <span class=\"divider\" aria-hidden=\"true\"></span>\n</header>"
+            }
+          ],
+          "tables": [
+            {
+              "columns": [
+                "Key",
+                "Default tag",
+                "Class",
+                "Note"
+              ],
+              "rows": [
+                {
+                  "key": "`@header`",
+                  "defaultTag": "`header`",
+                  "class": "`header`",
+                  "note": "Root; carries `data-size`, `data-appearance`, `data-alignment`."
+                },
+                {
+                  "key": "`@header>icon`",
+                  "defaultTag": "`i`",
+                  "class": "`icon`",
+                  "note": "`aria-hidden`, `focusable=\"false\"`; glyph class appended."
+                },
+                {
+                  "key": "`@header>title`",
+                  "defaultTag": "`h3`",
+                  "class": "`title`",
+                  "note": "Tag rewritten from `config.size` at construction."
+                },
+                {
+                  "key": "`@header>subtitle`",
+                  "defaultTag": "`p`",
+                  "class": "`subtitle`",
+                  "note": "Rendered only when `content.subtitle` is set."
+                },
+                {
+                  "key": "`@header>meta`",
+                  "defaultTag": "`div`",
+                  "class": "`meta`",
+                  "note": "Rendered only when `metadata` has at least one property."
+                },
+                {
+                  "key": "`@header>meta>item`",
+                  "defaultTag": "`span`",
+                  "class": "key name",
+                  "note": "Class comes from the metadata key; a pair adds its `className`."
+                },
+                {
+                  "key": "`@header>divider`",
+                  "defaultTag": "`span`",
+                  "class": "`divider`",
+                  "note": "`aria-hidden`; appended last when `useDivider` is true."
+                }
+              ]
+            }
+          ]
+        },
+        "Tokens": {
+          "text": "Declared once on `:root, [data-theme]` in `Header.css`. Each derives from an app token with a\nliteral fallback, so a theme retunes the app token and this sheet follows; redeclare a\n`--header-*` token on an ancestor to retheme this component alone.",
+          "examples": [],
+          "tables": [
+            {
+              "columns": [
+                "Token",
+                "Derives from",
+                "Used for"
+              ],
+              "rows": [
+                {
+                  "token": "`--header-gap`",
+                  "derivesFrom": "`--app-gap`",
+                  "usedFor": "Stack spacing"
+                },
+                {
+                  "token": "`--header-title-color`",
+                  "derivesFrom": "`--app-text-heading-color`",
+                  "usedFor": "Title ink"
+                },
+                {
+                  "token": "`--header-text-color`",
+                  "derivesFrom": "`--app-text-accent-color`",
+                  "usedFor": "Subtitle/meta ink"
+                },
+                {
+                  "token": "`--header-accent-color`",
+                  "derivesFrom": "`--app-primary-color`",
+                  "usedFor": "Icon ink"
+                },
+                {
+                  "token": "`--header-divider-color`",
+                  "derivesFrom": "`--app-border-color`",
+                  "usedFor": "Closing line"
+                },
+                {
+                  "token": "`--header-title-size`",
+                  "derivesFrom": "`--app-font-size-2xl`",
+                  "usedFor": "Title size"
+                },
+                {
+                  "token": "`--header-title-size-huge`",
+                  "derivesFrom": "`--app-font-size-3xl`",
+                  "usedFor": "`data-size=\"huge\"`"
+                },
+                {
+                  "token": "`--header-subtitle-size`",
+                  "derivesFrom": "`--app-font-size-base`",
+                  "usedFor": "Subtitle size"
+                },
+                {
+                  "token": "`--header-meta-size`",
+                  "derivesFrom": "`--app-font-size-sm`",
+                  "usedFor": "Meta size"
+                }
+              ]
+            }
+          ]
+        },
+        "Wiring checklist": {
+          "text": "1. Add `\"header\"` to `iBuilderRegistry` in `packages/core/src/types/registry.ts`.\n2. Add a loader for `@aio-ui/header` to the host's asset map.\n3. Add a `stylesheet` loader for `@aio-ui/header/Header.css` if you ship CSS.\n4. List it in the host's route plan: `registerModule(components, [{ route, components: [\"header\"] }])`.",
+          "examples": [],
+          "tables": []
+        }
+      }
+    },
     "id-address": {
       "package": "@aio-ui/id-address",
       "title": "IdAddressBuilder (`@aio-ui/id-address`) — plugin",

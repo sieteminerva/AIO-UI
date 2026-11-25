@@ -1,14 +1,14 @@
 {
   "name": "@aio-ui/core",
-  "version": "0.2.6",
+  "version": "0.2.7",
   "type": "module",
   "files": [
     "dist",
     "src"
   ],
   "dependencies": {
-    "@aio-ui/utilities": "^0.2.6",
-    "@aio-ui/styles": "^0.2.6"
+    "@aio-ui/utilities": "^0.2.7",
+    "@aio-ui/styles": "^0.2.7"
   },
   "exports": {
     ".": {

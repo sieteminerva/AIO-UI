@@ -14,10 +14,12 @@ Why / stages: `.guidance/plan-framework.md`. Engineering rules:
 
 ## Next
 
-- **`@aio-ui/header` — queued (b99).** Owner spec: article-style heading (`content.title`,
-  `subtitle`, `icon`, `metadata`, `useDivider`; `config.size` / `config.appearance`), metadata
-  looped into one `<span class={key}>` per property. Open before coding: metadata value type,
-  root class `.item` vs `.header`, icon spelling. → `docs/framework/TASK-header.md`
+- **`@aio-ui/header` — landed (b100).** Article-style heading block (`content.title`,
+  `subtitle`, `icon`, `metadata`; `config.useDivider` / `size` / `appearance` / `alignment` /
+  `structuredData`). Metadata value is `string | { textContent, className } | HTMLElement`;
+  `size` picks the heading level (huge→h1, normal→h3, medium→h4, small→h5) and the root class
+  is `.header` (`header.header`). Open: the release-artefact test needs the family bump to
+  **0.2.7** so `releases/v0.2.7` covers the new package. → `docs/framework/TASK-header.md`
 - **v0.2.7 migration note** — b97 renamed the sheet specifiers (`Input.css`, `Dropdown.css`,
   `FileUploader.css`, `InputControls.css`, `InputPicker.css`, `IdAddress.css`); `v0.2.6` keeps
   serving the lowercase names, so the note must list the swap. `examples/rajutan` needs its own

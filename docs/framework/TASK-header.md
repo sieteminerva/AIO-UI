@@ -1,6 +1,13 @@
 # TASK — `@aio-ui/header` component
 
-Status: **queued** (owner spec, 2026-11-25, batch b99). Not started.
+Status: **landed** (b100, 2026-11-25) — package, demo row and proofs are in; the only open
+item is the family bump to **0.2.7** so the release-artefact test (`releases/v0.2.7`) covers
+the new package.
+
+Decisions (owner, 2026-11-25): metadata value = `string | { textContent, className } |
+HTMLElement`; root class `.header` (selector `header.header`, nested); `icon` is the full
+font class; heading level from `size` (huge→h1, normal→h3, medium→h4, small→h5);
+`structuredData` opt-in (default off); divider is a sibling after `.meta`.
 
 ## Goal
 
@@ -21,7 +28,7 @@ npm run new:component header      # scaffold from templates/component/
     title: string;
     subtitle: string;
     icon: string; // a `<i class="… icon">` glyph name, e.g. "user"
-    metadata: any; // one class + one text per property (see below)
+    metadata: string | {textContent: string; className: string;} | HTMLElement; // one class + one text per property (see below)
   },
   config: {
     useDivider: boolean; // line at the end of header

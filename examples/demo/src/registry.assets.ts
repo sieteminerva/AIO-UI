@@ -15,6 +15,7 @@ export const componentAssets = {
     "@aio-ui/fab-menu": () => import("@aio-ui/fab-menu"),
     "@aio-ui/footer": () => import("@aio-ui/footer"),
     "@aio-ui/form": () => import("@aio-ui/form"),
+    "@aio-ui/header": () => import("@aio-ui/header"),
     "@aio-ui/input": () => import("@aio-ui/input"),
     "@aio-ui/markdown": () => import("@aio-ui/markdown"),
     "@aio-ui/masonry": () => import("@aio-ui/masonry"),
@@ -56,6 +57,7 @@ export const componentAssets = {
     "@aio-ui/fab-menu/FabMenu.css": () => import("@aio-ui/fab-menu/FabMenu.css?inline"),
     "@aio-ui/footer/Footer.css": () => import("@aio-ui/footer/Footer.css?inline"),
     "@aio-ui/form/Form.css": () => import("@aio-ui/form/Form.css?inline"),
+    "@aio-ui/header/Header.css": () => import("@aio-ui/header/Header.css?inline"),
     // Nested builders (dropdown, uploader, controls, toast) declare their own sheet and
     // reach it through this map — no component imports its own CSS.
     "@aio-ui/input/Input.css": () => import("@aio-ui/input/Input.css?inline"),

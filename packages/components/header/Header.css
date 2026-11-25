@@ -1,0 +1,127 @@
+/* ==========================================================================
+   Header — article heading block
+   Reading order: icon → title → subtitle → meta → (optional) divider.
+   Every value derives from an `--app-*` token, so a theme retunes the block
+   without touching this sheet.
+   ========================================================================== */
+
+/* Component token layer — declared once per document. Redeclare a `--header-*`
+   on an ancestor to retheme this block alone. */
+:root,
+[data-theme] {
+  --header-gap: var(--app-gap, clamp(0.4rem, 1.2vw, 0.75rem));
+  --header-title-color: var(--app-text-heading-color, #1a140e);
+  --header-text-color: var(--app-text-accent-color, #6e5f51);
+  --header-accent-color: var(--app-primary-color, darkgoldenrod);
+  --header-divider-color: var(--app-border-color, rgba(168, 137, 102, 0.28));
+
+  --header-title-size: var(--app-font-size-2xl, 1.65rem);
+  --header-title-size-huge: var(--app-font-size-3xl, 2.25rem);
+  --header-title-size-medium: var(--app-font-size-xl, 1.35rem);
+  --header-title-size-small: var(--app-font-size-lg, 1.15rem);
+  --header-subtitle-size: var(--app-font-size-base, 1rem);
+  --header-meta-size: var(--app-font-size-sm, 0.85rem);
+  --header-icon-size: 1.5rem;
+}
+
+/* The root is a real `<header>`; keeping the tag in the root selector stops this
+   sheet from restyling a `.header` element another component owns. Every rule
+   nests under it. */
+header.header {
+  display: grid;
+  gap: var(--header-gap);
+  color: var(--header-text-color);
+
+  & .icon {
+    font-size: var(--header-icon-size);
+    line-height: 1;
+    color: var(--header-accent-color);
+  }
+
+  & .title {
+    margin: 0;
+    font-size: var(--header-title-size);
+    line-height: 1.2;
+    color: var(--header-title-color);
+    text-wrap: balance;
+  }
+
+  & .subtitle {
+    margin: 0;
+    font-size: var(--header-subtitle-size);
+    line-height: 1.6;
+  }
+
+  & .meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem 0.85rem;
+    font-size: var(--header-meta-size);
+
+    /* A bullet between entries. `*` because an entry may be a builder-made span or a
+       caller-owned `<time>`/`<strong>` element. */
+    & > * + *::before {
+      content: "•";
+      margin-inline-end: 0.5rem;
+      opacity: 0.5;
+    }
+
+    & strong {
+      color: var(--header-title-color);
+    }
+
+    & time {
+      font-variant-numeric: tabular-nums;
+    }
+  }
+
+  & .divider {
+    display: block;
+    height: 1px;
+    background: var(--header-divider-color);
+  }
+
+  /* Size scales the title; the heading level itself comes from `config.size`
+     (Header.engine.ts maps it to an `hN` tag). */
+  &[data-size="huge"] .title {
+    font-size: var(--header-title-size-huge);
+  }
+
+  &[data-size="medium"] .title {
+    font-size: var(--header-title-size-medium);
+  }
+
+  &[data-size="small"] .title {
+    font-size: var(--header-title-size-small);
+  }
+
+  /* Alignment is a config decision, written as an attribute — no inline style. */
+  &[data-alignment="center"] {
+    text-align: center;
+
+    & .meta {
+      justify-content: center;
+    }
+  }
+
+  &[data-alignment="right"] {
+    text-align: right;
+
+    & .meta {
+      justify-content: flex-end;
+    }
+  }
+
+  &[data-alignment="justify"] {
+    text-align: justify;
+  }
+}
+
+@media (max-width: 480px) {
+  header.header {
+    & .title {
+      font-size: var(--header-title-size-medium);
+    }
+  }
+}

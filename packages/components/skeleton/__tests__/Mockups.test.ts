@@ -28,6 +28,7 @@ import { CodeBlockBuilder } from "@aio-ui/code-block";
 import { FabMenuBuilder } from "@aio-ui/fab-menu";
 import { FooterBuilder } from "@aio-ui/footer";
 import { FormBuilder } from "@aio-ui/form";
+import { HeaderBuilder } from "@aio-ui/header";
 import { InputBuilder } from "@aio-ui/input";
 import { MarkdownBuilder } from "@aio-ui/markdown";
 import { MasonryBuilder } from "@aio-ui/masonry";
@@ -54,6 +55,7 @@ const MOCKUPS: [name: string, make: () => unknown][] = [
   ["code-block", () => new CodeBlockBuilder()],
   ["footer", () => new FooterBuilder()],
   ["form", () => new FormBuilder()],
+  ["header", () => new HeaderBuilder()],
   ["input", () => new InputBuilder()],
   ["markdown", () => new MarkdownBuilder()],
   ["masonry", () => new MasonryBuilder()],

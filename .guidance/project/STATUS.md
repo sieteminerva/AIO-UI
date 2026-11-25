@@ -4,7 +4,8 @@
 > **only** after the user picks it — never "to orient" (`AGENT_RULES.md` §13). Rewritten each
 > session, newest on top. One card = one line + one pointer.
 >
-> Recent batches (newest first): **b99** row layout — a toggle keeps its shell, a column
+> Recent batches (newest first): **b100** `@aio-ui/header` landed — family bumped to 0.2.7 ·
+> **b99** row layout — a toggle keeps its shell, a column
 > divides evenly (equal shares) · **b98** catalogue drift from a formatter blank line ·
 > **b97** class files are PascalCase — CSS specifiers renamed ·
 > **b96** Pages workflow red on Linux — `Input.css` vs `input.css` ·
@@ -30,7 +31,8 @@ b99: `Form.css` splits `display` off the row's child block, so a toggle child ke
 `:has(> .switch.control)` (a row holding a toggle no longer becomes a grid) and restores the
 grid for a toggle nested in a group. `column` is now the default share too: an undeclared
 `wide` takes an equal slice of its line (34/33/33 under `column: 3`), a child that no longer
-fits takes the whole next line. **Next task queued:** the `@aio-ui/header` component.
+fits takes the whole next line. **b100 landed:** the `@aio-ui/header` component (family bumped
+to 0.2.7).
 → `docs/framework/TASK-header.md`
 
 ### 2. Class files are PascalCase — sheets, specifiers, builder (framework band)

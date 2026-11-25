@@ -22,11 +22,12 @@ npm run new:component header      # scaffold from templates/component/
     subtitle: string;
     icon: string; // a `<i class="… icon">` glyph name, e.g. "user"
     metadata: any; // one class + one text per property (see below)
-    useDivider: boolean; // `•` between metadata entries
-  }
+  },
   config: {
+    useDivider: boolean; // line at the end of header
     size: "huge" | "normal" | "medium" | "small";
-    appearance: "normal"; // room for more words later; `normal` is the only one now
+    appearance: "normal"; // room for more words later; `normal` is the only one now,
+    alignment: "center" | "left" | "right" | "justify";
   }
 }
 ```
@@ -40,18 +41,18 @@ npm run new:component header      # scaffold from templates/component/
   <div class="subtitle">Example subtitle</div>
   <div class="meta">
     <span class="author">Oleh: <strong>Rina</strong></span>
-    <span class="divider">•</span>
     <span class="date">12 Januari 2026</span>
   </div>
+  <span class="divider"></span>
 </header>
 ```
 
 - `metadata` is **looped**: each property becomes one `<span class="{key}">`, its value the
   `textContent`. Order follows the object's own order.
-- `useDivider: true` puts `<span class="divider">•</span>` between entries (never before the
-  first or after the last).
-- `size` → `data-size` on the root; `appearance` → `data-appearance`. Both drive the sheet,
-  not inline styles.
+- `config.useDivider: true` appends `<span class="divider"></span>` **after `.meta`** — the
+  closing line of the header (a boolean, so the sheet draws it).
+- `size` → `data-size`, `appearance` → `data-appearance`, `alignment` → `data-alignment` on the
+  root. All three drive the sheet, not inline styles.
 
 ## Rules to honour (non-negotiable in this repo)
 
@@ -94,8 +95,9 @@ index.ts,README.md,__tests__/Header.test.ts}` from `templates/component/`.
 3. `Header.ts`: `HeaderBuilder extends Builder` with `builderId`/`name` = `"header"`,
    `stylesheet = "./Header.css"`; element map `@header` (`header.item`), `@header>icon`
    (`i.icon`), `@header>title` (`h3.title`), `@header>subtitle` (`div.subtitle`),
-   `@header>meta` (`div.meta`), `@header>meta>item` (`span`); `template()` writes `data-size`
-   and `data-appearance` on `@header` and loops `content.metadata`.
+   `@header>meta` (`div.meta`), `@header>meta>item` (`span`); `template()` writes `data-size`,
+   `data-appearance` and `data-alignment` on `@header`, loops `content.metadata`, and appends
+   `@header>divider` when `config.useDivider` is true.
 4. Register in `examples/demo/src/registry.ts` + its asset map, `touch vite.config.ts`, restart
    the dev server, then `npm install` for the new workspace package.
 5. Prove it (`builder.inspect()`) before any browser number.

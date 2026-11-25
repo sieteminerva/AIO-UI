@@ -3,7 +3,7 @@ start` gathers it in one command (`git log --oneline -8`, `git status --short`, 
 > cards, live claims); run the commands by hand if you prefer. Then read **only**
 > `.guidance/project/STATUS.md` — the logbook: three
 > cards, each a one-line summary plus the link to the real detail. Report the three, say the detail
-> is **not** read yet, and ask which card to continue. Open `TASKS.md`, `TASK-*.md` or a band file
+> is **not** read yet, and ask which card to continue. Open `TASK.md` / `TASK-<name>.md` or a band file
 > only **after** the user picks. Then read the claim board `.guidance/project/AGENTS.md` and take
 > your row **before the first edit** — overlapping a live row is a stop-and-ask, not an override.
 > Every finished action category leaves **3 pointer lines** (`CHANGED →`, `PROVED →`, `NEXT →`);

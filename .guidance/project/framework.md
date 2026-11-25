@@ -8,30 +8,23 @@ Why / stages: `.guidance/plan-framework.md`. Engineering rules:
 
 | #   | Task                     | State       | Gate                                                                                                    |
 | --- | ------------------------ | ----------- | ------------------------------------------------------------------------------------------------------- |
-| 1   | Theme console view (fab) | in progress | `examples/demo/src/ThemeConsole/TASKS.md` — view composed, gate green; open: page-only popover sections |
+| 1   | Theme console view (fab) | in progress | `examples/demo/src/ThemeConsole/TASK.md` — view composed, gate green; open: page-only popover sections |
 | 2   | Inspect surface (b43)    | in progress | `inspect()` + `inspectPage()` green; open: dead relay removal, `#cleanupMap` reset                      |
-| 3   | Colour tokens (b82–b94)  | shipped     | T1–T5 shipped in v0.2.6 → `docs/framework/TASK-color-tokens.md`; open: owner taste pass                 |
+| 3   | Colour tokens (b82–b94)  | shipped     | T1–T5 shipped in v0.2.6 → `packages/styles/TASK.md`; open: owner taste pass                             |
 
 ## Next
 
-- **`@aio-ui/header` — polish queue closed (b105–b106).** `iconPosition` + type-scale spacing
-  (b105), then `appearance` (`normal`/`bordered`/`block`/`editorial`), `color.{title,subtitle,
-  icon,metadata,block,border}`, the `.meta` column fix and the general ink door
-  `config.selectors[key].color` (b106). Open: demo control for `appearance`, browser number for
-  the three new shapes. → `docs/framework/TASK-header.md`
-- **`@aio-ui/header` — landed (b100).** Article-style heading block (`content.title`,
-  `subtitle`, `icon`, `metadata`; `config.useDivider` / `size` / `appearance` / `alignment` /
-  `structuredData`). Metadata value is `string | { textContent, className } | HTMLElement`;
-  `size` picks the heading level (huge→h2, normal→h3, medium→h4, small→h5) and the root class
-  is `.header` (`header.header`). Open: the release-artefact test needs the family bump to
-  **0.2.7** so `releases/v0.2.7` covers the new package. → `docs/framework/TASK-header.md`
-- **v0.2.7 migration note** — b97 renamed the sheet specifiers (`Input.css`, `Dropdown.css`,
-  `FileUploader.css`, `InputControls.css`, `InputPicker.css`, `IdAddress.css`); `v0.2.6` keeps
-  serving the lowercase names, so the note must list the swap. `examples/rajutan` needs its own
-  commit (its two files are edited, not committed).
+- **`@aio-ui/header` — follow-ups.** Package, `appearance` shapes, the two ink doors and the
+  family bump to `0.2.7` are all shipped. Open: a demo control for `appearance`, a browser number
+  for the three new shapes, and a `selectors[key].color` rollout check on the other sheets.
+  → `packages/components/header/TASK.md`
 - **Colour tokens after v0.2.6** — T1–T5 shipped (b95). Only the **T3 taste pass** is open
   (owner reviews colours; taste, not algorithm), plus a picker-upward re-check when a tab is
-  visible. Restore tag `color-pre-full-2026-11-25` (547973e). → `docs/framework/TASK-color-tokens.md`
+  visible. Restore tag `color-pre-full-2026-11-25` (547973e). → `packages/styles/TASK.md`
+- **`examples/rajutan` own commit** — its two class-sheet files are edited but not committed there.
+- **v0.2.7 migration note — shipped.** The note lists the PascalCase sheet swap (`Input.css`,
+  `Dropdown.css`, `FileUploader.css`, `InputControls.css`, `InputPicker.css`, `IdAddress.css`);
+  `v0.2.6` keeps serving the lowercase names. → `docs/releases/v0.2.7.md`
 
 - **Input breaking changes — shipped in v0.2.6 (b95).** The note lists all three: b76 removed
   `iBasicInputNode`, `iFormGroupNode` and `InputBuilderConfigOptions` from `@aio-ui/core`, b79
@@ -42,7 +35,7 @@ Why / stages: `.guidance/plan-framework.md`. Engineering rules:
   (`GITHUB_TOKEN`) remains → `docs/releases/v0.2.5.md`. The official release still waits for the
   `store` / `profile` / `blog` references.
 - **Surface generator** — `scripts/surface.mjs --write/--check` to replace 37 hand-edited export
-  maps and fail a subpath excluded by `files[]`. Optional, not a blocker. → `packages/TASKS.md`
+  maps and fail a subpath excluded by `files[]`. Optional, not a blocker. → `packages/TASK.md`
 - **Proof reports** — `scripts/proof.mjs --report` lists every component package and whether it
   carries an `inspect()` assertion (report-only first, gate once covered).
 
@@ -150,7 +143,7 @@ entry is rendered and mounted as its own root, so `main.page`+`footer`stay sibli
 - **Batch 45 (2026-11-22)** — CDN surface refactor: 131 → 76 rows, 39 → 37 packages. Input modules
   merged into their builders, `table`/`message`/`id-address` adapters into their roots, `rating` and
   the `@aio-ui/modules` kit deleted, core type-only subpaths collapsed. `v0.2.4` artefacts
-  regenerated locally. Contract and open items: `packages/TASKS.md`.
+  regenerated locally. Contract and open items: `packages/TASK.md`.
 - **Batch 42–44 (2026-11-21)** — `union` + `element` in `iContentSpec` (7 builders narrowed);
   `v0.2.4` published on `releases` + tag in mode B (39 tarballs, 1.29 MB) with the bundled pair at
   the branch root.

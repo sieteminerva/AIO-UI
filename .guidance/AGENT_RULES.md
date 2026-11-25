@@ -208,7 +208,7 @@ history, no prose. Those are repo artifacts:
 | why / objective / stages                | `.guidance/plan.md` + `.guidance/plan-<project>.md`     |
 | what now + what next (per project)      | `.guidance/project/<project>.md`                        |
 | which project file to read              | `.guidance/project/STATUS.md` (logbook, ≤ 50 lines)     |
-| the live task's detail, traps, gotchas  | `docs/<band>/TASK-<name>.md`                            |
+| the live task's detail, traps, gotchas  | `<folder>/TASK.md` (in the folder the work touches)      |
 | durable engineering + environment rules | `docs/framework/COMPONENT-CONVENTIONS.md` (§12/§13/§15) |
 | architecture decisions                  | `.guidance/project/DECISIONS.md`                        |
 
@@ -240,20 +240,24 @@ orientation, tiny) or **detail** (opened only for the thing being worked on).
 
 | File                                      | Holds                                             |
 | ----------------------------------------- | ------------------------------------------------- |
-| `<folder>/TASKS.md`                       | one folder's live work: what, next, its own traps |
-| `docs/<band>/TASK-<name>.md`              | a task that spans more than one package           |
+| `<folder>/TASK.md`                        | a folder's live work: what, next, its own traps   |
+| `<folder>/TASK-<name>.md`                 | a second live task in the same folder             |
+| `docs/<band>/TASK-<name>.md`              | only when no single folder owns the work          |
 | `.guidance/plan-<project>.md`             | why / stages / long-term order                    |
 | `docs/framework/COMPONENT-CONVENTIONS.md` | engineering + environment rules                   |
 | `.guidance/project/DECISIONS.md`          | architecture decisions, append-only               |
 
-- **Placement:** work inside one folder → `TASKS.md` in that folder; more than one package →
-  `docs/<band>/TASK-<name>.md`. Never both, never a third place.
+- **Placement:** write the task **in the folder it touches**, as `TASK.md` (or `TASK-<name>.md`
+  when that folder already carries one open task). A task that spans folders lives in the folder
+  that owns the contract/types; only when no folder owns it does it go to
+  `docs/<band>/TASK-<name>.md`. Never both, never a third place — proximity is the point, so put
+  it where the next agent will look.
 - **`AGENTS.md` carries no task list.** A roadmap, queue or "next step" belongs in the logbook or
   the band file; a band file points, it does not plan.
 - **Done = delete the detail doc** (or empty it and delete it in the same commit). The commit
-  message is the record; a `TASKS.md` left behind for finished work is the new stale doc.
+  message is the record; a `TASK.md` left behind for finished work is the new stale doc.
 - **A card without a link is a bug**, and a link that does not resolve is worse.
-- **`TASKS.md` inside a package is safe:** every `package.json` declares
+- **`TASK.md` inside a package is safe:** every `package.json` declares
   `files: ["dist", "*.ts", "*.css"]` and `npm pack` follows it, so the doc never ships.
 
 ### Logbook ritual — the first answer of every session
@@ -281,7 +285,7 @@ that moment **no new editing starts** — this list runs in order and nothing el
    batch, one test file while iterating). Markdown-only → say `md-only`, do not run the build.
 3. **Commit** every batch with the shape in §15. An uncommitted batch does not survive compaction
    and cannot be rebuilt from memory.
-4. **Detail doc** — the live `TASKS.md` / `TASK-*.md` gets its `Status:` line and a `## Next` list
+4. **Detail doc** — the live `TASK.md` (or `TASK-<name>.md`) gets its `Status:` line and a `## Next` list
    precise enough to start from cold (file + symbol, not "continue the work").
 5. **Memory** — the session file becomes exactly: task-doc path, two lines of state, the last
    three CPs. Nothing else (§12).

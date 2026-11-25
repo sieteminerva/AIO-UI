@@ -11,7 +11,7 @@
  *   DEEPSEEK_API_KEY  required for deepseek
  *   AI_MODEL          optional override; each provider has a default
  *
- * Contract: docs/generator/TASK-answers-contract.md §6 (the model writes content only).
+ * Contract: orchestrator/TASK-answers-contract.md §6 (the model writes content only).
  */
 
 const PROVIDERS = {

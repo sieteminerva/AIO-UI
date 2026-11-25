@@ -110,7 +110,7 @@ Your choices persist in `localStorage`, so they survive a route change and a rel
 `Cyberpunk` in the same panel switch the design system underneath. The widget is the `ThemeConsole`
 builder dogfooding the framework — `fab-menu` mounts it as a plain `HTMLElement`, and the colour
 engine behind it ships in `examples/demo/src/ColorTheme/`.
-→ [`examples/demo/src/ThemeConsole/TASKS.md`](examples/demo/src/ThemeConsole/TASKS.md)
+→ [`examples/demo/src/ThemeConsole/TASK.md`](examples/demo/src/ThemeConsole/TASK.md)
 
 ---
 
@@ -200,8 +200,9 @@ Work tracking has two layers, and **one item lives in exactly one file**:
 - **Outline** — read at orientation. `.guidance/project/STATUS.md` is the logbook: three cards,
   one line each, plus a link. `.guidance/project/<band>.md` holds `## Active` / `## Next` /
   `## Landed`. An `AGENTS.md` carries rules only, never a task list.
-- **Detail** — opened only for the current task. `<folder>/TASKS.md` for work inside one folder;
-  `docs/<band>/TASK-<name>.md` when it spans packages. Done = delete the doc, the commit is the record.
+- **Detail** — opened only for the current task. `<folder>/TASK.md` in the folder the work touches
+  (`TASK-<name>.md` for a second live task there); `docs/<band>/TASK-<name>.md` only when no folder
+  owns it. Done = delete the doc, the commit is the record.
 
 Working areas — `orchestrator/` is tracked; `.draft/` and `.archives/` are local-only:
 

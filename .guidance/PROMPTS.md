@@ -27,7 +27,7 @@ Ambil claim row dulu, lalu kerjakan. Gate: `npm run check` (~12 s) sebelum commi
 A second pass on work that already has a card:
 
 ```
-Batch baru di kartu #<n>: <one-line goal>. Perbarui TASKS.md-nya, jangan buat file baru.
+Batch baru di kartu #<n>: <one-line goal>. Perbarui TASK.md-nya, jangan buat file baru.
 ```
 
 ## 3. Hand the context to a brand-new agent
@@ -44,7 +44,7 @@ Jangan crawl .guidance/mandatory/, .archives/, plan*.md, atau band lain.
 With a batch left unfinished:
 
 ```
-Lanjutkan batch yang belum selesai: <folder>/TASKS.md (`## Next`) + /memories/session/<task>.md.
+Lanjutkan batch yang belum selesai: <folder>/TASK.md (`## Next`) + /memories/session/<task>.md.
 Commit terakhir <sha>; `git status --short` harus bersih sebelum edit pertama.
 ```
 

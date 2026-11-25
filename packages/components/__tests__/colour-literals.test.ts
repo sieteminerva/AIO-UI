@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
 /**
- * Colour-literal lint — TASK-color-tokens §4 (T5).
+ * Colour-literal lint — `packages/styles/TASK.md` §4 (T5).
  *
  * A component sheet must not paint a colour from a raw literal; it derives from the
  * `--app-*` contract so every theme and both modes follow. Three things are allowed, and
@@ -24,7 +24,7 @@ import { describe, expect, it } from "vitest";
 const here = dirname(fileURLToPath(import.meta.url));
 const componentsRoot = join(here, ".."); // packages/components
 
-/** Files where a literal is intentional (TASK-color-tokens §4). */
+/** Files where a literal is intentional (`packages/styles/TASK.md` §4). */
 const ALLOWLISTED_FILES = new Set([
   "modal/Modal.css", // backdrop + lightbox chrome
   "masonry/Masonry.css", // lightbox backdrop/controls

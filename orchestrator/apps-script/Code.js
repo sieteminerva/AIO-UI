@@ -8,7 +8,7 @@
  * The pure chain (answersToBase → retry → assemblePreset) stays on the client for
  * now; this server owns the two secrets: the provider key and Drive custody.
  *
- * Contract: docs/generator/TASK-answers-contract.md §2 and §7.
+ * Contract: orchestrator/TASK-answers-contract.md §2 and §7.
  * Deploy:   docs/generator/GoogleSheets CMS/DEPLOYMENT.MD (Web App, execute as me).
  *
  * Request bodies are sent with `Content-Type: text/plain` on purpose: Apps Script

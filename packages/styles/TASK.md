@@ -1,7 +1,9 @@
 # TASK — colour tokens before v0.2.6
 
-**Status:** T1, T2, T3 done, plus the dropdown/picker seam work the owner asked for mid-task.
-Priority: **colouring is the top blocker before the v0.2.6 release.**
+**Status:** T1–T5 **done** (b86–b94, shipped in `v0.2.6`), plus the dropdown/picker seam work the
+owner asked for mid-task. The only open item is the **T3 taste pass** (owner reviews colours), and
+a picker-upward re-check when a tab is visible. This doc lives here (in the folder that owns the
+token root) so the colour contract and its remaining work travel with `packages/styles`.
 **Owner direction:** the agent executes the stages; the owner then reviews each component and
 points at the colour it wants changed. Do not wait for per-component approval to start the root.
 
@@ -44,7 +46,7 @@ git reset --hard color-pre-full-2026-11-25   # then: git push --force-with-lease
 
 | # | Stage | Files | State |
 | - | ----- | ----- | ----- |
-| T0 | This doc | `docs/framework/TASK-color-tokens.md` | done |
+| T0 | This doc | `packages/styles/TASK.md` | done |
 | T1 | Root `light-dark()` rewrite + spinner mask + skeleton derive | `packages/styles/src/variables.css`, spinner consumers (`Dropdown.css`, `Masonry.css`, `Tab.css`, `examples/demo/src/style.css`) | **done (b86)** |
 | T2 | Form path text/border tokens | `packages/components/input/{Input.css,InputControls,FileUploader,Dropdown}`, `form/Form.css` | **done (b87, b91)** |
 | T2b | Popup = one sheet with the control (owner request) | `input/Input.css`, `input/Dropdown/{Dropdown.css,Dropdown.ts}`, `form/Form.css` | **done (b88–b91)** |

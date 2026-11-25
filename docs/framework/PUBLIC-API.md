@@ -6,7 +6,7 @@
 >
 > Status: **historical policy record** (0.1.0 → 0.2.1). The audit tables in §2–§3 describe the surface
 > _before_ the `0.2.4` refactor; the current surface is **76 rows / 37 packages**, one door per
-> package — `packages/TASKS.md` and `docs/releases/v0.2.4.md` are the source of truth. The taxonomy
+> package — `packages/TASK.md` and `docs/releases/v0.2.4.md` are the source of truth. The taxonomy
 > in §1 and the alias rule still hold.
 > Last updated 2026-11-22 — §9 is history, not the current map.
 

@@ -4,7 +4,7 @@
    Every rule is rooted at `div.carousel`. The caption sits on top of the media,
    so its palette stays literal: it has to read on any image, in both modes.
 
-   COLOUR-LITERAL ALLOWLIST (TASK-color-tokens §4): the caption, control-button and dot
+   COLOUR-LITERAL ALLOWLIST (packages/styles/TASK.md §4): the caption, control-button and dot
    palettes are overlays on arbitrary media. They are white/black alphas by design — never
    page-surface colours — so they are intentionally literal and marked here for the lint.
    ========================================================================== */

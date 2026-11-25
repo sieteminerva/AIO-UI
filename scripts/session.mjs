@@ -220,7 +220,7 @@ function start(f) {
   say(`\n${bold("DO NOT read yet:")} the cards' detail docs, plan*.md, other bands, .archives/`);
   say(
     dim(
-      "  Open a TASKS.md / TASK-*.md / band AGENTS.md only after the user picks a card.\n" +
+      "  Open a TASK.md / TASK-<name>.md / band AGENTS.md only after the user picks a card.\n" +
         "  Take a claim row (this board) before the first edit.\n",
     ),
   );
@@ -316,7 +316,7 @@ async function end(f, rl) {
   step(9, "Claim row", f.claims.length ? "LIVE — drop it" : "already empty");
 
   const gate = await ask(rl, "2. Gate result (or `md-only`):", "--gate", "");
-  const doc = await ask(rl, "4. Detail doc path (TASKS.md / TASK-*.md):", "--doc", "");
+  const doc = await ask(rl, "4. Detail doc path (TASK.md / TASK-<name>.md):", "--doc", "");
   const task = await ask(rl, "5. Session memory file (/memories/session/<task>.md):", "--task", "");
   const proved = await ask(rl, "PROVED → <command> → <number>:", "--proved", gate);
   const unproved = await ask(rl, "NOT PROVED:", "--unproved", "nothing outstanding");

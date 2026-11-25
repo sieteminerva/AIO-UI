@@ -1,7 +1,7 @@
 /**
  * WIZARD ANSWERS — wizard form → server-owned preset base.
  *
- * Contract: `docs/generator/TASK-answers-contract.md` §3–§5.
+ * Contract: `orchestrator/TASK-answers-contract.md` §3–§5.
  *
  * Three facts drive this file:
  *

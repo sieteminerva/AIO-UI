@@ -1,7 +1,7 @@
 /**
  * AI RETRY LOOP — the model gets its own validation issues back.
  *
- * Contract: `docs/generator/TASK-answers-contract.md` §8 step 6 — "issues are fed
+ * Contract: `orchestrator/TASK-answers-contract.md` §8 step 6 — "issues are fed
  * back verbatim (max 2 retries)".
  *
  * The loop stays pure (band rule 1): it never calls `fetch`. The caller passes

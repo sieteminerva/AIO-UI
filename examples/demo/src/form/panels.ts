@@ -134,11 +134,17 @@ export function formApiPanel(topic: iFormTopic, build: BuildFn): HTMLElement {
  * ones and (because the config also asked for a `type: "sidebar"` the builder no longer
  * knows) the whole column laid itself out sideways.
  *
- * A docs column reads better with every group open, so a wide screen asks for `always`; a
- * narrow one asks for `click`, where a tap is the only way in. `property: "children"` is the
- * key the data uses here.
+ * A docs column reads better with every group open, so activation is `click` at every width
+ * and the groups are clicked open once after mount where the aside is a column. Keeping the
+ * activation at `click` (never `always`) is what lets a resize to a phone still close them.
+ * `property: "children"` is the key the data uses here.
  */
-const NARROW = "(max-width: 900px)";
+const WIDE = "(min-width: 901px)";
+
+function openTiers(host: HTMLElement): void {
+  if (typeof window === "undefined" || !window.matchMedia(WIDE).matches) return;
+  host.querySelectorAll<HTMLElement>(".item.submenu > a").forEach((link) => link.click());
+}
 export function mountFormSidebar(host: HTMLElement, build: BuildFn, activeId: string): void {
   const navigations = FORM_GROUPS.flatMap((group) => {
     const rows = FORM_TOPICS.filter((topic) => topic.group === group);
@@ -163,14 +169,12 @@ export function mountFormSidebar(host: HTMLElement, build: BuildFn, activeId: st
       content: { brand: { label: "Form docs", href: "#form" }, navigations },
       config: {
         position: "left sticky",
-        multilevel: {
-          activation: typeof window !== "undefined" && window.matchMedia(NARROW).matches ? "click" : "always",
-          property: "children",
-          multicolumn: false,
-        },
+        multilevel: { activation: "click", property: "children", multicolumn: false },
         // The brand has no page of its own to go back to; the menu passes a bare route.
         onNavigate: (href?: string) => href === "form",
       },
     }),
   );
+
+  openTiers(host);
 }

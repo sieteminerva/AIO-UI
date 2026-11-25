@@ -54,6 +54,33 @@ npm run new:component header      # scaffold from templates/component/
 - `size` → `data-size`, `appearance` → `data-appearance`, `alignment` → `data-alignment` on the
   root. All three drive the sheet, not inline styles.
 
+## SEO & semantics (mandatory)
+
+A heading block is content, so its markup is the page's SEO surface. These are rules, not
+suggestions:
+
+- **A real `<header>`, never `<div role="header">`.** Inside `<article>`/`<section>` it is that
+  section's header, not a page `banner` landmark; the demo must not turn it into a second banner.
+- **One heading, and the level is the page's decision.** `<h3>` is the default render, but the
+  element must come from config (see decision 4): a page whose article title is the block's title
+  needs `<h1>`, and two `<h1>`s on one page is a defect. The text is `content.title` verbatim —
+  never truncated or decorated.
+- **Dates are machine-readable.** A metadata key that holds a date (`date`, `published`,
+  `updated`) renders `<time datetime="YYYY-MM-DD">` plus the human text; the `datetime` value
+  comes from the schema, not from parsing the label. Without it, crawlers see prose only.
+- **The icon is decoration.** `<i aria-hidden="true">` (plus `focusable="false"` for old IE
+  fallbacks), because the title already says what the block is. Never let a ligature word
+  (`"user"`) leak into the accessible name.
+- **The divider is decoration too.** `<span class="divider" aria-hidden="true">` — a screen
+  reader must not announce a bullet as content.
+- **`<p>` for the subtitle.** The sample's `<div class="subtitle">` is kept for the owner's
+  markup, but the implementation may use `<p>`; either way no `<h*>` inside the block other than
+  the title.
+- **No hidden text, no duplicate copy.** The subtitle/meta appear once in the DOM; CSS may hide
+  them at a size, but `display: none` SEO copy is a defect, not a feature.
+- **The host owns `lang`/`dir`.** The component never writes `lang`; a locale-specific date
+  string is the caller's job (`content.metadata`).
+
 ## Rules to honour (non-negotiable in this repo)
 
 - Files are PascalCase (`Header.ts`, `Header.css`); the sheet specifier mirrors the file name.
@@ -76,6 +103,8 @@ expect(keys).toContain("@header"); // presence
 expect(hierarchy["@header>meta"].elements).toHaveLength(3); // shape (2 spans + divider)
 expect(html).toContain("Oleh: Rina"); // value
 expect(hierarchy["@header>meta"].elements).toHaveLength(2); // negative: useDivider false
+expect(html).toContain('aria-hidden="true"'); // icon + divider are decoration
+expect(html).toContain('<time datetime="2026-01-12">'); // machine-readable date
 ```
 
 Plus one measured browser number on the demo route (`getComputedStyle` for `data-size`,
@@ -108,3 +137,7 @@ index.ts,README.md,__tests__/Header.test.ts}` from `templates/component/`.
    (the sample wraps the author in `<strong>`)?
 2. Root class — `.item` as in the sample, or `.header` (a bare `.item` is very generic)?
 3. `icon` spelling — name only (`"user"` → `class="user icon"`), or full icon-font class?
+4. Heading level — the sample's fixed `<h3>`, or a level the page can set (`config.level` /
+   `content.level`, `1..6`, default `3`)? Two `<h1>`s on one page is an SEO defect.
+5. Structured data — opt-in `itemscope itemtype="https://schema.org/Article"` with
+   `itemprop="headline" / "author" / "datePublished"`, or leave microdata to the page?

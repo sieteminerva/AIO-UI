@@ -66,7 +66,9 @@
   grid-template-columns: repeat(100, minmax(0, 1fr));
   column-gap: 0;
   row-gap: 0.25em;
-  align-items: start;
+  /* `end` is safe now that a toggle field measures the same as any other field, but a row
+     reads labels first: top-aligned keeps every caption on one line. */
+  align-items: end;
 
   /* A child is a grid cell, not a block: no full width, no bottom margin.
      `display` is split off on purpose. A toggle shell is a grid of its own (Input.css §8),
@@ -163,7 +165,7 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: center;
   gap: 0.5em;
   margin-top: 1em;
   padding-top: 0.75em;

@@ -447,6 +447,8 @@ describe("column divides the line by default", () => {
 
 describe("the input shell matches a direct child, nested too", () => {
   const sheet = readFileSync(resolve(process.cwd(), "packages/components/input/Input.css"), "utf8");
+  const shellAt = sheet.indexOf("&:has(> .switch.control)");
+  const shell = sheet.slice(shellAt, sheet.indexOf("@starting-style", shellAt));
 
   it("uses a child combinator, never a descendant match", () => {
     expect(sheet).toMatch(/&:has\(> \.switch\.control\)/);
@@ -459,10 +461,33 @@ describe("the input shell matches a direct child, nested too", () => {
   });
 
   it("wins without `!important`", () => {
-    const shellAt = sheet.indexOf("&:has(> .switch.control)");
-    const shell = sheet.slice(shellAt, sheet.indexOf("@starting-style", shellAt));
-
     expect(shell.length).toBeGreaterThan(0);
     expect(shell).not.toMatch(/!important/);
+  });
+
+  /**
+   * A toggle used to pin the FIELD to one `--input-min-height` line, so the label and the
+   * switch overflowed a 29px box and a `top` toggle spilled 38px past its own field while
+   * its neighbours measured 61.7px. The height must come from the content, and the band
+   * the switch centres in must be the box a text control occupies — not the field's line.
+   */
+  it("sizes the control band, never the whole field", () => {
+    expect(shell).not.toMatch(/^\s*height:\s*var\(--input-min-height\)/m);
+    expect(shell).toMatch(/grid-template-rows: auto var\(--input-control-height\)/);
+    expect(shell).toMatch(/grid-template-rows: var\(--input-control-height\)( auto)?;/);
+  });
+
+  it("derives the band from one control line box", () => {
+    expect(sheet).toMatch(/--input-control-line: calc\(var\(--input-line-height\) \* 1\.3\)/);
+    expect(sheet).toMatch(/--input-control-height: calc\(var\(--input-font-size\) \* var\(--input-control-line\)\)/);
+    // The shared control rule and the toggle band read the same line, so they cannot drift.
+    expect(sheet).toMatch(/line-height: var\(--input-control-line\)/);
+  });
+
+  it("gives the caption the same type as a field label", () => {
+    expect(shell).toMatch(/& > label \{[\s\S]*?font-size: var\(--input-label-size\)/);
+    expect(shell).toMatch(/& > label \{[\s\S]*?color: var\(--input-label-color\)/);
+    // The 0.7em caption with its own padding is what made a top toggle taller than its row.
+    expect(shell).not.toMatch(/font-size: calc\(var\(--input-font-size\) \* 0\.7\)/);
   });
 });

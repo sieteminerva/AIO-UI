@@ -28,6 +28,7 @@ Version — `0.2.6` (tag `v0.2.6`)
 
 CDN (ES module, no build step) — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.6/packages/components/input/dist/index.js`
 Stylesheet — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.6/packages/components/input/dist/input.css`
+
 <!-- install:end -->
 
 ## Payload
@@ -328,8 +329,10 @@ one derived from the field layer so a theme retunes the picker with the field:
 **Metrics and motion** (`Input.css`)
 
 `--input-font-size`, `--input-label-size` (`0.75 × font-size`), `--input-border-radius`,
-`--input-line-height`, `--input-icon-size`, `--input-min-height`, `--input-picker-height`
-(`3 × line-height`), `--input-dropdown-arrow-content` (SVG data URI),
+`--input-line-height`, `--input-control-line` (`1.3 × line-height`), `--input-control-height`
+(`font-size × control-line` — the box one text control occupies, so a toggle field measures
+like any other), `--input-icon-size`, `--input-min-height` (one line of the _field_),
+`--input-picker-height` (`3 × line-height`), `--input-dropdown-arrow-content` (SVG data URI),
 `--input-dropdown-transition-delay`, `--input-popup-duration`, `--input-popup-easing`,
 `--input-popup-distance`.
 

@@ -290,6 +290,33 @@ export const InputControlSet: iFormGroupNode = {
         { content: { type: "text", id: "row-note", label: "Catatan baris" }, config: { wide: 40 } },
       ],
     },
+    {
+      id: "row-language",
+      title: "Bahasa",
+      column: 3,
+      // actions: ["editor", "repeater"],
+      row: [
+        {
+          content: { type: "checkbox", id: "row-autotranslate", label: "auto-translate" },
+          config: {
+            view: "toggle", position: "right", wide: 30
+          }
+        },
+        {
+          content: {
+            type: "dropdown", id: "src-lang", label: "Source Language",
+            options: ["Indonesia", "English", "Japanese", "France"]
+          }, config: { wide: 30 }
+        },
+        // Cascade inside a locked scope: appears once SKU has a value, i.e. after Edit.
+        {
+          content: {
+            type: "dropdown", id: "target-lang", label: "Target Language",
+            options: ["Indonesia", "English", "Japanese", "France"]
+          }, config: { wide: 40 }
+        },
+      ],
+    },
 
   ]
 

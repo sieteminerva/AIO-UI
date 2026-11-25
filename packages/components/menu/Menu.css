@@ -277,8 +277,13 @@
     }
 
     /* Below the hamburger there is no bar to hang a popover off, so a branch opens in
-       place as an inset list. */
-    & .item > .menus {
+       place as an inset list.
+
+       The extra `.nav` is load-bearing: the base popover rule is `.nav:is([position^="top"])
+       .item > .menus` (four class-levels), so this override at `.nav .item > .menus` (three)
+       lost and the panel stayed `absolute`, overflowing the strip's `overflow-y: hidden` —
+       it existed in the DOM and could not be seen. */
+    &.nav .item > .menus {
       position: static;
       min-width: 0;
       margin: 0.15rem 0 0.35rem;

@@ -23,6 +23,7 @@ that lands it.
 
 ## Cross-project
 
-- **v0.2.6 is the published tag** (2026-11-25): branch `releases` at `f255d82`, `check:live` 6/6.
-  Package versions already read `0.2.7`; `v0.2.7` has **not** been published yet.
+- **`v0.2.7` is published** (2026-11-26): 38 packages (was 37 — `@aio-ui/header` joins), branch
+  `releases` @ `3d15f1a`, tag `v0.2.7`, mode B, 1.39 MB, `check:live` 6/6. Carries the PascalCase
+  class-file rename. → `docs/releases/v0.2.7.md`
 - Scratch is `temp/` (deletable whole); `releases/` is the branch worktree, not scratch.

@@ -3,11 +3,11 @@
 Operational guide for the published `@aio-ui/*` packages: what is live, which repository and tag
 serve it, the commands that publish it, and the checks that must pass before anything is pushed.
 
-Last verified: **2026-11-25** — the published tag is **`v0.2.6`** (**37 packages**, 76 subpath
-rows, mode B, jsDelivr `200`). Probed on `v0.2.6`: `registry.json`, `aio-ui{,.min}.{js,css}` and
-`raw/releases/v0.2.6/aio-ui-base-0.2.6.tgz` all return `200` (`check:live` 6/6), the package
+Last verified: **2026-11-26** — the published tag is **`v0.2.7`** (**38 packages**, 78 subpath
+rows, mode B, jsDelivr `200`). Probed on `v0.2.7`: `registry.json`, `aio-ui{,.min}.{js,css}` and
+`raw/releases/v0.2.7/aio-ui-base-0.2.7.tgz` all return `200` (`check:live` 6/6), the package
 modules and stylesheets answer `200`, and the CDN `checksums.txt` is byte-identical to the local
-one. Tags `v0.2.1` … `v0.2.6` exist; the earlier ones (`v0.1.0`, `v0.1.1`, `v0.2.0`) were deleted
+one. Tags `v0.2.1` … `v0.2.7` exist; the earlier ones (`v0.1.0`, `v0.1.1`, `v0.2.0`) were deleted
 when the repository was renamed, because their content named the old repository and jsDelivr pins
 a served tag permanently — a fix ships as a **new version** (§8). Installing from a clone is §3,
 the branch README is §2.1.
@@ -18,6 +18,12 @@ the branch README is §2.1.
 > on `main`) and `temp/` is scratch only. `@cdn` URLs are retired — use `@releases` or the tag.
 > GitHub release assets are no longer part of the flow: a tarball is a file on the branch.
 
+> **`v0.2.7` published (2026-11-26).** 38 packages (was 37 — `@aio-ui/header` joins), **mode B**,
+> 1.39 MB total, heaviest `input` 0.23 MB; branch root `aio-ui{,.min}.{js,css}` (`min.js`
+> 543.4 kB, `min.css` 379.2 kB). `publish-releases` (branch `9087efc`) then `publish-cdn` (branch
+> `3d15f1a`, tag `v0.2.7`); `check:live` 6/6. Carries the PascalCase class-file rename (see the
+> migration note). → `docs/releases/v0.2.7.md`
+>
 > **`v0.2.6` published (2026-11-25).** 37 packages, **mode B** (declared: every internal edge is a
 > tarball URL), 1.33 MB total, heaviest `input` 0.23 MB; branch root `aio-ui{,.min}.{js,css}`
 > (`min.js` 539.1 kB, `min.css` 374.3 kB). `publish-releases` (branch `9d830be`) then
@@ -54,11 +60,11 @@ the branch README is §2.1.
 | Default branch | `main` — source only; `dist/` is gitignored                                                    |
 | CDN branch     | `releases` — orphan branch: the unpacked tree at the root **and** `v<version>/*.tgz` beside it |
 | Local checkout | `<repo>/releases` — a git worktree of that branch, ignored on `main`                           |
-| Version tag    | `v0.2.6` — the current published tag (37 packages, 76 subpath rows)                            |
-| CDN base       | `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.6/`                                      |
-| Branch README  | `…@v0.2.6/README.md` — generated at publish time, see §2.1                                     |
+| Version tag    | `v0.2.7` — the current published tag (38 packages, 78 subpath rows)                            |
+| CDN base       | `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.7/`                                      |
+| Branch README  | `…@v0.2.7/README.md` — generated at publish time, see §2.1                                     |
 | Install URL    | `…/raw/releases/v<version>/aio-ui-<name>-<version>.tgz` — no GitHub release asset to upload    |
-| Packages       | 37 (4 framework roots, 22 components, 7 modules, 3 themes, 1 kit)                              |
+| Packages       | 38 (4 framework roots, 23 components, 7 modules, 3 themes, 1 kit)                              |
 
 Why the split: jsDelivr serves **repository files**, and `dist/` is not committed on `main`.
 `scripts/publish-cdn.mjs` rebuilds the tag content from the release tarballs on `releases`, so the
@@ -73,31 +79,31 @@ installs a package and one ref serves it to the browser.
 ## 2. Live URLs
 
 ```text
-registry     https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.6/registry.json
-layout       https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.6/layout.json
-checksums    https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.6/checksums.txt
-readme       https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.6/README.md
+registry     https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.7/registry.json
+layout       https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.7/layout.json
+checksums    https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.7/checksums.txt
+readme       https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.7/README.md
 
 # bare package root → <dir>/<entry>
-@aio-ui/core         …@v0.2.6/packages/core/dist/index.js
-@aio-ui/form         …@v0.2.6/packages/components/form/dist/index.js
+@aio-ui/core         …@v0.2.7/packages/core/dist/index.js
+@aio-ui/form         …@v0.2.7/packages/components/form/dist/index.js
 
 # exact export subpath → <dir>/<real file>
 @aio-ui/form/validation-adapter
-    …@v0.2.6/packages/components/form/dist/adapters/Validation.js
+    …@v0.2.7/packages/components/form/dist/adapters/Validation.js
 @aio-ui/input/dropdown
-    …@v0.2.6/packages/components/input/dist/Dropdown/Dropdown.js
+    …@v0.2.7/packages/components/input/dist/Dropdown/Dropdown.js
 
 # stylesheet → dist/ (never the source root)
 @aio-ui/form/Form.css
-    …@v0.2.6/packages/components/form/dist/Form.css
+    …@v0.2.7/packages/components/form/dist/Form.css
 ```
 
 URL = `base` + `layout[pkg].dir` + the file from that package's `exports` map. Prefixes alone
 (`@aio-ui/utilities/` → `…/utilities/dist/`) cannot add `.js`; the import map therefore carries
 every exact subpath too (`emit.ts` → `createCdnResolver().exact()`).
 
-`@v0.2.6` is the current published tag. jsDelivr also accepts `@0.2.6` (it normalises), but
+`@v0.2.7` is the current published tag. jsDelivr also accepts `@0.2.7` (it normalises), but
 generated sites always use the tag name recorded as `engine.resolved`.
 
 ### 2.1 Branch README
@@ -108,8 +114,8 @@ package table is generated from `registry.json` at publish time (name, directory
 release asset), so it cannot go stale; the rest covers import-map refs, offline install from the
 release assets with the peer closure, updates, and tag immutability.
 
-Verified at publish time: `curl -sI …@v0.2.6/README.md` → `200`, body reports `Version 0.2.6` /
-`Packages 37` (the `v0.2.4` one reported `0.2.4` / `39`).
+Verified at publish time: `curl -sI …@v0.2.7/README.md` → `200`, body reports `Version 0.2.7` /
+`Packages 38` (the `v0.2.4` one reported `0.2.4` / `39`).
 
 ## 3. Installing locally (the packages are not on npm)
 
@@ -118,7 +124,7 @@ project consumes the framework from this repository. Two facts follow from that:
 
 - `dist/` is gitignored — a fresh clone has **no** `dist/`, and nothing is importable until
   `npm run build:pkgs` has run once.
-- The workspace is **37 packages** in six globs: `packages/*` (4: `base`, `core`,
+- The workspace is **38 packages** in six globs: `packages/*` (4: `base`, `core`,
   `styles`, `utilities`), `packages/components/*` (22), `packages/modules/*` (7),
   `packages/themes/*` (3), `packages/kits/*` (1: `themes`), plus `examples/*` (2 apps).
 
@@ -127,7 +133,7 @@ project consumes the framework from this repository. Two facts follow from that:
 ```bash
 git clone https://github.com/sieteminerva/AIO-UI.git aio-ui
 cd aio-ui
-npm install          # workspace install: 37 packages + 2 examples
+npm install          # workspace install: 38 packages + 2 examples
 npm run build:pkgs   # writes dist/ (JS + .d.ts + copied CSS) for every TS package
 npm run verify:pkgs  # the release gate: build → typecheck → bounds → api → catalogue → version → tests → examples
 ```
@@ -209,12 +215,12 @@ any package that did not exist before.
 
 Generated from `orchestrator/layout.json`, so it matches what the resolver and the CDN serve.
 The CDN URL of any row is the tag base + `Directory` + the file, e.g.
-`…@v0.2.6/packages/components/code-block/dist/index.js`.
+`…@v0.2.7/packages/components/code-block/dist/index.js`.
 
-> **Unreleased (b97).** Class sheets are PascalCase, so the specifiers are `Input.css`,
+> **Shipped in `v0.2.7`.** Class sheets are PascalCase, so the specifiers are `Input.css`,
 > `Dropdown.css`, `FileUploader.css`, `InputControls.css`, `InputPicker.css` and `IdAddress.css`.
-> The table below describes the source surface; **`v0.2.6` still serves the lowercase names**
-> (`@aio-ui/input/input.css` …) until the next release ships the rename.
+> The table below describes the source surface; `v0.2.7` serves these names, while **`v0.2.6` and
+> earlier still serve the lowercase names** (`@aio-ui/input/input.css` …) — a pinned tag never moves.
 
 | Package                    | Directory                           | Entry (`exports["."]`) | Stylesheet subpath                                                                                                                                                                                                                                             |
 | -------------------------- | ----------------------------------- | ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -230,8 +236,7 @@ The CDN URL of any row is the tag base + `Directory` + the file, e.g.
 | `@aio-ui/event-emitter`    | `packages/modules/event-emitter`    | `dist/index.js`        | —                                                                                                                                                                                                                                                              |
 | `@aio-ui/fab-menu`         | `packages/components/fab-menu`      | `dist/index.js`        | `FabMenu.css` → `dist/FabMenu.css`                                                                                                                                                                                                                             |
 | `@aio-ui/footer`           | `packages/components/footer`        | `dist/index.js`        | `Footer.css` → `dist/Footer.css`                                                                                                                                                                                                                               |
-| `@aio-ui/form`             | `packages/components/form`          | `dist/index.js`        | `Form.css` → `dist/Form.css`                                                                                                                                                                                                                                   |
-| `@aio-ui/http-service`     | `packages/modules/http-service`     | `dist/index.js`        | —                                                                                                                                                                                                                                                              |
+| `@aio-ui/form`             | `packages/components/form`          | `dist/index.js`        | `Form.css` → `dist/Form.css`                                                                                                                                                                                                                                   || `@aio-ui/header`           | `packages/components/header`        | `dist/index.js`        | `Header.css` → `dist/Header.css`                                                                                                                                                                                                                               || `@aio-ui/http-service`     | `packages/modules/http-service`     | `dist/index.js`        | —                                                                                                                                                                                                                                                              |
 | `@aio-ui/id-address`       | `packages/components/id-address`    | `dist/index.js`        | `IdAddress.css` → `dist/IdAddress.css`                                                                                                                                                                                                                         |
 | `@aio-ui/input`            | `packages/components/input`         | `dist/index.js`        | `Input.css` → `dist/Input.css`, `Dropdown.css` → `dist/Dropdown/Dropdown.css`, `FileUploader.css` → `dist/FileUploader/FileUploader.css`, `InputControls.css` → `dist/InputControls/InputControls.css`, `InputPicker.css` → `dist/InputPicker/InputPicker.css` |
 | `@aio-ui/markdown`         | `packages/components/markdown`      | `dist/index.js`        | `Markdown.css` → `dist/Markdown.css`                                                                                                                                                                                                                           |
@@ -318,7 +323,7 @@ node scripts/release.mjs --version "$V"            # dry run: prints the target 
 node scripts/release.mjs --version "$V" --apply    # writes releases/v$V/ (branch worktree)
 ```
 
-Expected output: `37 tarball(s) + registry.json + layout.json + checksums.txt`.
+Expected output: `38 tarball(s) + registry.json + layout.json + checksums.txt`.
 
 Sanity checks:
 
@@ -477,9 +482,10 @@ Never push `main` to the old `rajutan` remote.
 
 ## 9. Pre-flight checklist
 
-Last published: **`v0.2.6`** — 2026-11-25, branch `releases` at `f255d82`, **37** packages, mode B,
-`v0.2.6/` = 37 tarballs + the bundled pair + `registry.json` / `layout.json` / `checksums.txt`
-(41 files, 1.33 MB). `v0.2.5` (2026-11-24) published the same surface before the colour pass.
+Last published: **`v0.2.7`** — 2026-11-26, branch `releases` at `3d15f1a`, **38** packages, mode B,
+`v0.2.7/` = 38 tarballs + the bundled pair + `registry.json` / `layout.json` / `checksums.txt`
+(42 files, 1.39 MB). `v0.2.6` (2026-11-25) published before the `@aio-ui/header` package and the
+PascalCase class-file rename.
 
 **One tag per release; package versions may differ from it.** The folder is `v<tag>/`, the
 tarball is `aio-ui-<package>-<package version>.tgz`, and `registry.packages[name].version` records

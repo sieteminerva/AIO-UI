@@ -67,7 +67,7 @@ describe("Header render", () => {
 
   it("maps size to the heading level", () => {
     const levels: Array<[string, string]> = [
-      ["huge", "H1"],
+      ["huge", "H2"],
       ["normal", "H3"],
       ["medium", "H4"],
       ["small", "H5"],
@@ -135,6 +135,110 @@ describe("Header render", () => {
     expect(rich.getAttribute("itemtype")).toBe("https://schema.org/Article");
     expect(rich.querySelector(".title")?.getAttribute("itemprop")).toBe("headline");
     expect(rich.querySelector(".author")?.getAttribute("itemprop")).toBe("author");
+  });
+});
+
+describe("Header appearance", () => {
+  it("writes every appearance onto the root", () => {
+    for (const appearance of ["normal", "bordered", "block", "editorial"] as const) {
+      const { root } = build(payload, { appearance });
+
+      expect(root.getAttribute("data-appearance"), appearance).toBe(appearance);
+    }
+  });
+
+  it("defaults to `normal`", () => {
+    expect(build(payload).root.getAttribute("data-appearance")).toBe("normal");
+  });
+});
+
+/**
+ * Ink is a runtime value, so each field lands as the matching component token on the root —
+ * never an inline `color` on a child, which a theme could not retune.
+ */
+describe("Header colour", () => {
+  const TOKENS: Record<string, string> = {
+    title: "--header-title-color",
+    subtitle: "--header-subtitle-color",
+    icon: "--header-accent-color",
+    metadata: "--header-meta-color",
+    block: "--header-surface-bg",
+    border: "--header-surface-border",
+  };
+
+  it("writes every field as its own token", () => {
+    const color = { title: "red", subtitle: "green", icon: "blue", metadata: "gray", block: "white", border: "black" };
+    const { root } = build(payload, { color });
+
+    for (const [field, token] of Object.entries(TOKENS)) {
+      expect(root.style.getPropertyValue(token), field).toBe(color[field as keyof typeof color]);
+    }
+  });
+
+  it("writes only what the caller set, so the sheet's themed ink stands for the rest", () => {
+    const { root } = build(payload, { color: { title: "#111111" } });
+
+    expect(root.style.getPropertyValue("--header-title-color")).toBe("#111111");
+    expect(root.style.getPropertyValue("--header-subtitle-color")).toBe("");
+    expect(root.style.getPropertyValue("--header-meta-color")).toBe("");
+  });
+
+  it("touches no colour token by default", () => {
+    const { root } = build(payload);
+
+    for (const token of Object.values(TOKENS)) {
+      expect(root.style.getPropertyValue(token), token).toBe("");
+    }
+  });
+
+  it("accepts the general door: `selectors['@header'].color` beats the sheet's ink", () => {
+    const { root } = build(payload, {
+      selectors: { "@header": { tagName: "header", className: "header", color: "tomato" } },
+    });
+
+    expect(root.style.color).toBe("tomato");
+    // The default selector still wins nothing else: tag and class are unchanged.
+    expect(root.tagName).toBe("HEADER");
+    expect(root.className).toBe("header");
+  });
+});
+
+/**
+ * Appearance is a shape, not a palette: each variant is pinned as the rules it must own, and
+ * every colour it paints must still come from a `--header-*` token. happy-dom runs no
+ * cascade, so this reads the sheet text.
+ */
+describe("the sheet draws each appearance from tokens", () => {
+  const sheet = readFileSync(resolve(process.cwd(), "packages/components/header/Header.css"), "utf8");
+
+  it("boxes `bordered` and `block` with the same padding and radius", () => {
+    expect(sheet).toMatch(
+      /&\[data-appearance="bordered"\],\s*&\[data-appearance="block"\] \{\s*padding: var\(--header-surface-pad\);\s*border-radius: var\(--header-surface-radius\);/,
+    );
+  });
+
+  it("gives `bordered` a stroke and `block` a surface + soft shadow", () => {
+    expect(sheet).toMatch(/&\[data-appearance="bordered"\] \{\s*border: 1px solid var\(--header-surface-border\);/);
+    expect(sheet).toMatch(/&\[data-appearance="block"\] \{\s*background: var\(--header-surface-bg\);\s*box-shadow: var\(--header-surface-shadow\);/);
+  });
+
+  it("opens `editorial` with a rule, the formal face and a byline meta", () => {
+    expect(sheet).toMatch(/&\[data-appearance="editorial"\] \{[\s\S]*?border-block-start: 2px solid var\(--header-divider-color\)/);
+    expect(sheet).toMatch(/&\[data-appearance="editorial"\] \{[\s\S]*?font-family: var\(--header-editorial-font\)/);
+    expect(sheet).toMatch(/& \.meta \{\s*text-transform: uppercase;\s*letter-spacing: 0\.08em;/);
+  });
+
+  it("derives every surface token from an `--app-*` token", () => {
+    expect(sheet).toMatch(/--header-surface-bg: var\(--app-surface-strong/);
+    expect(sheet).toMatch(/--header-surface-border: var\(--app-border-color/);
+    expect(sheet).toMatch(/--header-surface-radius: var\(--app-component-border-radius/);
+    expect(sheet).toMatch(/--header-surface-shadow: var\(--app-shadow-soft/);
+    expect(sheet).toMatch(/--header-editorial-font: var\(--app-font-heading-formal/);
+  });
+
+  it("lets the root ink reach subtitle and meta, so the selector door works", () => {
+    expect(sheet).toMatch(/--header-subtitle-color: currentColor;/);
+    expect(sheet).toMatch(/--header-meta-color: currentColor;/);
   });
 });
 
@@ -213,15 +317,21 @@ describe("the sheet places the icon from data-position", () => {
     expect(sheet).toMatch(/header\.header \{[\s\S]*?text-align: left;/);
   });
 
-  it("makes the glyph a block as tall as the heading pair, centred on it", () => {
+  it("makes the glyph a block as tall as the text stack, centred on it", () => {
     const pair = sheet.slice(sheet.indexOf('&:has(> .icon[data-position="left"]),'));
 
-    // Centred on the pair, not stretched flush to its edges.
+    // Centred on the stack, not stretched flush to its edges.
     expect(pair).toMatch(/& > \.icon \{[\s\S]*?align-self: center/);
     expect(pair).toMatch(/& > \.icon \{[\s\S]*?justify-self: center/);
-    expect(pair).toMatch(/grid-row: 1 \/ span 2/);
-    // A lone heading has no pair to span.
-    expect(sheet).toMatch(/&:not\(:has\(> \.subtitle\)\) > \.icon \{\s*grid-row: 1;/);
+    // Title + subtitle + meta: the glyph is centred on all three, not just the heading pair.
+    expect(pair).toMatch(/grid-row: 1 \/ span 3/);
+    // An absent line is not a row: the span drops to the lines that are there.
+    expect(pair).toMatch(/&:not\(:has\(> \.subtitle\)\) > \.icon \{\s*grid-row: 1 \/ span 2;/);
+    expect(pair).toMatch(/&:not\(:has\(> \.meta\)\) > \.icon \{\s*grid-row: 1 \/ span 2;/);
+    // A lone heading has no stack to span.
+    expect(pair).toMatch(/&:not\(:has\(> \.subtitle\)\):not\(:has\(> \.meta\)\) > \.icon \{\s*grid-row: 1;/);
+    // A span past the last row would add an empty implicit row and its gap.
+    expect(pair).not.toMatch(/grid-row: 1 \/ span 4/);
   });
 
   it("grows the glyph with the block, inset from its edges", () => {
@@ -244,6 +354,19 @@ describe("the sheet places the icon from data-position", () => {
     expect(sheet).toMatch(/row-gap: calc\(var\(--header-gap\) \* 0\.5\)/);
     // A page-level gap knew nothing about the heading size, so `small` kept the `huge` gap.
     expect(sheet).not.toMatch(/--header-gap: var\(--app-gap/);
+  });
+
+  it("lines `.meta` up with the heading pair, not with the glyph", () => {
+    // Beside an icon the block is two columns. The meta line belongs to the text column
+    // (same left edge as the title), so it must not be given `grid-column: 1 / -1`.
+    // `{` right after the glyph attribute is the standalone placement block, not the shared
+    // `left, right` block above it.
+    const beside = sheet.slice(sheet.indexOf('&:has(> .icon[data-position="left"]) {'));
+
+    expect(beside).toMatch(/& > \.title,\s*& > \.subtitle,\s*& > \.meta \{\s*grid-column: 2;/);
+    expect(beside).toMatch(/& > \.title,\s*& > \.subtitle,\s*& > \.meta \{\s*grid-column: 1;/);
+    // Only the closing line still spans the whole block.
+    expect(sheet).toMatch(/& > \.divider \{\s*grid-column: 1 \/ -1;/);
   });
 
   it("carries no Sass-style suffix the build would drop", () => {

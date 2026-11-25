@@ -11,8 +11,20 @@
 [data-theme] {
   --header-title-color: var(--app-text-heading-color, #1a140e);
   --header-text-color: var(--app-text-accent-color, #6e5f51);
+  /* `currentColor` = the root's ink, so `config.selectors["@header"].color` (an inline
+     `color` on the root) still reaches the subtitle and the meta line. A configured part
+     colour replaces the keyword with a real value and wins over that inline ink. */
+  --header-subtitle-color: currentColor;
+  --header-meta-color: currentColor;
   --header-accent-color: var(--app-primary-color, darkgoldenrod);
   --header-divider-color: var(--app-border-color, rgba(168, 137, 102, 0.28));
+
+  /* Surface tokens — the shape layer an `appearance` reads, never a palette of its own. */
+  --header-surface-bg: var(--app-surface-strong, #ffffff);
+  --header-surface-border: var(--app-border-color, rgba(168, 137, 102, 0.28));
+  --header-surface-radius: var(--app-component-border-radius, 0.75rem);
+  --header-surface-shadow: var(--app-shadow-soft, 0 12px 35px -8px rgba(92, 60, 20, 0.08));
+  --header-editorial-font: var(--app-font-heading-formal, Georgia, "Times New Roman", serif);
 
   --header-title-size: var(--app-font-size-2xl, 1.65rem);
   --header-title-size-huge: var(--app-font-size-3xl, 2.25rem);
@@ -36,6 +48,8 @@ header.header {
   /* ~0.35 of the title, clamped at both ends so a long/short heading cannot open a canyon. */
   --header-gap: clamp(0.35rem, calc(var(--header-title-measure) * 0.35), 0.5rem);
   --header-icon-block: calc(var(--header-title-measure) * 2.5);
+  /* A surface's padding is the block's own breathing room, so it follows the same scale. */
+  --header-surface-pad: calc(var(--header-gap) * 2);
   display: grid;
   gap: var(--header-gap);
   row-gap: calc(var(--header-gap) * 0.5);
@@ -44,7 +58,6 @@ header.header {
      block inherits `text-align` from whatever centred container it lands in, and
      `data-alignment="left"` (the default) would be a no-op. */
   text-align: left;
-  line-height: var(--header-line-height);
 
   & .icon {
     font-size: var(--header-icon-size);
@@ -70,11 +83,11 @@ header.header {
     }
   }
 
-  /* Beside the heading pair: two columns, the glyph and its text. The glyph lives in a block
-     as tall as the title and subtitle it stands beside, but it is inset from that block's
-     edges — a square one `0.8 × --header-icon-block` wide, centred on the pair. Flush to the
-     column edge it read as clipped; the room is the column's, not a padding, because a
-     mask/`background` icon paints the whole box it is given. */
+  /* Beside the text column: two columns, the glyph and its text. The glyph lives in a block
+     as tall as the stack it stands beside — title, subtitle and meta — but it is inset from
+     that block's edges: a square one `0.8 × --header-icon-block` wide, centred on the stack.
+     Flush to the column edge it read as clipped; the room is the column's, not a padding,
+     because a mask/`background` icon paints the whole box it is given. */
   &:has(> .icon[data-position="left"]),
   &:has(> .icon[data-position="right"]) {
     align-items: start;
@@ -92,19 +105,28 @@ header.header {
       display: flex;
       align-items: center;
       justify-content: center;
+      /* One row per line of the stack: title, subtitle, meta. An absent line is not a row,
+         so each `:has()` below drops the span to the lines that are actually there — a
+         span past the last row would add an empty implicit row and its gap. */
+      grid-row: 1 / span 3;
+    }
+
+    &:not(:has(> .subtitle)) > .icon {
       grid-row: 1 / span 2;
     }
 
-    /* The meta line and the divider are lines of the block, not of the text column. */
-    & > .meta,
-    & > .divider {
-      grid-column: 1 / -1;
+    &:not(:has(> .meta)) > .icon {
+      grid-row: 1 / span 2;
     }
 
-    /* A lone heading has no pair to span: the glyph takes the one row it labels. Declared
-       here so it outranks the two-row span inside the same `:has()` block. */
-    &:not(:has(> .subtitle)) > .icon {
+    /* A lone heading has no stack to span: the glyph takes the one row it labels. */
+    &:not(:has(> .subtitle)):not(:has(> .meta)) > .icon {
       grid-row: 1;
+    }
+
+    /* The divider is the one line of the block, not of the text column. */
+    & > .divider {
+      grid-column: 1 / -1;
     }
   }
 
@@ -116,7 +138,8 @@ header.header {
     }
 
     & > .title,
-    & > .subtitle {
+    & > .subtitle,
+    & > .meta {
       grid-column: 2;
     }
   }
@@ -129,7 +152,8 @@ header.header {
     }
 
     & > .title,
-    & > .subtitle {
+    & > .subtitle,
+    & > .meta {
       grid-column: 1;
     }
   }
@@ -137,7 +161,7 @@ header.header {
   & .title {
     margin: 0;
     font-size: var(--header-title-measure);
-    line-height: 1.2;
+    line-height: var(--header-line-height);
     color: var(--header-title-color);
     text-wrap: balance;
   }
@@ -146,6 +170,7 @@ header.header {
     margin: 0;
     font-size: var(--header-subtitle-size);
     line-height: 1.6;
+    color: var(--header-subtitle-color);
   }
 
   & .meta {
@@ -154,6 +179,7 @@ header.header {
     align-items: center;
     gap: 0.35rem 0.85rem;
     font-size: var(--header-meta-size);
+    color: var(--header-meta-color);
 
     /* A bullet between entries. `*` because an entry may be a builder-made span or a
        caller-owned `<time>`/`<strong>` element. */
@@ -176,6 +202,45 @@ header.header {
     display: block;
     height: 1px;
     background: var(--header-divider-color);
+  }
+
+  /* ── Appearance: the block's SHAPE ───────────────────────────────────────────
+     A variant decides how the stack sits (plain, in a box, on a surface, in a magazine
+     column); it never invents a palette. Every colour it paints is a `--header-*` token
+     that already derives from `--app-*`, so a theme still owns the look. `glass`,
+     `brutalist`, `cyberpunk` are themes: they retune the tokens, not this attribute. */
+  &[data-appearance="bordered"],
+  &[data-appearance="block"] {
+    padding: var(--header-surface-pad);
+    border-radius: var(--header-surface-radius);
+  }
+
+  /* Outline: the stroke alone, no fill — the page's own background shows through. */
+  &[data-appearance="bordered"] {
+    border: 1px solid var(--header-surface-border);
+  }
+
+  /* Filled: the same box, on a theme surface, lifted by the theme's soft shadow. */
+  &[data-appearance="block"] {
+    background: var(--header-surface-bg);
+    box-shadow: var(--header-surface-shadow);
+  }
+
+  /* Editorial: a magazine column — a rule opens the block, the heading takes the theme's
+     formal face (when it has one), and the meta line reads as an uppercase byline. */
+  &[data-appearance="editorial"] {
+    border-block-start: 2px solid var(--header-divider-color);
+    padding-block-start: var(--header-surface-pad);
+    font-family: var(--header-editorial-font);
+
+    & .title {
+      letter-spacing: -0.02em;
+    }
+
+    & .meta {
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
   }
 
   /* Size scales the title — and, through `--header-title-measure`, the gap and the icon

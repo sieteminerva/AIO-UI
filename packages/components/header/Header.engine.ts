@@ -11,9 +11,9 @@
 import type { iHeaderMeta, iHeaderMetaValue } from "./Header";
 
 export const HEADING_BY_SIZE = {
-  huge: "h1",
-  normal: "h3",
+  huge: "h2",
   medium: "h4",
+  normal: "h3",
   small: "h5",
 } as const;
 

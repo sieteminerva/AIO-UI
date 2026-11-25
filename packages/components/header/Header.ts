@@ -45,11 +45,35 @@ export interface iHeaderMeta {
  */
 export type iHeaderMetaValue = string | iHeaderMeta | HTMLElement;
 
+/** The component token each `config.color` field retunes. */
+const COLOR_TOKEN: Record<keyof iHeaderColor, string> = {
+  title: "--header-title-color",
+  subtitle: "--header-subtitle-color",
+  icon: "--header-accent-color",
+  metadata: "--header-meta-color",
+  block: "--header-surface-bg",
+  border: "--header-surface-border",
+};
+
 /**
  * Where the icon stands relative to the heading pair. A CSS hint, written as `data-position`
  * on the `<i>` — the sheet reads the glyph, the markup keeps its reading order.
  */
 export type HeaderIconPosition = "top" | "left" | "right" | "bottom";
+
+/**
+ * Per-part ink. Each field retunes one component token on the root; an omitted field keeps
+ * the sheet's own default (`--header-*` → `--app-*`), so `{}` is "exactly as the theme says".
+ * `block` is the filled block's surface, `border` the outline block's stroke.
+ */
+export interface iHeaderColor {
+  title?: string;
+  subtitle?: string;
+  icon?: string;
+  metadata?: string;
+  block?: string;
+  border?: string;
+}
 
 export interface iHeaderContent {
   title?: string;
@@ -65,8 +89,19 @@ export interface iHeaderConfig extends iBuilderConfig<HeaderElementType> {
   useDivider?: boolean;
   /** Also picks the heading level: huge → h1, normal → h3, medium → h4, small → h5. */
   size?: HeaderSize;
-  /** Room for more words later; `normal` is the only one now. */
-  appearance?: "normal";
+  /**
+   * The block's shape — never its palette (glass/brutalist/cyberpunk are themes, not
+   * appearances):
+   *
+   *   - `normal`    — plain stack, no surface (the default);
+   *   - `bordered`  — the stack inside an outline box (`--header-surface-border`);
+   *   - `block`     — the stack on a filled surface (`--header-surface-bg` + soft shadow);
+   *   - `editorial` — magazine treatment: top rule, formal face, meta as a byline.
+   *
+   * Written as `data-appearance` on the root; every variant reuses theme tokens, so a theme
+   * can still retune the result.
+   */
+  appearance?: "normal" | "bordered" | "block" | "editorial";
   alignment?: "center" | "left" | "right" | "justify";
   /**
    * Where the icon sits: `top` (above the title, the default), `left`/`right` (beside the
@@ -76,6 +111,11 @@ export interface iHeaderConfig extends iBuilderConfig<HeaderElementType> {
   iconPosition?: HeaderIconPosition;
   /** Opt-in schema.org microdata (`itemscope itemtype=Article` + `itemprop`). */
   structuredData?: boolean;
+  /**
+   * Per-part ink, written as the matching `--header-*` token on the root. Any field left
+   * out falls back to the sheet's token (the themed default), never to a hard-coded colour.
+   */
+  color?: Partial<iHeaderColor>;
 }
 
 export class HeaderBuilder extends Builder<HeaderElementType, iHeaderConfig> {
@@ -155,6 +195,7 @@ export class HeaderBuilder extends Builder<HeaderElementType, iHeaderConfig> {
       alignment: "left",
       iconPosition: "top",
       structuredData: false,
+      color: {},
     };
 
     this.config = this.resolveConfig(defaultConfig, config);
@@ -225,6 +266,12 @@ export class HeaderBuilder extends Builder<HeaderElementType, iHeaderConfig> {
         if (this.config.structuredData) {
           el.setAttribute("itemscope", "");
           el.setAttribute("itemtype", "https://schema.org/Article");
+        }
+        // Ink is a runtime value, so it lands as a token on the root; the sheet still owns
+        // how each part reads that token. An absent field writes nothing.
+        for (const [part, ink] of Object.entries(this.config.color ?? {})) {
+          if (!ink) continue;
+          el.style.setProperty(COLOR_TOKEN[part as keyof iHeaderColor], ink);
         }
         break;
 

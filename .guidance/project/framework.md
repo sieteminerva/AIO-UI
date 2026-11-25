@@ -41,6 +41,12 @@ Why / stages: `.guidance/plan-framework.md`. Engineering rules:
 
 ## Landed (newest first)
 
+- **Batch 108 (2026-11-26)** — an `#icons` docs route (tab Display · Usage · API) whose prose is
+  `packages/styles/README.md` (`readme.ts` maps `styles`; sections read with `subsectionOf`).
+  Display is 89 square tiles, each a compact `code-block` + copy. `CodeBlock` gained
+  `config.appearance = normal | compact`; its root resets the global `section` padding. `verify`
+  1114 pass; 89/89 tiles square (measured), `spinner` static in-tile.
+
 - **Batch 99 (2026-11-25)** — row layout, two defects: a toggle child kept `display: block` from
   `.field.group[data-column] > .field` (0,4,0) so its label stacked above the switch → `display`
   is split off and a toggle keeps its grid (`Form.css`); `:has(.switch.control)` also grabbed a

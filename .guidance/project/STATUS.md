@@ -4,7 +4,16 @@
 > **only** after the user picks it — never "to orient" (`AGENT_RULES.md` §13). Rewritten each
 > session, newest on top. One card = one line + one pointer.
 
-### No open cards
+### 1. Icons page + compact code panel (b108, landed)
+
+New `#icons` docs route (tab Display · Usage · API) driven by `packages/styles/README.md`;
+Display is 89 square tiles, each a compact `code-block` with a copy action. `CodeBlock` gained
+`config.appearance = normal | compact`, and its root now resets the global `section` padding it
+inherited from `@aio-ui/styles`. Proved: `npm run verify` → 1114 pass; measured 89/89 tiles square,
+`spinner` stays static inside its tile, Usage/API render the README. **Open:** none.
+→ `packages/components/code-block/README.md` · `packages/styles/README.md`
+
+### No other open cards
 
 All previously queued work is closed. To start a card, take the owner's request (or the band
 file's `## Next`), record it here as one summary line plus a link that resolves in the commit

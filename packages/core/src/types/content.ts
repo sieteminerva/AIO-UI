@@ -35,6 +35,8 @@ export interface iElementProperty {
   isActive?: boolean;
   isRoot?: boolean;
   type?: "button" | "submit" | "reset" | InputType | InputControlsType;
+  /** The element's own ink. Applied as an inline `color`, so it overrides the sheet. */
+  color?: string;
   onClick?: (event: MouseEvent) => void;
 }
 // ==========================================

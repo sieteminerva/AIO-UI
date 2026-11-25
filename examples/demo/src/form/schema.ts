@@ -281,13 +281,13 @@ export const InputControlSet: iFormGroupNode = {
     {
       id: "row-record",
       title: "Baris record",
-      column: 2,
-      actions: ["editor", "repeater"],
+      column: 3,
+      // actions: ["editor", "repeater"],
       row: [
-        { content: { type: "text", id: "row-sku", label: "SKU" }, config: { wide: 50 } },
-        { content: { type: "text", id: "row-qty", label: "Qty" }, config: { wide: 50 } },
+        { content: { type: "text", id: "row-sku", label: "SKU" }, config: { wide: 30 } },
+        { content: { type: "text", id: "row-qty", label: "Qty" }, config: { wide: 30 } },
         // Cascade inside a locked scope: appears once SKU has a value, i.e. after Edit.
-        { content: { type: "text", id: "row-note", label: "Catatan baris" }, condition: { field: "row-sku", filled: true } },
+        { content: { type: "text", id: "row-note", label: "Catatan baris" }, config: { wide: 40 } },
       ],
     },
 

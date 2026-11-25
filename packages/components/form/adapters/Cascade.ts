@@ -6,7 +6,7 @@
 // ======================================================================
 
 import type { iModuleDefinition } from "@aio-ui/module-loader";
-import { applyRowSpan, arrangeRow, childWideOf } from "../FormLayout";
+import { applyRowSpan, arrangeRow, declaredWideOf } from "../FormLayout";
 import { FORM_MODULE_IDS } from "../FormModuleTypes";
 import type {
   CascadeBlockedInfo,
@@ -373,7 +373,9 @@ export class FormCascade {
   #stampSpan(element: HTMLElement, item: any, parent: HTMLElement | null): void {
     const column = Number(parent?.dataset.column);
     if (!Number.isFinite(column) || column <= 0) return;
-    applyRowSpan(element, childWideOf(item));
+    // A child with no `wide` is left unstamped: `arrangeRow` gives it an equal slice.
+    const share = declaredWideOf(item);
+    if (share !== null) applyRowSpan(element, share);
     arrangeRow(parent!, column);
   }
 

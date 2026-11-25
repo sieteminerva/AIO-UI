@@ -1029,7 +1029,10 @@ select:focus-visible {
    ========================================================================== */
 .field,
 .field:is(.group) {
-  &:has(.switch.control) {
+  /* The shell is a DIRECT child of the field (`InputBuilder` appends `inputEl.__outer`), so
+     the match is a child: a row/group that merely *contains* a toggle must not become a
+     grid itself (which stole the row's own `grid-template-columns`). */
+  &:has(> .switch.control) {
     /* Block-level grid, not inline-grid: a switch field spans the row like every other
        field. The tracks fill the row (the switch stays 48px, the label takes the rest), so a
        full-width `info` child really spans the field. */
@@ -1179,6 +1182,14 @@ select:focus-visible {
       accent-color: var(--input-primary-color);
     }
   }
+}
+
+/* A toggle nested in a group keeps its grid. The base field block also styles a nested
+   field (`.field:is(.group) .field`, 0,3,0), which outranks the shell's own
+   `.field:has(> .switch.control)` (0,2,0); every other shell declaration still applies, so
+   only `display` has to be restated at that specificity. */
+.field:is(.group) .field:has(> .switch.control) {
+  display: grid;
 }
 
 @starting-style {

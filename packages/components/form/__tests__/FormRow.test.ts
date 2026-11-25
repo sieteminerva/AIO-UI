@@ -97,7 +97,8 @@ describe("form rows", () => {
     expect(inner.dataset.column).toBe("1");
     expect(inner.dataset.span).toBe("50");
     expect(inner.querySelectorAll(":scope > .field")).toHaveLength(2);
-    expect((outer.querySelector("#province") as HTMLElement).closest(".field")?.getAttribute("data-span")).toBe("100");
+    // Outer `column: 2`: the row took 50, so the undeclared sibling takes the other 50.
+    expect((outer.querySelector("#province") as HTMLElement).closest(".field")?.getAttribute("data-span")).toBe("50");
   });
 
   it("still lets a plain group render a fieldset", () => {
@@ -296,5 +297,172 @@ describe("form sheet reads the resolved span", () => {
     expect(sheet).toMatch(/^\.form > \.form-footer \{/m);
     expect(sheet).toMatch(/\.form > \.form-footer \{[\s\S]*?border-top: 1px solid var\(--form-footer-border\)/);
     expect(sheet).toMatch(/--form-footer-border: var\(--app-border-color\)/);
+  });
+});
+
+/**
+ * A toggle field is a grid of its own (Input.css §8). The row used to force every direct
+ * child to `display: block` (0,4,0, declared later), which outranked
+ * `:has(> .switch.control)` and stacked the label above the switch — `data-position` had no
+ * effect. happy-dom runs no cascade, so the split is pinned as a rule pair here; the
+ * measured geometry comes from the browser probe on the demo form route.
+ */
+describe("a toggle keeps its shell inside a row", () => {
+  const schema = [
+    {
+      id: "flags",
+      column: 3,
+      row: [
+        { content: { type: "checkbox", id: "notify", label: "Notifikasi" }, config: { view: "toggle" } },
+        { content: { type: "checkbox", id: "digest", label: "Ringkasan harian" }, config: { view: "toggle" } },
+      ],
+    },
+  ];
+
+  it("renders the switch as a direct child, so `:has(> .switch.control)` can match", () => {
+    const row = renderForm(schema).querySelector(".field.group[data-column]") as HTMLElement;
+    const toggle = row.querySelector(":scope > .field") as HTMLElement;
+
+    expect(toggle.querySelector(":scope > .switch.control")).not.toBeNull();
+    // A nested (descendant) switch would prove nothing: the sheet keys off a direct child.
+    expect(toggle.querySelector(":scope > .switch.control > input")?.getAttribute("type")).toBe("checkbox");
+    // The toggle defaults its caption to `right`, which needs the shell's grid to render.
+    expect(toggle.querySelector(":scope > label")?.getAttribute("data-position")).toBe("right");
+  });
+
+  it("keeps every toggle a grid cell with a share of the row", () => {
+    const row = renderForm(schema).querySelector(".field.group[data-column]") as HTMLElement;
+    const fields = [...row.querySelectorAll(":scope > .field")] as HTMLElement[];
+
+    expect(fields).toHaveLength(2);
+    // No `wide`: `column: 3` divides the line, whatever the field type is.
+    expect(fields.map((el) => el.style.gridColumn)).toEqual(["1 / span 34", "35 / span 33"]);
+    expect(fields.map((el) => el.dataset.span)).toEqual(["34", "33"]);
+  });
+});
+
+describe("the row sheet leaves the toggle shell alone", () => {
+  const sheet = readFileSync(resolve(process.cwd(), "packages/components/form/Form.css"), "utf8");
+
+  it("blocks only the children that are not toggle shells", () => {
+    expect(sheet).toMatch(/& > \.field:not\(:has\(> \.switch\.control\)\)/);
+
+    // The shared property block no longer declares `display` at all — that was the 0,4,0
+    // declaration which beat the shell.
+    const shared = /& > \.field,\s*& > \.field\.group\[data-column\],\s*& > \.form-group\[data-column\] \{([\s\S]*?)\r?\n  \}/.exec(sheet);
+    expect(shared).not.toBeNull();
+    expect(shared![1]).not.toMatch(/\bdisplay:/);
+  });
+
+  it("gives the toggle cell its grid back, declared after the block rule", () => {
+    const blockAt = sheet.indexOf("& > .field:not(:has(> .switch.control))");
+    const gridAt = sheet.indexOf("& > .field:has(> .switch.control)");
+
+    expect(blockAt).toBeGreaterThan(-1);
+    expect(gridAt).toBeGreaterThan(blockAt);
+    expect(sheet.slice(gridAt)).toMatch(/^& > \.field:has\(> \.switch\.control\) \{\s*display: grid;/);
+  });
+});
+
+/**
+ * `column` is the line cap **and** the default share: a child that declares no `wide`
+ * takes an equal slice of its line, so three fields under `column: 3` are a third each.
+ * A fourth no longer fits and takes the whole next line.
+ */
+describe("column divides the line by default", () => {
+  const rowOf = (schema: any[]) => {
+    const row = renderForm(schema).querySelector(".field.group[data-column]") as HTMLElement;
+    return [...row.querySelectorAll(":scope > .field")] as HTMLElement[];
+  };
+
+  it("gives three undeclared children a third each under `column: 3`", () => {
+    const fields = rowOf([
+      {
+        id: "thirds",
+        column: 3,
+        row: [
+          { content: { type: "text", id: "a", label: "A" } },
+          { content: { type: "text", id: "b", label: "B" } },
+          { content: { type: "text", id: "c", label: "C" } },
+        ],
+      },
+    ]);
+
+    // 100 / 3: the remainder is spread from the left so the line ends flush.
+    expect(fields.map((el) => el.dataset.span)).toEqual(["34", "33", "33"]);
+    expect(fields.map((el) => el.style.gridColumn)).toEqual(["1 / span 34", "35 / span 33", "68 / span 33"]);
+    expect(fields.map((el) => el.style.gridRow)).toEqual(["1", "1", "1"]);
+  });
+
+  it("gives a fourth undeclared child the whole next line", () => {
+    const fields = rowOf([
+      {
+        id: "wrap",
+        column: 3,
+        row: [
+          { content: { type: "text", id: "a", label: "A" } },
+          { content: { type: "text", id: "b", label: "B" } },
+          { content: { type: "text", id: "c", label: "C" } },
+          { content: { type: "text", id: "d", label: "D" } },
+        ],
+      },
+    ]);
+
+    expect(fields.map((el) => el.dataset.span)).toEqual(["34", "33", "33", "100"]);
+    expect(fields[3].style.gridRow).toBe("2");
+    expect(fields[3].style.gridColumn).toBe("1 / span 100");
+  });
+
+  it("shares what an explicit `wide` leaves on the line", () => {
+    const fields = rowOf([
+      {
+        id: "rest",
+        column: 2,
+        row: [
+          { content: { type: "text", id: "a", label: "A" }, config: { wide: 30 } },
+          { content: { type: "text", id: "b", label: "B" } },
+        ],
+      },
+    ]);
+
+    expect(fields.map((el) => el.dataset.span)).toEqual(["30", "70"]);
+    expect(fields[1].style.gridColumn).toBe("31 / span 70");
+  });
+
+  it("keeps a group without `column` a full-width stack", () => {
+    const form = renderForm([
+      {
+        id: "stack",
+        group: [
+          { content: { type: "text", id: "a", label: "A" } },
+          { content: { type: "text", id: "b", label: "B" } },
+        ],
+      },
+    ]);
+    const fields = [...form.querySelectorAll("fieldset.form-group > .field")] as HTMLElement[];
+
+    expect(fields.map((el) => el.dataset.span ?? "")).toEqual(["", ""]);
+  });
+});
+
+describe("the input shell matches a direct child, nested too", () => {
+  const sheet = readFileSync(resolve(process.cwd(), "packages/components/input/Input.css"), "utf8");
+
+  it("uses a child combinator, never a descendant match", () => {
+    expect(sheet).toMatch(/&:has\(> \.switch\.control\)/);
+    expect(sheet).not.toMatch(/:has\(\.switch\.control\)/);
+  });
+
+  it("restores the grid for a toggle nested in a group", () => {
+    // The base field block (`.field:is(.group) .field`, 0,3,0) outranks the bare shell.
+    expect(sheet).toMatch(/\.field:is\(\.group\) \.field:has\(> \.switch\.control\) \{\s*display: grid;/);
+  });
+
+  it("wins without `!important`", () => {
+    const shellAt = sheet.indexOf("&:has(> .switch.control)");
+    const shell = sheet.slice(shellAt, sheet.indexOf("@starting-style", shellAt));
+
+    expect(shell.length).toBeGreaterThan(0);
+    expect(shell).not.toMatch(/!important/);
   });
 });

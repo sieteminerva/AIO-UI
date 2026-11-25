@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { DEFAULT_ROW_COLUMNS, MAX_ROW_COLUMNS, WIDE_FULL, childWideOf, columnsOf, declaredColumns, wideOf } from "../FormLayout";
+import { DEFAULT_ROW_COLUMNS, MAX_ROW_COLUMNS, WIDE_FULL, childWideOf, columnsOf, declaredColumns, declaredWideOf, wideOf } from "../FormLayout";
 
 /**
  * Row arithmetic, without a DOM. `wide` is a percentage of the row — one way to size a
@@ -77,5 +77,21 @@ describe("childWideOf", () => {
   it("gives the whole row to a child that says nothing", () => {
     expect(childWideOf({ content: { type: "text" } })).toBe(WIDE_FULL);
     expect(childWideOf("raw html")).toBe(WIDE_FULL);
+  });
+});
+
+describe("declaredWideOf", () => {
+  it("says `null` when the child declares nothing", () => {
+    // `null` is not 100: a container with `column` gives the child an equal slice.
+    expect(declaredWideOf({ content: { type: "text" } })).toBeNull();
+    expect(declaredWideOf({ wide: "" })).toBeNull();
+    expect(declaredWideOf("raw html")).toBeNull();
+    expect(declaredWideOf(undefined)).toBeNull();
+  });
+
+  it("keeps an explicit word — `auto` included", () => {
+    expect(declaredWideOf({ config: { wide: 30 } })).toBe(30);
+    expect(declaredWideOf({ wide: "auto" })).toBe(WIDE_FULL);
+    expect(declaredWideOf({ wide: 0.5 })).toBe(50);
   });
 });

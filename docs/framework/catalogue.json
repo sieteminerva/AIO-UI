@@ -1813,7 +1813,7 @@
           ]
         },
         "Config": {
-          "text": "`size` decides the heading tag: `huge → h1`, `normal → h3`, `medium → h4`, `small → h5`.\nTwo `<h1>`s on one page is an SEO defect, so the page picks the size that matches its\noutline. A caller that needs a level the size map does not offer overrides\n`selectors[\"@header>title\"].tagName` directly.",
+          "text": "`size` decides the heading tag: `huge → h1`, `normal → h3`, `medium → h4`, `small → h5`.\nTwo `<h1>`s on one page is an SEO defect, so the page picks the size that matches its\noutline. A caller that needs a level the size map does not offer overrides\n`selectors[\"@header>title\"].tagName` directly.\n\n`iconPosition` is a placement, not a re-order: the DOM keeps icon → title → subtitle → meta\n→ divider, and the sheet reads `i.icon[data-position]`. `top` (the default) is that order\nas-is; `left`/`right` stand the glyph beside the title + subtitle as a block as tall as\nboth, glyph centred on that block's middle line; `bottom` puts it under the subtitle, above\nthe meta line. `.meta` and `.divider` always stay full-width lines of the block.",
           "examples": [],
           "tables": [
             {
@@ -1844,6 +1844,11 @@
                   "meaning": "`center | left | right | justify`, as `data-alignment` on the root."
                 },
                 {
+                  "option": "`iconPosition`",
+                  "default": "`\"top\"`",
+                  "meaning": "`top | left | right | bottom`, as `data-position` on `i.icon` (the reading order never moves)."
+                },
+                {
                   "option": "`structuredData`",
                   "default": "`false`",
                   "meaning": "Opt-in `itemscope itemtype=\"https://schema.org/Article\"` + `itemprop` on title/meta."
@@ -1872,7 +1877,7 @@
           "examples": [
             {
               "lang": "html",
-              "code": "<header class=\"header\" data-size=\"normal\" data-appearance=\"normal\" data-alignment=\"left\">\n  <i class=\"user icon\" aria-hidden=\"true\" focusable=\"false\"></i>\n  <h3 class=\"title\">Merawat kaos katun agar tidak melar</h3>\n  <p class=\"subtitle\">Example subtitle</p>\n  <div class=\"meta\">\n    <span class=\"author\">Oleh: Rina</span>\n    <time datetime=\"2026-01-12\">12 Januari 2026</time>\n  </div>\n  <span class=\"divider\" aria-hidden=\"true\"></span>\n</header>"
+              "code": "<header class=\"header\" data-size=\"normal\" data-appearance=\"normal\" data-alignment=\"left\">\n  <i class=\"user icon\" data-position=\"top\" aria-hidden=\"true\" focusable=\"false\"></i>\n  <h3 class=\"title\">Merawat kaos katun agar tidak melar</h3>\n  <p class=\"subtitle\">Example subtitle</p>\n  <div class=\"meta\">\n    <span class=\"author\">Oleh: Rina</span>\n    <time datetime=\"2026-01-12\">12 Januari 2026</time>\n  </div>\n  <span class=\"divider\" aria-hidden=\"true\"></span>\n</header>"
             }
           ],
           "tables": [
@@ -1894,7 +1899,7 @@
                   "key": "`@header>icon`",
                   "defaultTag": "`i`",
                   "class": "`icon`",
-                  "note": "`aria-hidden`, `focusable=\"false\"`; glyph class appended."
+                  "note": "`aria-hidden`, `focusable=\"false\"`; carries `data-position`; glyph class appended."
                 },
                 {
                   "key": "`@header>title`",
@@ -1931,7 +1936,7 @@
           ]
         },
         "Tokens": {
-          "text": "Declared once on `:root, [data-theme]` in `Header.css`. Each derives from an app token with a\nliteral fallback, so a theme retunes the app token and this sheet follows; redeclare a\n`--header-*` token on an ancestor to retheme this component alone.",
+          "text": "Colours are declared once on `:root, [data-theme]` in `Header.css`; each derives from an app\ntoken with a literal fallback, so a theme retunes the app token and this sheet follows.\nRedeclare a `--header-*` colour token on an ancestor to retheme this component alone.\n\nThe sizes that follow the type scale — `--header-gap`, `--header-icon-block` — are computed on\nthe block itself from `--header-title-measure` (the title size in use, so `data-size` moves\nthem). They cannot live in the `:root` layer: a `var()` there would resolve against the root's\ntitle size and every `data-size` would keep the default gap. Retune them on the block (a\nselector at least as specific as `header.header`).",
           "examples": [],
           "tables": [
             {
@@ -1943,8 +1948,8 @@
               "rows": [
                 {
                   "token": "`--header-gap`",
-                  "derivesFrom": "`--app-gap`",
-                  "usedFor": "Stack spacing"
+                  "derivesFrom": "`--header-title-measure` × 0.35",
+                  "usedFor": "Stack spacing, clamped to `0.35rem`–`0.5rem`; rows stack at half of it"
                 },
                 {
                   "token": "`--header-title-color`",
@@ -1977,6 +1982,11 @@
                   "usedFor": "`data-size=\"huge\"`"
                 },
                 {
+                  "token": "`--header-title-measure`",
+                  "derivesFrom": "`--header-title-size` (per `data-size`)",
+                  "usedFor": "The title size actually in use; the gap and the icon block read it"
+                },
+                {
                   "token": "`--header-subtitle-size`",
                   "derivesFrom": "`--app-font-size-base`",
                   "usedFor": "Subtitle size"
@@ -1985,6 +1995,16 @@
                   "token": "`--header-meta-size`",
                   "derivesFrom": "`--app-font-size-sm`",
                   "usedFor": "Meta size"
+                },
+                {
+                  "token": "`--header-icon-size`",
+                  "derivesFrom": "literal `1.5rem`",
+                  "usedFor": "Icon glyph size (top/bottom placement)"
+                },
+                {
+                  "token": "`--header-icon-block`",
+                  "derivesFrom": "`--header-title-measure` × 2.5",
+                  "usedFor": "Icon block beside the heading pair (`left`/`right`)"
                 }
               ]
             }
@@ -2414,7 +2434,7 @@
       "lead": "Input renders **one form field** — label, control, info line — and the shell around it\n(switch, file chip, action buttons, popover). A field is a field with or without a form\naround it, so nothing in this package is scoped under `.form`; rows, fieldsets and\nmultistep layout belong to `@aio-ui/form`.\n\nSub-modules extend the field without changing the builder: `dropdown` (select/search),\n`picker` (a grid of icons, swatches or images), `file-uploader`, `controls` (action buttons)\nand `popover`. Each one is an `iInputAdapter` that the builder resolves once per `prepare()`\nand disposes on teardown.\n\n<!-- part: id=payload -->\n\n**The builder is an element factory.** It assembles the markup below, and `Input.css` only targets\nthose classes and tokens. The CSS therefore behaves like a plain CSS library: the same nesting and\nclass names written by hand are styled identically. Customise it by overriding a selector, or\nretheme it without touching markup by redeclaring a `--app-*` token on an ancestor (or one\n`--input-*` token for this component only). Nothing here is scoped under `.form`.\n\n<!-- install:begin -->",
       "sections": {
         "Install": {
-          "text": "Version — `0.2.6` (tag `v0.2.6`)\n\n    npm install https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.6/aio-ui-input-0.2.6.tgz\n\nCDN (ES module, no build step) — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.6/packages/components/input/dist/index.js`\nStylesheet — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.6/packages/components/input/dist/input.css`\n<!-- install:end -->",
+          "text": "Version — `0.2.6` (tag `v0.2.6`)\n\n    npm install https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.6/aio-ui-input-0.2.6.tgz\n\nCDN (ES module, no build step) — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.6/packages/components/input/dist/index.js`\nStylesheet — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.6/packages/components/input/dist/input.css`\n\n<!-- install:end -->",
           "examples": [],
           "tables": []
         },
@@ -2615,7 +2635,7 @@
           ]
         },
         "Tokens": {
-          "text": "### Popup placement\n\n`select::picker(select)`, `.dropdown > .menu` and the picker panel share one surface that is\nplaced by **CSS Anchor Positioning** and shown by the **Native Popover API** — so they escape\nany `overflow: hidden` ancestor and follow the field on scroll and resize without a JS\nposition calculator. The anchor is the field-scoped name `--field-dropdown-anchor`\n(`anchor-scope` on `.field`), never a generated id.\n\n`position-try-fallbacks: --flip-top, flip-block` opens the surface **upward** when there is\nno room below; a `@position-try` rule may only carry placing/sizing declarations, so the\nmirror is geometric. Anchor positioning and the fallback need Chromium 125+ / Firefox 132+ /\nSafari 18+; older engines keep the absolute fallback the surface already declares. The\ntrigger's own border does not mirror the flip (it is the anchor, not an anchored element, so\nit cannot query the chosen fallback); the menu overlaps the trigger by 1px, so the seam\nreads as one line in both directions.\n\nEvery token is declared **once**, on `:root, [data-theme]`, in `Input.css`. `[data-theme]`\nis required: a theme puts `--app-*` on the shell element, and a custom property is\nsubstituted where it is _declared_. Never redeclare these per `.field` — the whole subtree\nwould inherit the copy and any ancestor override would be shadowed.\n\nOverriding is the third layer: redeclare `--input-*` on any ancestor, leave the package\nalone.\n\n**Colour** (derived from `--app-*`)\n\nDark mode re-derives seven of them in the same file, because the palette inverts the field\n(solid border becomes translucent, tinted surface becomes flat) and no single formula\ncovers both modes.\n\n**File module** (`FileUploader/FileUploader.css`)\n\n**Picker module** (`InputPicker/InputPicker.css`) — declared on `:root, [data-theme]`, every\none derived from the field layer so a theme retunes the picker with the field:\n\n**Metrics and motion** (`Input.css`)\n\n`--input-font-size`, `--input-label-size` (`0.75 × font-size`), `--input-border-radius`,\n`--input-line-height`, `--input-icon-size`, `--input-min-height`, `--input-picker-height`\n(`3 × line-height`), `--input-dropdown-arrow-content` (SVG data URI),\n`--input-dropdown-transition-delay`, `--input-popup-duration`, `--input-popup-easing`,\n`--input-popup-distance`.\n\nThe loading spinner is **not** an input token: it is shared with the form package and lives\nin the app layer as `--app-spinner-content`.\n\n<!-- part: id=wiring role=contract -->",
+          "text": "### Popup placement\n\n`select::picker(select)`, `.dropdown > .menu` and the picker panel share one surface that is\nplaced by **CSS Anchor Positioning** and shown by the **Native Popover API** — so they escape\nany `overflow: hidden` ancestor and follow the field on scroll and resize without a JS\nposition calculator. The anchor is the field-scoped name `--field-dropdown-anchor`\n(`anchor-scope` on `.field`), never a generated id.\n\n`position-try-fallbacks: --flip-top, flip-block` opens the surface **upward** when there is\nno room below; a `@position-try` rule may only carry placing/sizing declarations, so the\nmirror is geometric. Anchor positioning and the fallback need Chromium 125+ / Firefox 132+ /\nSafari 18+; older engines keep the absolute fallback the surface already declares. The\ntrigger's own border does not mirror the flip (it is the anchor, not an anchored element, so\nit cannot query the chosen fallback); the menu overlaps the trigger by 1px, so the seam\nreads as one line in both directions.\n\nEvery token is declared **once**, on `:root, [data-theme]`, in `Input.css`. `[data-theme]`\nis required: a theme puts `--app-*` on the shell element, and a custom property is\nsubstituted where it is _declared_. Never redeclare these per `.field` — the whole subtree\nwould inherit the copy and any ancestor override would be shadowed.\n\nOverriding is the third layer: redeclare `--input-*` on any ancestor, leave the package\nalone.\n\n**Colour** (derived from `--app-*`)\n\nDark mode re-derives seven of them in the same file, because the palette inverts the field\n(solid border becomes translucent, tinted surface becomes flat) and no single formula\ncovers both modes.\n\n**File module** (`FileUploader/FileUploader.css`)\n\n**Picker module** (`InputPicker/InputPicker.css`) — declared on `:root, [data-theme]`, every\none derived from the field layer so a theme retunes the picker with the field:\n\n**Metrics and motion** (`Input.css`)\n\n`--input-font-size`, `--input-label-size` (`0.75 × font-size`), `--input-border-radius`,\n`--input-line-height`, `--input-control-line` (`1.3 × line-height`), `--input-control-height`\n(`font-size × control-line` — the box one text control occupies, so a toggle field measures\nlike any other), `--input-icon-size`, `--input-min-height` (one line of the _field_),\n`--input-picker-height` (`3 × line-height`), `--input-dropdown-arrow-content` (SVG data URI),\n`--input-dropdown-transition-delay`, `--input-popup-duration`, `--input-popup-easing`,\n`--input-popup-distance`.\n\nThe loading spinner is **not** an input token: it is shared with the form package and lives\nin the app layer as `--app-spinner-content`.\n\n<!-- part: id=wiring role=contract -->",
           "examples": [],
           "tables": [
             {

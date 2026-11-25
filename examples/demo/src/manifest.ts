@@ -142,7 +142,7 @@ export const DEMO: iDemoEntry[] = [
         date: { textContent: "12 Januari 2026", className: "date" },
       },
     },
-    config: { useDivider: true, size: "huge", alignment: "left" },
+    config: { useDivider: false, size: "medium", alignment: "left", iconPosition: "left" },
   },
   {
     name: "accordion",

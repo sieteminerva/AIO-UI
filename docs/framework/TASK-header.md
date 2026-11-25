@@ -4,6 +4,11 @@ Status: **landed** (b100, 2026-11-25) — package, demo row and proofs are in; t
 item is the family bump to **0.2.7** so the release-artefact test (`releases/v0.2.7`) covers
 the new package.
 
+Status addendum (b105, 2026-11-26): `config.iconPosition` (`top` default, `left`/`right`/
+`bottom`) and type-scale spacing landed — `--header-title-measure` drives `--header-gap`
+(`clamp(0.35rem, 0.35 × measure, 0.5rem)`) and the icon block, so `data-size` moves the whole
+block. Measured on `#kitchen/header` at `size: "small"`: gap 23.2 → 7.5px, icon glyph 42.9px.
+
 Decisions (owner, 2026-11-25): metadata value = `string | { textContent, className } |
 HTMLElement`; root class `.header` (selector `header.header`, nested); `icon` is the full
 font class; heading level from `size` (huge→h1, normal→h3, medium→h4, small→h5);
@@ -35,6 +40,7 @@ npm run new:component header      # scaffold from templates/component/
     size: "huge" | "normal" | "medium" | "small";
     appearance: "normal"; // room for more words later; `normal` is the only one now,
     alignment: "center" | "left" | "right" | "justify";
+    iconPosition: "top" | "left" | "right" | "bottom"; // where `i.icon` stands, default "top"
   }
 }
 ```
@@ -43,7 +49,7 @@ npm run new:component header      # scaffold from templates/component/
 
 ```html
 <header class="item">
-  <i class="user icon"></i>
+  <i class="user icon" data-position="top"></i>
   <h3 class="title">Merawat kaos katun agar tidak melar</h3>
   <div class="subtitle">Example subtitle</div>
   <div class="meta">
@@ -60,6 +66,10 @@ npm run new:component header      # scaffold from templates/component/
   closing line of the header (a boolean, so the sheet draws it).
 - `size` → `data-size`, `appearance` → `data-appearance`, `alignment` → `data-alignment` on the
   root. All three drive the sheet, not inline styles.
+- `iconPosition` → `data-position` on `i.icon` (never an order change: the DOM stays icon →
+  title → subtitle → meta → divider). `left`/`right` make the glyph a block as tall as the
+  title + subtitle with its glyph centred on that block; `bottom` puts it under the subtitle,
+  above `.meta`.
 
 ## SEO & semantics (mandatory)
 

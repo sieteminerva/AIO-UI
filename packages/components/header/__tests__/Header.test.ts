@@ -1,4 +1,6 @@
 // @vitest-environment happy-dom
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import { validate } from "@aio-ui/base";
@@ -155,5 +157,96 @@ describe("Header inspect (proof of render)", () => {
 
     expect(hierarchy["@header"]?.elements).not.toContain("span.divider");
     expect(root.lastElementChild?.className).toBe("meta");
+  });
+});
+
+/**
+ * Placement is a hint on the glyph, not an order change: the DOM keeps the reading order
+ * the SEO rules ask for, and the sheet reads `i.icon[data-position]`.
+ */
+describe("Header icon placement", () => {
+  it("defaults to `top`", () => {
+    const { root } = build(payload);
+
+    expect(root.querySelector("i.icon")?.getAttribute("data-position")).toBe("top");
+  });
+
+  it("writes every `iconPosition` onto the glyph", () => {
+    for (const position of ["top", "left", "right", "bottom"] as const) {
+      const { root } = build(payload, { iconPosition: position });
+
+      expect(root.querySelector("i.icon")?.getAttribute("data-position"), position).toBe(position);
+    }
+  });
+
+  it("leaves the reading order alone whatever the placement is", () => {
+    for (const position of ["top", "left", "right", "bottom"] as const) {
+      const { root } = build(payload, { iconPosition: position });
+
+      expect([...root.children].map((el) => el.className), position).toEqual([
+        "user icon",
+        "title",
+        "subtitle",
+        "meta",
+      ]);
+    }
+  });
+});
+
+/**
+ * The sheet is where the placement becomes a layout. happy-dom runs no cascade, so the four
+ * placements and the glyph's block are pinned as rules; the measured heights come from the
+ * browser probe on the demo's Elements route.
+ */
+describe("the sheet places the icon from data-position", () => {
+  const sheet = readFileSync(resolve(process.cwd(), "packages/components/header/Header.css"), "utf8");
+
+  it("keys every non-default placement off the glyph attribute", () => {
+    for (const position of ["left", "right", "bottom"]) {
+      expect(sheet, position).toContain(`&:has(> .icon[data-position="${position}"])`);
+    }
+  });
+
+  it("states the default alignment instead of inheriting one", () => {
+    // Inside a centred docs frame the block inherited `text-align: center`, so
+    // `data-alignment="left"` (the default) was a no-op.
+    expect(sheet).toMatch(/header\.header \{[\s\S]*?text-align: left;/);
+  });
+
+  it("makes the glyph a block as tall as the heading pair, centred on it", () => {
+    const pair = sheet.slice(sheet.indexOf('&:has(> .icon[data-position="left"]),'));
+
+    // Centred on the pair, not stretched flush to its edges.
+    expect(pair).toMatch(/& > \.icon \{[\s\S]*?align-self: center/);
+    expect(pair).toMatch(/& > \.icon \{[\s\S]*?justify-self: center/);
+    expect(pair).toMatch(/grid-row: 1 \/ span 2/);
+    // A lone heading has no pair to span.
+    expect(sheet).toMatch(/&:not\(:has\(> \.subtitle\)\) > \.icon \{\s*grid-row: 1;/);
+  });
+
+  it("grows the glyph with the block, inset from its edges", () => {
+    const pair = sheet.slice(sheet.indexOf('&:has(> .icon[data-position="left"]),'));
+
+    // A square `0.8 × the block` glyph: big, and never flush against the column edge — a
+    // mask/`background` icon paints the whole box, so padding would not give it room.
+    expect(pair).toMatch(/& > \.icon \{[\s\S]*?width: calc\(var\(--header-icon-block\) \* 0\.8\)/);
+    expect(pair).toMatch(/& > \.icon \{[\s\S]*?aspect-ratio: 1/);
+    expect(pair).toMatch(/font-size: calc\(var\(--header-icon-block\) \* 0\.8\)/);
+    expect(sheet).toMatch(/--header-icon-block: calc\(var\(--header-title-measure\) \* 2\.5\)/);
+    // `data-size` swaps the measure, so the icon (and the gap) follow the chosen size.
+    expect(sheet).toMatch(/&\[data-size="huge"\] \{\s*--header-title-measure:/);
+  });
+
+  it("derives the gap from the type scale, clamped at both ends", () => {
+    expect(sheet).toMatch(/--header-title-measure: var\(--header-title-size\)/);
+    expect(sheet).toMatch(/--header-gap: clamp\(0\.35rem, calc\(var\(--header-title-measure\) \* 0\.35\), 0\.5rem\)/);
+    // Stacked rows sit tighter than the column gap beside an icon.
+    expect(sheet).toMatch(/row-gap: calc\(var\(--header-gap\) \* 0\.5\)/);
+    // A page-level gap knew nothing about the heading size, so `small` kept the `huge` gap.
+    expect(sheet).not.toMatch(/--header-gap: var\(--app-gap/);
+  });
+
+  it("carries no Sass-style suffix the build would drop", () => {
+    expect(sheet).not.toMatch(/&-[a-z]/i);
   });
 });

@@ -45,6 +45,12 @@ export interface iHeaderMeta {
  */
 export type iHeaderMetaValue = string | iHeaderMeta | HTMLElement;
 
+/**
+ * Where the icon stands relative to the heading pair. A CSS hint, written as `data-position`
+ * on the `<i>` — the sheet reads the glyph, the markup keeps its reading order.
+ */
+export type HeaderIconPosition = "top" | "left" | "right" | "bottom";
+
 export interface iHeaderContent {
   title?: string;
   subtitle?: string;
@@ -62,6 +68,12 @@ export interface iHeaderConfig extends iBuilderConfig<HeaderElementType> {
   /** Room for more words later; `normal` is the only one now. */
   appearance?: "normal";
   alignment?: "center" | "left" | "right" | "justify";
+  /**
+   * Where the icon sits: `top` (above the title, the default), `left`/`right` (beside the
+   * title + subtitle, its block as tall as both) or `bottom` (under the subtitle, above the
+   * meta line). Written as `data-position` on `i.icon`.
+   */
+  iconPosition?: HeaderIconPosition;
   /** Opt-in schema.org microdata (`itemscope itemtype=Article` + `itemprop`). */
   structuredData?: boolean;
 }
@@ -141,6 +153,7 @@ export class HeaderBuilder extends Builder<HeaderElementType, iHeaderConfig> {
       size: DEFAULT_SIZE,
       appearance: "normal",
       alignment: "left",
+      iconPosition: "top",
       structuredData: false,
     };
 
@@ -220,6 +233,9 @@ export class HeaderBuilder extends Builder<HeaderElementType, iHeaderConfig> {
         // accessible name. `focusable` is for old IE; harmless elsewhere.
         el.setAttribute("aria-hidden", "true");
         el.setAttribute("focusable", "false");
+        // Placement is a config hint the sheet reads (`i.icon[data-position]`), never an
+        // order change: the DOM stays icon → title → subtitle → meta → divider.
+        el.dataset.position = this.config.iconPosition;
         if (payload?.icon) el.className = `${payload.icon} icon`;
         break;
 

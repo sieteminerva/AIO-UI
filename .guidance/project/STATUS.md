@@ -4,7 +4,8 @@
 > **only** after the user picks it — never "to orient" (`AGENT_RULES.md` §13). Rewritten each
 > session, newest on top. One card = one line + one pointer.
 >
-> Recent batches (newest first): **b100** `@aio-ui/header` landed — family bumped to 0.2.7 ·
+> Recent batches (newest first): **b105** header icon placement (`iconPosition`) · **b104**
+> toggle field geometry · **b100** `@aio-ui/header` landed — family bumped to 0.2.7 ·
 > **b99** row layout — a toggle keeps its shell, a column
 > divides evenly (equal shares) · **b98** catalogue drift from a formatter blank line ·
 > **b97** class files are PascalCase — CSS specifiers renamed ·
@@ -32,7 +33,8 @@ b99: `Form.css` splits `display` off the row's child block, so a toggle child ke
 grid for a toggle nested in a group. `column` is now the default share too: an undeclared
 `wide` takes an equal slice of its line (34/33/33 under `column: 3`), a child that no longer
 fits takes the whole next line. **b100 landed:** the `@aio-ui/header` component (family bumped
-to 0.2.7).
+to 0.2.7). **b104:** a toggle field no longer pins its own height — its control track is one
+text-control line box and its caption is a field label, so a toggle row measures like inputs.
 → `docs/framework/TASK-header.md`
 
 ### 2. Class files are PascalCase — sheets, specifiers, builder (framework band)

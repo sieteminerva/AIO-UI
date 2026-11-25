@@ -9,7 +9,6 @@
    on an ancestor to retheme this block alone. */
 :root,
 [data-theme] {
-  --header-gap: var(--app-gap, clamp(0.4rem, 1.2vw, 0.75rem));
   --header-title-color: var(--app-text-heading-color, #1a140e);
   --header-text-color: var(--app-text-accent-color, #6e5f51);
   --header-accent-color: var(--app-primary-color, darkgoldenrod);
@@ -22,15 +21,30 @@
   --header-subtitle-size: var(--app-font-size-base, 1rem);
   --header-meta-size: var(--app-font-size-sm, 0.85rem);
   --header-icon-size: 1.5rem;
+  --header-line-height: 1.1;
 }
 
 /* The root is a real `<header>`; keeping the tag in the root selector stops this
    sheet from restyling a `.header` element another component owns. Every rule
    nests under it. */
 header.header {
+  /* Spacing and the icon block follow the TYPE SCALE, not a page-level gap. These live here
+     and not in the `:root` layer on purpose: a `var()` there would resolve against the root's
+     title size, so `data-size="small"` would still get the `huge` gap. Same for the icon: a
+     glyph beside an `huge` heading is a big block; beside a `small` one, a small block. */
+  --header-title-measure: var(--header-title-size);
+  /* ~0.35 of the title, clamped at both ends so a long/short heading cannot open a canyon. */
+  --header-gap: clamp(0.35rem, calc(var(--header-title-measure) * 0.35), 0.5rem);
+  --header-icon-block: calc(var(--header-title-measure) * 2.5);
   display: grid;
   gap: var(--header-gap);
+  row-gap: calc(var(--header-gap) * 0.5);
   color: var(--header-text-color);
+  /* `alignment` is a config decision, so the default has to be *stated*: without this the
+     block inherits `text-align` from whatever centred container it lands in, and
+     `data-alignment="left"` (the default) would be a no-op. */
+  text-align: left;
+  line-height: var(--header-line-height);
 
   & .icon {
     font-size: var(--header-icon-size);
@@ -38,9 +52,91 @@ header.header {
     color: var(--header-accent-color);
   }
 
+  /* Icon placement. `config.iconPosition` writes `data-position` on the `<i>` itself, so the
+     sheet keys off the glyph and the markup keeps one reading order
+     (icon → title → subtitle → meta → divider). `top` is that order already: nothing to
+     place. A placement is an attribute, never an inline style. */
+
+  /* Under the heading pair, above the meta line. `order` moves the glyph only; the DOM
+     stays in reading order, so the accessible order never changes. */
+  &:has(> .icon[data-position="bottom"]) {
+    & > .icon {
+      order: 1;
+    }
+
+    & > .meta,
+    & > .divider {
+      order: 2;
+    }
+  }
+
+  /* Beside the heading pair: two columns, the glyph and its text. The glyph lives in a block
+     as tall as the title and subtitle it stands beside, but it is inset from that block's
+     edges — a square one `0.8 × --header-icon-block` wide, centred on the pair. Flush to the
+     column edge it read as clipped; the room is the column's, not a padding, because a
+     mask/`background` icon paints the whole box it is given. */
+  &:has(> .icon[data-position="left"]),
+  &:has(> .icon[data-position="right"]) {
+    align-items: start;
+
+    & > .icon {
+      align-self: center;
+      justify-self: center;
+      width: calc(var(--header-icon-block) * 0.8);
+      height: auto;
+      /* Square: the glyph is as tall as it is wide, whichever technique draws it (a font
+         glyph reads `font-size`, a mask/`background` glyph fills the box). */
+      aspect-ratio: 1;
+      font-size: calc(var(--header-icon-block) * 0.8);
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      grid-row: 1 / span 2;
+    }
+
+    /* The meta line and the divider are lines of the block, not of the text column. */
+    & > .meta,
+    & > .divider {
+      grid-column: 1 / -1;
+    }
+
+    /* A lone heading has no pair to span: the glyph takes the one row it labels. Declared
+       here so it outranks the two-row span inside the same `:has()` block. */
+    &:not(:has(> .subtitle)) > .icon {
+      grid-row: 1;
+    }
+  }
+
+  &:has(> .icon[data-position="left"]) {
+    grid-template-columns: var(--header-icon-block) 1fr;
+
+    & > .icon {
+      grid-column: 1;
+    }
+
+    & > .title,
+    & > .subtitle {
+      grid-column: 2;
+    }
+  }
+
+  &:has(> .icon[data-position="right"]) {
+    grid-template-columns: 1fr var(--header-icon-block);
+
+    & > .icon {
+      grid-column: 2;
+    }
+
+    & > .title,
+    & > .subtitle {
+      grid-column: 1;
+    }
+  }
+
   & .title {
     margin: 0;
-    font-size: var(--header-title-size);
+    font-size: var(--header-title-measure);
     line-height: 1.2;
     color: var(--header-title-color);
     text-wrap: balance;
@@ -82,18 +178,28 @@ header.header {
     background: var(--header-divider-color);
   }
 
-  /* Size scales the title; the heading level itself comes from `config.size`
-     (Header.engine.ts maps it to an `hN` tag). */
-  &[data-size="huge"] .title {
-    font-size: var(--header-title-size-huge);
+  /* Size scales the title — and, through `--header-title-measure`, the gap and the icon
+     block. The heading level itself comes from `config.size` (Header.engine.ts maps it to an
+     `hN` tag). */
+  &[data-size="huge"] {
+    --header-title-measure: var(--header-title-size-huge);
+    & .title {
+      line-height: calc(var(--header-line-height) + 0);
+    }
   }
 
-  &[data-size="medium"] .title {
-    font-size: var(--header-title-size-medium);
+  &[data-size="medium"] {
+    --header-title-measure: var(--header-title-size-medium);
+    & .title {
+      line-height: calc(var(--header-line-height) - 0.2);
+    }
   }
 
-  &[data-size="small"] .title {
-    font-size: var(--header-title-size-small);
+  &[data-size="small"] {
+    --header-title-measure: var(--header-title-size-small);
+    & .title {
+      line-height: calc(var(--header-line-height) - 0.3);
+    }
   }
 
   /* Alignment is a config decision, written as an attribute — no inline style. */
@@ -120,8 +226,10 @@ header.header {
 
 @media (max-width: 480px) {
   header.header {
-    & .title {
-      font-size: var(--header-title-size-medium);
+    /* Narrow screens cap the scale: one measure drives the title, the gap and the icon, so
+       the whole block shrinks together instead of just the words. */
+    &[data-size] {
+      --header-title-measure: var(--header-title-size-medium);
     }
   }
 }

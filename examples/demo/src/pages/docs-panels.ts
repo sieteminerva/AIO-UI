@@ -191,9 +191,11 @@ export function apiPanel(entry: iDemoEntry, build: BuildFn): HTMLElement {
  *
  * The tier heading is no longer a fake link marked `.group`: it is an `li[data-submenu]`
  * whose children are the components of that tier, so the heading is the control and
- * `config.multilevel.property` says which key holds them. `activation: "always"` — a docs
- * column reads better with every tier open; the sheet still knows how to collapse it.
+ * `config.multilevel.property` says which key holds them. A docs column reads better with
+ * every tier open, so a wide screen asks for `always`; a narrow one asks for `click`, where
+ * a tap is the only way in and the tiers must start closed. `always` could never close.
  */
+const NARROW = "(max-width: 900px)";
 export function mountSidebar(host: HTMLElement, build: BuildFn, activeName: string): void {
   const brand = { label: "Components", href: "#kitchen" };
 
@@ -213,7 +215,11 @@ export function mountSidebar(host: HTMLElement, build: BuildFn, activeName: stri
       content: { brand, navigations },
       config: {
         position: "left sticky",
-        multilevel: { activation: "always", property: "children", multicolumn: false },
+        multilevel: {
+          activation: typeof window !== "undefined" && window.matchMedia(NARROW).matches ? "click" : "always",
+          property: "children",
+          multicolumn: false,
+        },
         // `#kitchen` is the brand, not a destination to jump to.
         onNavigate: (href?: string) => href === "kitchen",
       },

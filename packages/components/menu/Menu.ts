@@ -426,7 +426,10 @@ export class MenuBuilder extends Builder<MenuElementType, iMenuConfig> {
       icon: payload?.icon ?? "icon arrow right",
       onClick: (event: MouseEvent) => {
         event.preventDefault();
-        if (activation === "click") this.toggleSubmenu(item);
+        // A hover branch still answers a click: hover is an enhancement, not the only way
+        // in, and a touch screen never hovers — without this the branch was dead on a tap.
+        // `always` is already open, so its click stays inert.
+        if (activation !== "always") this.toggleSubmenu(item);
         payload?.onClick?.(event);
       },
     });

@@ -134,9 +134,11 @@ export function formApiPanel(topic: iFormTopic, build: BuildFn): HTMLElement {
  * ones and (because the config also asked for a `type: "sidebar"` the builder no longer
  * knows) the whole column laid itself out sideways.
  *
- * `activation: "always"` — a docs column reads better with every group open; the sheet still
- * knows how to collapse it, and `property: "children"` is the key the data uses here.
+ * A docs column reads better with every group open, so a wide screen asks for `always`; a
+ * narrow one asks for `click`, where a tap is the only way in. `property: "children"` is the
+ * key the data uses here.
  */
+const NARROW = "(max-width: 900px)";
 export function mountFormSidebar(host: HTMLElement, build: BuildFn, activeId: string): void {
   const navigations = FORM_GROUPS.flatMap((group) => {
     const rows = FORM_TOPICS.filter((topic) => topic.group === group);
@@ -161,7 +163,11 @@ export function mountFormSidebar(host: HTMLElement, build: BuildFn, activeId: st
       content: { brand: { label: "Form docs", href: "#form" }, navigations },
       config: {
         position: "left sticky",
-        multilevel: { activation: "always", property: "children", multicolumn: false },
+        multilevel: {
+          activation: typeof window !== "undefined" && window.matchMedia(NARROW).matches ? "click" : "always",
+          property: "children",
+          multicolumn: false,
+        },
         // The brand has no page of its own to go back to; the menu passes a bare route.
         onNavigate: (href?: string) => href === "form",
       },

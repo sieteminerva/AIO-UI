@@ -56,9 +56,23 @@
     font-size: clamp(1.2rem, 1.1rem + 0.5vw, 1.45rem);
     font-weight: 800;
     & > a {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
       color: var(--menu-heading-color);
       text-decoration: none;
       font-weight: 800;
+    }
+    /* A logo is an icon, not a banner. Without this the <img> takes the width of its
+       container — on a phone the brand column is the whole bar, so the favicon rendered
+       square and hundreds of pixels wide. `height` in `em` follows the brand type size. */
+    & .brand-image {
+      display: block;
+      width: auto;
+      height: 1.6em;
+      max-width: none;
+      flex: 0 0 auto;
+      object-fit: contain;
     }
   }
 
@@ -218,16 +232,19 @@
   &[data-multilevel="always"] .item.submenu.open > .menus,
   /* `click`: the builder flips the `open` class, so the sheet has nothing to guess. */
   &[data-multilevel="click"] .item.submenu.open > .menus,
+  /* `hover`: hover is the enhancement, but a click (a tap, a keyboard Enter) pins the same
+     `open` class — a touch screen never hovers, so without this the panel was unreachable. */
+  &[data-multilevel="hover"] .item.submenu.open > .menus,
   /* `hover`: the branch, the gap bridge, or the panel itself keeps it open — the panel is a
      child of the branch, so crossing into it must not drop the state. The glyph turns on the
-     same trigger, because in this mode no `open` class is ever written. */
+     same trigger. */
   &[data-multilevel="hover"] .item.submenu:hover > .menus,
   &[data-multilevel="hover"] .item.submenu > .menus:hover,
   &[data-multilevel="hover"] .item.submenu:focus-within > .menus {
     display: block;
   }
 
-  &[data-multilevel="hover"] .item.submenu:is(:hover, :focus-within) > a > i.icon {
+  &[data-multilevel="hover"] .item.submenu:is(:hover, :focus-within, .open) > a > i.icon {
     transform: rotate(90deg);
   }
 }
@@ -409,12 +426,12 @@ aside:has(> .nav[data-position*="sticky"]) {
     }
 
     /*
-     * A branch is open in compact, whatever its activation. A column has the vertical room,
-     * and `hover` cannot happen on a touch screen — a `hover` branch would otherwise render
-     * as a heading with nothing under it. This is the sidebar shape, applied to every
-     * position; above the breakpoint each position keeps the behaviour it asked for.
+     * A branch follows its `open` state in compact too. It used to be forced open ("a
+     * column has the vertical room"), but a touch screen has no hover to close it — the
+     * panel could never be collapsed. The builder now toggles `open` on tap, so gating on
+     * it is what makes a phone behave like a disclosure.
      */
-    & .item.submenu > .menus {
+    & .item.submenu.open > .menus {
       display: block;
     }
   }

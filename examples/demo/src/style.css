@@ -563,3 +563,74 @@ header.docs-head {
   font-size: 0.75rem;
   overflow-x: auto;
 }
+
+/* ==========================================================================
+   Icons route (#icons) — a grid of every glyph with a compact, copyable code block.
+   ========================================================================== */
+.icons,
+section.icons {
+  display: grid;
+  gap: var(--app-gap, 1rem);
+  width: 100%;
+  & .icons-grid {
+    display: grid;
+    /* Six even columns; each tile keeps its own square height (aspect-ratio). */
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    align-items: start;
+    gap: var(--app-gap, 0.75rem);
+  }
+
+  & .icon-tile {
+    display: grid;
+    /* Square card: the glyph takes the free row, the code block sits on the bottom edge. */
+    box-sizing: border-box;
+    grid-template-rows: 1fr auto;
+    align-items: center;
+    justify-items: center;
+    aspect-ratio: 1;
+    gap: 0.3rem;
+    padding: 0.4rem 0.6rem;
+    background: var(--app-surface-strong, #fff);
+    border: 1px solid var(--app-border-color, #e2e2e6);
+    border-radius: var(--app-component-border-radius, 6px);
+
+    /* The glyph is a mask fed by `currentColor`; three times the base icon size (1rem).
+       Tab's loading spinner is a bare `.spinner` inside `.tab`, and this glyph shares the
+       class, so it would leave the tile and centre itself on the tab — keep the tile's box. */
+    & > .icon {
+      position: static !important;
+      inset: auto !important;
+      transform: none;
+      width: 3rem;
+      height: 3rem;
+      color: var(--app-primary-color, #111);
+    }
+
+    /* The copyable name fills the bottom row of the square. A long name stays on one
+       line (the copy button still yields the full text), so no scrollbar grows the box. */
+    & .code-block {
+      width: 100%;
+      min-width: 0;
+    }
+
+    & .code-block .body {
+      display: block;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+}
+
+/* Narrower viewports keep the grid tidy at four, then two columns. */
+@media (max-width: 900px) {
+  .icons .icons-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .icons .icons-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

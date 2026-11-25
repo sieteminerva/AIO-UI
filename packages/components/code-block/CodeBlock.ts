@@ -125,6 +125,12 @@ export const ACTION_LABELS: Record<iCodeBlockActionType, string> = {
 export interface iCodeBlockConfig extends iBuilderConfig<CodeBlockElementType> {
   /** Buttons under every panel. Empty (the default) keeps the block read-only. */
   actions?: iCodeBlockAction[];
+  /**
+   * Panel shape. `compact` is a tighter panel for short, one-line sources (an icon class,
+   * a file name): the builder adds the `compact` class and `CodeBlock.css` retunes its
+   * tokens under `&.compact`. `normal` (the default) keeps the roomy panel.
+   */
+  appearance?: "normal" | "compact";
 }
 
 /**
@@ -213,6 +219,7 @@ export class CodeBlockBuilder extends Builder<CodeBlockElementType, iCodeBlockCo
       emit: () => { },
       selectors: DEFAULT_SELECTORS,
       actions: [],
+      appearance: "normal",
     };
 
     this.config = this.resolveConfig(defaultConfig, config);
@@ -226,6 +233,7 @@ export class CodeBlockBuilder extends Builder<CodeBlockElementType, iCodeBlockCo
     const entries = normalizePayload(data);
 
     const container = this.render("@container", { count: entries.length });
+    if (container && this.config.appearance === "compact") container.classList.add("compact");
 
     for (const entry of entries) {
       const figure = this.render("@container>figure", entry);

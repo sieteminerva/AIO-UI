@@ -6,11 +6,11 @@ Why / stages: `.guidance/plan-framework.md`. Engineering rules:
 
 ## Active (max 3)
 
-| #   | Task                     | State       | Gate                                                                                                    |
-| --- | ------------------------ | ----------- | ------------------------------------------------------------------------------------------------------- |
+| #   | Task                     | State       | Gate                                                                                                   |
+| --- | ------------------------ | ----------- | ------------------------------------------------------------------------------------------------------ |
 | 1   | Theme console view (fab) | in progress | `examples/demo/src/ThemeConsole/TASK.md` — view composed, gate green; open: page-only popover sections |
-| 2   | Inspect surface (b43)    | in progress | `inspect()` + `inspectPage()` green; open: dead relay removal, `#cleanupMap` reset                      |
-| 3   | Colour tokens (b82–b94)  | shipped     | T1–T5 shipped in v0.2.6 → `packages/styles/TASK.md`; open: owner taste pass                             |
+| 2   | Inspect surface (b43)    | in progress | `inspect()` + `inspectPage()` green; open: dead relay removal, `#cleanupMap` reset                     |
+| 3   | Colour tokens (b82–b94)  | shipped     | T1–T5 shipped in v0.2.6 → `packages/styles/TASK.md`; open: owner taste pass                            |
 
 ## Next
 

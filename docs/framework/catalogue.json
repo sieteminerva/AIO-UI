@@ -803,7 +803,7 @@
       "lead": "One or more dark \"paper\" panels holding source text: an optional caption, then `pre > code`.\nThe source is written with `textContent`, so a snippet that contains markup is printed and never\nparsed.\n\n**The builder is an element factory.** It assembles the markup below, and `CodeBlock.css` only\ntargets those classes and tokens. The CSS therefore behaves like a plain CSS library: the same\nnesting and class names written by hand are styled identically. Customise it by overriding a\nselector, or retheme it without touching markup by redeclaring a `--app-*` token on an ancestor\n(or one `--code-block-*` token for this component only).\n\n<!-- install:begin -->",
       "sections": {
         "Install": {
-          "text": "Version — `0.2.6` (tag `v0.2.6`)\n\n    npm install https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.6/aio-ui-code-block-0.2.6.tgz\n\nCDN (ES module, no build step) — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.6/packages/components/code-block/dist/index.js`\nStylesheet — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.6/packages/components/code-block/dist/CodeBlock.css`\n<!-- install:end -->",
+          "text": "Version — `0.2.6` (tag `v0.2.6`)\n\n    npm install https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.6/aio-ui-code-block-0.2.6.tgz\n\nCDN (ES module, no build step) — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.6/packages/components/code-block/dist/index.js`\nStylesheet — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.6/packages/components/code-block/dist/CodeBlock.css`\n\n<!-- install:end -->",
           "examples": [],
           "tables": []
         },
@@ -881,6 +881,11 @@
                   "option": "`actions`",
                   "default": "`[]`",
                   "meaning": "Action buttons under every panel; empty keeps it read-only"
+                },
+                {
+                  "option": "`appearance`",
+                  "default": "`\"normal\"`",
+                  "meaning": "`normal | compact` — `compact` is a tighter panel for a short one-line source"
                 }
               ]
             },

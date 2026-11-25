@@ -45,6 +45,7 @@ import { DataBindingPage } from './pages/data-binding';
 import { FormPage } from './pages/form';
 import { formManifest } from './form/schema';
 import { GettingStartedPage } from './pages/getting-started';
+import { IconsPage } from './pages/icons';
 import { KitchenPage } from './pages/kitchen';
 import { ModulesPage } from './pages/modules';
 import { ProductPage } from './pages/product';
@@ -101,6 +102,8 @@ const componentRoutes: iComponentRoute[] = [
   // The data-binding guide is prose only: the shell menu and host chrome, no builder body.
   { route: 'data-binding', components: ['menu', 'fab-menu'] },
   { route: 'kitchen', components: [...DEMO.map((entry) => entry.name), 'menu', 'fab-menu', 'code-block', 'markdown'] },
+  // The icon catalogue: a docs tab (Display grid + README-driven Usage/API).
+  { route: 'icons', components: ['menu', 'fab-menu', 'tab', 'markdown', 'code-block'] },
   { route: 'product', components: ['product', 'menu', 'fab-menu'] },
   { route: 'article', components: ['article', 'menu', 'fab-menu'] },
   // `#form` is the form-family docs route: sidebar + tab, with the live schema on the
@@ -168,6 +171,7 @@ async function start(container: HTMLElement) {
     .registerPage('modules', ModulesPage)
     .registerPage('data-binding', DataBindingPage)
     .registerPage('kitchen', KitchenPage)
+    .registerPage('icons', IconsPage)
     .registerPage('product', ProductPage)
     .registerPage('article', ArticlePage)
     // `#form` reads its topic from the fragment (`#form/<topic>`), like `#kitchen/<name>`.

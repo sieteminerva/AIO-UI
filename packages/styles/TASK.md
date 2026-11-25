@@ -25,7 +25,7 @@ git reset --hard color-pre-full-2026-11-25   # then: git push --force-with-lease
 ## The contract (decided)
 
 1. **One root shape.** `packages/styles/src/variables.css` becomes ONE `:root` of `light-dark(light,
-   dark)` pairs + `color-scheme: light dark`, plus a small dark branch for the three NON-colour
+dark)` pairs + `color-scheme: light dark`, plus a small dark branch for the three NON-colour
    tokens (`--app-page-background` gradient, `--app-shadow-soft`, `--app-shadow-elevated`) that
    `light-dark()` cannot hold. Pins: `[data-mode="light"] { color-scheme: light }`,
    `[data-mode="dark"] { color-scheme: dark }`. This is the format the generator already exports
@@ -44,15 +44,15 @@ git reset --hard color-pre-full-2026-11-25   # then: git push --force-with-lease
 
 ## Stages
 
-| # | Stage | Files | State |
-| - | ----- | ----- | ----- |
-| T0 | This doc | `packages/styles/TASK.md` | done |
-| T1 | Root `light-dark()` rewrite + spinner mask + skeleton derive | `packages/styles/src/variables.css`, spinner consumers (`Dropdown.css`, `Masonry.css`, `Tab.css`, `examples/demo/src/style.css`) | **done (b86)** |
-| T2 | Form path text/border tokens | `packages/components/input/{Input.css,InputControls,FileUploader,Dropdown}`, `form/Form.css` | **done (b87, b91)** |
-| T2b | Popup = one sheet with the control (owner request) | `input/Input.css`, `input/Dropdown/{Dropdown.css,Dropdown.ts}`, `form/Form.css` | **done (b88–b91)** |
-| T3 | Hardcoded-palette components | `article/Article.css`, `table/Table.css`, `message/Message.css`, `carousel/Carousel.css`, `tab/Tab.css` | **done (b92)** |
-| T4 | Theme packages set the mode | `packages/themes/cyberpunk/src/CyberpunkTheme.ts` (done); `horizontal` intentionally neutral | **done (b93)** |
-| T5 | CSS lint test | `packages/components/__tests__/colour-literals.test.ts` (no raw literal except the allowlist above) | **done (b94)** |
+| #   | Stage                                                        | Files                                                                                                                            | State               |
+| --- | ------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- | ------------------- |
+| T0  | This doc                                                     | `packages/styles/TASK.md`                                                                                                        | done                |
+| T1  | Root `light-dark()` rewrite + spinner mask + skeleton derive | `packages/styles/src/variables.css`, spinner consumers (`Dropdown.css`, `Masonry.css`, `Tab.css`, `examples/demo/src/style.css`) | **done (b86)**      |
+| T2  | Form path text/border tokens                                 | `packages/components/input/{Input.css,InputControls,FileUploader,Dropdown}`, `form/Form.css`                                     | **done (b87, b91)** |
+| T2b | Popup = one sheet with the control (owner request)           | `input/Input.css`, `input/Dropdown/{Dropdown.css,Dropdown.ts}`, `form/Form.css`                                                  | **done (b88–b91)**  |
+| T3  | Hardcoded-palette components                                 | `article/Article.css`, `table/Table.css`, `message/Message.css`, `carousel/Carousel.css`, `tab/Tab.css`                          | **done (b92)**      |
+| T4  | Theme packages set the mode                                  | `packages/themes/cyberpunk/src/CyberpunkTheme.ts` (done); `horizontal` intentionally neutral                                     | **done (b93)**      |
+| T5  | CSS lint test                                                | `packages/components/__tests__/colour-literals.test.ts` (no raw literal except the allowlist above)                              | **done (b94)**      |
 
 ### T1 notes (do first)
 
@@ -62,7 +62,7 @@ git reset --hard color-pre-full-2026-11-25   # then: git push --force-with-lease
 - Spinner: `--app-spinner-content` is an SVG data-URI with hardcoded purple strokes, consumed as a
   real image in `Dropdown.css:111` (`content:`) and `examples/demo/src/style.css:333`
   (`background-image:`). Convert both consumers to `mask-image` + `background-color:
-  var(--app-primary-color)` (Form/Input already do this). Then the URI's colours stop mattering.
+var(--app-primary-color)` (Form/Input already do this). Then the URI's colours stop mattering.
 - Skeleton: `Skeleton.css` reads `--app-skeleton-bg`; the generator now emits it. Optionally derive
   it from `color-mix(primary 12%, transparent)` so no theme can forget it.
 
@@ -153,7 +153,7 @@ that touches a package TypeScript file, an `exports` map, or a README still runs
 
 ## Next (cold start)
 
-1. **T3 taste pass** — the palettes compile and flip, but the *taste* is not settled; the owner
+1. **T3 taste pass** — the palettes compile and flip, but the _taste_ is not settled; the owner
    reviews each component and points at the colour to change (Article/Table/Message first).
 2. **Leftover**: `packages/components/masonry/README.md` + `docs/framework/catalogue.json` still
    show the pre-b86 `background-image: var(--app-spinner-content)` snippet (the catalogue snippet

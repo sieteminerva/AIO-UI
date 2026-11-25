@@ -208,7 +208,7 @@ history, no prose. Those are repo artifacts:
 | why / objective / stages                | `.guidance/plan.md` + `.guidance/plan-<project>.md`     |
 | what now + what next (per project)      | `.guidance/project/<project>.md`                        |
 | which project file to read              | `.guidance/project/STATUS.md` (logbook, ≤ 50 lines)     |
-| the live task's detail, traps, gotchas  | `<folder>/TASK.md` (in the folder the work touches)      |
+| the live task's detail, traps, gotchas  | `<folder>/TASK.md` (in the folder the work touches)     |
 | durable engineering + environment rules | `docs/framework/COMPONENT-CONVENTIONS.md` (§12/§13/§15) |
 | architecture decisions                  | `.guidance/project/DECISIONS.md`                        |
 
@@ -238,14 +238,14 @@ orientation, tiny) or **detail** (opened only for the thing being worked on).
 
 ### Detail — opened only for the current task
 
-| File                                      | Holds                                             |
-| ----------------------------------------- | ------------------------------------------------- |
-| `<folder>/TASK.md`                        | a folder's live work: what, next, its own traps   |
-| `<folder>/TASK-<name>.md`                 | a second live task in the same folder             |
-| `docs/<band>/TASK-<name>.md`              | only when no single folder owns the work          |
-| `.guidance/plan-<project>.md`             | why / stages / long-term order                    |
-| `docs/framework/COMPONENT-CONVENTIONS.md` | engineering + environment rules                   |
-| `.guidance/project/DECISIONS.md`          | architecture decisions, append-only               |
+| File                                      | Holds                                           |
+| ----------------------------------------- | ----------------------------------------------- |
+| `<folder>/TASK.md`                        | a folder's live work: what, next, its own traps |
+| `<folder>/TASK-<name>.md`                 | a second live task in the same folder           |
+| `docs/<band>/TASK-<name>.md`              | only when no single folder owns the work        |
+| `.guidance/plan-<project>.md`             | why / stages / long-term order                  |
+| `docs/framework/COMPONENT-CONVENTIONS.md` | engineering + environment rules                 |
+| `.guidance/project/DECISIONS.md`          | architecture decisions, append-only             |
 
 - **Placement:** write the task **in the folder it touches**, as `TASK.md` (or `TASK-<name>.md`
   when that folder already carries one open task). A task that spans folders lives in the folder

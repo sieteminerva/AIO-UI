@@ -50,6 +50,7 @@ const TOP_NAV: iTopGroup[] = [
     label: "Display",
     children: [
       { label: "Elements", href: "#kitchen", route: "kitchen" },
+      { label: "Icons", href: "#icons", route: "icons" },
       { label: "Product", href: "#product", route: "product" },
       { label: "Article", href: "#article", route: "article" },
       { label: "Form", href: "#form", route: "form" },

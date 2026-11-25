@@ -14,6 +14,10 @@ Why / stages: `.guidance/plan-framework.md`. Engineering rules:
 
 ## Next
 
+- **`@aio-ui/header` — polish queue (b105 landed).** `config.iconPosition`
+  (`top`/`left`/`right`/`bottom`) and type-scale spacing (`--header-title-measure` → gap + icon
+  block) are in. Owner's next note: **`config.color`** — per-part ink for `title` / `subtitle` /
+  `icon` / `metadata` → `packages/components/header/TASKS.md`
 - **`@aio-ui/header` — landed (b100).** Article-style heading block (`content.title`,
   `subtitle`, `icon`, `metadata`; `config.useDivider` / `size` / `appearance` / `alignment` /
   `structuredData`). Metadata value is `string | { textContent, className } | HTMLElement`;

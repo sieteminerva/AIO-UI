@@ -14,6 +14,10 @@ Why / stages: `.guidance/plan-framework.md`. Engineering rules:
 
 ## Next
 
+- **`@aio-ui/header` — queued (b99).** Owner spec: article-style heading (`content.title`,
+  `subtitle`, `icon`, `metadata`, `useDivider`; `config.size` / `config.appearance`), metadata
+  looped into one `<span class={key}>` per property. Open before coding: metadata value type,
+  root class `.item` vs `.header`, icon spelling. → `docs/framework/TASK-header.md`
 - **v0.2.7 migration note** — b97 renamed the sheet specifiers (`Input.css`, `Dropdown.css`,
   `FileUploader.css`, `InputControls.css`, `InputPicker.css`, `IdAddress.css`); `v0.2.6` keeps
   serving the lowercase names, so the note must list the swap. `examples/rajutan` needs its own
@@ -36,6 +40,14 @@ Why / stages: `.guidance/plan-framework.md`. Engineering rules:
   carries an `inspect()` assertion (report-only first, gate once covered).
 
 ## Landed (newest first)
+
+- **Batch 99 (2026-11-25)** — row layout, two defects: a toggle child kept `display: block` from
+  `.field.group[data-column] > .field` (0,4,0) so its label stacked above the switch → `display`
+  is split off and a toggle keeps its grid (`Form.css`); `:has(.switch.control)` also grabbed a
+  row that merely held a toggle → now a direct child, with the nested-in-group case restored
+  (`Input.css` §8). `column` is the default share too: an undeclared `wide` takes an equal slice
+  of its line (34/33/33), a child that no longer fits takes the whole next line
+  (`declaredWideOf` + `arrangeRow`). `npm run verify` → 1059 pass / 1 skip.
 
 - **Batch 97 (2026-11-25)** — class files are PascalCase, so their sheets are too:
   `input.css → Input.css`, `InputControls/inputControls.css → InputControls.css`,

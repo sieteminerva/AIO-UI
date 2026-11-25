@@ -20,14 +20,14 @@ npm run new:component header      # scaffold from templates/component/
   content: {
     title: string;
     subtitle: string;
-    icon: string;          // a `<i class="… icon">` glyph name, e.g. "user"
-    metadata: any;         // one class + one text per property (see below)
-    useDivider: boolean;   // `•` between metadata entries
-  };
+    icon: string; // a `<i class="… icon">` glyph name, e.g. "user"
+    metadata: any; // one class + one text per property (see below)
+    useDivider: boolean; // `•` between metadata entries
+  }
   config: {
     size: "huge" | "normal" | "medium" | "small";
-    appearance: "normal";  // room for more words later; `normal` is the only one now
-  };
+    appearance: "normal"; // room for more words later; `normal` is the only one now
+  }
 }
 ```
 
@@ -71,9 +71,9 @@ const builder = new HeaderBuilder(config);
 builder.create(payload);
 const { keys, hierarchy, html } = builder.inspect();
 
-expect(keys).toContain("@header");                      // presence
+expect(keys).toContain("@header"); // presence
 expect(hierarchy["@header>meta"].elements).toHaveLength(3); // shape (2 spans + divider)
-expect(html).toContain("Oleh: Rina");                   // value
+expect(html).toContain("Oleh: Rina"); // value
 expect(hierarchy["@header>meta"].elements).toHaveLength(2); // negative: useDivider false
 ```
 
@@ -84,6 +84,21 @@ Plus one measured browser number on the demo route (`getComputedStyle` for `data
 
 `npx vitest run packages/components/header` → `npm run check` → `npm run verify` once at the
 end of the batch.
+
+## Next (cold start)
+
+1. Answer the three decisions below — they change the schema type and the sheet, so nothing
+   else can be written first.
+2. `npm run new:component header` — creates `packages/components/header/{Header.ts,Header.css,
+index.ts,README.md,__tests__/Header.test.ts}` from `templates/component/`.
+3. `Header.ts`: `HeaderBuilder extends Builder` with `builderId`/`name` = `"header"`,
+   `stylesheet = "./Header.css"`; element map `@header` (`header.item`), `@header>icon`
+   (`i.icon`), `@header>title` (`h3.title`), `@header>subtitle` (`div.subtitle`),
+   `@header>meta` (`div.meta`), `@header>meta>item` (`span`); `template()` writes `data-size`
+   and `data-appearance` on `@header` and loops `content.metadata`.
+4. Register in `examples/demo/src/registry.ts` + its asset map, `touch vite.config.ts`, restart
+   the dev server, then `npm install` for the new workspace package.
+5. Prove it (`builder.inspect()`) before any browser number.
 
 ## Open decisions for the owner
 

@@ -14,14 +14,15 @@ Why / stages: `.guidance/plan-framework.md`. Engineering rules:
 
 ## Next
 
-- **`@aio-ui/header` — polish queue (b105 landed).** `config.iconPosition`
-  (`top`/`left`/`right`/`bottom`) and type-scale spacing (`--header-title-measure` → gap + icon
-  block) are in. Owner's next note: **`config.color`** — per-part ink for `title` / `subtitle` /
-  `icon` / `metadata` → `packages/components/header/TASKS.md`
+- **`@aio-ui/header` — polish queue closed (b105–b106).** `iconPosition` + type-scale spacing
+  (b105), then `appearance` (`normal`/`bordered`/`block`/`editorial`), `color.{title,subtitle,
+  icon,metadata,block,border}`, the `.meta` column fix and the general ink door
+  `config.selectors[key].color` (b106). Open: demo control for `appearance`, browser number for
+  the three new shapes. → `docs/framework/TASK-header.md`
 - **`@aio-ui/header` — landed (b100).** Article-style heading block (`content.title`,
   `subtitle`, `icon`, `metadata`; `config.useDivider` / `size` / `appearance` / `alignment` /
   `structuredData`). Metadata value is `string | { textContent, className } | HTMLElement`;
-  `size` picks the heading level (huge→h1, normal→h3, medium→h4, small→h5) and the root class
+  `size` picks the heading level (huge→h2, normal→h3, medium→h4, small→h5) and the root class
   is `.header` (`header.header`). Open: the release-artefact test needs the family bump to
   **0.2.7** so `releases/v0.2.7` covers the new package. → `docs/framework/TASK-header.md`
 - **v0.2.7 migration note** — b97 renamed the sheet specifiers (`Input.css`, `Dropdown.css`,

@@ -9,6 +9,17 @@ Status addendum (b105, 2026-11-26): `config.iconPosition` (`top` default, `left`
 (`clamp(0.35rem, 0.35 × measure, 0.5rem)`) and the icon block, so `data-size` moves the whole
 block. Measured on `#kitchen/header` at `size: "small"`: gap 23.2 → 7.5px, icon glyph 42.9px.
 
+Status addendum (b106, 2026-11-26): the polish queue is closed. `config.appearance` is now
+`normal | bordered | block | editorial` (a shape, never a palette); `config.color` covers
+`title`/`subtitle`/`icon`/`metadata`/`block`/`border`; `.meta` joins the title's column beside
+a `left`/`right` icon and the glyph centres on the 3-line stack. The general ink door
+`config.selectors[key].color` landed in `Base._applyNodeAttributes` (inline `color`, beats the
+sheet; `--header-subtitle-color` / `--header-meta-color` default to `currentColor` so they
+follow the root). Proved: `npx vitest run packages/components/header` → 33 pass (+3 in
+`packages/base/src/__tests__/Base.selector-color.test.ts`), `npx vitest run packages/base` → 53
+pass. Not proved: no browser measurement of `bordered`/`block`/`editorial`, and no demo control
+for `appearance` yet.
+
 Decisions (owner, 2026-11-25): metadata value = `string | { textContent, className } |
 HTMLElement`; root class `.header` (selector `header.header`, nested); `icon` is the full
 font class; heading level from `size` (huge→h1, normal→h3, medium→h4, small→h5);
@@ -38,9 +49,10 @@ npm run new:component header      # scaffold from templates/component/
   config: {
     useDivider: boolean; // line at the end of header
     size: "huge" | "normal" | "medium" | "small";
-    appearance: "normal"; // room for more words later; `normal` is the only one now,
+    appearance: "normal" | "bordered" | "block" | "editorial"; // the block's shape, not a palette
     alignment: "center" | "left" | "right" | "justify";
     iconPosition: "top" | "left" | "right" | "bottom"; // where `i.icon` stands, default "top"
+    color: { title?; subtitle?; icon?; metadata?; block?; border? }; // per-part ink → --header-* tokens
   }
 }
 ```
@@ -134,19 +146,21 @@ end of the batch.
 
 ## Next (cold start)
 
-1. Answer the three decisions below — they change the schema type and the sheet, so nothing
-   else can be written first.
-2. `npm run new:component header` — creates `packages/components/header/{Header.ts,Header.css,
-index.ts,README.md,__tests__/Header.test.ts}` from `templates/component/`.
-3. `Header.ts`: `HeaderBuilder extends Builder` with `builderId`/`name` = `"header"`,
-   `stylesheet = "./Header.css"`; element map `@header` (`header.item`), `@header>icon`
-   (`i.icon`), `@header>title` (`h3.title`), `@header>subtitle` (`div.subtitle`),
-   `@header>meta` (`div.meta`), `@header>meta>item` (`span`); `template()` writes `data-size`,
-   `data-appearance` and `data-alignment` on `@header`, loops `content.metadata`, and appends
-   `@header>divider` when `config.useDivider` is true.
-4. Register in `examples/demo/src/registry.ts` + its asset map, `touch vite.config.ts`, restart
-   the dev server, then `npm install` for the new workspace package.
-5. Prove it (`builder.inspect()`) before any browser number.
+Nothing blocking. The queue that pointed here is closed and its `TASKS.md` is gone; the
+remaining loose ends are outside this folder:
+
+1. **Demo control for `appearance`** — `examples/demo/src/...` header route still renders the
+   default only. Add a select for `normal | bordered | block | editorial` next to `iconPosition`,
+   then take the browser number (`.header` padding + radius per variant) as the render proof.
+2. **Family bump 0.2.7** — the release-artefact test needs `releases/v0.2.7` to cover
+   `@aio-ui/header`; that is a release-band job, not this package.
+3. **`selectors[key].color` rollout** (experiment) — `Base._applyNodeAttributes` now honours it
+   for every builder. If a component's sheet hard-sets `color` on children, a root-level inline
+   ink will not reach them; `Header` solves it with `currentColor`, other sheets may need the same
+   check before the door is documented as repo-wide.
+
+Superseded (kept for history): the cold-start build list and the five open decisions below are
+all resolved in the `Decisions` line at the top of this doc.
 
 ## Open decisions for the owner
 

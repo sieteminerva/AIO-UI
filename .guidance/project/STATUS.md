@@ -4,7 +4,19 @@
 > **only** after the user picks it — never "to orient" (`AGENT_RULES.md` §13). Rewritten each
 > session, newest on top. One card = one line + one pointer.
 
-### 1. Icons page + compact code panel (b108, landed)
+### 1. Form multistep + action seam + icon channel (b109, landed)
+
+Multistep no longer assumes a step sits at schema index 0 (`attach()` mounts the smallest held
+index, `isFirst`/`isLast` come from the steps that exist, one-step form gets Submit); the input +
+actions composite keeps one hairline at the seam and its outer radius (radius/seam tokens declared,
+blanket `border-radius: 0 !important` gone). `packages/styles/icons` is now a real channel:
+`@aio-ui/styles/icons.css` links `imgs/*.svg` instead of inlining, `files` ships the folder so it
+has its own CDN path, and `src/icon.css` dropped its 83 duplicate inline glyphs (238 kB → 13 kB).
+Proved: `npm run verify` → 1136 pass; browser numbers 9.68px/0/9.68px/0 with a `rgba(0,0,0,0)`
+seam. **Open:** a release still has to prove the bundle carries `imgs/`.
+→ `packages/styles/README.md` · `packages/components/form/adapters/Multistep.ts`
+
+### 2. Icons page + compact code panel (b108, landed)
 
 New `#icons` docs route (tab Display · Usage · API) driven by `packages/styles/README.md`;
 Display is 89 square tiles, each a compact `code-block` with a copy action. `CodeBlock` gained

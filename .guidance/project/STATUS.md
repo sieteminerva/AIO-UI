@@ -9,12 +9,13 @@
 Multistep no longer assumes a step sits at schema index 0 (`attach()` mounts the smallest held
 index, `isFirst`/`isLast` come from the steps that exist, one-step form gets Submit); the input +
 actions composite keeps one hairline at the seam and its outer radius (radius/seam tokens declared,
-blanket `border-radius: 0 !important` gone). `packages/styles/icons` is now a real channel:
+blanket `border-radius: 0 !important` gone). `packages/styles/icons` is a real channel:
 `@aio-ui/styles/icons.css` links `imgs/*.svg` instead of inlining, `files` ships the folder so it
-has its own CDN path, and `src/icon.css` dropped its 83 duplicate inline glyphs (238 kB → 13 kB).
-Proved: `npm run verify` → 1136 pass; browser numbers 9.68px/0/9.68px/0 with a `rgba(0,0,0,0)`
-seam. **Open:** a release still has to prove the bundle carries `imgs/`.
-→ `packages/styles/README.md` · `packages/components/form/adapters/Multistep.ts`
+has its own CDN path, `src/icon.css` dropped its 83 duplicate inline glyphs (238 kB → 13 kB), and the
+channel owns `icons/README.md` — the demo `#icons` page renders that README, not the package one.
+Proved: `npm run verify` → 1136 pass / 1 skip; measured input radii `9.68/0/9.68/0` px with a
+`rgba(0,0,0,0)` seam. **Open:** a release must prove the bundle carries `imgs/` beside the CSS.
+→ `packages/styles/icons/README.md` · `packages/components/form/adapters/Multistep.ts`
 
 ### 2. Icons page + compact code panel (b108, landed)
 

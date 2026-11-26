@@ -64,6 +64,9 @@ The animated spinner and the glyphs that are one path in the base sheet (`close`
 `hamburger`, `weburl`, `download file`) stay in `src/icon.css`; `icons.css` imports that base, so
 linking the channel alone is enough.
 
+The channel keeps its own README — `packages/styles/icons/README.md` — for usage, markup, adding a
+glyph and the bundler note; this one stays the package door.
+
 `__tests__/icons.test.ts` pins the contract: no `data:image` in the sheet, every `url()` has its
 file, every file is referenced, and the manifest still ships and exports the folder.
 

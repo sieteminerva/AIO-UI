@@ -11,13 +11,13 @@ type BuildFn = (name: string, data?: any) => HTMLElement;
 /**
  * `#icons` — the same docs shape as the element route: one tab, Display · Usage · API.
  *
- * The prose is not written here; it is `packages/styles/README.md`, split by heading and
+ * The prose is not written here; it is `packages/styles/icons/README.md`, split by heading and
  * rendered by the `markdown` builder (see `readme.ts`). Display assembles the live grid —
  * one square tile per glyph — while Usage and API are README sections, so the page cannot
- * drift from the sheet's documentation.
+ * drift from the sheet's documentation. The icon channel owns its own README, like every module.
  */
 const COPY_ACTION = [{ type: "copy" as const, onClick: () => undefined }];
-const README_PKG = "styles";
+const README_PKG = "icons";
 
 function renderMarkdown(host: HTMLElement, build: BuildFn, source: string | null | undefined): void {
   if (!source || !source.trim()) return;

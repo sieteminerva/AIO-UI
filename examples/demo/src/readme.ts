@@ -32,7 +32,7 @@ import sectionReadme from "../../../packages/components/section/README.md?raw";
 import skeletonReadme from "../../../packages/components/skeleton/README.md?raw";
 import tabReadme from "../../../packages/components/tab/README.md?raw";
 import tableReadme from "../../../packages/components/table/README.md?raw";
-import stylesReadme from "../../../packages/styles/README.md?raw";
+import iconsReadme from "../../../packages/styles/icons/README.md?raw";
 
 /** The five headings every package README must carry, in this order. */
 export const README_REQUIRED = ["Payload", "Config", "Nodes", "Tokens", "Wiring checklist"] as const;
@@ -66,7 +66,7 @@ const README_TEXT: Record<string, string> = {
   skeleton: skeletonReadme,
   tab: tabReadme,
   table: tableReadme,
-  styles: stylesReadme,
+  icons: iconsReadme,
 };
 
 export interface iReadmeSection {

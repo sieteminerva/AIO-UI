@@ -510,6 +510,14 @@
 
 .form:is(.multistep) {
   --input-border-radius: 0.2em;
+
+  /* Nav set wizard menutup kotak langkah: fieldset.active sengaja tanpa border bawah,
+     jadi radius + border di sini yang menyambungnya. Nilai default milik form biasa
+     dideklarasikan di block `.form` supaya `.buttons.set` cukup satu rule. */
+  --form-buttons-padding: 1.5em;
+  --form-buttons-border: 1px solid var(--input-border-color);
+  --form-buttons-radius: 0 0 calc(var(--input-border-radius) * 2) calc(var(--input-border-radius) * 2);
+
   display: flex;
   flex-direction: column;
   min-height: var(--form-min-height, 400px);
@@ -537,15 +545,6 @@
     border-bottom-right-radius: 0;
     /* Navigasi menempel di dasar langkah apa pun tinggi isinya */
   }
-  & .buttons.set {
-    width: 100%;
-    position: relative;
-    padding: 1.5em;
-    border: 1px solid var(--input-border-color);
-    border-top: none;
-    border-bottom-left-radius: calc(var(--input-border-radius) * 2);
-    border-bottom-right-radius: calc(var(--input-border-radius) * 2);
-  }
 
   & fieldset[animate="next"] {
     animation: scaleUpSlideLeft 0.4s ease-out forwards;
@@ -554,21 +553,17 @@
   & fieldset[animate="back"] {
     animation: scaleUpSlideRight 0.4s ease-out forwards;
   }
-
-  /* Set navigasi (level form) ikut beranimasi — attribute paritas dengan
-     fieldset langkah terkait (data-index + animate dipasang engine multistep) */
-  & > .buttons.set[animate="next"] {
-    animation: scaleUpSlideLeft 0.4s ease-out forwards;
-  }
-
-  & > .buttons.set[animate="back"] {
-    animation: scaleUpSlideRight 0.4s ease-out forwards;
-  }
 }
 
 .form {
   /* Layout, not a token: it used to ride along inside the input token block. */
   margin: 0 auto;
+
+  /* Nav set (`.buttons.set`) tokens. A plain form's action bar is the default; the
+     multistep block above overrides all three so one rule covers both shapes. */
+  --form-buttons-padding: 2em 0.5em 1em 0.5em;
+  --form-buttons-border: none;
+  --form-buttons-radius: 0;
 
   /* Form-level loading spinner. `Form.ts` puts `.loading` on the form element while it
      submits, and that is form chrome: `input.css` no longer names `.form`, so the rule
@@ -594,20 +589,38 @@
     }
   }
 
-  /* Grid Container Button */
+  /* SATU BLOK TUNGGAL untuk semua kondisi .buttons.set */
   & .buttons.set {
+    box-sizing: border-box;
+    position: relative;
     display: flex;
-    justify-self: center;
-    gap: 0.5em;
-    margin-top: auto;
-    padding: 2em 0.5em 1em 0.5em;
-    width: 100%;
     flex-direction: row;
     justify-content: space-between;
+    justify-self: center;
+    gap: 0.5em;
+    width: 100%;
+    margin-top: auto;
+
+    /* Bentuk ditentukan token: form biasa memakai default `.form`, wizard menimpanya
+       di `.form:is(.multistep)` (border + radius yang menutup kotak langkah). */
+    padding: var(--form-buttons-padding);
+    border: var(--form-buttons-border);
+    border-top: none;
+    border-radius: var(--form-buttons-radius);
+
     &:has(> :first-child:is(button.next)) {
       justify-content: flex-end;
     }
+
+    &[animate="next"] {
+      animation: scaleUpSlideLeft 0.4s ease-out forwards;
+    }
+
+    &[animate="back"] {
+      animation: scaleUpSlideRight 0.4s ease-out forwards;
+    }
   }
+
   & button:is(.next, .back, .submit) {
     text-transform: capitalize;
     display: inline-flex;

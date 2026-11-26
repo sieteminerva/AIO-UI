@@ -1,4 +1,7 @@
 // @vitest-environment happy-dom
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { InputControlsBuilder } from "../InputControls/InputControls";
@@ -468,5 +471,84 @@ describe("repeater source", () => {
     (fieldset.querySelector("button.delete") as HTMLButtonElement).click();
 
     expect(document.querySelector("fieldset.form-group")).toBeNull();
+  });
+});
+
+/**
+ * A field with a set beside it is one control: the seam is square, the far side keeps the
+ * component radius.
+ *
+ * A blanket `border-radius: 0 !important` used to close these position rules. It matched
+ * every `.controls[position]` — and the attribute is always written — so it flattened all
+ * four corners of the input: an input with right-hand actions lost its left radius instead
+ * of keeping `--input-border-radius`. happy-dom runs no cascade, so the split is pinned as
+ * text; the rendered box is measured in the browser probe.
+ */
+describe("the action seam is the only square edge", () => {
+  const sheet = readFileSync(resolve(process.cwd(), "packages/components/input/InputControls/InputControls.css"), "utf8");
+  const field = sheet.slice(sheet.indexOf(".field:is(.actions) {"), sheet.indexOf("/* 2. The set itself."));
+
+  it("no longer flattens all four corners of the control", () => {
+    // Anchor at the declaration: the rule's own name appears in the comment above it.
+    expect(field).not.toMatch(/^\s*border-radius:\s*0\s*!important;/m);
+  });
+
+  it("squares the right side for a right-hand set and leaves the left rounded", () => {
+    const right = /\/\* Right[\s\S]*?\n  \}/.exec(field);
+
+    expect(right).not.toBeNull();
+    expect(right![0]).toMatch(/border-top-right-radius: 0;/);
+    expect(right![0]).toMatch(/border-bottom-right-radius: 0;/);
+    expect(right![0]).not.toMatch(/border-(top|bottom)-left-radius/);
+  });
+
+  it("squares the left side for a left-hand set and leaves the right rounded", () => {
+    const left = /&:has\(\.controls\[position="left"\]\),[\s\S]*?\n  \}/.exec(field);
+
+    expect(left).not.toBeNull();
+    expect(left![0]).toMatch(/border-top-left-radius: 0;/);
+    expect(left![0]).toMatch(/border-bottom-left-radius: 0;/);
+    expect(left![0]).not.toMatch(/border-(top|bottom)-right-radius/);
+  });
+
+  it("treats a set written without a position as right-hand", () => {
+    expect(field).toMatch(/> \.controls:not\(button\):not\(\[position="left"\]\):not\(\[data-position="left"\]\)/);
+  });
+
+  it("draws one hairline at the seam, not two", () => {
+    const right = /&:has\(> \.controls:not\(button\)[\s\S]*?\n  \}/.exec(field);
+    const left = /\/\* Left[\s\S]*?\n  \}/.exec(field);
+
+    expect(right).not.toBeNull();
+    expect(left).not.toBeNull();
+    // The control gives the border up by COLOUR: `border-right: none` would take the width
+    // with it and shift the text box by a pixel.
+    expect(right![0]).toMatch(/border-right-color: transparent;/);
+    expect(right![0]).not.toMatch(/border-right:\s*none/);
+    expect(left![0]).toMatch(/border-left-color: transparent;/);
+    expect(left![0]).not.toMatch(/border-left:\s*none/);
+    // `Input.css` repaints all four sides on hover/active at a lower specificity, so the
+    // seam has to be re-asserted or the second line comes back while interacting.
+    expect(right![0]).toMatch(/:is\(:hover, :active, :focus, :focus-visible\) \{\s*border-right-color: transparent;/);
+    expect(left![0]).toMatch(/:is\(:hover, :active, :focus, :focus-visible\) \{\s*border-left-color: transparent;/);
+  });
+
+  it("gives a set written without a position the same outer radius as a right one", () => {
+    const set = sheet.slice(sheet.indexOf("/* 2. The set itself. */"));
+
+    // The input treats an unpositioned set as right-hand; the button has to agree, or the
+    // outer corner of the composite stays square while the input beside it is rounded.
+    expect(set).toMatch(/&\[position="right"\],\s*&\[data-position="right"\],\s*&:not\(\[position\]\):not\(\[data-position\]\) \{/);
+  });
+
+  it("does not write `position=\"undefined\"` when none was asked for", () => {
+    const scope = document.createElement("div");
+    const node = new InputControlsBuilder({} as any).create({
+      content: { scope, parentElement: scope, actions: [{ type: "edit", label: "Edit", onClick: () => undefined }], input: null },
+    });
+
+    // No attribute means "the default side"; the string "undefined" matches no rule.
+    expect(node.hasAttribute("position")).toBe(false);
+    expect(controls(scope, editSave()).getAttribute("position")).toBe("right");
   });
 });

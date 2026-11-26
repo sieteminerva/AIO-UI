@@ -1116,7 +1116,15 @@ export class FormBuilder extends Builder<FormElementType, iFormConfig> {
         back.textContent = "back";
         back.prepend(bIcon);
         // console.log({ payload })
-        if (Number(payload.index) === 0) {
+        // `payload.index` adalah posisi langkah di `content`, sedangkan `isFirst`
+        // dihitung engine dari daftar langkah nyata. Memakai `index === 0` membuat
+        // langkah pertama kehilangan penanda begitu ada konten non-langkah (header)
+        // di index 0 — tombol Back ikut muncul padahal tidak ada langkah sebelumnya.
+        if (payload.isFirst && payload.isLast) {
+          // Wizard satu langkah: tanpa cabang ini ia hanya menampilkan `next` dan
+          // tidak pernah punya jalan untuk mengirim.
+          el.append(this.render("@form>actions>submit") as HTMLButtonElement);
+        } else if (payload.isFirst) {
           el.append(next);
         } else if (payload.isLast) {
           const submit = this.render("@form>actions>submit") as HTMLButtonElement;

@@ -1,4 +1,7 @@
 // @vitest-environment happy-dom
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+
 import { describe, expect, it } from "vitest";
 
 import { ModuleLoader } from "@aio-ui/module-loader";
@@ -137,6 +140,115 @@ describe("multistep gate", () => {
     await new Promise((resolve) => setTimeout(resolve, 0));
 
     expect(active(form)).toBe("s2");
+  });
+});
+
+/**
+ * A wizard whose `content` is not "step, step, step".
+ *
+ * The engine keeps two numbers apart: `index` is the position in `content` (cascade paths
+ * and `dataset.index` speak it), while "first"/"last step" belong to the steps that
+ * actually exist. Treating the position as an ordinal broke both ends: `content` opening
+ * with anything that is not a group threw `Langkah ke-0 tidak dikenal`, and a node after
+ * the last group took the Submit button away. These tests are the proof of both halves.
+ */
+describe("multistep boundaries from the steps that exist", () => {
+  const step = (id: string, type: string) => ({ id, group: [{ content: { type, id: `${id}-field`, label: id } }] });
+
+  /** Button order of the live nav set, read by role rather than by class name. */
+  const nav = (form: HTMLFormElement): string[] =>
+    Array.from(form.querySelectorAll<HTMLButtonElement>(".buttons.set button")).map((button) =>
+      button.classList.contains("next") ? "next" : button.classList.contains("back") ? "back" : button.type === "submit" ? "submit" : "?"
+    );
+
+  const active = (form: HTMLFormElement) => form.querySelector<HTMLElement>("fieldset.active") ?? null;
+  const current = (form: HTMLFormElement) => active(form)?.dataset.index ?? null;
+
+  const build = (content: any[]): HTMLFormElement =>
+    builder().create({ content, config: { multistep: true } }) as HTMLFormElement;
+
+  it("mounts the smallest held step when a header precedes the steps", () => {
+    const form = build([`<p class="wizard-head">Pendaftaran</p>`, step("h1", "email"), step("h2", "text"), step("h3", "text")]);
+
+    expect(form.querySelector(".wizard-head")).not.toBeNull();
+    // Position 0 is the header, so the opening step lives at schema position 1 — and it
+    // must not offer a Back button, because there is no step behind it.
+    expect(current(form)).toBe("1");
+    expect(active(form)?.id).toBe("h1");
+    expect(nav(form)).toEqual(["next"]);
+  });
+
+  it("walks next/back over those steps and ends on Submit", () => {
+    const form = build([`<p class="wizard-head">Pendaftaran</p>`, step("h1", "email"), step("h2", "text"), step("h3", "text")]);
+
+    form.querySelector<HTMLButtonElement>(".buttons.set button.next")!.click();
+    expect(current(form)).toBe("2");
+    expect(nav(form)).toEqual(["back", "next"]);
+
+    form.querySelector<HTMLButtonElement>(".buttons.set button.next")!.click();
+    expect(current(form)).toBe("3");
+    expect(nav(form)).toEqual(["back", "submit"]);
+
+    form.querySelector<HTMLButtonElement>(".buttons.set button.back")!.click();
+    expect(current(form)).toBe("2");
+    expect(nav(form)).toEqual(["back", "next"]);
+  });
+
+  it("keeps Submit on the last step when content follows it", () => {
+    const form = build([step("t1", "email"), step("t2", "text"), `<p class="wizard-tail">Catatan</p>`]);
+
+    form.querySelector<HTMLButtonElement>(".buttons.set button.next")!.click();
+
+    expect(active(form)?.id).toBe("t2");
+    expect(nav(form)).toEqual(["back", "submit"]);
+  });
+
+  it("offers Submit, not a dead Next, when the wizard has one step", () => {
+    const form = build([step("solo", "email")]);
+
+    expect(nav(form)).toEqual(["submit"]);
+  });
+
+  it("does not animate the opening step as if it were reached from behind", () => {
+    const form = build([`<p class="wizard-head">Pendaftaran</p>`, step("a1", "email"), step("a2", "text")]);
+
+    // Nothing has moved yet, so neither the step nor the nav set carries a direction.
+    expect(form.querySelector("[animate]")).toBeNull();
+
+    form.querySelector<HTMLButtonElement>(".buttons.set button.next")!.click();
+
+    expect(form.querySelector(".buttons.set")?.getAttribute("animate")).toBe("next");
+    expect(form.querySelector('fieldset[data-index="1"]')?.getAttribute("animate")).toBe("back");
+  });
+});
+
+/**
+ * The nav set is shaped by tokens, not by two competing blocks.
+ *
+ * The wizard used to repeat `.buttons.set` only to add a border and padding. Both shapes
+ * now share one rule, which made the difference a token — and a token that nobody declares
+ * is not a default, it is a silently dropped border. happy-dom runs no cascade, so the
+ * declaration is pinned as text here; the rendered box is checked in the browser probe.
+ */
+describe("the nav set reads tokens that exist", () => {
+  const sheet = readFileSync(resolve(process.cwd(), "packages/components/form/Form.css"), "utf8");
+
+  it("declares every `--form-buttons-*` that `.buttons.set` reads", () => {
+    const used = new Set([...sheet.matchAll(/var\((--form-buttons-[a-z]+)/g)].map((match) => match[1]));
+
+    expect(used.size).toBeGreaterThan(0);
+    for (const name of used) {
+      // Two shapes, two declarations: the plain form's default and the wizard's override.
+      expect(sheet.match(new RegExp(`${name}:`, "g"))?.length ?? 0).toBeGreaterThanOrEqual(2);
+    }
+  });
+
+  it("lets the wizard close the step box with its own values", () => {
+    const wizard = /\.form:is\(\.multistep\) \{([\s\S]*?)\n\}/.exec(sheet);
+
+    expect(wizard).not.toBeNull();
+    expect(wizard![1]).toMatch(/--form-buttons-padding: 1\.5em;/);
+    expect(wizard![1]).toMatch(/--form-buttons-border: 1px solid var\(--input-border-color\);/);
   });
 });
 

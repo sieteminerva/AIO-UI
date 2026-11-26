@@ -3,12 +3,17 @@
   "version": "0.2.7",
   "type": "module",
   "files": [
-    "src"
+    "src",
+    "icons"
   ],
   "exports": {
     "./index.css": {
       "types": "./src/index.css.d.ts",
       "default": "./src/index.css"
+    },
+    "./icons.css": {
+      "types": "./icons/icons.css.d.ts",
+      "default": "./icons/icons.css"
     }
   }
 }

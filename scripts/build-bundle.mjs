@@ -161,6 +161,11 @@ function walk(dir, out = []) {
 
 const sheets = [];
 for (const name of STYLES_ORDER) sheets.push({ kind: 0, path: join(ROOT, "packages", "styles", "src", name) });
+// The icon channel is its own export (`@aio-ui/styles/icons.css`), so it is not one of the
+// five `src` sheets. Without this line `walk` below reports it as "not bundled" and the
+// release CSS keeps the base sheet but loses every glyph. It imports `src/icon.css`, so the
+// base is deduplicated by the `reimported` pass.
+sheets.push({ kind: 0, path: join(ROOT, "packages", "styles", "icons", "icons.css") });
 const themeSheets = walk(join(ROOT, "packages", "themes"));
 for (const path of themeSheets.sort()) sheets.push({ kind: 1, path });
 const componentSheets = walk(join(ROOT, "packages", "components"));

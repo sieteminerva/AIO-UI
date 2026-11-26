@@ -22,13 +22,14 @@ CDN (no build step) — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.6/
 `index.css` imports the five sheets in presentation order — tokens first, then type, then shared
 component surfaces, then layout, then iconography:
 
-| Sheet            | Contents                                                              |
-| ---------------- | --------------------------------------------------------------------- |
-| `variables.css`  | `:root` `--app-*` tokens: colour, spacing, radius, type scale, motion |
-| `typography.css` | Base type, headings, measure                                          |
-| `components.css` | Surfaces more than one component draws on (focus ring, scrollbar)     |
-| `layout.css`     | Section, container and spacing composition                            |
-| `icon.css`       | Icon sizing and alignment                                             |
+| Sheet            | Contents                                                               |
+| ---------------- | ---------------------------------------------------------------------- |
+| `variables.css`  | `:root` `--app-*` tokens: colour, spacing, radius, type scale, motion  |
+| `typography.css` | Base type, headings, measure                                           |
+| `components.css` | Surfaces more than one component draws on (focus ring, scrollbar)      |
+| `layout.css`     | Section, container and spacing composition                             |
+| `icon.css`       | Icon base: sizing, mask setup, the animated spinner                    |
+| `icons.css`      | The icon channel: one `mask-image` per glyph, pointing at `icons/imgs` |
 
 ## Token rule
 
@@ -45,7 +46,26 @@ is what makes a theme a data change instead of a fork.
 
 A global icon system: every glyph is a CSS mask, so an icon takes the colour of the text around it
 and needs no font file, no sprite and no build step. One stylesheet link brings the whole set — the
-sheet is `src/icon.css`, imported by `index.css`. There is no separate icons package.
+sheet is `icons/icons.css`, imported by `index.css`.
+
+**The sheet links, it does not inline.** Each glyph is a real `.svg` under `icons/imgs/`, named by a
+relative `url()`; the sheet itself stays ~14 kB and a browser fetches only the icons a page draws.
+The previous sheet carried the same paths as data URIs and weighed 238 kB before the first icon
+rendered. Because the paths are relative, `icons/imgs/` must sit beside `icons.css` wherever it is
+served — the tarball and therefore the CDN carry it (`files: ["src", "icons"]`).
+
+| Channel  | How to take it                                                                                                             |
+| -------- | -------------------------------------------------------------------------------------------------------------------------- |
+| npm      | `import "@aio-ui/styles/icons.css";` — the bundler copies the SVGs it finds next to the sheet                              |
+| CDN      | `<cdn>/packages/styles/icons/icons.css` — icons resolve as `<cdn>/packages/styles/icons/imgs/<name>.svg`                   |
+| Bundlers | Keep the SVGs out of the CSS: Vite inlines assets under 4 kB, so set `assetsInlineLimit: 0` (or `?url`) or the win is lost |
+
+The animated spinner and the glyphs that are one path in the base sheet (`close`, `close circle`,
+`hamburger`, `weburl`, `download file`) stay in `src/icon.css`; `icons.css` imports that base, so
+linking the channel alone is enough.
+
+`__tests__/icons.test.ts` pins the contract: no `data:image` in the sheet, every `url()` has its
+file, every file is referenced, and the manifest still ships and exports the folder.
 
 ### Usage
 
@@ -86,7 +106,8 @@ The builders already use these classes, so a component that needs an icon takes 
 ### Sources
 
 - index — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.7/packages/styles/src/index.css`
-- icon sheet — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.7/packages/styles/src/icon.css`
+- icon channel — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.7/packages/styles/icons/icons.css`
+  (its glyphs: `.../packages/styles/icons/imgs/<name>.svg`)
 - tarball — `https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.7/aio-ui-styles-0.2.7.tgz`
 
 The package is not published to npm; install the tarball.

@@ -6,9 +6,12 @@ import { describe, expect, it } from "vitest";
 import { ICON_NAMES, iconClasses, parseIconNames } from "../icons";
 
 /**
- * The icons page reads `packages/styles/src/icon.css` at build time, so this test guards the
- * parser: a name is the dotted tail of an `i.icon.<name>` selector, never the base rule.
+ * The icons page reads the icon channel at build time (`icons.css` plus the base sheet it
+ * imports), so this test guards the parser: a name is the dotted tail of an
+ * `i.icon.<name>` selector, never the base rule.
  */
+const SHEETS = ["packages/styles/icons/icons.css", "packages/styles/src/icon.css"];
+
 describe("icon catalogue", () => {
   it("reads single- and multi-word names, first occurrence wins", () => {
     const css = [
@@ -21,8 +24,8 @@ describe("icon catalogue", () => {
     expect(parseIconNames(css)).toEqual(["user", "user.list"]);
   });
 
-  it("matches the styles sheet, so the list cannot drift", () => {
-    const css = readFileSync(join(process.cwd(), "packages/styles/src/icon.css"), "utf8");
+  it("matches the styles sheets, so the list cannot drift", () => {
+    const css = SHEETS.map((path) => readFileSync(join(process.cwd(), path), "utf8")).join("\n");
 
     expect(ICON_NAMES).toEqual(parseIconNames(css));
     expect(ICON_NAMES.length).toBeGreaterThanOrEqual(80);

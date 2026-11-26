@@ -87,7 +87,7 @@ function apiPanel(build: BuildFn): HTMLElement {
   const rows = node("table", "api-rows");
   for (const [label, value] of [
     ["Package", "@aio-ui/styles (v0.2.7)"],
-    ["File", "packages/styles/src/icon.css"],
+    ["File", "packages/styles/icons/icons.css"],
     ["Imported by", "packages/styles/src/index.css"],
     ["Glyphs", String(ICON_NAMES.length)],
   ]) {

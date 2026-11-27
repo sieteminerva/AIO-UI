@@ -66,6 +66,12 @@ only place the original header text survives.
 `config.skipped` is the current flag. If a `hidden` / `system` distinction is added later it
 must live in `config` too, so the descriptor keeps one shape.
 
+`range` is the sheet spelling of `options`: the name of a named range that resolves the choice
+list, kept in `content` and accepted only by the types that choose (`select`, `dropdown`,
+`picker`, `checkbox`, `radio`). That narrowing is typed in
+`packages/components/input/InputAppsScriptSchema.ts` (`iAppsScriptContentOf`), together with the
+storage address every note carries (`config.sheet`, `config.cell`, `config.skipped`).
+
 ## Derivation order
 
 Strict precedence — the first rule that matches wins:

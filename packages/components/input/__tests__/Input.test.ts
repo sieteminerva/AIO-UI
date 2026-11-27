@@ -5,7 +5,8 @@ import { describe, expect, it, vi } from "vitest";
 
 import { InputBuilder } from "../Input";
 import type { InputSchema } from "../InputSchema";
-import { InputAttributeBuilder } from "../Attribute";
+import type { iAppsScriptFieldNode, iAppsScriptInputSchema } from "../InputAppsScriptSchema";
+import { InputAttributeBuilder, type iFieldSeed } from "../Attribute";
 import { INPUT_TYPE_REGISTRY, inputTypeOf, scanInputAttributes } from "../FieldTypes";
 import { INPUT_MODULE_DEFINITIONS } from "../index";
 import { ModuleLoader } from "@aio-ui/module-loader";
@@ -573,5 +574,42 @@ describe("InputBuilder help text (info)", () => {
     expect(infoIndex).toBeGreaterThan(labelIndex);
     expect(infoIndex).toBeGreaterThan(controlIndex);
     expect(infoIndex).toBe(children.length - 1);
+  });
+});
+
+describe("Apps Script note schema", () => {
+  it("accepts `range` on a chooser and refuses it where nothing is chosen", () => {
+    // `range` is the sheet spelling of `options`: a named range that resolves the list. It
+    // exists only on the types that choose, which is what the conditional narrows.
+    const note: iAppsScriptInputSchema<"select"> = {
+      content: { type: "select", id: "city", label: "Kota", range: "KotaRange" },
+      config: { sheet: 0, cell: "B1" },
+    };
+    const wrong: iAppsScriptInputSchema<"text"> = {
+      // @ts-expect-error — a text field offers no list, so it has no range to name
+      content: { type: "text", range: "KotaRange" },
+      config: { sheet: 0, cell: "C1" },
+    };
+
+    expect(note.content.range).toBe("KotaRange");
+    expect(note.config.cell).toBe("B1");
+    expect(wrong.content.type).toBe("text");
+  });
+
+  it("demands the storage address and goes straight into the attribute matrix", () => {
+    // @ts-expect-error — a note with no sheet address cannot be written back to the row
+    const homeless: iAppsScriptFieldNode = { content: { type: "text" }, config: { cell: "A1" } };
+
+    const note: iAppsScriptFieldNode = {
+      content: { type: "text", label: "Nama" },
+      config: { sheet: 0, cell: "A1", skipped: true },
+    };
+    const seed: iFieldSeed = note;
+    const rows = InputAttributeBuilder.create([seed]);
+
+    expect(homeless.content.type).toBe("text");
+    expect(rows).toHaveLength(1);
+    expect(rows[0].label).toBe("Nama");
+    expect(rows[0].type).toBe("text");
   });
 });

@@ -14,7 +14,7 @@
  *
  * The groups below are the *inventory* of properties that actually exist in `Input.ts`,
  * `Attribute.ts` and the four modules, each with the code that reads it; the union
- * (`AnyInputSchema` / `InputSchema<T>`) is assembled from them at the bottom of this file.
+ * (`iFieldNode` / `InputSchema<T>`) is assembled from them at the bottom of this file.
  */
 
 import type { InputType, iBasicSelectOption, iActionType, iInputActionDefinition } from "./Input";
@@ -433,18 +433,23 @@ export type iInputConfigOf<T extends InputType> = iInputConstraintOf<T> &
   iInputModuleSettingsOf<T>;
 
 /**
- * One variant per type, as a discriminated object keyed by `content.type`.
+ * A field node: `{ content, config }`, one variant per type, discriminated by `content.type`.
  *
- * `content` is required — a field with no type is not a field; `config` is optional, and
- * `InputBuilder` fills the defaults.
+ * This is the contract — the server note, the API payload and the form schema at once, and
+ * the shape `create({ content, config })` takes. `content` is required (a field with no type
+ * is not a field); `config` is optional and `InputBuilder` fills the defaults.
+ *
+ * A caller holding a note that may predate the contract hands over `iFieldSeed` (the same
+ * node with a partial `content`, see `Attribute.ts`); an Apps Script note narrows this one
+ * further with its storage address (`iAppsScriptFieldNode` in `InputAppsScriptSchema.ts`).
  */
-export type AnyInputSchema = {
+export type iFieldNode = {
   [T in InputType]: { content: iInputContentOf<T>; config?: iInputConfigOf<T> };
 }[InputType];
 
 /**
- * The public field schema: `create({ content, config })`, narrowed to one type when the
- * caller names it (`InputSchema<"file">`) and the whole union otherwise.
+ * The public field schema: `iFieldNode` narrowed to one type when the caller names it
+ * (`InputSchema<"file">`), the whole union otherwise.
  *
  * @example
  * const field: InputSchema<"dropdown"> = {
@@ -452,10 +457,7 @@ export type AnyInputSchema = {
  *   config: { view: "datalist", required: true },
  * };
  */
-export type InputSchema<T extends InputType = InputType> = Extract<
-  AnyInputSchema,
-  { content: { type: T } }
->;
+export type InputSchema<T extends InputType = InputType> = Extract<iFieldNode, { content: { type: T } }>;
 
 /**
  * The resolved payload `InputBuilder` and its modules read.

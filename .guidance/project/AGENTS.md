@@ -6,9 +6,7 @@
 
 ## Live claims
 
-| Agent        | Band      | Task                                                                                      | Write scope                                                                                 | Started    | Checkpoint                    | State  |
-| ------------ | --------- | ----------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- | ---------- | ----------------------------- | ------ |
-| copilot b113 | Framework | `AnyInputSchema` → `iFieldNode`, Apps Script note schema public, tab button↔panel id pair | `packages/components/input/**`, `packages/components/tab/**`, `docs/framework/api-map.json` | 2026-11-27 | `.guidance/project/STATUS.md` | active |
+No live writer.
 
 ## Row shape
 

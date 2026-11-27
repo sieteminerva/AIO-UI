@@ -20,7 +20,8 @@
     "stylesRoot": "src",
     "bare": false,
     "subpaths": {
-      "./index.css": "src/index.css"
+      "./index.css": "src/index.css",
+      "./icons.css": "icons/icons.css"
     }
   },
   "@aio-ui/utilities": {

@@ -46,7 +46,8 @@
     & .dropdown:hover,
     & textarea:hover {
       outline: none;
-      border-right-color: transparent;
+      /* The seam side is decided per position below. A right-only rule here made a
+         left-hand set drop the input's OUTER right border on hover. */
     }
   }
 
@@ -84,7 +85,18 @@
   }
 
   /* Position modifiers: `data-position` is the newer spelling, `position` stays so
-     the markup written before it keeps working. */
+     the markup written before it keeps working.
+
+     Only the seam is square. The side that faces away from the set keeps the component
+     radius, so input + buttons still read as one control. A blanket
+     `border-radius: 0 !important` used to sit at the end of this block; it matched every
+     positioned set and flattened all four corners, which is why the left side of an
+     input with right-hand actions stayed square at 0 instead of holding
+     `--input-border-radius`. */
+
+  /* Right — including a set that was written without a `position` attribute at all,
+     because right is what it means. */
+  &:has(> .controls:not(button):not([position="left"]):not([data-position="left"])),
   &:has(.controls[position="right"]),
   &:has(.controls[data-position="right"]) {
     & > select,
@@ -93,28 +105,36 @@
     & > textarea {
       border-top-right-radius: 0;
       border-bottom-right-radius: 0;
+
+      /* One hairline, never two: the control gives up the border that meets the set, so
+         only the set's own border is drawn at the seam. The width stays 1px — dropping it
+         would shift the text box. `Input.css` repaints all four sides on hover/active/
+         focus at a lower specificity, so the seam is re-asserted in those states too. */
+      border-right-color: transparent;
+
+      &:is(:hover, :active, :focus, :focus-visible) {
+        border-right-color: transparent;
+      }
     }
   }
 
+  /* Left — the same rule mirrored: the set sits before the control, so the left side is
+     the seam and the right side is the outer edge. */
   &:has(.controls[position="left"]),
   &:has(.controls[data-position="left"]) {
     flex-direction: row-reverse;
+
     & > select,
     & > input,
     & > .dropdown,
     & > textarea {
       border-top-left-radius: 0;
       border-bottom-left-radius: 0;
-    }
-  }
+      border-left-color: transparent;
 
-  &:has(> .controls[position="left"], > .controls[position="right"]),
-  &:has(> .controls[data-position="left"], > .controls[data-position="right"]) {
-    & > select,
-    & > input,
-    & > .dropdown,
-    & > textarea {
-      border-radius: 0 !important;
+      &:is(:hover, :active, :focus, :focus-visible) {
+        border-left-color: transparent;
+      }
     }
   }
 }
@@ -128,8 +148,12 @@
     float: none;
     position: static;
 
+    /* Right is the default side, so a set written without a `position` attribute is a
+       right-hand set: it takes the same outer radius as an explicit one. Without this the
+       last button stayed square while the input beside it kept its rounded outer edge. */
     &[position="right"],
-    &[data-position="right"] {
+    &[data-position="right"],
+    &:not([position]):not([data-position]) {
       /* "Last" means last *visible*: a hidden member (`hideOnSource`) is still a DOM
          child, and it must not hand its radius to a node that has left the row. */
       & button:not([hidden]):not(:has(~ button:not([hidden]))) {

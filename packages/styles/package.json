@@ -1,14 +1,19 @@
 {
   "name": "@aio-ui/styles",
-  "version": "0.2.7",
+  "version": "0.2.8",
   "type": "module",
   "files": [
-    "src"
+    "src",
+    "icons"
   ],
   "exports": {
     "./index.css": {
       "types": "./src/index.css.d.ts",
       "default": "./src/index.css"
+    },
+    "./icons.css": {
+      "types": "./icons/icons.css.d.ts",
+      "default": "./icons/icons.css"
     }
   }
 }

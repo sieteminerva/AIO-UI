@@ -1,6 +1,6 @@
 {
   "name": "@aio-ui/message",
-  "version": "0.2.7",
+  "version": "0.2.8",
   "type": "module",
   "files": [
     "dist",
@@ -23,9 +23,9 @@
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "@aio-ui/base": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.7/aio-ui-base-0.2.7.tgz",
-    "@aio-ui/core": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.7/aio-ui-core-0.2.7.tgz",
-    "@aio-ui/form": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.7/aio-ui-form-0.2.7.tgz",
-    "@aio-ui/module-loader": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.7/aio-ui-module-loader-0.2.7.tgz"
+    "@aio-ui/base": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.8/aio-ui-base-0.2.8.tgz",
+    "@aio-ui/core": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.8/aio-ui-core-0.2.8.tgz",
+    "@aio-ui/form": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.8/aio-ui-form-0.2.8.tgz",
+    "@aio-ui/module-loader": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.8/aio-ui-module-loader-0.2.8.tgz"
   }
 }

@@ -142,6 +142,7 @@ export class CodeBlockBuilder extends Builder {
             emit: () => { },
             selectors: DEFAULT_SELECTORS,
             actions: [],
+            appearance: "normal",
         };
         this.config = this.resolveConfig(defaultConfig, config);
     }
@@ -152,6 +153,8 @@ export class CodeBlockBuilder extends Builder {
     prepare(data) {
         const entries = normalizePayload(data);
         const container = this.render("@container", { count: entries.length });
+        if (container && this.config.appearance === "compact")
+            container.classList.add("compact");
         for (const entry of entries) {
             const figure = this.render("@container>figure", entry);
             if (!figure)

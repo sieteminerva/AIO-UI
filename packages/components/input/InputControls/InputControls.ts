@@ -132,7 +132,10 @@ export class InputControlsBuilder extends Builder<InputControlsElementType> {
   protected template(typeKey: InputControlsElementType, el: HTMLElement, payload?: any, props?: iElementProperty): void {
     switch (typeKey) {
       case "@controls":
-        el.setAttribute("position", payload)
+        // Only a real position becomes an attribute. `setAttribute("position", undefined)`
+        // writes the string "undefined", which no `[position="left"]` / `[position="right"]`
+        // rule matches — the single-control radius then has nothing to key off.
+        if (typeof payload === "string" && payload) el.setAttribute("position", payload);
         break;
 
       default:

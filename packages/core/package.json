@@ -1,14 +1,14 @@
 {
   "name": "@aio-ui/core",
-  "version": "0.2.7",
+  "version": "0.2.8",
   "type": "module",
   "files": [
     "dist",
     "src"
   ],
   "dependencies": {
-    "@aio-ui/utilities": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.7/aio-ui-utilities-0.2.7.tgz",
-    "@aio-ui/styles": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.7/aio-ui-styles-0.2.7.tgz"
+    "@aio-ui/utilities": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.8/aio-ui-utilities-0.2.8.tgz",
+    "@aio-ui/styles": "https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.8/aio-ui-styles-0.2.8.tgz"
   },
   "exports": {
     ".": {

@@ -39,6 +39,22 @@
   display: grid;
   gap: var(--code-block-gap);
   margin: 0;
+  /* The root is a `section`, and `@aio-ui/styles` gives every `section` page padding.
+     A code panel is not a page section: it owns its box, so the inherited padding is off. */
+  padding: 0;
+
+  /* Short, one-line sources (an icon class, a file name). Retune the same tokens the
+     panel already reads, so a compact block keeps the deep paper and only loses air. */
+  &.compact {
+    --code-block-padding: 0.4rem 0.55rem;
+    --code-block-radius: calc(var(--app-component-border-radius, 1rem) * 0.5);
+    --code-block-font-size: 0.68rem;
+    --code-block-gap: 0.35rem;
+    --code-block-label-gap: 0.2rem;
+    --code-block-label-font-size: 0.6rem;
+    --code-block-action-padding: 0.2rem 0.45rem;
+    --code-block-action-gap: 0.25rem;
+  }
 
   /* One labelled panel. A Markdown fence is a single panel, so it is the root AND its own
      frame (`figure.code-block.frame`) instead of nesting one more wrapper. */

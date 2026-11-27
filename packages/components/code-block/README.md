@@ -11,6 +11,7 @@ selector, or retheme it without touching markup by redeclaring a `--app-*` token
 (or one `--code-block-*` token for this component only).
 
 <!-- install:begin -->
+
 ## Install
 
 Version — `0.2.6` (tag `v0.2.6`)
@@ -19,6 +20,7 @@ Version — `0.2.6` (tag `v0.2.6`)
 
 CDN (ES module, no build step) — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.6/packages/components/code-block/dist/index.js`
 Stylesheet — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.6/packages/components/code-block/dist/CodeBlock.css`
+
 <!-- install:end -->
 
 ## Payload
@@ -43,12 +45,13 @@ not highlight anything, it only reserves the hook a highlighter would use.
 
 ## Config
 
-| Option      | Default      | Meaning                                                    |
-| ----------- | ------------ | ---------------------------------------------------------- |
-| `selectors` | see defaults | Per-key tag/class override                                 |
-| `themeId`   | `"default"`  | Passed through to the theme                                |
-| `namespace` | `null`       | Prefix for generated ids                                   |
-| `actions`   | `[]`         | Action buttons under every panel; empty keeps it read-only |
+| Option      | Default      | Meaning                                                                 |
+| ----------- | ------------ | ----------------------------------------------------------------------- |
+| `selectors` | see defaults | Per-key tag/class override                                              |
+| `themeId`   | `"default"`  | Passed through to the theme                                             |
+| `namespace` | `null`       | Prefix for generated ids                                                |
+| `actions`   | `[]`         | Action buttons under every panel; empty keeps it read-only              |
+| `appearance` | `"normal"`  | `normal \| compact` — `compact` is a tighter panel for a short one-line source |
 
 ### Actions
 

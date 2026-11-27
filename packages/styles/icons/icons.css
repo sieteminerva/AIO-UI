@@ -1,0 +1,764 @@
+/* ==========================================================================
+   The icon channel — `@aio-ui/styles/icons.css`.
+
+   Every glyph is a real file under `imgs/`, referenced by a relative `url()`.
+   The sheet stays ~14 kB and the browser fetches only the icons a page draws;
+   the old inline data-URI sheet was 238 kB before the first icon rendered.
+
+   The base (`i.icon` sizing, the mask setup, the animated spinner) and the few
+   glyphs that are not files live in `../src/icon.css`. `index.css` imports this
+   sheet, so a host that links the package entry point needs nothing else.
+
+   CDN: `<cdn>/packages/styles/icons/icons.css` — `imgs/` must sit beside it.
+   Bundlers: keep the SVGs out of the CSS (Vite: `assetsInlineLimit: 0`).
+   ========================================================================== */
+@import "../src/icon.css";
+
+i.icon.add.cart,
+i.add.cart.icon {
+  mask-image: url("imgs/add-cart.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.add.file.circle,
+i.add.file.circle.icon {
+  mask-image: url("imgs/add-file-circle.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.add.file,
+i.add.file.icon {
+  mask-image: url("imgs/add-file.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.add.folder.circle,
+i.add.folder.circle.icon {
+  mask-image: url("imgs/add-folder-circle.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.add.folder,
+i.add.folder.icon {
+  mask-image: url("imgs/add-folder.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.adobe.illustrator.file,
+i.adobe.illustrator.file.icon {
+  mask-image: url("imgs/adobe-illustrator-file.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.adobe.illustrator.logo,
+i.adobe.illustrator.logo.icon {
+  mask-image: url("imgs/adobe-illustrator-logo.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.adobe.pdf.file,
+i.adobe.pdf.file.icon {
+  mask-image: url("imgs/adobe-pdf-file.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.adobe.photoshop.file,
+i.adobe.photoshop.file.icon {
+  mask-image: url("imgs/adobe-photoshop-file.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.adobe.photoshop.logo,
+i.adobe.photoshop.logo.icon {
+  mask-image: url("imgs/adobe-photoshop-logo.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.api,
+i.api.icon {
+  mask-image: url("imgs/api.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.arrow.left.circle,
+i.arrow.left.circle.icon {
+  mask-image: url("imgs/arrow-left-circle.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.arrow.left,
+i.arrow.left.icon {
+  mask-image: url("imgs/arrow-left.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.arrow.right.circle,
+i.arrow.right.circle.icon {
+  mask-image: url("imgs/arrow-right-circle.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.arrow.right,
+i.arrow.right.icon {
+  mask-image: url("imgs/arrow-right.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.barcode,
+i.barcode.icon {
+  mask-image: url("imgs/barcode.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.bell.warning,
+i.bell.warning.icon {
+  mask-image: url("imgs/bell-warning.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.bell,
+i.bell.icon {
+  mask-image: url("imgs/bell.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.cart,
+i.cart.icon {
+  mask-image: url("imgs/cart.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.checklist.todo,
+i.checklist.todo.icon {
+  mask-image: url("imgs/checklist-todo.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.checkmark.circle,
+i.checkmark.circle.icon {
+  mask-image: url("imgs/checkmark-circle.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.checkmark,
+i.checkmark.icon {
+  mask-image: url("imgs/checkmark.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.copy.file.round,
+i.copy.file.round.icon {
+  mask-image: url("imgs/copy-file-round.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.copy.file,
+i.copy.file.icon {
+  mask-image: url("imgs/copy-file.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.cross.circle,
+i.cross.circle.icon {
+  mask-image: url("imgs/cross-circle.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.cross,
+i.cross.icon {
+  mask-image: url("imgs/cross.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.css.file,
+i.css.file.icon {
+  mask-image: url("imgs/css-file.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.csv.file,
+i.csv.file.icon {
+  mask-image: url("imgs/csv-file.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.doc.file,
+i.doc.file.icon {
+  mask-image: url("imgs/doc-file.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.double.arrow.left,
+i.double.arrow.left.icon {
+  mask-image: url("imgs/double-arrow-left.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.double.arrow.right,
+i.double.arrow.right.icon {
+  mask-image: url("imgs/double-arrow-right.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.edit.file.round,
+i.edit.file.round.icon {
+  mask-image: url("imgs/edit-file-round.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.edit.file,
+i.edit.file.icon {
+  mask-image: url("imgs/edit-file.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.edit,
+i.edit.icon {
+  mask-image: url("imgs/edit.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.editor.component,
+i.editor.component.icon {
+  mask-image: url("imgs/editor-component.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.editor.form,
+i.editor.form.icon {
+  mask-image: url("imgs/editor-form.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.editor.report,
+i.editor.report.icon {
+  mask-image: url("imgs/editor-report.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.error,
+i.error.icon {
+  mask-image: url("imgs/error.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.expand.arrow,
+i.expand.arrow.icon {
+  mask-image: url("imgs/expand-arrow.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.expand,
+i.expand.icon {
+  mask-image: url("imgs/expand.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.file.download,
+i.file.download.icon {
+  mask-image: url("imgs/file-download.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.file.edit,
+i.file.edit.icon {
+  mask-image: url("imgs/file-edit.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.file.outline.dotted,
+i.file.outline.dotted.icon {
+  mask-image: url("imgs/file-outline-dotted.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.file.sheets,
+i.file.sheets.icon {
+  mask-image: url("imgs/file-sheets.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.file,
+i.file.icon {
+  mask-image: url("imgs/file.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.floppy.disk,
+i.floppy.disk.icon {
+  mask-image: url("imgs/floppy-disk.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.folder,
+i.folder.icon {
+  mask-image: url("imgs/folder.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.form,
+i.form.icon {
+  mask-image: url("imgs/form.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.gear,
+i.gear.icon {
+  mask-image: url("imgs/gear.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.github.logo,
+i.github.logo.icon {
+  mask-image: url("imgs/github-logo.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.google.logo,
+i.google.logo.icon {
+  mask-image: url("imgs/google-logo.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.hand.swipe,
+i.hand.swipe.icon {
+  mask-image: url("imgs/hand-swipe.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.html.file,
+i.html.file.icon {
+  mask-image: url("imgs/html-file.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.inbox,
+i.inbox.icon {
+  mask-image: url("imgs/inbox.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.info,
+i.info.icon {
+  mask-image: url("imgs/info.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.input.search,
+i.input.search.icon {
+  mask-image: url("imgs/input-search.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.instagram.logo,
+i.instagram.logo.icon {
+  mask-image: url("imgs/instagram-logo.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.itunes.logo,
+i.itunes.logo.icon {
+  mask-image: url("imgs/itunes-logo.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.javascript.file,
+i.javascript.file.icon {
+  mask-image: url("imgs/javascript-file.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.jpg.file,
+i.jpg.file.icon {
+  mask-image: url("imgs/jpg-file.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.json.file,
+i.json.file.icon {
+  mask-image: url("imgs/json-file.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.mixer,
+i.mixer.icon {
+  mask-image: url("imgs/mixer.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.moon.dark,
+i.moon.dark.icon {
+  mask-image: url("imgs/moon-dark.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.moon.sleep,
+i.moon.sleep.icon {
+  mask-image: url("imgs/moon-sleep.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.moon.sun,
+i.moon.sun.icon {
+  mask-image: url("imgs/moon-sun.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.mp3.file,
+i.mp3.file.icon {
+  mask-image: url("imgs/mp3-file.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.mp4.file,
+i.mp4.file.icon {
+  mask-image: url("imgs/mp4-file.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.notification,
+i.notification.icon {
+  mask-image: url("imgs/notification.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.paper.clip,
+i.paper.clip.icon {
+  mask-image: url("imgs/paper-clip.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.plus.circle,
+i.plus.circle.icon {
+  mask-image: url("imgs/plus-circle.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.plus.square,
+i.plus.square.icon {
+  mask-image: url("imgs/plus-square.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.plus,
+i.plus.icon {
+  mask-image: url("imgs/plus.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.png.file,
+i.png.file.icon {
+  mask-image: url("imgs/png-file.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.programming,
+i.programming.icon {
+  mask-image: url("imgs/programming.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.qrcode,
+i.qrcode.icon {
+  mask-image: url("imgs/qrcode.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.recycled,
+i.recycled.icon {
+  mask-image: url("imgs/recycled.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.report.card,
+i.report.card.icon {
+  mask-image: url("imgs/report-card.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.responsive.design,
+i.responsive.design.icon {
+  mask-image: url("imgs/responsive-design.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.rotate,
+i.rotate.icon {
+  mask-image: url("imgs/rotate.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.scan.qrcode,
+i.scan.qrcode.icon {
+  mask-image: url("imgs/scan-qrcode.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.search,
+i.search.icon {
+  mask-image: url("imgs/search.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.server.gear,
+i.server.gear.icon {
+  mask-image: url("imgs/server-gear.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.sunrise,
+i.sunrise.icon {
+  mask-image: url("imgs/sunrise.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.svg.file,
+i.svg.file.icon {
+  mask-image: url("imgs/svg-file.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.template,
+i.template.icon {
+  mask-image: url("imgs/template.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.text.edit,
+i.text.edit.icon {
+  mask-image: url("imgs/text-edit.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.three.dots.framed,
+i.three.dots.framed.icon {
+  mask-image: url("imgs/three-dots-framed.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.three.dots.horizontal,
+i.three.dots.horizontal.icon {
+  mask-image: url("imgs/three-dots-horizontal.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.three.dots.square.vertical,
+i.three.dots.square.vertical.icon {
+  mask-image: url("imgs/three-dots-square-vertical.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.three.dots.vertical,
+i.three.dots.vertical.icon {
+  mask-image: url("imgs/three-dots-vertical.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.tools,
+i.tools.icon {
+  mask-image: url("imgs/tools.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.translate,
+i.translate.icon {
+  mask-image: url("imgs/translate.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.trash,
+i.trash.icon {
+  mask-image: url("imgs/trash.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.tree.structure,
+i.tree.structure.icon {
+  mask-image: url("imgs/tree-structure.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.txt.file,
+i.txt.file.icon {
+  mask-image: url("imgs/txt-file.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.user.list,
+i.user.list.icon {
+  mask-image: url("imgs/user-list.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.user.settings,
+i.user.settings.icon {
+  mask-image: url("imgs/user-settings.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.user,
+i.user.icon {
+  mask-image: url("imgs/user.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.web.content,
+i.web.content.icon {
+  mask-image: url("imgs/web-content.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.web.layout,
+i.web.layout.icon {
+  mask-image: url("imgs/web-layout.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.web.profile,
+i.web.profile.icon {
+  mask-image: url("imgs/web-profile.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.web.url,
+i.web.url.icon {
+  mask-image: url("imgs/web-url.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.web.wireframe.layered,
+i.web.wireframe.layered.icon {
+  mask-image: url("imgs/web-wireframe-layered.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.website,
+i.website.icon {
+  mask-image: url("imgs/website.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.write.mail,
+i.write.mail.icon {
+  mask-image: url("imgs/write-mail.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.xls.file,
+i.xls.file.icon {
+  mask-image: url("imgs/xls-file.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.zip.file,
+i.zip.file.icon {
+  mask-image: url("imgs/zip-file.svg");
+  display: inline-block;
+  color: currentColor;
+}

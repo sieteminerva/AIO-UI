@@ -3,13 +3,22 @@ import type { iFormModuleContext } from "../FormModuleTypes";
 /** Kontrak minimal yang wajib dipenuhi host (FormBuilder) agar engine bekerja */
 export interface FormMultistepHost {
     builder: string;
-    /** Daftar skema input penuh — penentu isLast untuk tombol navigasi */
+    /** Daftar skema input penuh — dipakai host untuk merender konten non-langkah */
     inputs: any[];
     /** Bangun <fieldset> dari deskriptor group (termasuk menahan anak ber-condition) */
     renderGroup(group: any, formId: string, path?: string): HTMLElement;
-    /** Bangun tombol navigasi multistep untuk step yang baru dilahirkan */
+    /**
+     * Bangun tombol navigasi multistep untuk step yang baru dilahirkan.
+     *
+     * `index` adalah posisi langkah di skema `content` — BUKAN nomor urut langkah.
+     * Karena itu host tidak boleh menyimpulkan "langkah pertama" dari `index === 0`:
+     * konten non-langkah (header, elemen pemisah) boleh menempati index 0 dan
+     * menggeser seluruh langkah. `isFirst`/`isLast` dikirim engine, sudah dihitung
+     * dari daftar langkah yang benar-benar ada.
+     */
     renderButtonsSet?(payload: {
         index: number;
+        isFirst: boolean;
         isLast: boolean;
         formId: string;
     }): HTMLElement | null;
@@ -35,7 +44,14 @@ export declare class FormMultistepHandler {
     constructor(host: FormMultistepHost);
     /** Tanam placeholder <template data-step> di posisi skema (dipanggil prepare) */
     hold(parent: HTMLElement, index: number, item: any): void;
-    /** Aktifkan engine: lahirkan langkah awal + delegasi klik next/back di level form */
+    /**
+     * Aktifkan engine: lahirkan langkah awal + delegasi klik next/back di level form.
+     *
+     * Langkah pertama adalah index TERTAHAN TERKECIL, bukan angka 0. `content` boleh
+     * diawali konten non-langkah (header/deskripsi), sehingga langkah pertama bisa
+     * berada di index 1, 2, dst. Sebelumnya `goTo(0)` hardcoded dan `_mount(0)` melempar
+     * "Langkah ke-0 tidak dikenal" — seluruh form gagal dibuat.
+     */
     attach(form: HTMLFormElement): void;
     private _handleClick;
     /**

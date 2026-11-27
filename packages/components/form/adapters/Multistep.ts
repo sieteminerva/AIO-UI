@@ -15,12 +15,20 @@ import type { iFormModuleContext } from "../FormModuleTypes";
 /** Kontrak minimal yang wajib dipenuhi host (FormBuilder) agar engine bekerja */
 export interface FormMultistepHost {
   builder: string;
-  /** Daftar skema input penuh — penentu isLast untuk tombol navigasi */
+  /** Daftar skema input penuh — dipakai host untuk merender konten non-langkah */
   inputs: any[];
   /** Bangun <fieldset> dari deskriptor group (termasuk menahan anak ber-condition) */
   renderGroup(group: any, formId: string, path?: string): HTMLElement;
-  /** Bangun tombol navigasi multistep untuk step yang baru dilahirkan */
-  renderButtonsSet?(payload: { index: number; isLast: boolean; formId: string }): HTMLElement | null;
+  /**
+   * Bangun tombol navigasi multistep untuk step yang baru dilahirkan.
+   *
+   * `index` adalah posisi langkah di skema `content` — BUKAN nomor urut langkah.
+   * Karena itu host tidak boleh menyimpulkan "langkah pertama" dari `index === 0`:
+   * konten non-langkah (header, elemen pemisah) boleh menempati index 0 dan
+   * menggeser seluruh langkah. `isFirst`/`isLast` dikirim engine, sudah dihitung
+   * dari daftar langkah yang benar-benar ada.
+   */
+  renderButtonsSet?(payload: { index: number; isFirst: boolean; isLast: boolean; formId: string }): HTMLElement | null;
   /** Beri tahu host saat fieldset step baru lahir ke DOM (lazy mount) —
    *  kesempatan menghidupkan uploader/IdAddress pada area yang baru lahir */
   onStepMount?(fieldset: HTMLElement): void;
@@ -60,12 +68,29 @@ export class FormMultistepHandler {
     parent.appendChild(placeholder);
   }
 
-  /** Aktifkan engine: lahirkan langkah awal + delegasi klik next/back di level form */
+  /**
+   * Aktifkan engine: lahirkan langkah awal + delegasi klik next/back di level form.
+   *
+   * Langkah pertama adalah index TERTAHAN TERKECIL, bukan angka 0. `content` boleh
+   * diawali konten non-langkah (header/deskripsi), sehingga langkah pertama bisa
+   * berada di index 1, 2, dst. Sebelumnya `goTo(0)` hardcoded dan `_mount(0)` melempar
+   * "Langkah ke-0 tidak dikenal" — seluruh form gagal dibuat.
+   */
   attach(form: HTMLFormElement): void {
     this.form = form;
     this.onClick = (event) => this._handleClick(event);
     form.addEventListener("click", this.onClick);
-    this.goTo(0);
+
+    const first = this._candidateIndexes(form)[0];
+    if (first === undefined) {
+      // Tidak ada satu pun group yang ditahan: jangan melempar, cukup laporkan.
+      console.warn("[Form Multistep] Tidak ada langkah group pada skema form; engine tidak diaktifkan.");
+      return;
+    }
+    // Lahir pertama bukan perpindahan: samakan currentStep lebih dulu supaya goTo()
+    // tidak menandai langkah pembuka dengan animate="next".
+    this.currentStep = first;
+    this.goTo(first);
   }
 
   /**
@@ -122,7 +147,9 @@ export class FormMultistepHandler {
       // (mis. step gallery belum terpenuhi), langkah tertahan ikut jadi kandidat.
       const nextIndex = this._candidateIndexes(form).find((index) => index > this.currentStep);
       if (nextIndex !== undefined) this.goTo(nextIndex);
-    } else if (this.currentStep > 0) {
+    } else {
+      // "Mundur" berarti ada kandidat langkah SEBELUM yang aktif — bukan
+      // `currentStep > 0`, yang mengasumsikan langkah pertama berada di index 0.
       const previousIndex = this._candidateIndexes(form).filter((index) => index < this.currentStep).pop();
       if (previousIndex !== undefined) this.goTo(previousIndex);
     }
@@ -212,12 +239,24 @@ export class FormMultistepHandler {
    * + animate) supaya bisa dianimasikan sinkron lewat CSS.
    */
   private _syncButtons(form: HTMLFormElement, index: number, direction?: "next" | "back" | null): void {
-    const isLast = index === this.host.inputs.length - 1;
-    const buttons = this.host.renderButtonsSet?.({ index, isLast, formId: form.id });
+    // `index` adalah posisi di `content`, bukan nomor urut langkah. Ujung-ujung
+    // wizard dihitung dari daftar langkah yang benar-benar ada (terpasang +
+    // masih tertahan), sehingga konten non-langkah sebelum/sesudah group tidak lagi
+    // membuat langkah pertama tampil dengan tombol Back atau langkah terakhir
+    // kehilangan tombol Submit.
+    const steps = this._candidateIndexes(form);
+    const isFirst = steps[0] === index;
+    const isLast = steps[steps.length - 1] === index;
+    const buttons = this.host.renderButtonsSet?.({ index, isFirst, isLast, formId: form.id });
     if (!buttons) return;
     buttons.dataset.index = String(index);
     if (direction) buttons.setAttribute("animate", direction);
-    if (this.navBar && this.navBar.isConnected) this.navBar.replaceWith(buttons);
+    // `isConnected` is not the test here: a form built before it is appended to the
+    // document (a factory returning a detached tree, a test, a modal about to open) has
+    // a perfectly valid parent in the form itself. Testing the parent is what keeps the
+    // swap a swap — with `isConnected`, every move appended a second set and the first
+    // one stayed behind with its old buttons.
+    if (this.navBar?.parentNode) this.navBar.replaceWith(buttons);
     else form.appendChild(buttons);
     this.navBar = buttons;
   }

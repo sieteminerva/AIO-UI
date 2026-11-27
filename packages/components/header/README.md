@@ -46,12 +46,12 @@ either a builder-owned span or an element you constructed.
 | ---------------- | ----------------------- | ------------------------------------------------------------------------------------------------- |
 | `useDivider`     | `false`                 | Append the closing line after `.meta` (a boolean; the sheet draws it).                            |
 | `size`           | `"normal"`              | `huge \| normal \| medium \| small`; also picks the heading level (see `## Nodes`).               |
-| `appearance`     | `"normal"`              | The block's shape: `normal \| bordered \| block \| editorial` (see `### Appearance`).              |
+| `appearance`     | `"normal"`              | The block's shape: `normal \| bordered \| block \| editorial` (see `### Appearance`).             |
 | `alignment`      | `"left"`                | `center \| left \| right \| justify`, as `data-alignment` on the root.                            |
 | `iconPosition`   | `"top"`                 | `top \| left \| right \| bottom`, as `data-position` on `i.icon` (the reading order never moves). |
 | `structuredData` | `false`                 | Opt-in `itemscope itemtype="https://schema.org/Article"` + `itemprop` on title/meta.              |
 | `color`          | `{}`                    | Per-part ink `{ title, subtitle, icon, metadata, block, border }`; each field writes one token.   |
-| `selectors`      | see `DEFAULT_SELECTORS` | Per-key tag/class **and `color`** override (see `### Ink`).                                         |
+| `selectors`      | see `DEFAULT_SELECTORS` | Per-key tag/class **and `color`** override (see `### Ink`).                                       |
 | `themeId`        | `"default"`             | Passed through to the theme.                                                                      |
 | `namespace`      | `null`                  | Prefix for generated ids.                                                                         |
 
@@ -80,11 +80,11 @@ gradient/aura are **themes**: they retune tokens for the whole page. An appearan
 decides how the stack sits, and every colour it paints still comes from a `--header-*`
 token — so a theme retunes the result and `themeId` can still target this component alone.
 
-| Appearance  | Shape                                                                                     |
-| ----------- | ----------------------------------------------------------------------------------------- |
-| `normal`    | Plain stack, no surface (the default).                                                    |
-| `bordered`  | The stack inside an outline box — `1px` stroke, no fill, the page shows through.           |
-| `block`     | The stack on a filled theme surface, lifted by the theme's soft shadow.                    |
+| Appearance  | Shape                                                                                           |
+| ----------- | ----------------------------------------------------------------------------------------------- |
+| `normal`    | Plain stack, no surface (the default).                                                          |
+| `bordered`  | The stack inside an outline box — `1px` stroke, no fill, the page shows through.                |
+| `block`     | The stack on a filled theme surface, lifted by the theme's soft shadow.                         |
 | `editorial` | Magazine column: a rule opens the block, the formal face, the meta line as an uppercase byline. |
 
 `bordered` and `block` share one padding (`--header-surface-pad`) and one radius
@@ -157,11 +157,11 @@ the default gap. Retune them on the block (a selector at least as specific as
 | `--header-subtitle-color`  | `currentColor` (root ink)               | Subtitle ink (`config.color.subtitle` writes it)                       |
 | `--header-meta-color`      | `currentColor` (root ink)               | Meta ink (`config.color.metadata` writes it)                           |
 | `--header-accent-color`    | `--app-primary-color`                   | Icon ink (`config.color.icon` writes it)                               |
-| `--header-divider-color`   | `--app-border-color`                    | Closing line; the `editorial` top rule                                  |
+| `--header-divider-color`   | `--app-border-color`                    | Closing line; the `editorial` top rule                                 |
 | `--header-surface-bg`      | `--app-surface-strong`                  | `block` fill (`config.color.block` writes it)                          |
 | `--header-surface-border`  | `--app-border-color`                    | `bordered` stroke (`config.color.border` writes it)                    |
-| `--header-surface-radius`  | `--app-component-border-radius`         | `bordered` / `block` corner radius                                      |
-| `--header-surface-shadow`  | `--app-shadow-soft`                     | `block` lift                                                            |
+| `--header-surface-radius`  | `--app-component-border-radius`         | `bordered` / `block` corner radius                                     |
+| `--header-surface-shadow`  | `--app-shadow-soft`                     | `block` lift                                                           |
 | `--header-surface-pad`     | `--header-gap` × 2                      | Inner padding of `bordered` / `block`, and the editorial top space     |
 | `--header-editorial-font`  | `--app-font-heading-formal`             | `editorial` face (serif fallback when the theme has none)              |
 | `--header-title-size`      | `--app-font-size-2xl`                   | Title size                                                             |

@@ -7604,7 +7604,8 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 				namespace: null,
 				emit: () => {},
 				selectors: DEFAULT_SELECTORS$5,
-				actions: []
+				actions: [],
+				appearance: "normal"
 			};
 			this.config = this.resolveConfig(defaultConfig, config);
 		}
@@ -7615,6 +7616,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 		prepare(data) {
 			const entries = normalizePayload$1(data);
 			const container = this.render("@container", { count: entries.length });
+			if (container && this.config.appearance === "compact") container.classList.add("compact");
 			for (const entry of entries) {
 				const figure = this.render("@container>figure", entry);
 				if (!figure) continue;
@@ -12800,7 +12802,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 		template(typeKey, el, payload, props) {
 			switch (typeKey) {
 				case "@controls":
-					el.setAttribute("position", payload);
+					if (typeof payload === "string" && payload) el.setAttribute("position", payload);
 					break;
 				default:
 					const button = el;
@@ -16709,7 +16711,8 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 					bIcon.className = "icon arrow left";
 					back.textContent = "back";
 					back.prepend(bIcon);
-					if (Number(payload.index) === 0) el.append(next);
+					if (payload.isFirst && payload.isLast) el.append(this.render("@form>actions>submit"));
+					else if (payload.isFirst) el.append(next);
 					else if (payload.isLast) {
 						const submit = this.render("@form>actions>submit");
 						el.append(back, submit);
@@ -17887,12 +17890,25 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 			});
 			parent.appendChild(placeholder);
 		}
-		/** Aktifkan engine: lahirkan langkah awal + delegasi klik next/back di level form */
+		/**
+		* Aktifkan engine: lahirkan langkah awal + delegasi klik next/back di level form.
+		*
+		* Langkah pertama adalah index TERTAHAN TERKECIL, bukan angka 0. `content` boleh
+		* diawali konten non-langkah (header/deskripsi), sehingga langkah pertama bisa
+		* berada di index 1, 2, dst. Sebelumnya `goTo(0)` hardcoded dan `_mount(0)` melempar
+		* "Langkah ke-0 tidak dikenal" — seluruh form gagal dibuat.
+		*/
 		attach(form) {
 			this.form = form;
 			this.onClick = (event) => this._handleClick(event);
 			form.addEventListener("click", this.onClick);
-			this.goTo(0);
+			const first = this._candidateIndexes(form)[0];
+			if (first === void 0) {
+				console.warn("[Form Multistep] Tidak ada langkah group pada skema form; engine tidak diaktifkan.");
+				return;
+			}
+			this.currentStep = first;
+			this.goTo(first);
 		}
 		_handleClick(event) {
 			const button = event.target?.closest?.("button");
@@ -17915,7 +17931,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 				}
 				const nextIndex = this._candidateIndexes(form).find((index) => index > this.currentStep);
 				if (nextIndex !== void 0) this.goTo(nextIndex);
-			} else if (this.currentStep > 0) {
+			} else {
 				const previousIndex = this._candidateIndexes(form).filter((index) => index < this.currentStep).pop();
 				if (previousIndex !== void 0) this.goTo(previousIndex);
 			}
@@ -17973,16 +17989,19 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 		* + animate) supaya bisa dianimasikan sinkron lewat CSS.
 		*/
 		_syncButtons(form, index, direction) {
-			const isLast = index === this.host.inputs.length - 1;
+			const steps = this._candidateIndexes(form);
+			const isFirst = steps[0] === index;
+			const isLast = steps[steps.length - 1] === index;
 			const buttons = this.host.renderButtonsSet?.({
 				index,
+				isFirst,
 				isLast,
 				formId: form.id
 			});
 			if (!buttons) return;
 			buttons.dataset.index = String(index);
 			if (direction) buttons.setAttribute("animate", direction);
-			if (this.navBar && this.navBar.isConnected) this.navBar.replaceWith(buttons);
+			if (this.navBar?.parentNode) this.navBar.replaceWith(buttons);
 			else form.appendChild(buttons);
 			this.navBar = buttons;
 		}
@@ -22097,7 +22116,8 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 					bIcon.className = "icon arrow left";
 					back.textContent = "back";
 					back.prepend(bIcon);
-					if (Number(payload.index) === 0) el.append(next);
+					if (payload.isFirst && payload.isLast) el.append(this.render("@form>actions>submit"));
+					else if (payload.isFirst) el.append(next);
 					else if (payload.isLast) {
 						const submit = this.render("@form>actions>submit");
 						el.append(back, submit);
@@ -23233,12 +23253,25 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 			});
 			parent.appendChild(placeholder);
 		}
-		/** Aktifkan engine: lahirkan langkah awal + delegasi klik next/back di level form */
+		/**
+		* Aktifkan engine: lahirkan langkah awal + delegasi klik next/back di level form.
+		*
+		* Langkah pertama adalah index TERTAHAN TERKECIL, bukan angka 0. `content` boleh
+		* diawali konten non-langkah (header/deskripsi), sehingga langkah pertama bisa
+		* berada di index 1, 2, dst. Sebelumnya `goTo(0)` hardcoded dan `_mount(0)` melempar
+		* "Langkah ke-0 tidak dikenal" — seluruh form gagal dibuat.
+		*/
 		attach(form) {
 			this.form = form;
 			this.onClick = (event) => this._handleClick(event);
 			form.addEventListener("click", this.onClick);
-			this.goTo(0);
+			const first = this._candidateIndexes(form)[0];
+			if (first === void 0) {
+				console.warn("[Form Multistep] Tidak ada langkah group pada skema form; engine tidak diaktifkan.");
+				return;
+			}
+			this.currentStep = first;
+			this.goTo(first);
 		}
 		_handleClick(event) {
 			const button = event.target?.closest?.("button");
@@ -23261,7 +23294,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 				}
 				const nextIndex = this._candidateIndexes(form).find((index) => index > this.currentStep);
 				if (nextIndex !== void 0) this.goTo(nextIndex);
-			} else if (this.currentStep > 0) {
+			} else {
 				const previousIndex = this._candidateIndexes(form).filter((index) => index < this.currentStep).pop();
 				if (previousIndex !== void 0) this.goTo(previousIndex);
 			}
@@ -23319,16 +23352,19 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 		* + animate) supaya bisa dianimasikan sinkron lewat CSS.
 		*/
 		_syncButtons(form, index, direction) {
-			const isLast = index === this.host.inputs.length - 1;
+			const steps = this._candidateIndexes(form);
+			const isFirst = steps[0] === index;
+			const isLast = steps[steps.length - 1] === index;
 			const buttons = this.host.renderButtonsSet?.({
 				index,
+				isFirst,
 				isLast,
 				formId: form.id
 			});
 			if (!buttons) return;
 			buttons.dataset.index = String(index);
 			if (direction) buttons.setAttribute("animate", direction);
-			if (this.navBar && this.navBar.isConnected) this.navBar.replaceWith(buttons);
+			if (this.navBar?.parentNode) this.navBar.replaceWith(buttons);
 			else form.appendChild(buttons);
 			this.navBar = buttons;
 		}
@@ -26016,7 +26052,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 		template(typeKey, el, payload, props) {
 			switch (typeKey) {
 				case "@controls":
-					el.setAttribute("position", payload);
+					if (typeof payload === "string" && payload) el.setAttribute("position", payload);
 					break;
 				default:
 					const button = el;
@@ -36685,7 +36721,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 	}
 	// temp/bundle/entry.js
 	var AioUI = {
-		version: "0.2.7",
+		version: "0.2.8",
 		packages: {
 			accordion: accordion_exports,
 			animations: animations_exports,

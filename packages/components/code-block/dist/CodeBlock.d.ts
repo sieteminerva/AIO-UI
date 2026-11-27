@@ -83,6 +83,12 @@ export declare const ACTION_LABELS: Record<iCodeBlockActionType, string>;
 export interface iCodeBlockConfig extends iBuilderConfig<CodeBlockElementType> {
     /** Buttons under every panel. Empty (the default) keeps the block read-only. */
     actions?: iCodeBlockAction[];
+    /**
+     * Panel shape. `compact` is a tighter panel for short, one-line sources (an icon class,
+     * a file name): the builder adds the `compact` class and `CodeBlock.css` retunes its
+     * tokens under `&.compact`. `normal` (the default) keeps the roomy panel.
+     */
+    appearance?: "normal" | "compact";
 }
 /**
  * Payload normalizer.

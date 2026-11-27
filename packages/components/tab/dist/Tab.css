@@ -128,12 +128,6 @@
         transition: color 0.3s ease;
       }
 
-      & .btn-title {
-        font-size: 0.95rem;
-        font-weight: 600;
-        margin-top: 0.15rem;
-      }
-
       &:hover {
         background: var(--tab-hover-wash);
         transform: translateY(-1px);
@@ -146,9 +140,6 @@
         box-shadow: var(--tab-active-shadow);
 
         & .btn-label {
-          color: var(--tab-active-foreground);
-        }
-        & .btn-title {
           color: var(--tab-active-foreground);
         }
       }
@@ -192,9 +183,6 @@
 
         & .btn-label {
           color: var(--tab-accent-strong);
-        }
-        & .btn-title {
-          color: var(--tab-title-color);
         }
       }
     }
@@ -340,8 +328,7 @@
         box-shadow: none;
         color: var(--tab-accent-strong);
 
-        & .btn-label,
-        & .btn-title {
+        & .btn-label {
           color: inherit;
         }
       }
@@ -433,8 +420,7 @@
         box-shadow: var(--tab-active-shadow);
         color: var(--tab-accent-strong);
 
-        & .btn-label,
-        & .btn-title {
+        & .btn-label {
           color: inherit;
         }
       }

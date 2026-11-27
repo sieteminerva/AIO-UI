@@ -83,12 +83,12 @@
   color: var(--app-status-error);
 }
 
-.toast .close.icon:hover {
+.toast .cross.icon:hover {
   opacity: 1;
 }
 
 /* Layout Berbasis Kelas Icon Kiri */
-.toast i.icon:not(.close) {
+.toast i.icon:not(.cross) {
   flex-shrink: 0;
   font-size: 2rem;
   width: 2rem;

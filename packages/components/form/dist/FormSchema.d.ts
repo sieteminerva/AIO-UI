@@ -15,7 +15,7 @@
  * belongs to a field and lives in that field's `content`.
  */
 import type { iElementProperty } from "@aio-ui/core";
-import type { AnyInputSchema, iInputActionsSettings, iInputLayout } from "@aio-ui/input";
+import type { iFieldNode, iInputActionsSettings, iInputLayout } from "@aio-ui/input";
 import type { iFormCondition } from "./FormModuleTypes";
 /** Layout a `group` or `row` node may declare. The form reads it; a field never does. */
 export interface iFormNodeLayout {
@@ -61,7 +61,7 @@ type FormVariant<T> = T extends {
     then?: unknown;
 } : never;
 /** One field node — the distributed input schema, plus the form's cascade keys. */
-export type FormField = FormVariant<AnyInputSchema>;
+export type FormField = FormVariant<iFieldNode>;
 /** `group` — a fieldset with a legend. Children render in source order. */
 export interface iFormGroupNode extends iFormNodeLayout {
     group: FormNode[];

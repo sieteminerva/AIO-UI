@@ -51,7 +51,7 @@ export class MessageBuilder extends Builder<MessageElementType, iMessageConfig> 
     super();
     const defaultSelectors = {
       "@message": { tagName: "div", className: "toast" },
-      "@message>close": { tagName: "i", className: "close circle icon", wrapper: "button.close" },
+      "@message>close": { tagName: "i", className: "cross circle icon", wrapper: "button.close" },
       "@message>content": { tagName: "div", className: "content" },
       "@message>content>header": { tagName: "h2", className: "header" },
       "@message>content>desc": { tagName: "p", className: "message" },

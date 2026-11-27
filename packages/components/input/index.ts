@@ -29,9 +29,10 @@ export type {
  * deleted, not to be consumed.
  */
 export type {
-  AnyInputSchema, InputChooserType, InputModeOf, InputSchema, InputValueType, InputViewOf,
+  InputChooserType, InputModeOf, InputSchema, InputValueType, InputViewOf,
   InputDropdownViewType, InputFileViewType, InputPickerViewType, InputToggleShapeType,
   InputToggleViewType, InputViewType,
+  iFieldNode,
   iInputChoices, iInputConfigNode, iInputConfigOf, iInputConstraint, iInputConstraintOf,
   iInputContentNode, iInputContentOf, iInputEvents, iInputField, iInputIdentity, iInputIdentityOf,
   iInputLayout, iInputLayoutOf, iInputActionsSettings, iInputDropdownSettings, iInputFileSettings,
@@ -83,7 +84,14 @@ export { collectFormValues } from "./FormValues";
 export type { iCollectValuesOptions } from "./FormValues";
 
 export { InputAttributeBuilder } from "./Attribute";
-export type { iAttributeProperty, InputAttributeType } from "./Attribute";
+export type {
+  iAttributeProperty, iAttributeRow, iAttributeSchema, iFieldSeed, InputAttributeType,
+} from "./Attribute";
+
+export type {
+  iAppsScriptConfigMeta, iAppsScriptConfigOf, iAppsScriptContentOf, iAppsScriptFieldNode,
+  iAppsScriptInputSchema,
+} from "./InputAppsScriptSchema";
 
 export type {
   CalculationPrimitive, CalculationValues, iCalculationContext, iCalculationFormula, iCalculationLineItem,

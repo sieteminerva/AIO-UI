@@ -86,9 +86,9 @@ export class InputControlsBuilder extends Builder {
                 if (action?.label) {
                     button.textContent = action.label;
                 }
-                if (props?.icon) {
+                if (action.icon || props?.icon) {
                     const icon = document.createElement("i");
-                    icon.className = props.icon;
+                    icon.className = action.icon || props?.icon;
                     button.appendChild(icon);
                 }
                 button.__payload = payload;
@@ -147,10 +147,17 @@ export class InputControlsBuilder extends Builder {
                 event,
             };
             switch (action.type) {
-                case "copy":
-                    await this.copy(context.values ?? context.value);
-                    context.result = context.values ?? context.value;
+                case "copy": {
+                    // The documented contract: one control copies its value as text, a wider scope
+                    // copies the collected payload as JSON. Reading `values` first handed a single
+                    // field `{"name":"Budi"}` — the payload — never the value it shows.
+                    const copied = elements.length === 1
+                        ? (context.value ?? "")
+                        : (context.values ?? {});
+                    await this.copy(copied);
+                    context.result = copied;
                     break;
+                }
                 case "edit":
                     this._unlock(scope);
                     context.result = true;
@@ -281,7 +288,8 @@ export class InputControlsBuilder extends Builder {
             await navigator.clipboard.writeText(text);
         }
         catch (err) {
-            console.error("Gagal menyalin teks: ", err);
+            // Insecure contexts have no `navigator.clipboard` at all; the write is best-effort.
+            console.error("[input] clipboard write failed:", err);
         }
     }
     /**

@@ -14,6 +14,7 @@ selector, or retheme it without touching markup by redeclaring a `--app-*` token
 (or one `--message-*` token for this component only).
 
 <!-- install:begin -->
+
 ## Install
 
 Version — `0.2.6` (tag `v0.2.6`)
@@ -22,6 +23,7 @@ Version — `0.2.6` (tag `v0.2.6`)
 
 CDN (ES module, no build step) — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.6/packages/components/message/dist/index.js`
 Stylesheet — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.6/packages/components/message/dist/Message.css`
+
 <!-- install:end -->
 
 ## Payload
@@ -55,7 +57,7 @@ Everything is optional except `message`; `header` defaults to `Congrats!`, `type
 | Key                       | Default tag | Class / note                                   |
 | ------------------------- | ----------- | ---------------------------------------------- |
 | `@message`                | `div`       | `toast`                                        |
-| `@message>close`          | `i`         | `close circle icon`, wrapped in `button.close` |
+| `@message>close`          | `i`         | `cross circle icon`, wrapped in `button.close` |
 | `@message>content`        | `div`       | `content`                                      |
 | `@message>content>header` | `h2`        | `header`                                       |
 | `@message>content>desc`   | `p`         | `message`                                      |

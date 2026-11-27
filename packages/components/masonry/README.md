@@ -11,6 +11,7 @@ selector, or retheme it without touching markup by redeclaring a `--app-*` token
 (or one `--masonry-*` token for this component only).
 
 <!-- install:begin -->
+
 ## Install
 
 Version — `0.2.6` (tag `v0.2.6`)
@@ -19,6 +20,7 @@ Version — `0.2.6` (tag `v0.2.6`)
 
 CDN (ES module, no build step) — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.6/packages/components/masonry/dist/index.js`
 Stylesheet — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.6/packages/components/masonry/dist/Masonry.css`
+
 <!-- install:end -->
 
 ## Payload
@@ -90,9 +92,9 @@ builder.items = freshlyFetchedPayloadFromAPI;
 | `@masonry>trigger`        | `button`    | `more` — the load button               |
 | `@masonry>sentinel`       | `div`       | `sentinel` — the observer target       |
 | `@masonry>modal`          | `div`       | `modal hidden` — the lightbox          |
-| `@masonry>modal>close`    | `i`         | `.close` wrapper, `icon close`         |
-| `@masonry>modal>next`     | `i`         | `.next` wrapper, `icon right arrow`    |
-| `@masonry>modal>previous` | `i`         | `.previous` wrapper, `icon left arrow` |
+| `@masonry>modal>close`    | `i`         | `.close` wrapper, `icon cross`         |
+| `@masonry>modal>next`     | `i`         | `.next` wrapper, `icon arrow right`    |
+| `@masonry>modal>previous` | `i`         | `.previous` wrapper, `icon arrow left` |
 
 ### Structure
 
@@ -186,9 +188,10 @@ the class structure it targets; `--init-columns` in it is an older draft — the
       border-radius: 6px;
       z-index: -1;
       pointer-events: none;
-      transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1),
-                  width 0.35s cubic-bezier(0.25, 1, 0.5, 1),
-                  height 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+      transition:
+        transform 0.35s cubic-bezier(0.25, 1, 0.5, 1),
+        width 0.35s cubic-bezier(0.25, 1, 0.5, 1),
+        height 0.35s cubic-bezier(0.25, 1, 0.5, 1);
     }
 
     & .item {
@@ -206,7 +209,6 @@ the class structure it targets; `--init-columns` in it is an older draft — the
         background: none; /* Handled dynamically by .slider container shifts */
       }
     }
-
   }
 
   /* /_ Utility Loaders & Scroll Indicators _/ */
@@ -222,7 +224,9 @@ the class structure it targets; `--init-columns` in it is an older draft — the
     mask-size: contain;
     mask-mode: alpha;
     background-color: var(--app-primary-color);
-    transition: opacity 0.2s ease, visibility 0.2s ease;
+    transition:
+      opacity 0.2s ease,
+      visibility 0.2s ease;
     opacity: 1;
     visibility: visible;
 
@@ -232,7 +236,6 @@ the class structure it targets; `--init-columns` in it is an older draft — the
       margin: 0 auto;
       height: 0;
     }
-
   }
 
   & .sentinel {
@@ -240,10 +243,13 @@ the class structure it targets; `--init-columns` in it is an older draft — the
     pointer-events: none;
   }
 }
-  /* /_ Lightbox Modal Structure Rules _/ */
+/* /_ Lightbox Modal Structure Rules _/ */
 .gallery .modal {
   position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   background: rgba(10, 10, 20, 0.95);
   display: flex;
   align-items: center;
@@ -251,7 +257,9 @@ the class structure it targets; `--init-columns` in it is an older draft — the
   z-index: 3000;
   opacity: 1;
   visibility: visible;
-  transition: opacity 200ms ease, visibility 200ms ease;
+  transition:
+    opacity 200ms ease,
+    visibility 200ms ease;
 
   &.hidden {
     opacity: 0;
@@ -273,7 +281,8 @@ the class structure it targets; `--init-columns` in it is an older draft — the
     color: white;
     border: none;
     border-radius: 50%;
-    width: 3rem; height: 3rem;
+    width: 3rem;
+    height: 3rem;
     font-size: 1.5rem;
     cursor: pointer;
     display: flex;
@@ -281,21 +290,36 @@ the class structure it targets; `--init-columns` in it is an older draft — the
     justify-content: center;
     transition: background 0.3s ease;
 
-    &:hover { background: rgba(255, 255, 255, 0.3); }
-
+    &:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
   }
-  & .close { top: 1.5rem; right: 1.5rem; }
-  & .prev { left: 1.5rem; }
-  & .next { right: 1.5rem; }
+  & .close {
+    top: 1.5rem;
+    right: 1.5rem;
+  }
+  & .prev {
+    left: 1.5rem;
+  }
+  & .next {
+    right: 1.5rem;
+  }
 }
 @keyframes masonryFadeIn {
-  to { opacity: 1; transform: translateY(0); }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 @media (max-width: 900px) {
-  .masonry .grid { column-count: 2; }
+  .masonry .grid {
+    column-count: 2;
+  }
 }
 @media (max-width: 640px) {
-  .masonry .grid { column-count: 1; }
+  .masonry .grid {
+    column-count: 1;
+  }
 }
 ```
 

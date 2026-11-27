@@ -341,7 +341,7 @@ export class ArticleBuilder extends Builder {
                 break;
             case "@article>controls>next":
                 const iconNext = document.createElement("i");
-                iconNext.className = "icon arrow left";
+                iconNext.className = "icon arrow right";
                 el.textContent = payload?.label || "next";
                 el.append(iconNext);
                 break;

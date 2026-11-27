@@ -14,7 +14,7 @@
  *
  * The groups below are the *inventory* of properties that actually exist in `Input.ts`,
  * `Attribute.ts` and the four modules, each with the code that reads it; the union
- * (`AnyInputSchema` / `InputSchema<T>`) is assembled from them at the bottom of this file.
+ * (`iFieldNode` / `InputSchema<T>`) is assembled from them at the bottom of this file.
  */
 export {};
 //# sourceMappingURL=InputSchema.js.map

@@ -1,5 +1,5 @@
 import { type InputType } from "./Input";
-import type { iInputField } from "./InputSchema";
+import type { iInputConfigNode, iInputContentNode } from "./InputSchema";
 export interface iAttributeProperty {
     name: string;
     type: InputType;
@@ -13,6 +13,47 @@ export interface iAttributeProperty {
     options?: Array<string>;
 }
 export type InputAttributeType = "value" | "label" | "name" | "placeholder" | "required" | "disabled" | "min" | "max" | "minlength" | "maxlength" | "step" | "rows" | "cols" | "accept" | "multiple" | "checked" | "orient" | "pattern" | "form" | "range" | "data-max-upload" | "data-max-file-size" | "data-group-unallowed" | "data-thumbnail" | "data-view" | "view" | "thumbnail";
+/**
+ * A field node as a caller hands it over: `{ content, config }` with a partial `content`.
+ *
+ * `iFieldNode` (`InputSchema.ts`) is the resolved contract; this is its loose door. `type`
+ * is optional because a note may predate the contract — the builder defaults it to `text`
+ * — and `config` stays open, so a sheet note can carry any host metadata (`sheet`, `cell`,
+ * `skipped`, …) without the matrix knowing its name.
+ *
+ * Note that `iInputField` is NOT this shape — it is the *flat* payload that
+ * `InputBuilder.create()` folds a node into, with content keys at the root.
+ */
+export interface iFieldSeed {
+    content: Partial<iInputContentNode>;
+    config?: iInputConfigNode & Record<string, any>;
+}
+/** One editable control of the attribute matrix — already a living element. */
+export interface iAttributeRow {
+    /** Control type the row renders as (resolved per field type for `min` / `max`). */
+    input: InputType;
+    value: string | number | boolean;
+    config?: Record<string, any>;
+    template: HTMLElement;
+}
+/**
+ * Everything an editor needs for one field.
+ *
+ * `field` is the node untouched — render it, persist it, post it back. `template` is that
+ * same node already rendered once, so a preview never has to reconstruct it. `typeControl`
+ * is the chooser over every type in {@link InputAttributeBuilder.inputs}, pre-selected to
+ * the field's own type — the matrix owns both the list and the control. `attributes` holds
+ * one editor control per editable key.
+ */
+export interface iAttributeSchema {
+    field: Required<iFieldSeed>;
+    template: HTMLElement;
+    typeControl: HTMLElement;
+    attributes: Partial<Record<InputAttributeType, iAttributeRow>>;
+    type: InputType;
+    id: string;
+    label: string;
+}
 export declare class InputAttributeBuilder {
     /**
      * Type-specific overrides (minimal defaults per type).
@@ -26,9 +67,19 @@ export declare class InputAttributeBuilder {
     }>;
     static attributes: Partial<Record<InputAttributeType, iAttributeProperty>>;
     static resolveMinMaxType(inputType: InputType, key: InputAttributeType): "number" | "date" | "time" | "datetime-local" | null;
-    static buildSchemaForType(inputType: InputType, header?: Partial<iInputField> & {
-        label?: string;
-    }): Record<string, any>;
+    /**
+     * One field node in, one editor-ready descriptor out.
+     *
+     * `field` keeps `content` / `config` untouched — it is the value a caller persists and
+     * re-renders. `template` is that node rendered through the same `InputBuilder` door a page
+     * uses, so a preview shows the real field instead of a reconstruction of it. `typeControl`
+     * is the type chooser (the matrix owns the type list). `attributes` reads ONE merged key
+     * space: a behaviour key that lives in `config` (`multiple`, `range`, `data-*`) still
+     * becomes an editable row, and `config` wins a collision because behaviour belongs to it.
+     */
+    static buildSchemaForType(node?: iFieldSeed, options?: {
+        modules?: unknown[];
+    }): iAttributeSchema;
     /**
      * Checks a field schema against the registry matrix for its type.
      *
@@ -58,8 +109,13 @@ export declare class InputAttributeBuilder {
      * @returns `true` when every non-structural key is valid for the type.
      */
     static scanUnallowedAttrs(type: InputType, config: Record<string, any>, customAllowed?: string[]): boolean;
-    static create(headers: Array<Partial<iInputField> & {
-        label?: string;
-    }>): Record<string, any>[];
+    /**
+     * @param nodes - One `{ content, config }` field node per header, in sheet order.
+     * @param options - `modules` is the input module stack every control is built with.
+     * @returns One descriptor per node, in the same order.
+     */
+    static create(nodes?: iFieldSeed[], options?: {
+        modules?: unknown[];
+    }): iAttributeSchema[];
 }
 //# sourceMappingURL=Attribute.d.ts.map

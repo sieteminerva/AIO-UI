@@ -782,9 +782,6 @@ export class FormBuilder extends Builder {
     }
     template(typeKey, el, payload) {
         switch (typeKey) {
-            case "@container":
-                el.style.minHeight = this.config.minHeight;
-                break;
             case "@form": {
                 const form = el;
                 const randomSuffix = Math.random().toString(36).substring(7);
@@ -802,6 +799,11 @@ export class FormBuilder extends Builder {
                 // The form's own name, used by submit handlers and by `document.forms`.
                 if (this.config.name)
                     form.name = String(this.config.name);
+                // `minHeight` is the reserved box for the step area, written as the token the sheet
+                // reads (`Form.css` → `--form-min-height`). It used to be written onto `@container`,
+                // a wrapper `prepare()` never renders, so the option did nothing at all.
+                if (this.config.minHeight)
+                    form.style.setProperty("--form-min-height", this.config.minHeight);
                 break;
             }
             case "@form>group": {

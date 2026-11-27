@@ -661,7 +661,7 @@ export class FileUploader {
             // Step 7: Create the close/remove button.
             close.classList.add("close", "button");
             close.title = `Remove ${file.name}`;
-            close.insertAdjacentHTML("afterbegin", `<i class="icon close"></i>`);
+            close.insertAdjacentHTML("afterbegin", `<i class="icon cross"></i>`);
             // Step 8: Attach the event listener for removing the item.
             this._onCloseRemoveItem(file, close, item);
             // Step 9: Append size and close button to the item.

@@ -470,6 +470,80 @@ footer {
    it is the `@aio-ui/skeleton` component, loaded with the app shell so its sheet is always
    present. This file only owns the colour it reads — `--app-skeleton-bg` in `variables.css`. */
 
+/* ─── Icons: the `<i>` behaviour ───
+   Everything an icon element needs to be an icon: its box, its ink (the glyph is a mask, so
+   `background-color: currentColor` is the colour), and the setup that keeps the mask centred
+   and crisp. Which SHAPE appears is not decided here — `packages/styles/icons/icons.css` owns
+   the links, one mask-image per glyph. One place for the behaviour, one place for the store.
+   (No literal `url(` in this note: the bundle's glyph proof parses the text, comments included.) */
+i.icon {
+  --icon-size: 1rem;
+
+  display: inline-block;
+  width: var(--icon-size);
+  height: var(--icon-size);
+  vertical-align: middle;
+  flex-shrink: 0;
+
+  background-color: currentColor;
+
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-mode: alpha;
+  mask-mode: alpha;
+
+  /* Anti-aliasing and GPU promotion: a scaled mask blurs without both. */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  image-rendering: crisp-edges;
+
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+
+  transition:
+    transform 0.2s ease,
+    background-color 0.2s ease;
+}
+
+i.icon::before {
+  background: none;
+}
+
+/* Inside a button or a link the icon is part of the label, so it takes the accent of the
+   control rather than the page — and breathes a little on hover. */
+button i.icon,
+a i.icon {
+  color: inherit;
+}
+
+button:hover i.icon,
+a:hover i.icon {
+  transform: scale(1.1) translateZ(0);
+  image-rendering: crisp-edges;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* The one glyph whose behaviour is not a shape: the spinner turns. Its ring is
+   `imgs/spinner.svg`; this is what animates it. */
+i.icon.spinner {
+  animation: coreSpinLoop 0.75s linear infinite;
+}
+
+@keyframes coreSpinLoop {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 /* ==============================================================
   Global Layout System
   Rule: clean one word classes, optional single dash modifier
@@ -540,122 +614,19 @@ footer {
 /* ==========================================================================
    The icon channel — `@aio-ui/styles/icons.css`.
 
-   Every glyph is a real file under `imgs/`, referenced by a relative `url()`.
-   The sheet stays ~14 kB and the browser fetches only the icons a page draws;
-   the old inline data-URI sheet was 238 kB before the first icon rendered.
+   LINKS ONLY. This sheet is the store: one rule per glyph, each pointing at a real
+   file under `imgs/` through a relative `url()`. Nothing here declares a shape, a
+   size or a colour — the `<i>` behaviour (size, ink, mask setup, the spinner's
+   rotation) lives in `../src/components.css`. `index.css` loads that sheet first, so
+   link the entry point; linking this channel on its own needs `src/components.css`
+   before it.
 
-   The base (`i.icon` sizing, the mask setup, the animated spinner) and the few
-   glyphs that are not files live in `../src/icon.css`. `index.css` imports this
-   sheet, so a host that links the package entry point needs nothing else.
+   The browser fetches only the glyphs a page draws; the old inline data-URI base was
+   238 kB of sheet before the first icon rendered.
 
    CDN: `<cdn>/packages/styles/icons/icons.css` — `imgs/` must sit beside it.
    Bundlers: keep the SVGs out of the CSS (Vite: `assetsInlineLimit: 0`).
    ========================================================================== */
-
-/* ==============================================================
-    The place for global icons system.
-    note: it used `mask-image`, so coloring it using `background-color`.
-    -----------------------------------------------
-    usage `<i class="icon name"></i>`
-  ============================================================== */
-
-i.icon {
-  --icon-size: 1rem;
-
-  display: inline-block;
-  width: var(--icon-size);
-  height: var(--icon-size);
-  vertical-align: middle;
-  flex-shrink: 0;
-
-  /* 🌟 KUNCI UTAMA: Mengambil warna teks (color) dari elemen induk */
-  background-color: currentColor;
-
-  /* Konfigurasi Masker agar presisi di tengah dan responsive */
-  -webkit-mask-size: contain;
-  mask-size: contain;
-  -webkit-mask-repeat: no-repeat;
-  mask-repeat: no-repeat;
-  -webkit-mask-position: center;
-  mask-position: center;
-  -webkit-mask-mode: alpha;
-  mask-mode: alpha;
-
-  /* Perbaikan Anti-Aliasing & Akselerasi GPU agar tidak pecah/blur */
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  image-rendering: crisp-edges;
-
-  will-change: transform;
-  transform: translateZ(0);
-  backface-visibility: hidden;
-
-  transition:
-    transform 0.2s ease,
-    background-color 0.2s ease;
-}
-
-i.icon::before {
-  background: none;
-}
-
-/* Hover effect mikro opsional jika ikon dijadikan tombol klik */
-button i.icon,
-a i.icon {
-  color: inherit;
-}
-
-button:hover i.icon,
-a:hover i.icon {
-  transform: scale(1.1) translateZ(0);
-  image-rendering: crisp-edges;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-/* ====================================================
-   🧱 OPTIMIZED INLINE SVG DATA-URI INTERIOR CODES
-   ==================================================== */
-i.icon.spinner {
-  mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'><circle cx='10' cy='10' r='8' fill='none' stroke='rgba(138,138,178,0.3)' stroke-width='4'/><circle cx='10' cy='10' r='8' fill='none' stroke='rgba(91, 63, 134, 0.65)' stroke-width='3' stroke-linecap='round' stroke-dasharray='45'><animateTransform attributeName='transform' attributeType='XML' type='rotate' from='0 10 10' to='360 10 10' dur='0.6s' repeatCount='indefinite'/><animate attributeName='stroke-dashoffset' values='0;90;180' dur='3s' repeatCount='indefinite'/></circle></svg>");
-  animation: coreSpinLoop 0.75s linear infinite;
-}
-
-@keyframes coreSpinLoop {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-/* Specials that are not icon files: they animate or they are one path. */
-
-i.icon.close.circle,
-i.close.circle.icon {
-  mask-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20128%20128%22%20width%3D%2224%22%20height%3D%2224%22%3E%3Cpath%20fill%3D%22currentColor%22%20fill-rule%3D%22evenodd%22%20stroke%3D%22currentColor%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%22.25%22%20d%3D%22M62.56%204.83c8.83-.24%2017.85%201.25%2025.83%204.96%2016.4%207.62%2029.11%2021.07%2034.41%2038.6%2011.45%2037.94-17.87%2077.15-56.97%2078.2-7.9.22-16.43-1.08-23.65-4.29-10.71-4.78-19.97-10.96-27.04-20.6C-7.8%2070.43%204.19%2027.92%2037.92%2010.77c7.6-3.87%2016.1-5.71%2024.64-5.94ZM57.9%2016.14c-6.02.67-11.95%202.87-17.22%205.69C.66%2043.21%208.74%20104.67%2053.32%20114.17c6.36%201.36%2013.1%201.76%2019.56.62%2029.8-5.25%2050.04-38.64%2037.89-67.38-5.95-14.08-16.23-22.76-29.94-28.73-6.89-3-15.52-3.36-22.93-2.54Zm6.6%2041.3c6.53-5.6%2012.35-12.26%2018.44-18.33%202.46-2.46%206.01-3.97%208.89-1.11%202.26%202.26%202.03%205.68-.04%207.96C85.64%2052.75%2078.7%2058.85%2072.4%2065.5c5.21%206.77%2012.28%2012.56%2018.32%2018.62%202.59%202.6%204.09%206.39.9%209.33-3.5%203.23-7.03.32-9.62-2.28-4.74-4.74-12.21-14.02-17.53-17.34-3.57%201.27-14.63%2014-18.06%2017.42-2.79%202.8-6.74%205.59-10.09%201.6-3.12-3.71-.09-7.11%202.59-9.78C43.2%2078.8%2053.54%2070.33%2056.07%2065.5c-5-6.53-11.98-12.12-17.8-17.93-2.5-2.51-4.84-6.07-1.87-9.33%203.33-3.65%207.21-1.1%209.92%201.6%204.29%204.3%2013.33%2015.22%2018.18%2017.6Z%22%2F%3E%3C%2Fsvg%3E");
-}
-
-i.icon.close,
-i.close.icon {
-  mask-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20128%20128%22%20width%3D%2224%22%20height%3D%2224%22%3E%3Cpath%20fill%3D%22currentColor%22%20fill-rule%3D%22evenodd%22%20stroke%3D%22currentColor%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%22.25%22%20d%3D%22M73.61%2063.5c.21%202.7%204.95%205.96%206.86%207.86%206.72%206.73%2013.44%2013.45%2020.17%2020.17%203.29%203.3%208.96%208.54%203.94%2013.21-5.09%204.74-10.11-1.1-13.53-4.63-6.44-6.65-13.11-13.12-19.66-19.67-1.93-1.93-5.16-6.62-7.89-6.84-9.45%208.99-18.49%2018.46-27.71%2027.68-3.37%203.37-8.07%208.15-12.66%203.43-4.58-4.7.43-9.31%203.77-12.65%209.18-9.18%2018.52-18.22%2027.54-27.56-.25-2.72-4.95-5.96-6.88-7.89C40.95%2050%2034.34%2043.39%2027.73%2036.77c-3.46-3.45-9.21-8.28-4.47-13.36%204.31-4.62%209.19-.04%2012.37%203.13C44.91%2035.82%2054%2045.35%2063.5%2054.4c2.73-.22%205.96-4.91%207.89-6.84%206.67-6.67%2013.36-13.31%2019.98-20.02%203.42-3.46%208.4-9.22%2013.34-4.41%204.71%204.58-.05%209.3-3.42%2012.67-9.21%209.21-18.77%2018.19-27.68%2027.7Z%22%2F%3E%3C%2Fsvg%3E");
-}
-
-i.icon.hamburger,
-i.hamburger.icon {
-  mask-image: url("data:image/svg+xml, <svg width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'><path d='M3 12h18M3 6h18M3 18h18'/></svg>");
-}
-
-i.icon.weburl,
-i.weburl.icon {
-  mask-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20512%20512%22%20width%3D%2224%22%20height%3D%2224%22%3E%3Cpath%20fill%3D%22currentColor%22%20fill-rule%3D%22evenodd%22%20stroke%3D%22currentColor%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%22.25%22%20d%3D%22M511.92%2067.84v142.03c-1.84%202.65-1.87%207.85-3.11%2011.07-2.88%207.47-8.83%2014.33-15.33%2018.91-15.52%2010.93-42.84%207.29-61.2%207.29H285.46c-4.78%200-11.23-1.1-15.72.44%209.54%206.07%2019.82%2011.1%2029.7%2016.62%2016.31%209.13%2032.72%2018.09%2049.07%2027.15%2010.96%206.07%2024.55%2013.76%2015.13%2028.57-3.19%205.01-9.4%206.45-14.58%208.29-8.98%203.19-17.97%206.35-26.94%209.57-3.63%201.31-9.17%202.04-12%204.72%205.52%206.45%2010.07%2013.99%2015.04%2020.88%2011.02%2015.29%2022.16%2030.52%2033.04%2045.93%205.71%208.09%2015.56%2017.11%2013.76%2027.87-1.24%207.36-8.11%2010.94-13.52%2014.98-8.24%206.16-16.78%2011.9-25.05%2018-4.98%203.68-10.03%208.04-15.76%2010.46-12.86%205.42-20.95-9.39-26.89-17.85-11.64-16.53-23.78-32.71-35.44-49.22-2.77-3.91-12.17-18.71-15.2-20.63-3.14%201.16-6.11%207.16-8.26%209.81-6%207.44-11.66%2015.15-17.62%2022.62-4.3%205.39-8.23%2010.89-15.73%2011.51-17.74%201.46-18.73-22.04-20.59-34.23-.52-3.39-1.48-6.73-1.91-10.13-1.31-10.49-3.97-20.89-5.81-31.29-3.84-21.87-8.09-43.66-11.98-65.51-1.96-10.96-4.01-21.9-6.02-32.85-.86-4.71-.84-10.99-2.99-15.27-5.15-1.7-21.92-.41-28.32-.41H57.75c-13.58%200-27.58.87-39.23-7.32-6.5-4.57-12.45-11.44-15.33-18.91-1.25-3.23-1.27-8.37-3.11-11.06V67.84c1.82-2.74%201.83-7.78%203.09-11.05%201.99-5.14%205.76-10.81%209.91-14.48%2014.8-13.08%2029.72-11.86%2048.41-11.86%2018.86%200%2037.71-.01%2056.57-.01%2089%200%20178-.03%20266.99-.03h69.67c13.22%200%2027.98-.87%2039.06%207.69%206.33%204.88%2012.12%2011.12%2015.05%2018.69%201.26%203.27%201.27%208.31%203.09%2011.05ZM143.08%20214.85c.65-2.14-.66-4.83-.95-7.01-.62-4.73.16-9.48%203.03-13.36%204.73-6.41%2013.35-7.41%2020.24-4.32%2011.28%205.07%2022.06%2012.16%2032.89%2018.13%203.76%202.08%207.9%205.36%2011.99%206.65%204.75%201.49%2011.75.22%2016.73.22h230.98c5.91%200%2014.02%201.55%2018.75-2.84%205.41-5.03%203.27-15.67%203.27-22.25V87.67c0-5.78%201.49-13.92-1.07-19.27-4.16-8.68-17.37-6.05-25.15-6.05h-73.41c-85.26%200-170.51.03-255.77.03H60.08c-7.24%200-19.04-2.3-24.88%202.98-4.78%204.34-3.21%2012.87-3.21%2018.57V186.8c0%205.86-1.56%2017.83%201.26%2022.83%204.79%208.48%2018.25%205.56%2026.37%205.56h57.04c6.98%200%2020.22%201.41%2026.42-.34Zm-64.76-70.77c1.74-2.17%202.06-6.12%202.86-8.85%202.3-7.84%204.73-21.37%209.05-27.9%205.38-8.13%2017.67-7.87%2023.72-.83%206.45%207.5%208.02%2028.21%2012.53%2037.89%201.5-2.54%201.91-5.64%202.76-8.43%202.38-7.9%205.28-22.47%209.18-29.09%203.86-6.56%2014.07-7.73%2019.35-2.09%205.65%206.05%202.87%2013.65.48%2020.46-4.14%2011.82-8.26%2023.7-12.12%2035.62-2.07%206.41-3.85%2013.83-7.59%2019.52-5.39%208.2-18.72%208.15-24.28.19-5.35-7.65-8.42-25.81-11.63-35.34-1.62%202.27-2.05%205.54-2.76%208.24-2.38%208.93-5.98%2029.61-16.06%2032.44-6.38%201.8-14.05.07-17.6-5.93-3.97-6.72-5.99-14.71-8.38-22.07-3.2-9.8-6.86-19.46-9.92-29.3-2.34-7.54-7.65-17.29-.61-24.01%204.67-4.46%2014.76-5.21%2018.47.97%206.88%2011.49%207.41%2026.26%2012.55%2038.51Zm130.92-.33c1.74-2.39%202.1-6.42%202.97-9.33%202.46-8.28%203.91-18.07%208.01-25.7%204.73-8.84%2018-10.2%2024.39-2.4%207.07%208.63%207.45%2027.75%2012.79%2037.95%201.59-2.35%201.99-6.05%202.77-8.78%202.11-7.42%205.51-23%209.24-29.01%203.94-6.34%2014.17-7.15%2019.21-1.64%205.09%205.56%203.38%2012.64%201.02%2019.06-4.75%2012.88-8.78%2026.04-13.41%2038.98-2.11%205.9-3.44%2013.23-7.44%2018.22-6.26%207.82-19.69%207.14-24.55-1.92-5.47-10.19-7.19-22.85-10.68-33.82-2.32%202.72-2.8%207.51-3.7%2010.92-3.01%2011.39-5.4%2029.78-20.15%2030.39-8.7.37-13.21-6.51-15.91-13.67-5.79-15.34-11.03-31.12-15.89-46.78-2.14-6.9-6.41-15.77.27-21.68%204.63-4.1%2013.28-5.08%2017.64.05%204.46%205.25%208.28%2022.17%2010.1%2029.25.8%203.12%201.4%207.32%203.32%209.91Zm130.46-.28c1.63-.68%203.83-10.45%204.4-12.78%202.67-10.87%205.22-29.07%2019.44-29.59%2015.44-.57%2018.32%2021.07%2021.31%2032.4.84%203.18%201.32%207.9%203.48%2010.42%201.67-2.39%202.01-6.35%202.86-9.16%202.26-7.47%205.22-22.27%209.06-28.34%204.04-6.39%2014.57-7.09%2019.46-1.28%205.22%206.2%202.41%2012.74.35%2019.57-3.49%2011.62-7.77%2023.11-11.79%2034.56-2.43%206.89-3.96%2015.6-8.42%2021.52-4.83%206.4-15.22%207.89-21.42%202.57-7.52-6.44-10.49-27.86-13.95-37.54-2.52%201.15-2.94%207.71-3.77%2010.33-3.66%2011.52-4.79%2028.92-19.61%2030.46-8.19.86-13.1-5.41-15.98-12.08-6.5-15.11-11.17-32.21-16.26-47.89-2.36-7.27-6.01-14.66-.49-21.44%204.47-5.51%2015.19-5.66%2019.06.58%204.71%207.6%206.99%2019.77%209.43%2028.46.81%202.86%201.24%206.74%202.84%209.23Zm102.91%2014.69c18.04-4.3%2025.85%2021.84%209.05%2027.67-19.63%206.81-27.72-23.21-9.05-27.67Zm-262.36%2076.96c-.8%203.36.91%207.68%201.53%2011.08%201.37%207.4%202.77%2014.81%204.07%2022.22%204.49%2025.57%209.95%2051.03%2014.03%2076.67%201.41%208.83%203.07%2017.66%204.85%2026.42.59%202.92.36%207.99%202.17%2010.33%202.76-.84%205.37-6.16%207.26-8.45%205.75-6.99%2013.49-21.33%2022.64-23.34%2013.81-3.03%2020.97%2011.92%2027.55%2021.29%2011.62%2016.54%2023.78%2032.68%2035.42%2049.2%203.09%204.39%2013.03%2020.1%2016.55%2022.36l17.41-12.49c-3.74-7.77-10.46-14.8-15.45-21.83-12.1-17.04-24.56-33.8-36.54-50.91-6.36-9.08-18.69-20.78-10.57-32.48%205.25-7.57%2023.81-11.9%2032.66-15%202.37-.83%205.1-1.34%207.17-2.76-43.59-24.1-87.17-48.2-130.75-72.31Z%22%2F%3E%3C%2Fsvg%3E");
-}
-
-i.icon.download.file,
-i.download.file.icon {
-  mask-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20512%20512%22%20width%3D%2224%22%20height%3D%2224%22%3E%3Cpath%20fill%3D%22currentColor%22%20fill-rule%3D%22evenodd%22%20stroke%3D%22currentColor%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%22.25%22%20d%3D%22M142.88%2048.31c5-.79%2010.35-.31%2015.4-.31h150.56c8.94%200%2017.64-.38%2025.99%203.19%2012.71%205.43%2019.55%2018.59%2027.3%2029.25%2012.79%2017.61%2025.38%2035.39%2038.09%2053.07%206.8%209.46%2016.02%2019.21%2019.53%2030.47%203.45%2011.11%201.51%2029.11%201.51%2041.05v173.48c0%2011.33%201.13%2023.36-.43%2034.6-2.44%2017.55-12.86%2033.36-28.04%2042.55-20.22%2012.25-49.31%208.34-72.26%208.34H177.45c-13.12%200-27.3%201.51-40.19-1.2-16.44-3.46-30.61-14.25-39.04-28.7-10.89-18.64-7.48-42.34-7.48-63.08V139.11c0-14.85-1.95-31.27%201.44-45.81%205.75-24.61%2026.34-41.16%2050.7-44.99Zm160.9%2031.88c-4.19-.75-8.92-.19-13.18-.19H177.45c-14.77%200-34.8-3.52-46.42%207.32-8.58%208-8.28%2018.43-8.28%2029.34v277.28c0%2012.06-.44%2023.38%209.5%2031.85%209.57%208.16%2022.75%206.21%2034.44%206.21h170.2c13.17%200%2030.29%203.14%2041.55-5.16%2011.66-8.61%2010.81-21.7%2010.81-34.77V208.31c0-5.67%201.12-12.82-.39-18.24-5.61-1.05-12.12-.2-17.84-.2h-36c-7.22%200-16.2%201.51-22.75-2.1-10.81-5.95-8.27-19.62-8.27-29.96v-51.44c0-8.46%201.12-17.85-.22-26.18Zm-31.41%20221.92c10.71-5.02%2020.28-19.58%2031.4-23.82%208.5-3.23%2018.93%202.05%2021.07%2010.95%202.49%2010.35-4.91%2016.27-12.12%2021.87-12.57%209.78-25.21%2019.69-37.39%2029.94-5.67%204.77-11.9%2011.08-19.8%2010.92-7.77-.15-14.24-7.13-19.87-11.8-12.28-10.15-24.79-20.21-37.42-29.92-6.98-5.37-13.43-11.16-11.09-21.02%202.11-8.9%2012.62-14.17%2021.07-10.93%2010.57%204.04%2021.11%2018.42%2031.41%2023.81%201.78-6.09.37-14.48.37-20.86v-44.42c0-11.11%201.56-23.55%2016-23.55%2014.38%200%2016%2012.49%2016%2023.55v44.42c0%206.39-1.4%2014.76.37%2020.86Z%22%2F%3E%3C%2Fsvg%3E");
-}
 
 i.icon.add.cart,
 i.add.cart.icon {
@@ -1402,6 +1373,45 @@ i.xls.file.icon {
 i.icon.zip.file,
 i.zip.file.icon {
   mask-image: url("./imgs/zip-file.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+/* The glyphs that used to be inline data-URIs in the old base sheet, now files like every
+   other icon: a spinner (its rotation is behaviour, `src/components.css`), the hamburger,
+   the web address and the download-into-folder arrow. There is no separate `close`: the
+   generic mark is `cross` (`imgs/cross.svg`, plain and circled). */
+i.icon.spinner,
+i.spinner.icon {
+  mask-image: url("./imgs/spinner.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.hamburger,
+i.hamburger.icon {
+  mask-image: url("./imgs/hamburger.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.weburl,
+i.weburl.icon {
+  mask-image: url("./imgs/weburl.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.download.file,
+i.download.file.icon {
+  mask-image: url("./imgs/download-file.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.display.list,
+i.display.list.icon {
+  mask-image: url("./imgs/display-list.svg");
   display: inline-block;
   color: currentColor;
 }
@@ -3403,7 +3413,10 @@ section:is(.article) {
     border-radius: unset;
     transition: all 200ms ease-in-out;
     animation: scaleUpSlideLeft 0.4s ease-out forwards;
-    min-height: 400px;
+    /* The step box reserves the same height the form does: `config.minHeight` writes the
+       token on the form element, and one step no longer jumps the wizard when the config
+       asks for a taller box than the 400px fallback. */
+    min-height: var(--form-min-height, 400px);
     display: none;
   }
   & fieldset.active {
@@ -7678,12 +7691,12 @@ aside:has(> .nav[data-position*="sticky"]) {
   color: var(--app-status-error);
 }
 
-.toast .close.icon:hover {
+.toast .cross.icon:hover {
   opacity: 1;
 }
 
 /* Layout Berbasis Kelas Icon Kiri */
-.toast i.icon:not(.close) {
+.toast i.icon:not(.cross) {
   flex-shrink: 0;
   font-size: 2rem;
   width: 2rem;
@@ -8850,12 +8863,6 @@ aside:has(> .nav[data-position*="sticky"]) {
         transition: color 0.3s ease;
       }
 
-      & .btn-title {
-        font-size: 0.95rem;
-        font-weight: 600;
-        margin-top: 0.15rem;
-      }
-
       &:hover {
         background: var(--tab-hover-wash);
         transform: translateY(-1px);
@@ -8868,9 +8875,6 @@ aside:has(> .nav[data-position*="sticky"]) {
         box-shadow: var(--tab-active-shadow);
 
         & .btn-label {
-          color: var(--tab-active-foreground);
-        }
-        & .btn-title {
           color: var(--tab-active-foreground);
         }
       }
@@ -8914,9 +8918,6 @@ aside:has(> .nav[data-position*="sticky"]) {
 
         & .btn-label {
           color: var(--tab-accent-strong);
-        }
-        & .btn-title {
-          color: var(--tab-title-color);
         }
       }
     }
@@ -9062,8 +9063,7 @@ aside:has(> .nav[data-position*="sticky"]) {
         box-shadow: none;
         color: var(--tab-accent-strong);
 
-        & .btn-label,
-        & .btn-title {
+        & .btn-label {
           color: inherit;
         }
       }
@@ -9155,8 +9155,7 @@ aside:has(> .nav[data-position*="sticky"]) {
         box-shadow: var(--tab-active-shadow);
         color: var(--tab-accent-strong);
 
-        & .btn-label,
-        & .btn-title {
+        & .btn-label {
           color: inherit;
         }
       }

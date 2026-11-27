@@ -256,3 +256,77 @@ footer {
    The silhouette a builder draws while its own sheet is still missing is NOT styled here:
    it is the `@aio-ui/skeleton` component, loaded with the app shell so its sheet is always
    present. This file only owns the colour it reads — `--app-skeleton-bg` in `variables.css`. */
+
+/* ─── Icons: the `<i>` behaviour ───
+   Everything an icon element needs to be an icon: its box, its ink (the glyph is a mask, so
+   `background-color: currentColor` is the colour), and the setup that keeps the mask centred
+   and crisp. Which SHAPE appears is not decided here — `packages/styles/icons/icons.css` owns
+   the links, one mask-image per glyph. One place for the behaviour, one place for the store.
+   (No literal `url(` in this note: the bundle's glyph proof parses the text, comments included.) */
+i.icon {
+  --icon-size: 1rem;
+
+  display: inline-block;
+  width: var(--icon-size);
+  height: var(--icon-size);
+  vertical-align: middle;
+  flex-shrink: 0;
+
+  background-color: currentColor;
+
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-mode: alpha;
+  mask-mode: alpha;
+
+  /* Anti-aliasing and GPU promotion: a scaled mask blurs without both. */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  image-rendering: crisp-edges;
+
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+
+  transition:
+    transform 0.2s ease,
+    background-color 0.2s ease;
+}
+
+i.icon::before {
+  background: none;
+}
+
+/* Inside a button or a link the icon is part of the label, so it takes the accent of the
+   control rather than the page — and breathes a little on hover. */
+button i.icon,
+a i.icon {
+  color: inherit;
+}
+
+button:hover i.icon,
+a:hover i.icon {
+  transform: scale(1.1) translateZ(0);
+  image-rendering: crisp-edges;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* The one glyph whose behaviour is not a shape: the spinner turns. Its ring is
+   `imgs/spinner.svg`; this is what animates it. */
+i.icon.spinner {
+  animation: coreSpinLoop 0.75s linear infinite;
+}
+
+@keyframes coreSpinLoop {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

@@ -1,5 +1,5 @@
 import { InputBuilder, type InputType } from "./Input";
-import type { iInputField } from "./InputSchema";
+import type { iInputConfigNode, iInputContentNode } from "./InputSchema";
 import { scanInputAttributes } from "./FieldTypes";
 
 export interface iAttributeProperty {
@@ -42,6 +42,50 @@ export type InputAttributeType =
   | "data-view"
   | "view"
   | "thumbnail";
+
+/**
+ * A field node as a caller hands it over: `{ content, config }` with a partial `content`.
+ *
+ * `iFieldNode` (`InputSchema.ts`) is the resolved contract; this is its loose door. `type`
+ * is optional because a note may predate the contract — the builder defaults it to `text`
+ * — and `config` stays open, so a sheet note can carry any host metadata (`sheet`, `cell`,
+ * `skipped`, …) without the matrix knowing its name.
+ *
+ * Note that `iInputField` is NOT this shape — it is the *flat* payload that
+ * `InputBuilder.create()` folds a node into, with content keys at the root.
+ */
+export interface iFieldSeed {
+  content: Partial<iInputContentNode>;
+  config?: iInputConfigNode & Record<string, any>;
+}
+
+/** One editable control of the attribute matrix — already a living element. */
+export interface iAttributeRow {
+  /** Control type the row renders as (resolved per field type for `min` / `max`). */
+  input: InputType;
+  value: string | number | boolean;
+  config?: Record<string, any>;
+  template: HTMLElement;
+}
+
+/**
+ * Everything an editor needs for one field.
+ *
+ * `field` is the node untouched — render it, persist it, post it back. `template` is that
+ * same node already rendered once, so a preview never has to reconstruct it. `typeControl`
+ * is the chooser over every type in {@link InputAttributeBuilder.inputs}, pre-selected to
+ * the field's own type — the matrix owns both the list and the control. `attributes` holds
+ * one editor control per editable key.
+ */
+export interface iAttributeSchema {
+  field: Required<iFieldSeed>;
+  template: HTMLElement;
+  typeControl: HTMLElement;
+  attributes: Partial<Record<InputAttributeType, iAttributeRow>>;
+  type: InputType;
+  id: string;
+  label: string;
+}
 
 // Base config applied to every input
 const baseInputConfig = {
@@ -148,23 +192,40 @@ export class InputAttributeBuilder {
     }
   }
 
-  // unified builder
-  static buildSchemaForType(inputType: InputType, header: Partial<iInputField> & { label?: string } = {}) {
-    const raw = header as Record<string, any>;
-    // merge base + type defaults + user overrides
+  /**
+   * One field node in, one editor-ready descriptor out.
+   *
+   * `field` keeps `content` / `config` untouched — it is the value a caller persists and
+   * re-renders. `template` is that node rendered through the same `InputBuilder` door a page
+   * uses, so a preview shows the real field instead of a reconstruction of it. `typeControl`
+   * is the type chooser (the matrix owns the type list). `attributes` reads ONE merged key
+   * space: a behaviour key that lives in `config` (`multiple`, `range`, `data-*`) still
+   * becomes an editable row, and `config` wins a collision because behaviour belongs to it.
+   */
+  static buildSchemaForType(
+    node: iFieldSeed = { content: {} },
+    options: { modules?: unknown[] } = {},
+  ): iAttributeSchema {
+    const content = { ...(node.content || {}) };
+    const config = { ...(node.config || {}) };
+    const type = (content.type || "text") as InputType;
+    content.type = type;
+
+    // Every control is built through the caller's module stack, so a `dropdown` is a real
+    // dropdown (not a native select) the first time it renders.
+    const build = () => new InputBuilder({ modules: options.modules } as any);
+
     const merged: Record<string, any> = {
       ...baseInputConfig,
-      ...this.inputs[inputType],
-      ...header,
-      type: inputType,
+      ...this.inputs[type],
+      ...content,
+      ...config,
+      type,
     };
 
-
-
-    const schema: Record<string, any> = {
-      ...merged,
-      template: "", // main input
-    };
+    const id = String(content.id || content.name || content.label || type);
+    const slug = id.toLowerCase().replace(/[\s_]+/g, "-");
+    const attributes: Partial<Record<InputAttributeType, iAttributeRow>> = {};
 
     // now generate attribute editors
     for (const attrKey in this.attributes) {
@@ -175,61 +236,56 @@ export class InputAttributeBuilder {
       // skip attributes irrelevant to this type
       if (!(key in merged)) continue;
 
-      let value = merged[key];
-      // console.log(`[${inputType} > value]`, value);
+      const value = merged[key];
       let attrType = schemaDef.type;
 
       // special case: min/max type resolution
       if (["min", "max"].includes(key)) {
-        const resolved = this.resolveMinMaxType(inputType, key);
+        const resolved = this.resolveMinMaxType(type, key);
         if (resolved) attrType = resolved;
       }
 
-      // special case: checkbox / radio → use `checked` not value=true
-      if (inputType === "checkbox" || inputType === "radio") {
-        if (typeof value === "boolean") {
-          schema.checked = value;
-          value = value;
-        }
-      }
-
-      // special case: file remove value editor field
-      if (inputType === "file") {
-        delete schema.value;
-      }
-
-      const slug = raw.id
-        ? raw.id.toLowerCase().replace(/[\s_]+/g, "-")
-        : raw.label
-          ? raw.label.toLowerCase().replace(/[\s_]+/g, "-")
-          : inputType;
-
-      const elementId = `${slug}-${schemaDef.name}`;
-
-      // One editor field, through the same door a project uses: identity + value in
+      // One editor control, through the same door a project uses: identity + value in
       // `content`, the type's own settings in `config`.
       const attrConfig: Record<string, any> = {
         type: attrType,
-        id: elementId,
+        id: `${slug}-${schemaDef.name}`,
         label: schemaDef.label ?? schemaDef.name,
         value,
       };
       if (schemaDef.options) attrConfig.options = schemaDef.options;
 
-      schema[key] = {
+      attributes[key] = {
         input: attrType,
         value,
         ...(schemaDef.config ? { config: schemaDef.config } : {}),
-        template: new InputBuilder().create({
-          content: attrConfig as any,
-          config: schemaDef.config as any,
-        }),
+        template: build().create({
+          content: attrConfig,
+          config: schemaDef.config,
+        } as any),
       };
     }
 
-    // console.log(`[${inputType} > schema]`, schema);
-
-    return schema;
+    return {
+      field: { content, config },
+      template: build().create({ content, config } as any),
+      // The chooser is the matrix's own first row: it owns the type list, so a caller never
+      // has to know `inputs` to offer a type switch.
+      typeControl: build().create({
+        content: {
+          type: "select",
+          id: `${slug}-type`,
+          name: "type",
+          label: "type",
+          value: type,
+          options: Object.keys(this.inputs),
+        },
+      } as any),
+      attributes,
+      type,
+      id,
+      label: String(content.label ?? id),
+    };
   }
 
   /**
@@ -271,21 +327,13 @@ export class InputAttributeBuilder {
     return this.scan(type, config, customAllowed).ok;
   }
 
-  static create(headers: Array<Partial<iInputField> & { label?: string }>) {
-    return headers.map((header) => {
-      // we expect each header at least has a `type`
-      const type = header.type || "text";
-      // const scanStatus = scanUnallowedAttrs(type, header, ["title", "type", "range", "config"]);
-      // console.log("[generateInputAttributes] > isGoodToGo:", scanStatus);
-      return this.buildSchemaForType(type, header);
-    });
+  /**
+   * @param nodes - One `{ content, config }` field node per header, in sheet order.
+   * @param options - `modules` is the input module stack every control is built with.
+   * @returns One descriptor per node, in the same order.
+   */
+  static create(nodes: iFieldSeed[] = [], options: { modules?: unknown[] } = {}): iAttributeSchema[] {
+    return nodes.map((node) => this.buildSchemaForType(node, options));
   }
 
 }
-
-
-
-
-
-
-

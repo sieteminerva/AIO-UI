@@ -99,20 +99,34 @@ export class InputAttributeBuilder {
                 return "number";
         }
     }
-    // unified builder
-    static buildSchemaForType(inputType, header = {}) {
-        const raw = header;
-        // merge base + type defaults + user overrides
+    /**
+     * One field node in, one editor-ready descriptor out.
+     *
+     * `field` keeps `content` / `config` untouched — it is the value a caller persists and
+     * re-renders. `template` is that node rendered through the same `InputBuilder` door a page
+     * uses, so a preview shows the real field instead of a reconstruction of it. `typeControl`
+     * is the type chooser (the matrix owns the type list). `attributes` reads ONE merged key
+     * space: a behaviour key that lives in `config` (`multiple`, `range`, `data-*`) still
+     * becomes an editable row, and `config` wins a collision because behaviour belongs to it.
+     */
+    static buildSchemaForType(node = { content: {} }, options = {}) {
+        const content = { ...(node.content || {}) };
+        const config = { ...(node.config || {}) };
+        const type = (content.type || "text");
+        content.type = type;
+        // Every control is built through the caller's module stack, so a `dropdown` is a real
+        // dropdown (not a native select) the first time it renders.
+        const build = () => new InputBuilder({ modules: options.modules });
         const merged = {
             ...baseInputConfig,
-            ...this.inputs[inputType],
-            ...header,
-            type: inputType,
+            ...this.inputs[type],
+            ...content,
+            ...config,
+            type,
         };
-        const schema = {
-            ...merged,
-            template: "", // main input
-        };
+        const id = String(content.id || content.name || content.label || type);
+        const slug = id.toLowerCase().replace(/[\s_]+/g, "-");
+        const attributes = {};
         // now generate attribute editors
         for (const attrKey in this.attributes) {
             const key = attrKey;
@@ -122,54 +136,54 @@ export class InputAttributeBuilder {
             // skip attributes irrelevant to this type
             if (!(key in merged))
                 continue;
-            let value = merged[key];
-            // console.log(`[${inputType} > value]`, value);
+            const value = merged[key];
             let attrType = schemaDef.type;
             // special case: min/max type resolution
             if (["min", "max"].includes(key)) {
-                const resolved = this.resolveMinMaxType(inputType, key);
+                const resolved = this.resolveMinMaxType(type, key);
                 if (resolved)
                     attrType = resolved;
             }
-            // special case: checkbox / radio → use `checked` not value=true
-            if (inputType === "checkbox" || inputType === "radio") {
-                if (typeof value === "boolean") {
-                    schema.checked = value;
-                    value = value;
-                }
-            }
-            // special case: file remove value editor field
-            if (inputType === "file") {
-                delete schema.value;
-            }
-            const slug = raw.id
-                ? raw.id.toLowerCase().replace(/[\s_]+/g, "-")
-                : raw.label
-                    ? raw.label.toLowerCase().replace(/[\s_]+/g, "-")
-                    : inputType;
-            const elementId = `${slug}-${schemaDef.name}`;
-            // One editor field, through the same door a project uses: identity + value in
+            // One editor control, through the same door a project uses: identity + value in
             // `content`, the type's own settings in `config`.
             const attrConfig = {
                 type: attrType,
-                id: elementId,
+                id: `${slug}-${schemaDef.name}`,
                 label: schemaDef.label ?? schemaDef.name,
                 value,
             };
             if (schemaDef.options)
                 attrConfig.options = schemaDef.options;
-            schema[key] = {
+            attributes[key] = {
                 input: attrType,
                 value,
                 ...(schemaDef.config ? { config: schemaDef.config } : {}),
-                template: new InputBuilder().create({
+                template: build().create({
                     content: attrConfig,
                     config: schemaDef.config,
                 }),
             };
         }
-        // console.log(`[${inputType} > schema]`, schema);
-        return schema;
+        return {
+            field: { content, config },
+            template: build().create({ content, config }),
+            // The chooser is the matrix's own first row: it owns the type list, so a caller never
+            // has to know `inputs` to offer a type switch.
+            typeControl: build().create({
+                content: {
+                    type: "select",
+                    id: `${slug}-type`,
+                    name: "type",
+                    label: "type",
+                    value: type,
+                    options: Object.keys(this.inputs),
+                },
+            }),
+            attributes,
+            type,
+            id,
+            label: String(content.label ?? id),
+        };
     }
     /**
      * Checks a field schema against the registry matrix for its type.
@@ -207,14 +221,13 @@ export class InputAttributeBuilder {
     static scanUnallowedAttrs(type, config, customAllowed = []) {
         return this.scan(type, config, customAllowed).ok;
     }
-    static create(headers) {
-        return headers.map((header) => {
-            // we expect each header at least has a `type`
-            const type = header.type || "text";
-            // const scanStatus = scanUnallowedAttrs(type, header, ["title", "type", "range", "config"]);
-            // console.log("[generateInputAttributes] > isGoodToGo:", scanStatus);
-            return this.buildSchemaForType(type, header);
-        });
+    /**
+     * @param nodes - One `{ content, config }` field node per header, in sheet order.
+     * @param options - `modules` is the input module stack every control is built with.
+     * @returns One descriptor per node, in the same order.
+     */
+    static create(nodes = [], options = {}) {
+        return nodes.map((node) => this.buildSchemaForType(node, options));
     }
 }
 //# sourceMappingURL=Attribute.js.map

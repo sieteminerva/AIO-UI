@@ -1,6 +1,6 @@
 import type { iBasicNode, iBuilderConfig, iBuilderRegistry, iContentContract, iElementAnimation } from "@aio-ui/core";
 import { Builder } from "@aio-ui/base";
-export type TabElementType = "@container" | "@tab" | "@tab>menu" | "@tab>menu>item" | "@tab>menu>item>label" | "@tab>menu>item>title" | "@tab>body" | "@tab>panel" | "@tab>panel>content" | "@tab>panel>content>eyebrow" | "@tab>panel>content>title" | "@tab>panel>content>desc" | "@tab>footer" | "@tab>spinner";
+export type TabElementType = "@container" | "@tab" | "@tab>menu" | "@tab>menu>item" | "@tab>menu>item>label" | "@tab>body" | "@tab>panel" | "@tab>panel>content" | "@tab>panel>content>eyebrow" | "@tab>panel>content>title" | "@tab>panel>content>desc" | "@tab>footer" | "@tab>spinner";
 export interface iTabConfig extends iBuilderConfig<TabElementType> {
     container?: string | HTMLElement | null;
     menuPosition: "top" | "left" | "bottom" | "right";
@@ -90,6 +90,11 @@ export declare class TabBuilder extends Builder<TabElementType, iTabConfig> {
     /** `animation: false` disables panel motion, `true` keeps the default fade, and an object
      *  carries `@keyframes` names the sheet reads through two custom properties. */
     private applyAnimation;
+    /** The id one menu item carries: its own when the record names one, else the instance
+     *  stem plus its index. A panel points its `aria-labelledby` at exactly this. */
+    private buttonIdOf;
+    /** The id one panel carries, and the value its button's `aria-controls` names. */
+    private panelIdOf;
     /**
      * This instance's menu items — direct children of its own menu, never descendants.
      *

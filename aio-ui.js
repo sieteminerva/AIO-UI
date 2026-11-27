@@ -5073,7 +5073,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 					break;
 				case "@article>controls>next":
 					const iconNext = document.createElement("i");
-					iconNext.className = "icon arrow left";
+					iconNext.className = "icon arrow right";
 					el.textContent = payload?.label || "next";
 					el.append(iconNext);
 					break;
@@ -9207,7 +9207,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 			if (!page) throw new Error(`[AioApp] Route "${target}" has no page: declare it in source.pages or return one from onPrepare().`);
 			const themed = _get_themes.call(_assertClassBrand(_AioApp_brand, this))?.prepare(page, target, _classPrivateFieldGet2(_theme, this)) ?? page;
 			const pageNode = pageToNode(themed, target);
-			const menuNode = _assertClassBrand(_AioApp_brand, this, _menu).call(this, controller);
+			const menuNode = _assertClassBrand(_AioApp_brand, this, _menu$1).call(this, controller);
 			const footerNode = _classPrivateFieldGet2(_source, this).footer ?? null;
 			const nodes = [
 				menuNode,
@@ -9348,7 +9348,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 		};
 	}
 	/** Lets the controller rewrite the menu node. The app calls it, once per render. */
-	function _menu(controller) {
+	function _menu$1(controller) {
 		const menu = _classPrivateFieldGet2(_source, this).menu ?? null;
 		if (!menu || !controller?.attachMenu || menu instanceof HTMLElement) return menu;
 		try {
@@ -11714,7 +11714,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 				const close = document.createElement("div");
 				close.classList.add("close", "button");
 				close.title = `Remove ${file.name}`;
-				close.insertAdjacentHTML("afterbegin", `<i class="icon close"></i>`);
+				close.insertAdjacentHTML("afterbegin", `<i class="icon cross"></i>`);
 				this._onCloseRemoveItem(file, close, item);
 				item.append(size, close);
 				rowThumbs.appendChild(item);
@@ -12810,9 +12810,9 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 					button.title = "Click to " + action.label;
 					button.type = "button";
 					if (action?.label) button.textContent = action.label;
-					if (props?.icon) {
+					if (action.icon || props?.icon) {
 						const icon = document.createElement("i");
-						icon.className = props.icon;
+						icon.className = action.icon || props?.icon;
 						button.appendChild(icon);
 					}
 					button.__payload = payload;
@@ -12861,10 +12861,12 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 					event
 				};
 				switch (action.type) {
-					case "copy":
-						await this.copy(context.values ?? context.value);
-						context.result = context.values ?? context.value;
+					case "copy": {
+						const copied = elements.length === 1 ? context.value ?? "" : context.values ?? {};
+						await this.copy(copied);
+						context.result = copied;
 						break;
+					}
 					case "edit":
 						this._unlock(scope);
 						context.result = true;
@@ -12934,7 +12936,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 				const text = typeof payload === "string" ? payload : JSON.stringify(payload);
 				await navigator.clipboard.writeText(text);
 			} catch (err) {
-				console.error("Gagal menyalin teks: ", err);
+				console.error("[input] clipboard write failed:", err);
 			}
 		}
 		/**
@@ -15314,55 +15316,82 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 				default: return "number";
 			}
 		}
-		static buildSchemaForType(inputType, header = {}) {
-			const raw = header;
+		/**
+		* One field node in, one editor-ready descriptor out.
+		*
+		* `field` keeps `content` / `config` untouched — it is the value a caller persists and
+		* re-renders. `template` is that node rendered through the same `InputBuilder` door a page
+		* uses, so a preview shows the real field instead of a reconstruction of it. `typeControl`
+		* is the type chooser (the matrix owns the type list). `attributes` reads ONE merged key
+		* space: a behaviour key that lives in `config` (`multiple`, `range`, `data-*`) still
+		* becomes an editable row, and `config` wins a collision because behaviour belongs to it.
+		*/
+		static buildSchemaForType(node = { content: {} }, options = {}) {
+			const content = { ...node.content || {} };
+			const config = { ...node.config || {} };
+			const type = content.type || "text";
+			content.type = type;
+			const build = () => new InputBuilder$1({ modules: options.modules });
 			const merged = {
 				...baseInputConfig$1,
-				...this.inputs[inputType],
-				...header,
-				type: inputType
+				...this.inputs[type],
+				...content,
+				...config,
+				type
 			};
-			const schema = {
-				...merged,
-				template: ""
-			};
+			const id = String(content.id || content.name || content.label || type);
+			const slug = id.toLowerCase().replace(/[\s_]+/g, "-");
+			const attributes = {};
 			for (const attrKey in this.attributes) {
 				const key = attrKey;
 				const schemaDef = this.attributes[key];
 				if (!schemaDef) continue;
 				if (!(key in merged)) continue;
-				let value = merged[key];
+				const value = merged[key];
 				let attrType = schemaDef.type;
 				if (["min", "max"].includes(key)) {
-					const resolved = this.resolveMinMaxType(inputType, key);
+					const resolved = this.resolveMinMaxType(type, key);
 					if (resolved) attrType = resolved;
 				}
-				if (inputType === "checkbox" || inputType === "radio") {
-					if (typeof value === "boolean") {
-						schema.checked = value;
-						value = value;
-					}
-				}
-				if (inputType === "file") delete schema.value;
-				const elementId = `${raw.id ? raw.id.toLowerCase().replace(/[\s_]+/g, "-") : raw.label ? raw.label.toLowerCase().replace(/[\s_]+/g, "-") : inputType}-${schemaDef.name}`;
 				const attrConfig = {
 					type: attrType,
-					id: elementId,
+					id: `${slug}-${schemaDef.name}`,
 					label: schemaDef.label ?? schemaDef.name,
 					value
 				};
 				if (schemaDef.options) attrConfig.options = schemaDef.options;
-				schema[key] = {
+				attributes[key] = {
 					input: attrType,
 					value,
 					...schemaDef.config ? { config: schemaDef.config } : {},
-					template: new InputBuilder$1().create({
+					template: build().create({
 						content: attrConfig,
 						config: schemaDef.config
 					})
 				};
 			}
-			return schema;
+			return {
+				field: {
+					content,
+					config
+				},
+				template: build().create({
+					content,
+					config
+				}),
+				typeControl: build().create({ content: {
+					type: "select",
+					id: `${slug}-type`,
+					name: "type",
+					label: "type",
+					value: type,
+					options: Object.keys(this.inputs)
+				} }),
+				attributes,
+				type,
+				id,
+				label: String(content.label ?? id)
+			};
 		}
 		/**
 		* Checks a field schema against the registry matrix for its type.
@@ -15400,11 +15429,13 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 		static scanUnallowedAttrs(type, config, customAllowed = []) {
 			return this.scan(type, config, customAllowed).ok;
 		}
-		static create(headers) {
-			return headers.map((header) => {
-				const type = header.type || "text";
-				return this.buildSchemaForType(type, header);
-			});
+		/**
+		* @param nodes - One `{ content, config }` field node per header, in sheet order.
+		* @param options - `modules` is the input module stack every control is built with.
+		* @returns One descriptor per node, in the same order.
+		*/
+		static create(nodes = [], options = {}) {
+			return nodes.map((node) => this.buildSchemaForType(node, options));
 		}
 	};
 	_defineProperty(InputAttributeBuilder$1, "inputs", {
@@ -16632,9 +16663,6 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 		}
 		template(typeKey, el, payload) {
 			switch (typeKey) {
-				case "@container":
-					el.style.minHeight = this.config.minHeight;
-					break;
 				case "@form": {
 					const form = el;
 					const randomSuffix = Math.random().toString(36).substring(7);
@@ -16644,6 +16672,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 					form.method = this.config.method;
 					if (this.config.action) form.action = this.config.action;
 					if (this.config.name) form.name = String(this.config.name);
+					if (this.config.minHeight) form.style.setProperty("--form-min-height", this.config.minHeight);
 					break;
 				}
 				case "@form>group": {
@@ -22037,9 +22066,6 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 		}
 		template(typeKey, el, payload) {
 			switch (typeKey) {
-				case "@container":
-					el.style.minHeight = this.config.minHeight;
-					break;
 				case "@form": {
 					const form = el;
 					const randomSuffix = Math.random().toString(36).substring(7);
@@ -22049,6 +22075,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 					form.method = this.config.method;
 					if (this.config.action) form.action = this.config.action;
 					if (this.config.name) form.name = String(this.config.name);
+					if (this.config.minHeight) form.style.setProperty("--form-min-height", this.config.minHeight);
 					break;
 				}
 				case "@form>group": {
@@ -24964,7 +24991,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 				const close = document.createElement("div");
 				close.classList.add("close", "button");
 				close.title = `Remove ${file.name}`;
-				close.insertAdjacentHTML("afterbegin", `<i class="icon close"></i>`);
+				close.insertAdjacentHTML("afterbegin", `<i class="icon cross"></i>`);
 				this._onCloseRemoveItem(file, close, item);
 				item.append(size, close);
 				rowThumbs.appendChild(item);
@@ -26060,9 +26087,9 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 					button.title = "Click to " + action.label;
 					button.type = "button";
 					if (action?.label) button.textContent = action.label;
-					if (props?.icon) {
+					if (action.icon || props?.icon) {
 						const icon = document.createElement("i");
-						icon.className = props.icon;
+						icon.className = action.icon || props?.icon;
 						button.appendChild(icon);
 					}
 					button.__payload = payload;
@@ -26111,10 +26138,12 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 					event
 				};
 				switch (action.type) {
-					case "copy":
-						await this.copy(context.values ?? context.value);
-						context.result = context.values ?? context.value;
+					case "copy": {
+						const copied = elements.length === 1 ? context.value ?? "" : context.values ?? {};
+						await this.copy(copied);
+						context.result = copied;
 						break;
+					}
 					case "edit":
 						this._unlock(scope);
 						context.result = true;
@@ -26184,7 +26213,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 				const text = typeof payload === "string" ? payload : JSON.stringify(payload);
 				await navigator.clipboard.writeText(text);
 			} catch (err) {
-				console.error("Gagal menyalin teks: ", err);
+				console.error("[input] clipboard write failed:", err);
 			}
 		}
 		/**
@@ -28231,55 +28260,82 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 				default: return "number";
 			}
 		}
-		static buildSchemaForType(inputType, header = {}) {
-			const raw = header;
+		/**
+		* One field node in, one editor-ready descriptor out.
+		*
+		* `field` keeps `content` / `config` untouched — it is the value a caller persists and
+		* re-renders. `template` is that node rendered through the same `InputBuilder` door a page
+		* uses, so a preview shows the real field instead of a reconstruction of it. `typeControl`
+		* is the type chooser (the matrix owns the type list). `attributes` reads ONE merged key
+		* space: a behaviour key that lives in `config` (`multiple`, `range`, `data-*`) still
+		* becomes an editable row, and `config` wins a collision because behaviour belongs to it.
+		*/
+		static buildSchemaForType(node = { content: {} }, options = {}) {
+			const content = { ...node.content || {} };
+			const config = { ...node.config || {} };
+			const type = content.type || "text";
+			content.type = type;
+			const build = () => new InputBuilder({ modules: options.modules });
 			const merged = {
 				...baseInputConfig,
-				...this.inputs[inputType],
-				...header,
-				type: inputType
+				...this.inputs[type],
+				...content,
+				...config,
+				type
 			};
-			const schema = {
-				...merged,
-				template: ""
-			};
+			const id = String(content.id || content.name || content.label || type);
+			const slug = id.toLowerCase().replace(/[\s_]+/g, "-");
+			const attributes = {};
 			for (const attrKey in this.attributes) {
 				const key = attrKey;
 				const schemaDef = this.attributes[key];
 				if (!schemaDef) continue;
 				if (!(key in merged)) continue;
-				let value = merged[key];
+				const value = merged[key];
 				let attrType = schemaDef.type;
 				if (["min", "max"].includes(key)) {
-					const resolved = this.resolveMinMaxType(inputType, key);
+					const resolved = this.resolveMinMaxType(type, key);
 					if (resolved) attrType = resolved;
 				}
-				if (inputType === "checkbox" || inputType === "radio") {
-					if (typeof value === "boolean") {
-						schema.checked = value;
-						value = value;
-					}
-				}
-				if (inputType === "file") delete schema.value;
-				const elementId = `${raw.id ? raw.id.toLowerCase().replace(/[\s_]+/g, "-") : raw.label ? raw.label.toLowerCase().replace(/[\s_]+/g, "-") : inputType}-${schemaDef.name}`;
 				const attrConfig = {
 					type: attrType,
-					id: elementId,
+					id: `${slug}-${schemaDef.name}`,
 					label: schemaDef.label ?? schemaDef.name,
 					value
 				};
 				if (schemaDef.options) attrConfig.options = schemaDef.options;
-				schema[key] = {
+				attributes[key] = {
 					input: attrType,
 					value,
 					...schemaDef.config ? { config: schemaDef.config } : {},
-					template: new InputBuilder().create({
+					template: build().create({
 						content: attrConfig,
 						config: schemaDef.config
 					})
 				};
 			}
-			return schema;
+			return {
+				field: {
+					content,
+					config
+				},
+				template: build().create({
+					content,
+					config
+				}),
+				typeControl: build().create({ content: {
+					type: "select",
+					id: `${slug}-type`,
+					name: "type",
+					label: "type",
+					value: type,
+					options: Object.keys(this.inputs)
+				} }),
+				attributes,
+				type,
+				id,
+				label: String(content.label ?? id)
+			};
 		}
 		/**
 		* Checks a field schema against the registry matrix for its type.
@@ -28317,11 +28373,13 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 		static scanUnallowedAttrs(type, config, customAllowed = []) {
 			return this.scan(type, config, customAllowed).ok;
 		}
-		static create(headers) {
-			return headers.map((header) => {
-				const type = header.type || "text";
-				return this.buildSchemaForType(type, header);
-			});
+		/**
+		* @param nodes - One `{ content, config }` field node per header, in sheet order.
+		* @param options - `modules` is the input module stack every control is built with.
+		* @returns One descriptor per node, in the same order.
+		*/
+		static create(nodes = [], options = {}) {
+			return nodes.map((node) => this.buildSchemaForType(node, options));
 		}
 	};
 	_defineProperty(InputAttributeBuilder, "inputs", {
@@ -29606,17 +29664,17 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 					},
 					"@masonry>modal>close": {
 						tagName: "i",
-						className: "icon close",
+						className: "icon cross",
 						wrapper: ".close"
 					},
 					"@masonry>modal>next": {
 						tagName: "i",
-						className: "icon right arrow",
+						className: "icon arrow right",
 						wrapper: ".next"
 					},
 					"@masonry>modal>previous": {
 						tagName: "i",
-						className: "icon left arrow",
+						className: "icon arrow left",
 						wrapper: ".previous"
 					},
 					"@masonry>spinner": {
@@ -30602,7 +30660,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 					},
 					"@message>close": {
 						tagName: "i",
-						className: "close circle icon",
+						className: "cross circle icon",
 						wrapper: "button.close"
 					},
 					"@message>content": {
@@ -33092,6 +33150,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 	});
 	// packages/components/tab/Tab.ts
 	var _items = /* @__PURE__ */ new WeakMap();
+	var _menu = /* @__PURE__ */ new WeakMap();
 	var TabBuilder = class extends Builder$1 {
 		/**
 		* 🪶 LOADING MOCKUP — the tab bar over an empty panel, drawn with the mandatory
@@ -33122,6 +33181,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 			_defineProperty(this, "name", "tab");
 			_defineProperty(this, "stylesheet", "./Tab.css");
 			_classPrivateFieldInitSpec(this, _items, []);
+			_classPrivateFieldInitSpec(this, _menu, []);
 			_defineProperty(this, "currentTabIndex", 0);
 			_defineProperty(
 				this,
@@ -33169,10 +33229,6 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 					"@tab>menu>item>label": {
 						tagName: "span",
 						className: "btn-label"
-					},
-					"@tab>menu>item>title": {
-						tagName: "span",
-						className: "btn-title"
 					},
 					"@tab>body": {
 						tagName: "div",
@@ -33229,6 +33285,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 			if (_config) this.config = this.resolveConfig(this.config, _config);
 			const content = data ?? { body: [] };
 			this.items = content.body || [];
+			_classPrivateFieldSet2(_menu, this, content.menu || []);
 			this.currentTabIndex = 0;
 			return this.render("@tab", content);
 		}
@@ -33288,16 +33345,15 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 					break;
 				case "@tab>menu>item": {
 					const { meta, idx } = payload;
-					const rootId = this.uid;
 					el.setAttribute("role", "tab");
 					el.setAttribute("aria-selected", "false");
 					el.setAttribute("tabindex", "-1");
-					el.setAttribute("aria-controls", `tabpanel-${rootId}-${idx}`);
-					if (!meta.id) el.id = `tabbtn-${rootId}-${idx}`;
+					el.id = this.buttonIdOf(idx);
+					el.setAttribute("aria-controls", this.panelIdOf(idx));
 					const spanLabel = this.render("@tab>menu>item>label", meta);
-					const spanTitle = this.render("@tab>menu>item>title", meta);
-					el.append(spanLabel, spanTitle);
+					el.append(spanLabel);
 					if (meta.className) el.classList.add(...meta.className.split(" "));
+					el.title = typeof meta === "string" ? meta : meta.title || meta.label || "";
 					const isLink = typeof meta === "object" && meta !== null && !!meta.link;
 					el.onclick = (e) => {
 						if (!isLink) e.preventDefault();
@@ -33307,9 +33363,6 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 				}
 				case "@tab>menu>item>label":
 					el.textContent = typeof payload === "string" ? payload : (!payload.value ? payload?.label : payload.value) || "";
-					break;
-				case "@tab>menu>item>title":
-					el.title = typeof payload === "string" ? payload : (!payload.value ? payload?.label : payload.value) || "";
 					break;
 				case "@tab>body":
 					payload.forEach((item, idx) => {
@@ -33322,11 +33375,9 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 					break;
 				case "@tab>panel": {
 					const { item, idx } = payload;
-					const rootId = this.uid;
 					el.setAttribute("role", "tabpanel");
-					el.setAttribute("aria-labelledby", `tabbtn-${rootId}-${idx}`);
-					if (item?.id) el.id = item.id;
-					else el.id = `tabpanel-${rootId}-${idx}`;
+					el.setAttribute("aria-labelledby", this.buttonIdOf(idx));
+					el.id = this.panelIdOf(idx);
 					if (item?.className) el.classList.add(...String(item.className).split(" ").filter(Boolean));
 					el.classList.add("hidden");
 					el.style.display = "none";
@@ -33368,7 +33419,8 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 				this._boundKeyDownHandler = (e) => this._handleKeyDown(e);
 				menuElement.addEventListener("keydown", this._boundKeyDownHandler);
 			}
-			this.navigateTo(this.config.active);
+			const start = this.resolve(this.config.active);
+			this.navigateTo(start === -1 ? 0 : start);
 		}
 		/**
 		* Mengisi dan merender konten item ke dalam tab panel fisik
@@ -33383,6 +33435,10 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 			}
 			panel.dataset.loaded = "true";
 			this.config.emit?.("tabs:content-loaded", {
+				index,
+				element: panel
+			});
+			for (const listener of this._listenersContentLoaded) listener({
 				index,
 				element: panel
 			});
@@ -33430,6 +33486,15 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 				},
 				element: panels[index] || null
 			});
+			if (this._listenersTabChanged.length) {
+				const button = buttons[index];
+				const detail = {
+					index,
+					label: button?.querySelector(".btn-label")?.textContent ?? "",
+					title: button?.title ?? ""
+				};
+				for (const listener of this._listenersTabChanged) listener(detail);
+			}
 		}
 		/** `animation: false` disables panel motion, `true` keeps the default fade, and an object
 		*  carries `@keyframes` names the sheet reads through two custom properties. */
@@ -33444,6 +33509,15 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 				if (animation.in) root.style.setProperty("--tab-anim-in", animation.in);
 				if (animation.out) root.style.setProperty("--tab-anim-out", animation.out);
 			}
+		}
+		/** The id one menu item carries: its own when the record names one, else the instance
+		*  stem plus its index. A panel points its `aria-labelledby` at exactly this. */
+		buttonIdOf(index) {
+			return _classPrivateFieldGet2(_menu, this)[index]?.id || `tabbtn-${this.uid}-${index}`;
+		}
+		/** The id one panel carries, and the value its button's `aria-controls` names. */
+		panelIdOf(index) {
+			return _classPrivateFieldGet2(_items, this)[index]?.id || `tabpanel-${this.uid}-${index}`;
 		}
 		/**
 		* This instance's menu items — direct children of its own menu, never descendants.
@@ -33476,7 +33550,7 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 			const buttons = this.buttons();
 			for (let i = 0; i < buttons.length; i += 1) {
 				const button = buttons[i];
-				if (button.id === target || button.getAttribute("aria-controls") === target || button.querySelector(".btn-label")?.textContent === target || button.querySelector(".btn-title")?.textContent === target) return i;
+				if (button.id === target || button.getAttribute("aria-controls") === target || button.querySelector(".btn-label")?.textContent === target || button.title === target) return i;
 			}
 			return -1;
 		}
@@ -33541,6 +33615,8 @@ Falling back to standalone local memory buffer for builder: "${id}".`);
 		unmount() {
 			const menuElement = this.load("@tab>menu");
 			if (menuElement && this._boundKeyDownHandler) menuElement.removeEventListener("keydown", this._boundKeyDownHandler);
+			this._listenersTabChanged.length = 0;
+			this._listenersContentLoaded.length = 0;
 			this.destroy();
 		}
 	};

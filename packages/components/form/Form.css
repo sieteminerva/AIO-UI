@@ -156,9 +156,11 @@
    quiet, right-aligned, and separated by a hairline from the actions above.
    Component tokens stay `--form-*` and derive from the app layer.
    ========================================================================== */
-.form {
+.form,
+form.form {
   --form-footer-border: var(--app-border-color);
   --form-footer-text: var(--app-text-accent-color);
+  min-height: var(--form-min-height, 400px);
 }
 
 .form > .form-footer {
@@ -520,7 +522,7 @@
 
   display: flex;
   flex-direction: column;
-  min-height: var(--form-min-height, 400px);
+
   /* border: 1px solid var(--input-border-color); */
 
   & fieldset {

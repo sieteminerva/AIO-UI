@@ -105,7 +105,7 @@ emitRuntime`, layout read from the CDN tag, `app.js` inlined into a `blob:` docu
   preloads the union of `pageDefinitions.requires` once before `render()` and names
   `export: "FormBuilder"`, closing the `[FormBuilder] No modules configured` race. Engine moved to
   `orchestrator/src/`, checks to `orchestrator/__test__/`, `layout.mjs`/`layout.json` at the root.
-  Answers contract frozen in `orchestrator/TASK-answers-contract.md`. Gallery proof: `#masonry`
+  Answers contract frozen in `orchestrator/TASK.md`. Gallery proof: `#masonry`
   is a `SECTION` with 3 children, 0 empty wrapper divs.
 - **v0.2.4 surface (2026-11-22)** — `orchestrator/layout.json` regenerated to **37 packages**;
   the emitted import map uses one door per package (`@aio-ui/input/dropdown`, not

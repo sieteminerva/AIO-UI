@@ -34,8 +34,8 @@ Why / stages: `.guidance/plan-framework.md`. Engineering rules:
   probed 6/6 → 200; CDN stays **versioned**. Only the optional GitHub Release asset upload
   (`GITHUB_TOKEN`) remains → `docs/releases/v0.2.5.md`. The official release still waits for the
   `store` / `profile` / `blog` references.
-- **Surface generator** — `scripts/surface.mjs --write/--check` to replace 37 hand-edited export
-  maps and fail a subpath excluded by `files[]`. Optional, not a blocker. → `packages/TASK.md`
+- **Surface generator** — `scripts/surface.mjs --write/--check` to replace 38 hand-edited export
+  maps and fail a subpath excluded by `files[]`. Optional, not a blocker. → `scripts/TASK.md`
 - **Proof reports** — `scripts/proof.mjs --report` lists every component package and whether it
   carries an `inspect()` assertion (report-only first, gate once covered).
 
@@ -149,7 +149,8 @@ entry is rendered and mounted as its own root, so `main.page`+`footer`stay sibli
 - **Batch 45 (2026-11-22)** — CDN surface refactor: 131 → 76 rows, 39 → 37 packages. Input modules
   merged into their builders, `table`/`message`/`id-address` adapters into their roots, `rating` and
   the `@aio-ui/modules` kit deleted, core type-only subpaths collapsed. `v0.2.4` artefacts
-  regenerated locally. Contract and open items: `packages/TASK.md`.
+  regenerated locally. Surface policy: `docs/framework/PUBLIC-API.md`; the tooling left over lives
+  in `scripts/TASK.md`.
 - **Batch 42–44 (2026-11-21)** — `union` + `element` in `iContentSpec` (7 builders narrowed);
   `v0.2.4` published on `releases` + tag in mode B (39 tarballs, 1.29 MB) with the bundled pair at
   the branch root.

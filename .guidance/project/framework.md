@@ -41,6 +41,11 @@ Why / stages: `.guidance/plan-framework.md`. Engineering rules:
 
 ## Landed (newest first)
 
+- **Batch 110 (2026-11-27)** — **`v0.2.8` published.** The bundled sheet links its 107 glyphs
+  (`url("./imgs/x.svg")`) and `imgs/` travels beside `aio-ui.css` at the branch root; the asset
+  naming collision that shipped one raw `<svg>` as the stylesheet is gone. Carries b108/b109
+  (compact code panel, multistep, action seam). Proof: `npm run verify` → 1137 pass / 1 skip,
+  `check:live` 7/7, published CSS 107 relative links. → `docs/releases/v0.2.8.md`
 - **Batch 108 (2026-11-26)** — an `#icons` docs route (tab Display · Usage · API) whose prose is
   `packages/styles/README.md` (`readme.ts` maps `styles`; sections read with `subsectionOf`).
   Display is 89 square tiles, each a compact `code-block` + copy. `CodeBlock` gained

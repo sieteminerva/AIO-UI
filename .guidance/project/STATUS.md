@@ -18,7 +18,18 @@ the old number (the dependency URL carries the tag), so 0.2.8 shipped as a whole
 never run for 0.2.7/0.2.8.
 → `docs/releases/v0.2.8.md` · `scripts/build-bundle.mjs`
 
-### 2. Form multistep + action seam + icon channel (b109, landed)
+### 2. Open task notes — the queue b111 left behind
+
+Everything landed through b111, so the debt now lives in five `TASK.md` files rather than here:
+`scripts/TASK.md` (surface generator + the last two wildcard rows), `packages/styles/TASK.md`
+(**T3 taste pass — owner reviews the colours**, plus the picker-upward re-check),
+`packages/components/header/TASK.md` (demo control for `appearance`, `selectors[key].color` audit),
+`packages/components/id-address/TASK.md` (confirm the native → base → aio pick order before the
+next change), `examples/demo/src/ThemeConsole/TASK.md` (drawer height, mixer persistence, 2 more).
+Plus the one item card 1 carries: package README `install` blocks still say `0.2.6`.
+→ `scripts/TASK.md` (the rest are beside their package)
+
+### 3. Form multistep + action seam + icon channel (b109, landed)
 
 Multistep no longer assumes a step sits at schema index 0 (`attach()` mounts the smallest held
 index, `isFirst`/`isLast` come from the steps that exist, one-step form gets Submit); the input +
@@ -28,11 +39,11 @@ duplicate inline glyphs (238 kB → 13 kB). Proved: `npm run verify` → 1136 pa
 input radii `9.68/0/9.68/0` px with a `rgba(0,0,0,0)` seam.
 → `packages/styles/icons/README.md` · `packages/components/form/adapters/Multistep.ts`
 
-### No other open cards
+### No landed card without a pointer
 
-All previously queued work is closed. To start a card, take the owner's request (or the band
-file's `## Next`), record it here as one summary line plus a link that resolves in the commit
-that lands it.
+A card leaves this page only when its detail doc carries the rest. To start a card, take the
+owner's request (or a `TASK.md` above), record it here as one summary line plus a link that
+resolves in the commit that lands it.
 
 ## Map
 

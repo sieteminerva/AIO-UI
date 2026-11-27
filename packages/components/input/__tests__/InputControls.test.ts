@@ -225,6 +225,26 @@ describe("controls on a field and on a group", () => {
     expect(writeText).toHaveBeenCalledWith(JSON.stringify({ "rec-name": "Budi", "rec-tier": "a" }));
   });
 
+  it("copies a one-control scope as its value, not as a payload", async () => {
+    const holder = document.createElement("div");
+    holder.innerHTML = `<div class="field" id="f-name"><input id="name" name="name" type="text" /></div>`;
+    document.body.appendChild(holder);
+    const field = holder.querySelector(".field") as HTMLElement;
+    const input = field.querySelector("input") as HTMLInputElement;
+    const writeText = vi.fn(async () => undefined);
+    Object.defineProperty(navigator, "clipboard", { value: { writeText }, configurable: true });
+
+    input.value = "Budi";
+    controls(field, [{ type: "copy", label: "Copy", onClick: () => undefined }]);
+
+    (field.querySelector("button.copy") as HTMLButtonElement).click();
+    await Promise.resolve();
+
+    // A one-control scope copies what the visitor sees. The payload (`{"name":"Budi"}`)
+    // belongs to a wider scope, and that is what the group case above pins.
+    expect(writeText).toHaveBeenCalledWith("Budi");
+  });
+
   it("duplicates the whole group with fresh ids, and the clone acts on itself", () => {
     const { fieldset, name } = group();
     controls(fieldset, [{ type: "add", label: "Tambah", onClick: () => undefined }]);

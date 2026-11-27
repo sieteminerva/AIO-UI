@@ -5298,7 +5298,7 @@
       "lead": "A tab strip plus panels, with the strip placeable on any side of the body and panels built lazily.\nEach payload entry becomes one button and one panel; the panel body reads `eyebrow`, `title` and\n`description` from that same entry.\n\n**The builder is an element factory.** It assembles the markup below, and `Tab.css` only targets\nthose classes and tokens. The CSS therefore behaves like a plain CSS library: the same nesting and\nclass names written by hand are styled identically. Customise it by overriding a selector, or\nretheme it without touching markup by redeclaring a `--app-*` token on an ancestor (or one\n`--tab-*` token for this component only).\n\n<!-- install:begin -->",
       "sections": {
         "Install": {
-          "text": "Version — `0.2.6` (tag `v0.2.6`)\n\n    npm install https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.6/aio-ui-tab-0.2.6.tgz\n\nCDN (ES module, no build step) — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.6/packages/components/tab/dist/index.js`\nStylesheet — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.6/packages/components/tab/dist/Tab.css`\n<!-- install:end -->",
+          "text": "Version — `0.2.6` (tag `v0.2.6`)\n\n    npm install https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.6/aio-ui-tab-0.2.6.tgz\n\nCDN (ES module, no build step) — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.6/packages/components/tab/dist/index.js`\nStylesheet — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.6/packages/components/tab/dist/Tab.css`\n\n<!-- install:end -->",
           "examples": [],
           "tables": []
         },
@@ -5402,11 +5402,11 @@
           ]
         },
         "Nodes": {
-          "text": "### Structure\n\nA button per menu entry, a panel per body entry. `spinner` is present while the sheet lands;\npanels are `hidden` until activated, and a lazily built panel only exists after its first open.",
+          "text": "### Structure\n\nA button per menu entry, a panel per body entry. `spinner` is present while the sheet lands;\npanels are `hidden` until activated, and a lazily built panel only exists after its first open.\n\nA menu button carries its text in one `btn-label` span; the record's `title` becomes the button's\n`title` attribute (the tooltip), so a truncated label still reads in full on hover. There is no\nsecond label element — the `title` was never text on screen.\n\n### Wiring\n\nEach button and its panel share one id pair, and the pair is what the ARIA attributes name:\n`panel[aria-labelledby]` is the button's id, `button[aria-controls]` is the panel's id. A menu\nor body record that brings its own `id` keeps it; the rest get `tabbtn-<name>-<i>` and\n`tabpanel-<name>-<i>` from the instance stem, so two tabs never collide. `active` accepts an\nindex, a button or panel id, or a label/title, and falls back to the first tab when it matches\nnothing. `onTabChanged` and `onContentLoaded` are fed on every switch and every lazy render.",
           "examples": [
             {
               "lang": "html",
-              "code": "<div class=\"tab\">\n  <div class=\"spinner\"></div>\n  <div class=\"menu\" role=\"tablist\">\n    <button class=\"button active\" role=\"tab\">\n      <span class=\"btn-label\">Overview</span>\n      <span class=\"btn-title\"></span>\n    </button>\n  </div>\n  <div class=\"body\">\n    <div class=\"panel\" role=\"tabpanel\">\n      <div class=\"content\">\n        <h3 class=\"title\">Overview</h3>\n        <p class=\"desc\">…</p>\n      </div>\n    </div>\n  </div>\n</div>"
+              "code": "<div class=\"tab\">\n  <div class=\"spinner\"></div>\n  <div class=\"menu\" role=\"tablist\">\n    <button class=\"button active\" role=\"tab\" title=\"Overview\">\n      <span class=\"btn-label\">Overview</span>\n    </button>\n  </div>\n  <div class=\"body\">\n    <div class=\"panel\" role=\"tabpanel\">\n      <div class=\"content\">\n        <h3 class=\"title\">Overview</h3>\n        <p class=\"desc\">…</p>\n      </div>\n    </div>\n  </div>\n</div>"
             }
           ],
           "tables": [
@@ -5441,11 +5441,6 @@
                   "key": "`@tab>menu>item>label`",
                   "defaultTag": "`span`",
                   "classNote": "`btn-label`"
-                },
-                {
-                  "key": "`@tab>menu>item>title`",
-                  "defaultTag": "`span`",
-                  "classNote": "`btn-title`"
                 },
                 {
                   "key": "`@tab>body`",

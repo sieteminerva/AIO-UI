@@ -8,7 +8,6 @@ export type TabElementType =
   | "@tab>menu"
   | "@tab>menu>item"
   | "@tab>menu>item>label"
-  | "@tab>menu>item>title"
   | "@tab>body"
   | "@tab>panel"
   | "@tab>panel>content"
@@ -95,6 +94,9 @@ export class TabBuilder extends Builder<TabElementType, iTabConfig> {
   // ENKAPSULASI: Menyimpan data body tab secara aman & terisolasi
   #items: iTabItemProperty[] = [];
 
+  /** The menu records of the last `prepare`, kept so a panel can name its own button. */
+  #menu: iTabMenuProperty[] = [];
+
   // STATE MANAGEMENT INTERNAL
   private currentTabIndex = 0;
 
@@ -135,7 +137,6 @@ export class TabBuilder extends Builder<TabElementType, iTabConfig> {
       "@tab>menu": { tagName: "div", className: "menu" },
       "@tab>menu>item": { tagName: "button", className: "button" },
       "@tab>menu>item>label": { tagName: "span", className: "btn-label" },
-      "@tab>menu>item>title": { tagName: "span", className: "btn-title" },
       "@tab>body": { tagName: "div", className: "body" },
       "@tab>panel": { tagName: "div", className: "panel hidden" },
       "@tab>panel>content": { tagName: "div", className: "content" },
@@ -188,6 +189,7 @@ export class TabBuilder extends Builder<TabElementType, iTabConfig> {
     const content: iTabContent = data ?? { body: [] };
 
     this.items = content.body || [];
+    this.#menu = content.menu || [];
     this.currentTabIndex = 0;
 
     return this.render("@tab", content) as HTMLElement;
@@ -280,20 +282,25 @@ export class TabBuilder extends Builder<TabElementType, iTabConfig> {
 
       case "@tab>menu>item": {
         const { meta, idx } = payload;
-        const rootId = this.uid;
 
         el.setAttribute("role", "tab");
         el.setAttribute("aria-selected", "false");
         el.setAttribute("tabindex", "-1");
-        el.setAttribute("aria-controls", `tabpanel-${rootId}-${idx}`);
-        if (!meta.id) el.id = `tabbtn-${rootId}-${idx}`;
+        // One id pair per index, read through the same helpers the panel uses. A record
+        // with its own `id` keeps it; `aria-controls` always names the panel that exists.
+        // The old pair (`tabbtn-…` on the button, `tabpanel-…` in the attribute) broke as
+        // soon as either side carried an id of its own.
+        el.id = this.buttonIdOf(idx);
+        el.setAttribute("aria-controls", this.panelIdOf(idx));
 
         const spanLabel = this.render("@tab>menu>item>label", meta)!;
-        const spanTitle = this.render("@tab>menu>item>title", meta)!;
-
-        el.append(spanLabel, spanTitle);
+        el.append(spanLabel);
 
         if (meta.className) el.classList.add(...meta.className.split(" "));
+        // `title` is the tooltip, not a second line: the button carries it, so a label the
+        // strip has to truncate still reads in full on hover. (A second span used to hold
+        // it, got no text, and left an empty box with its own styling behind.)
+        el.title = typeof meta === "string" ? meta : (meta.title || meta.label || "");
 
         const isLink = typeof meta === "object" && meta !== null && !!meta.link;
         el.onclick = (e) => {
@@ -307,10 +314,6 @@ export class TabBuilder extends Builder<TabElementType, iTabConfig> {
         el.textContent = typeof payload === "string" ? payload : (!payload.value ? payload?.label : payload.value) || "";
         break;
 
-      case "@tab>menu>item>title":
-        el.title = typeof payload === "string" ? payload : (!payload.value ? payload?.label : payload.value) || "";
-        break;
-
       case "@tab>body": {
         payload.forEach((item: any, idx: number) => {
           const panel = this.render("@tab>panel", { item, idx }) as HTMLElement;
@@ -321,13 +324,10 @@ export class TabBuilder extends Builder<TabElementType, iTabConfig> {
 
       case "@tab>panel": {
         const { item, idx } = payload;
-        const rootId = this.uid;
 
         el.setAttribute("role", "tabpanel");
-        el.setAttribute("aria-labelledby", `tabbtn-${rootId}-${idx}`);
-
-        if (item?.id) el.id = item.id;
-        else el.id = `tabpanel-${rootId}-${idx}`;
+        el.setAttribute("aria-labelledby", this.buttonIdOf(idx));
+        el.id = this.panelIdOf(idx);
 
         if (item?.className) el.classList.add(...String(item.className).split(" ").filter(Boolean));
 
@@ -386,7 +386,10 @@ export class TabBuilder extends Builder<TabElementType, iTabConfig> {
     }
 
     // Navigasi awal mengikuti `config.active`: indeks, id tombol, label, atau judul.
-    this.navigateTo(this.config.active);
+    // A target that matches nothing falls back to the first tab: a tab with no active
+    // panel paints an empty box with no selected button.
+    const start = this.resolve(this.config.active);
+    this.navigateTo(start === -1 ? 0 : start);
     // console.log("[Tabs v2] Dynamic accessibility tab list initialized successfully.");
   }
 
@@ -407,6 +410,7 @@ export class TabBuilder extends Builder<TabElementType, iTabConfig> {
 
     panel.dataset.loaded = "true";
     this.config.emit?.("tabs:content-loaded" as any, { index, element: panel });
+    for (const listener of this._listenersContentLoaded) listener({ index, element: panel });
   }
 
   public navigateTo(target: number | string): void {
@@ -491,6 +495,18 @@ export class TabBuilder extends Builder<TabElementType, iTabConfig> {
         element: panels[index] || null
       });
     }
+
+    // `onTabChanged` callbacks had no caller before: the change is the one moment they
+    // describe, so they are fed here, in registration order.
+    if (this._listenersTabChanged.length) {
+      const button = buttons[index];
+      const detail = {
+        index,
+        label: button?.querySelector(".btn-label")?.textContent ?? "",
+        title: button?.title ?? "",
+      };
+      for (const listener of this._listenersTabChanged) listener(detail);
+    }
   }
 
   /** `animation: false` disables panel motion, `true` keeps the default fade, and an object
@@ -506,6 +522,19 @@ export class TabBuilder extends Builder<TabElementType, iTabConfig> {
       if (animation.in) root.style.setProperty("--tab-anim-in", animation.in);
       if (animation.out) root.style.setProperty("--tab-anim-out", animation.out);
     }
+  }
+
+  /** The id one menu item carries: its own when the record names one, else the instance
+   *  stem plus its index. A panel points its `aria-labelledby` at exactly this. */
+  private buttonIdOf(index: number): string {
+    const meta = this.#menu[index] as { id?: string } | undefined;
+    return meta?.id || `tabbtn-${this.uid}-${index}`;
+  }
+
+  /** The id one panel carries, and the value its button's `aria-controls` names. */
+  private panelIdOf(index: number): string {
+    const item = this.#items[index] as { id?: string } | undefined;
+    return item?.id || `tabpanel-${this.uid}-${index}`;
   }
 
   /**
@@ -551,7 +580,7 @@ export class TabBuilder extends Builder<TabElementType, iTabConfig> {
         button.id === target ||
         button.getAttribute("aria-controls") === target ||
         button.querySelector(".btn-label")?.textContent === target ||
-        button.querySelector(".btn-title")?.textContent === target
+        button.title === target
       ) {
         return i;
       }
@@ -635,6 +664,9 @@ export class TabBuilder extends Builder<TabElementType, iTabConfig> {
     if (menuElement && this._boundKeyDownHandler) {
       menuElement.removeEventListener("keydown", this._boundKeyDownHandler);
     }
+    // Callbacks belong to the instance; a destroyed tab must not keep them alive.
+    this._listenersTabChanged.length = 0;
+    this._listenersContentLoaded.length = 0;
     this.destroy(); // Likuidasi total RAM dari rahim Map privat!
   }
 

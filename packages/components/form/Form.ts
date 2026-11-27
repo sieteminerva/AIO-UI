@@ -1006,10 +1006,6 @@ export class FormBuilder extends Builder<FormElementType, iFormConfig> {
 
   protected template(typeKey: FormElementType, el: HTMLElement, payload?: any): void {
     switch (typeKey) {
-      case "@container":
-        el.style.minHeight = this.config.minHeight;
-        break;
-
       case "@form": {
         const form = el as HTMLFormElement;
         const randomSuffix = Math.random().toString(36).substring(7);
@@ -1027,6 +1023,10 @@ export class FormBuilder extends Builder<FormElementType, iFormConfig> {
         if (this.config.action) form.action = this.config.action;
         // The form's own name, used by submit handlers and by `document.forms`.
         if (this.config.name) form.name = String(this.config.name);
+        // `minHeight` is the reserved box for the step area, written as the token the sheet
+        // reads (`Form.css` → `--form-min-height`). It used to be written onto `@container`,
+        // a wrapper `prepare()` never renders, so the option did nothing at all.
+        if (this.config.minHeight) form.style.setProperty("--form-min-height", this.config.minHeight);
         break;
       }
 

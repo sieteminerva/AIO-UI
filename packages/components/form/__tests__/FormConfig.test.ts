@@ -66,6 +66,21 @@ describe("form identity", () => {
   });
 });
 
+describe("reserved height", () => {
+  it("writes `minHeight` onto the form as the token the sheet reads", () => {
+    const form = build({ minHeight: "12rem" });
+
+    // The option used to be written onto `@container`, an element `prepare()` never
+    // renders, so a form kept the sheet's 400px fallback whatever the config said.
+    expect(form.style.getPropertyValue("--form-min-height")).toBe("12rem");
+  });
+
+  it("defaults the token to the sheet's own fallback", () => {
+    // The config default is the same 400px the sheet falls back to, so the two cannot drift.
+    expect(build({}).style.getPropertyValue("--form-min-height")).toBe("400px");
+  });
+});
+
 describe("empty or malformed schema", () => {
   // The final branch of `prepare()` used to render whatever it was given, so an empty
   // object became one blank control — a schema mistake that looked deliberate.

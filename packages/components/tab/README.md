@@ -11,6 +11,7 @@ retheme it without touching markup by redeclaring a `--app-*` token on an ancest
 `--tab-*` token for this component only).
 
 <!-- install:begin -->
+
 ## Install
 
 Version — `0.2.6` (tag `v0.2.6`)
@@ -19,6 +20,7 @@ Version — `0.2.6` (tag `v0.2.6`)
 
 CDN (ES module, no build step) — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.6/packages/components/tab/dist/index.js`
 Stylesheet — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.6/packages/components/tab/dist/Tab.css`
+
 <!-- install:end -->
 
 ## Payload
@@ -75,7 +77,6 @@ sets `--tab-anim-in` / `--tab-anim-out` to the keyframe names it carries.
 | `@tab>menu`                  | `div`       | `menu`               |
 | `@tab>menu>item`             | `button`    | `button`             |
 | `@tab>menu>item>label`       | `span`      | `btn-label`          |
-| `@tab>menu>item>title`       | `span`      | `btn-title`          |
 | `@tab>body`                  | `div`       | `body`               |
 | `@tab>panel`                 | `div`       | `panel hidden`       |
 | `@tab>panel>content`         | `div`       | `content`            |
@@ -90,13 +91,16 @@ sets `--tab-anim-in` / `--tab-anim-out` to the keyframe names it carries.
 A button per menu entry, a panel per body entry. `spinner` is present while the sheet lands;
 panels are `hidden` until activated, and a lazily built panel only exists after its first open.
 
+A menu button carries its text in one `btn-label` span; the record's `title` becomes the button's
+`title` attribute (the tooltip), so a truncated label still reads in full on hover. There is no
+second label element — the `title` was never text on screen.
+
 ```html
 <div class="tab">
   <div class="spinner"></div>
   <div class="menu" role="tablist">
-    <button class="button active" role="tab">
+    <button class="button active" role="tab" title="Overview">
       <span class="btn-label">Overview</span>
-      <span class="btn-title"></span>
     </button>
   </div>
   <div class="body">
@@ -109,6 +113,15 @@ panels are `hidden` until activated, and a lazily built panel only exists after 
   </div>
 </div>
 ```
+
+### Wiring
+
+Each button and its panel share one id pair, and the pair is what the ARIA attributes name:
+`panel[aria-labelledby]` is the button's id, `button[aria-controls]` is the panel's id. A menu
+or body record that brings its own `id` keeps it; the rest get `tabbtn-<name>-<i>` and
+`tabpanel-<name>-<i>` from the instance stem, so two tabs never collide. `active` accepts an
+index, a button or panel id, or a label/title, and falls back to the first tab when it matches
+nothing. `onTabChanged` and `onContentLoaded` are fed on every switch and every lazy render.
 
 ## Tokens
 

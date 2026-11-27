@@ -527,7 +527,10 @@
     border-radius: unset;
     transition: all 200ms ease-in-out;
     animation: scaleUpSlideLeft 0.4s ease-out forwards;
-    min-height: 400px;
+    /* The step box reserves the same height the form does: `config.minHeight` writes the
+       token on the form element, and one step no longer jumps the wizard when the config
+       asks for a taller box than the 400px fallback. */
+    min-height: var(--form-min-height, 400px);
     display: none;
   }
   & fieldset.active {

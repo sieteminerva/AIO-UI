@@ -37,6 +37,10 @@ describe("tab", () => {
     expect(items).toHaveLength(1);
     expect(items[0].getAttribute("role")).toBe("tab");
     expect(items[0].querySelector(".btn-label")?.textContent).toBe("Satu");
+    // One text node, and the record's `title` is the tooltip — not a second, empty span
+    // with its own styling (the old `btn-title` was never given text).
+    expect(items[0].querySelectorAll("span")).toHaveLength(1);
+    expect(items[0].getAttribute("title")).toBe("Satu");
   });
 
   it("renders one panel per body item with its content", () => {
@@ -196,5 +200,61 @@ describe("tab", () => {
 
     expect(id(first)).toMatch(/^tabpanel-tab-/);
     expect(id(first)).not.toBe(id(second));
+  });
+
+  it("pairs every button with its panel through the same ids", () => {
+    const root = build(content);
+    const button = root.querySelector<HTMLElement>(".menu > button")!;
+    const panel = root.querySelector<HTMLElement>(".body > .panel")!;
+
+    // The pair is the contract: each attribute names an element that exists. The old ids
+    // were generated on both sides independently, so an id of the record's own broke it.
+    expect(panel.getAttribute("aria-labelledby")).toBe(button.id);
+    expect(button.getAttribute("aria-controls")).toBe(panel.id);
+    expect(root.querySelector(`#${button.id}`)).toBe(button);
+    expect(root.querySelector(`#${panel.id}`)).toBe(panel);
+  });
+
+  it("keeps the pairing when a record brings its own id", () => {
+    const root = build({
+      menu: [{ label: "Satu", title: "Satu", id: "btn-satu" }],
+      body: [{ id: "panel-satu", panel: { title: "Isi" } }],
+    });
+    const button = root.querySelector<HTMLElement>(".menu > button")!;
+    const panel = root.querySelector<HTMLElement>(".body > .panel")!;
+
+    expect(button.id).toBe("btn-satu");
+    expect(panel.id).toBe("panel-satu");
+    expect(panel.getAttribute("aria-labelledby")).toBe("btn-satu");
+    expect(button.getAttribute("aria-controls")).toBe("panel-satu");
+  });
+
+  it("falls back to the first tab when `active` matches nothing", () => {
+    const root = build(content, { active: "tidak-ada" });
+    const button = root.querySelector<HTMLElement>(".menu > button")!;
+
+    // No active panel painted an empty box with no selected button.
+    expect(button.getAttribute("aria-selected")).toBe("true");
+    expect(root.querySelector<HTMLElement>(".body > .panel")!.style.display).toBe("block");
+  });
+
+  it("feeds the callbacks registered on the instance", () => {
+    const builder = new TabBuilder({ lazyload: true });
+    const seen: number[] = [];
+    builder.onTabChanged((detail) => seen.push(detail.index));
+
+    const root = builder.create({
+      content: {
+        menu: [
+          { label: "Satu", title: "Satu" },
+          { label: "Dua", title: "Dua" },
+        ],
+        body: [{ panel: { title: "A" } }, { panel: { title: "B" } }],
+      },
+    }) as HTMLElement;
+
+    root.querySelectorAll<HTMLElement>(".menu > button")[1].click();
+
+    expect(seen).toEqual([0, 1]);
   });
 });

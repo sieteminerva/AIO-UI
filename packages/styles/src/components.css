@@ -261,8 +261,8 @@ footer {
    Everything an icon element needs to be an icon: its box, its ink (the glyph is a mask, so
    `background-color: currentColor` is the colour), and the setup that keeps the mask centred
    and crisp. Which SHAPE appears is not decided here — `packages/styles/icons/icons.css` owns
-   the links, one `mask-image: url("imgs/<name>.svg")` per glyph. One place for the behaviour,
-   one place for the store. */
+   the links, one mask-image per glyph. One place for the behaviour, one place for the store.
+   (No literal `url(` in this note: the bundle's glyph proof parses the text, comments included.) */
 i.icon {
   --icon-size: 1rem;
 

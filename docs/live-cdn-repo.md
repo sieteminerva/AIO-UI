@@ -506,7 +506,7 @@ which one a file carries. A patch therefore ships as `version.mjs --apply --bump
 plus a `release.mjs --apply` that copies the unchanged tarballs instead of repacking them.
 
 > **A partial bump still repacks every dependent.** Each internal edge is a tarball URL that
-> carries the *tag*, so a dependent's manifest changes even when its own source did not — it comes
+> carries the _tag_, so a dependent's manifest changes even when its own source did not — it comes
 > back with the same package version and different bytes, which `release.test.ts` refuses ("keeps
 > an unchanged package's bytes identical"). `v0.2.8` was therefore published as a **whole-family**
 > bump (`version.mjs --apply --version 0.2.8`); the reuse path only helps a package whose

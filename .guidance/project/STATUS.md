@@ -9,8 +9,7 @@ The only open card: everything through b111 landed, so the debt sits in five `TA
 `scripts/TASK.md` (surface generator + the last two wildcard rows), `packages/styles/TASK.md`,
 `packages/components/header/TASK.md` (demo control for `appearance`, `selectors[key].color`
 audit), `packages/components/id-address/TASK.md` (native → base → aio pick order), and
-`examples/demo/src/ThemeConsole/TASK.md` (drawer height, mixer persistence, 2 more) — plus the
-package READMEs that still say `install 0.2.6`.
+`examples/demo/src/ThemeConsole/TASK.md` (drawer height, mixer persistence, 2 more).
 
 **The one item that needs a person, not an agent:** finalising the CSS tokens per component.
 T1–T5 already shipped in `v0.2.6` (b82–b94): one `light-dark()` root, two brand strengths (fill
@@ -24,6 +23,7 @@ queue instead of the landed list.
 
 ### Landed — one line each, prose in `.guidance/project/framework.md`
 
+- **v0.2.9** published — the b112/b113 tree on the CDN, `v0.2.8` left as served → `docs/releases/v0.2.9.md`
 - **b112/b113** icon channel + `iFieldNode` + one tab id pair → `packages/styles/icons/README.md` · `docs/framework/FIELD-TYPES.md`
 - **v0.2.8** published, glyphs beside the bundled sheet → `docs/releases/v0.2.8.md`
 - **b109** form multistep + action seam → `packages/components/form/adapters/Multistep.ts`
@@ -43,7 +43,7 @@ _No landed card without a pointer: the prose lives in its doc and the commit tha
 
 ## Cross-project
 
-- **`v0.2.8` is published** (2026-11-27): 38 packages, branch `releases` @ `be9be5b`, tag
-  `v0.2.8`, mode B, 1.44 MB, `check:live` 7/7. The branch root now carries `imgs/` beside
-  `aio-ui.css`. → `docs/releases/v0.2.8.md`
+- **`v0.2.9` is published** (2026-11-28): 38 packages, branch `releases` @ `0282f4e`, tag
+  `v0.2.9`, mode B, 1.44 MB, `check:live` 7/7. `v0.2.8` stays as served (jsDelivr immutable).
+  → `docs/releases/v0.2.9.md`
 - Scratch is `temp/` (deletable whole); `releases/` is the branch worktree, not scratch.

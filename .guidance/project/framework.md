@@ -14,6 +14,12 @@ Why / stages: `.guidance/plan-framework.md`. Engineering rules:
 
 ## Landed (newest first)
 
+- **v0.2.9 (2026-11-28)** — the b112/b113 tree reaches the CDN without touching `v0.2.8`
+  (jsDelivr had already served it, `immutable`): 38 packages bumped whole-family, `imgs/` carries
+  112 links, `min.css` 163.4 kB. `config.minHeight` now reads on the form root (`01a6b9b`);
+  package `install` blocks moved `0.2.6` → `0.2.9` (`release-doc --readme`), catalogue regenerated.
+  Proved: `verify:pkgs` → green, `sha256sum -c` 46/46 OK, `release.test.ts` 17 pass / 1 skip,
+  `check:live` 7/7. → `docs/releases/v0.2.9.md`
 - **b112 + b113 (2026-11-27)** — icon channel split: `src/icon.css` is gone, the `<i>` behaviour
   lives in `src/components.css`, `icons.css` is links only (112 glyph files, `close`→`cross`,
   right arrows are mirrors). Input contract: `iFieldNode` replaced `AnyInputSchema` (`iFieldSeed`

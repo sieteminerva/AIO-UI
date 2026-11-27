@@ -12,6 +12,18 @@ Why / stages: `.guidance/plan-framework.md`. Engineering rules:
 | 2   | Inspect surface (b43)    | in progress | `inspect()` + `inspectPage()` green; open: dead relay removal, `#cleanupMap` reset                     |
 | 3   | Colour tokens (b82–b94)  | shipped     | T1–T5 shipped in v0.2.6 → `packages/styles/TASK.md`; open: owner taste pass                            |
 
+## Landed (newest first)
+
+- **b112 + b113 (2026-11-27)** — icon channel split: `src/icon.css` is gone, the `<i>` behaviour
+  lives in `src/components.css`, `icons.css` is links only (112 glyph files, `close`→`cross`,
+  right arrows are mirrors). Input contract: `iFieldNode` replaced `AnyInputSchema` (`iFieldSeed`
+  is the builder's loose door) and the Apps Script note is public — `iAppsScriptFieldNode`,
+  `range` = a named range on the chooser types only, `config.sheet|cell|skipped` = storage.
+  Tab: button↔panel share one id pair, `onTabChanged`/`onContentLoaded` are fed, `active` falls
+  back to tab 1, one `btn-label` (the record's `title` is the tooltip). `copy` copies a
+  one-control scope's value; `Form.config.minHeight` writes `--form-min-height` (it used to write
+  to the never-rendered `@container`). Commits `f7fda8a` `bb5d1e3` `b54b525` `56b32ca`.
+
 ## Next
 
 - **`@aio-ui/header` — follow-ups.** Package, `appearance` shapes, the two ink doors and the

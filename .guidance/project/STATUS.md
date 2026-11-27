@@ -15,6 +15,11 @@ storage address). A tab's button and panel now share one id pair, `onTabChanged`
 `btn-label` span with the record's `title` as its tooltip (the second span was always empty).
 `copy` copies a one-control scope's value (not its payload), and `config.minHeight` finally lands
 on the form as `--form-min-height` instead of a `@container` wrapper that is never rendered.
+**Not published:** the CDN at `@v0.2.8` still serves the pre-b112 bytes — the release was written
+locally and then reverted on purpose (the owner installs from a path for now); local tarballs live
+in `temp/tgz-0.2.8/` (input, form, tab). Republishing the same version needs
+`release.mjs --version 0.2.8 --apply` → `publish-releases.mjs --apply` → `publish-cdn.mjs --apply`
+(moves the tag) → jsDelivr purge.
 → `packages/styles/icons/README.md` · `docs/framework/FIELD-TYPES.md` ·
 `packages/components/tab/README.md` · `docs/framework/INPUT-ACTIONS.md`
 

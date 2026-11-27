@@ -155,9 +155,10 @@ that touches a package TypeScript file, an `exports` map, or a README still runs
 
 1. **T3 taste pass** — the palettes compile and flip, but the _taste_ is not settled; the owner
    reviews each component and points at the colour to change (Article/Table/Message first).
-2. **Leftover**: `packages/components/masonry/README.md` + `docs/framework/catalogue.json` still
-   show the pre-b86 `background-image: var(--app-spinner-content)` snippet (the catalogue snippet
-   is curated, not generated from source).
-3. **Verify when a tab is visible**: the native picker's upward seam (`data-placement` from the
+2. **Verify when a tab is visible**: the native picker's upward seam (`data-placement` from the
    real picker height) was only proved with the page backgrounded — re-check by opening a
    `<select>` near the viewport bottom.
+
+Done since this doc was written: the pre-b86 `background-image: var(--app-spinner-content)`
+leftover in `packages/components/masonry/README.md` + `catalogue.json` is gone (b112 regenerated
+the catalogue and the spinner is a masked `--app-spinner-content` everywhere).

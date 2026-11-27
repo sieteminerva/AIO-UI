@@ -14,17 +14,19 @@ Link the channel — `index.css` already imports it, so a host that links the pa
 needs nothing else:
 
 ```html
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.7/packages/styles/icons/icons.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.8/packages/styles/icons/icons.css" />
 ```
 
-    npm install https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.7/aio-ui-styles-0.2.7.tgz
+    npm install https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.8/aio-ui-styles-0.2.8.tgz
 
 `import "@aio-ui/styles/icons.css";` when a bundler resolves the package. The paths inside the sheet
-are relative, so `imgs/` must sit beside it wherever it is served — the tarball and the CDN carry it.
+are relative, so `imgs/` must sit beside it wherever it is served — the tarball, the CDN and the
+bundled pair (`<cdn>/aio-ui.css` + `<cdn>/imgs/`) all carry it.
 
 **Bundlers:** keep the SVGs out of the CSS. Vite inlines assets under 4 kB by default, which turns
 the links back into base64 and gives up the whole win — set `assetsInlineLimit: 0` (or take the
-files with `?url`).
+files with `?url`). `scripts/build-bundle.mjs` does exactly that and fails when a glyph comes back
+as a `data:` URI.
 
 ## Icons
 
@@ -86,8 +88,8 @@ The builders already use these classes, so a component that needs an icon takes 
 
 ### Sources
 
-- sheet — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.7/packages/styles/icons/icons.css`
+- sheet — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.8/packages/styles/icons/icons.css`
 - glyphs — `.../packages/styles/icons/imgs/<name>.svg`
-- base — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.7/packages/styles/src/icon.css`
+- base — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.8/packages/styles/src/icon.css`
 
 The parent README covers the token system and the other four sheets.

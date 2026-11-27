@@ -108,10 +108,11 @@ The builders already use these classes, so a component that needs an icon takes 
 
 ### Sources
 
-- index — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.7/packages/styles/src/index.css`
-- icon channel — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.7/packages/styles/icons/icons.css`
+- index — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.8/packages/styles/src/index.css`
+- icon channel — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.8/packages/styles/icons/icons.css`
   (its glyphs: `.../packages/styles/icons/imgs/<name>.svg`)
-- tarball — `https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.7/aio-ui-styles-0.2.7.tgz`
+- bundled pair — `.../aio-ui.css` with `imgs/` beside it (`registry.bundle.imgs`, 107 files)
+- tarball — `https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.8/aio-ui-styles-0.2.8.tgz`
 
 The package is not published to npm; install the tarball.
 

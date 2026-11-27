@@ -6,11 +6,10 @@ import { describe, expect, it } from "vitest";
 import { ICON_NAMES, iconClasses, parseIconNames } from "../icons";
 
 /**
- * The icons page reads the icon channel at build time (`icons.css` plus the base sheet it
- * imports), so this test guards the parser: a name is the dotted tail of an
- * `i.icon.<name>` selector, never the base rule.
+ * The icons page reads the icon channel at build time (`icons.css`), so this test guards the
+ * parser: a name is the dotted tail of an `i.icon.<name>` selector, never the base rule.
  */
-const SHEETS = ["packages/styles/icons/icons.css", "packages/styles/src/icon.css"];
+const SHEETS = ["packages/styles/icons/icons.css"];
 
 describe("icon catalogue", () => {
   it("reads single- and multi-word names, first occurrence wins", () => {

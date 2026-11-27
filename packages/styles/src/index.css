@@ -1,6 +1,6 @@
 /* Presentation order matters: tokens first, then type, then shared component
-   surfaces, then layout, then iconography. The icons sheet is its own channel
-   (`./icons.css`): base rules stay in `src/icon.css`, every glyph is a file. */
+   surfaces, then layout, then iconography. `components.css` owns the `<i>` behaviour;
+   (`./icons.css`) is the store: one link per glyph, nothing else. */
 @import "./variables.css";
 @import "./typography.css";
 @import "./components.css";

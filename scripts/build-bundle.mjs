@@ -148,7 +148,7 @@ export default AioUI;
 `;
 
 // ---- 4. Stylesheets, in presentation order ------------------------------
-const STYLES_ORDER = ["variables.css", "typography.css", "components.css", "layout.css", "icon.css"];
+const STYLES_ORDER = ["variables.css", "typography.css", "components.css", "layout.css"];
 function walk(dir, out = []) {
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
     if (entry.name === "node_modules" || entry.name === "dist") continue;
@@ -162,9 +162,9 @@ function walk(dir, out = []) {
 const sheets = [];
 for (const name of STYLES_ORDER) sheets.push({ kind: 0, path: join(ROOT, "packages", "styles", "src", name) });
 // The icon channel is its own export (`@aio-ui/styles/icons.css`), so it is not one of the
-// five `src` sheets. Without this line `walk` below reports it as "not bundled" and the
-// release CSS keeps the base sheet but loses every glyph. It imports `src/icon.css`, so the
-// base is deduplicated by the `reimported` pass.
+// `src` sheets above. Without this line `walk` below reports it as "not bundled" and the
+// release CSS loses every glyph. It imports nothing: the `<i>` behaviour is in
+// `src/components.css` (already listed above) and this sheet is only the links.
 sheets.push({ kind: 0, path: join(ROOT, "packages", "styles", "icons", "icons.css") });
 const themeSheets = walk(join(ROOT, "packages", "themes"));
 for (const path of themeSheets.sort()) sheets.push({ kind: 1, path });

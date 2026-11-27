@@ -147,9 +147,9 @@ export class InputControlsBuilder extends Builder<InputControlsElementType> {
           button.textContent = action.label
         }
 
-        if (props?.icon) {
+        if (action.icon || props?.icon) {
           const icon = document.createElement("i");
-          icon.className = props.icon;
+          icon.className = action.icon || props?.icon;
           button.appendChild(icon);
         }
         button.__payload = payload;

@@ -1,18 +1,19 @@
 /* ==========================================================================
    The icon channel — `@aio-ui/styles/icons.css`.
 
-   Every glyph is a real file under `imgs/`, referenced by a relative `url()`.
-   The sheet stays ~14 kB and the browser fetches only the icons a page draws;
-   the old inline data-URI sheet was 238 kB before the first icon rendered.
+   LINKS ONLY. This sheet is the store: one rule per glyph, each pointing at a real
+   file under `imgs/` through a relative `url()`. Nothing here declares a shape, a
+   size or a colour — the `<i>` behaviour (size, ink, mask setup, the spinner's
+   rotation) lives in `../src/components.css`. `index.css` loads that sheet first, so
+   link the entry point; linking this channel on its own needs `src/components.css`
+   before it.
 
-   The base (`i.icon` sizing, the mask setup, the animated spinner) and the few
-   glyphs that are not files live in `../src/icon.css`. `index.css` imports this
-   sheet, so a host that links the package entry point needs nothing else.
+   The browser fetches only the glyphs a page draws; the old inline data-URI base was
+   238 kB of sheet before the first icon rendered.
 
    CDN: `<cdn>/packages/styles/icons/icons.css` — `imgs/` must sit beside it.
    Bundlers: keep the SVGs out of the CSS (Vite: `assetsInlineLimit: 0`).
    ========================================================================== */
-@import "../src/icon.css";
 
 i.icon.add.cart,
 i.add.cart.icon {
@@ -759,6 +760,45 @@ i.xls.file.icon {
 i.icon.zip.file,
 i.zip.file.icon {
   mask-image: url("imgs/zip-file.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+/* The glyphs that used to be inline data-URIs in the old base sheet, now files like every
+   other icon: a spinner (its rotation is behaviour, `src/components.css`), the hamburger,
+   the web address and the download-into-folder arrow. There is no separate `close`: the
+   generic mark is `cross` (`imgs/cross.svg`, plain and circled). */
+i.icon.spinner,
+i.spinner.icon {
+  mask-image: url("imgs/spinner.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.hamburger,
+i.hamburger.icon {
+  mask-image: url("imgs/hamburger.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.weburl,
+i.weburl.icon {
+  mask-image: url("imgs/weburl.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.download.file,
+i.download.file.icon {
+  mask-image: url("imgs/download-file.svg");
+  display: inline-block;
+  color: currentColor;
+}
+
+i.icon.display.list,
+i.display.list.icon {
+  mask-image: url("imgs/display-list.svg");
   display: inline-block;
   color: currentColor;
 }

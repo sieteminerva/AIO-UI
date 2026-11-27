@@ -30,9 +30,11 @@ as a `data:` URI.
 
 ## Icons
 
-A global icon system. The sheet declares one rule per glyph; the base (`i.icon` sizing, the mask
-setup, the animated spinner) and the few glyphs that are not files live in `../src/icon.css`, which
-this sheet imports.
+A global icon system. This sheet is storage: one rule per glyph, each a `mask-image` pointing at a
+file. The behaviour behind it — `i.icon` sizing, ink, the mask setup, the spinner's rotation — is
+global component styling and lives in `../src/components.css`, which the package entry point
+(`index.css`) loads before this sheet. A page that links the channel on its own has to link
+`src/components.css` first.
 
 ### Usage
 
@@ -82,14 +84,14 @@ The builders already use these classes, so a component that needs an icon takes 
 | Header              | `config.icon` (the builder appends `icon`)                 |
 | Menu                | `icon arrow right` for a branch                            |
 | Input               | FileUploader, InputControls, InputPicker buttons           |
-| Masonry             | `icon close`, `icon left`, `icon right`                    |
-| Message             | `notification icon`, `close circle icon`                   |
+| Masonry             | `icon cross`, `icon arrow left`, `icon arrow right`        |
+| Message             | `notification icon`, `cross circle icon`                   |
 | Table               | `icon: "edit"`, `"trash"`, `"plus square"`, `"arrow left"` |
 
 ### Sources
 
 - sheet — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.8/packages/styles/icons/icons.css`
 - glyphs — `.../packages/styles/icons/imgs/<name>.svg`
-- base — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.8/packages/styles/src/icon.css`
+- behaviour — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.8/packages/styles/src/components.css`
 
 The parent README covers the token system and the other four sheets.

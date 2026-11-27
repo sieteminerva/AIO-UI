@@ -277,7 +277,7 @@ export class ColorThemeBuilder extends Builder<ColorThemeElementType, iColorThem
         const floppyIcon = document.createElement("i");
         // Icon names are SPACE-separated classes (`i.icon.download.file`); a dotted
         // class matches nothing and a mask-less `i.icon` paints as a solid block.
-        // `floppy disk` is not in `packages/styles/src/icon.css` — `download file` is.
+        // `floppy disk` has no glyph in the icon channel — `download file` does.
         floppyIcon.className = "download file icon"
         el.title = "Click to Save the Preset"
         el.appendChild(floppyIcon);

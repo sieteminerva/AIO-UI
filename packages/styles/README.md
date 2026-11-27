@@ -60,9 +60,11 @@ served — the tarball and therefore the CDN carry it (`files: ["src", "icons"]`
 | CDN      | `<cdn>/packages/styles/icons/icons.css` — icons resolve as `<cdn>/packages/styles/icons/imgs/<name>.svg`                   |
 | Bundlers | Keep the SVGs out of the CSS: Vite inlines assets under 4 kB, so set `assetsInlineLimit: 0` (or `?url`) or the win is lost |
 
-The animated spinner and the glyphs that are one path in the base sheet (`close`, `close circle`,
-`hamburger`, `weburl`, `download file`) stay in `src/icon.css`; `icons.css` imports that base, so
-linking the channel alone is enough.
+Nothing is inlined any more: the spinner and `hamburger`, `weburl`,
+`download file` are files like every other glyph. `icons.css` is link storage only — the `<i>`
+behaviour (size, ink, mask setup, the spinner's rotation) is global component styling in
+`src/components.css`, which the package entry point loads first. One mark per meaning: the
+close affordance is `cross` (plain and circled), never a second `close` glyph.
 
 The channel keeps its own README — `packages/styles/icons/README.md` — for usage, markup, adding a
 glyph and the bundler note; this one stays the package door.
@@ -102,8 +104,8 @@ The builders already use these classes, so a component that needs an icon takes 
 | Header              | `config.icon` (the builder appends `icon`)                 |
 | Menu                | `icon arrow right` for a branch                            |
 | Input               | FileUploader, InputControls, InputPicker buttons           |
-| Masonry             | `icon close`, `icon left`, `icon right`                    |
-| Message             | `notification icon`, `close circle icon`                   |
+| Masonry             | `icon cross`, `icon arrow left`, `icon arrow right`        |
+| Message             | `notification icon`, `cross circle icon`                   |
 | Table               | `icon: "edit"`, `"trash"`, `"plus square"`, `"arrow left"` |
 
 ### Sources

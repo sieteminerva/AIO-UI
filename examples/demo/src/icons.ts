@@ -2,11 +2,10 @@
  * The icon catalogue.
  *
  * `packages/styles/icons/icons.css` declares every glyph as `i.icon.<name>` (a multi-word
- * name uses dots: `user.list`) and points at a file under `imgs/`; the animated spinner and
- * the glyphs that are not files live in `packages/styles/src/icon.css`, which that sheet
- * imports. A browser bundle cannot read either sheet at runtime, so the names live here —
- * and `__tests__/icons.test.ts` re-parses both with Node's `fs` and fails when this list
- * drifts from them. Add an icon, run the tests, copy the diff.
+ * name uses dots: `user.list`) and points at a file under `imgs/`. It is storage only — the
+ * `<i>` behaviour lives in `packages/styles/src/components.css`. A browser bundle cannot read
+ * the sheet at runtime, so the names live here — and `__tests__/icons.test.ts` re-parses it
+ * with Node's `fs` and fails when this list drifts. Add an icon, run the tests, copy the diff.
  */
 export const ICON_NAMES: readonly string[] = [
   "add.cart",
@@ -117,11 +116,10 @@ export const ICON_NAMES: readonly string[] = [
   "xls.file",
   "zip.file",
   "spinner",
-  "close.circle",
-  "close",
   "hamburger",
   "weburl",
   "download.file",
+  "display.list",
 ];
 
 /** `i.icon.user.list` → `user.list`. Non-anchored: a minified sheet has no line starts. */

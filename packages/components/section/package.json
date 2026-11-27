@@ -1,6 +1,6 @@
 {
   "name": "@aio-ui/section",
-  "version": "0.2.7",
+  "version": "0.2.8",
   "type": "module",
   "files": [
     "dist",
@@ -8,8 +8,8 @@
     "*.css"
   ],
   "peerDependencies": {
-    "@aio-ui/base": "^0.2.7",
-    "@aio-ui/core": "^0.2.7"
+    "@aio-ui/base": "^0.2.8",
+    "@aio-ui/core": "^0.2.8"
   },
   "exports": {
     ".": {

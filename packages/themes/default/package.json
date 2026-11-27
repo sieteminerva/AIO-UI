@@ -1,13 +1,13 @@
 {
   "name": "@aio-ui/theme-default",
-  "version": "0.2.7",
+  "version": "0.2.8",
   "type": "module",
   "files": [
     "dist",
     "src"
   ],
   "peerDependencies": {
-    "@aio-ui/core": "^0.2.7"
+    "@aio-ui/core": "^0.2.8"
   },
   "exports": {
     ".": {

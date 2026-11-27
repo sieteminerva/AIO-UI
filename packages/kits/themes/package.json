@@ -1,6 +1,6 @@
 {
   "name": "@aio-ui/themes",
-  "version": "0.2.7",
+  "version": "0.2.8",
   "type": "module",
   "description": "Aggregated public surface for themes.",
   "files": [
@@ -15,9 +15,9 @@
     }
   },
   "dependencies": {
-    "@aio-ui/theme-cyberpunk": "^0.2.7",
-    "@aio-ui/theme-default": "^0.2.7",
-    "@aio-ui/theme-horizontal": "^0.2.7"
+    "@aio-ui/theme-cyberpunk": "^0.2.8",
+    "@aio-ui/theme-default": "^0.2.8",
+    "@aio-ui/theme-horizontal": "^0.2.8"
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",

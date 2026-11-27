@@ -1,14 +1,14 @@
 {
   "name": "@aio-ui/event-emitter",
-  "version": "0.2.7",
+  "version": "0.2.8",
   "type": "module",
   "files": [
     "dist",
     "*.ts"
   ],
   "peerDependencies": {
-    "@aio-ui/core": "^0.2.7",
-    "@aio-ui/utilities": "^0.2.7"
+    "@aio-ui/core": "^0.2.8",
+    "@aio-ui/utilities": "^0.2.8"
   },
   "exports": {
     ".": {

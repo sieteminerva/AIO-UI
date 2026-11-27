@@ -242,6 +242,9 @@ async function bundleCss(minify, dir) {
     ...silent,
     configFile: false,
     root: WORK,
+    // A CDN path is unknown at build time, so every link must be relative: `base: "/"`
+    // rewrites `imgs/x.svg` to `/imgs/x.svg`, which only resolves at a domain root.
+    base: "./",
     build: {
       outDir: dir,
       emptyOutDir: true,
@@ -251,9 +254,25 @@ async function bundleCss(minify, dir) {
       cssTarget: "chrome130",
       cssMinify: minify,
       target: "es2020",
-      rollupOptions: { input: join(WORK, "entry.css"), output: { assetFileNames: "aio-ui.css" } },
+      // The sheet links its glyphs, it never inlines them: `imgs/` ships beside `aio-ui.css`
+      // and each `url()` stays a relative link. Two settings are load-bearing:
+      //   - `assetsInlineLimit: 0` stops Vite folding a small `.svg` back into a data URI;
+      //   - the name pattern separates the two kinds of asset. A single string pattern
+      //     (`"aio-ui.css"`) gave *every* asset that name, so the last glyph emitted
+      //     overwrote the stylesheet and the bundle shipped one raw `<svg>` as its CSS.
+      assetsInlineLimit: 0,
+      rollupOptions: {
+        input: join(WORK, "entry.css"),
+        output: { assetFileNames: cssAssetName },
+      },
     },
   });
+}
+
+/** The stylesheet keeps its name; every other asset is a glyph under `imgs/`. */
+function cssAssetName(info) {
+  const names = [...(info.names ?? []), ...(info.originalFileNames ?? []), info.name ?? ""];
+  return names.some((name) => name.endsWith(".css")) ? "aio-ui.css" : "imgs/[name][extname]";
 }
 
 await bundleJs(false, "aio-ui.js");
@@ -261,11 +280,43 @@ await bundleJs(true, "aio-ui.min.js");
 await bundleCss(false, join(outDir, ".css"));
 await bundleCss(true, join(outDir, ".css.min"));
 
-const { copyFileSync, rmSync } = await import("node:fs");
+const { copyFileSync, cpSync, rmSync } = await import("node:fs");
 copyFileSync(join(outDir, ".css", "aio-ui.css"), join(outDir, "aio-ui.css"));
 copyFileSync(join(outDir, ".css.min", "aio-ui.css"), join(outDir, "aio-ui.min.css"));
+// The glyphs are files: `imgs/` sits beside `aio-ui.css` so every relative `url()` resolves
+// at the branch root (`<cdn>/imgs/add-cart.svg`) exactly as it does beside `icons.css`.
+rmSync(join(outDir, "imgs"), { recursive: true, force: true });
+cpSync(join(outDir, ".css", "imgs"), join(outDir, "imgs"), { recursive: true });
 rmSync(join(outDir, ".css"), { recursive: true, force: true });
 rmSync(join(outDir, ".css.min"), { recursive: true, force: true });
+
+// Proof the stylesheet links instead of inlining: every relative `url()` resolves to a file
+// sitting beside the CSS, and there is exactly one link per glyph file. Authored `data:` URIs
+// (the spinner, a select arrow) live in the source sheets and stay as written — what must
+// never happen is the bundler folding a *file* back into the CSS. A stylesheet that lost its
+// body (the asset-name collision) fails the `mask-image` and link-count checks.
+{
+  const text = readFileSync(join(outDir, "aio-ui.css"), "utf8");
+  const links = [...text.matchAll(/url\((["']?)([^"')]+)\1\)/g)].map((match) => match[2]);
+  const rooted = links.filter((link) => link.startsWith("/"));
+  const glyphs = links.filter((link) => !/^(data:|[a-z]+:|#|\/)/i.test(link));
+  const files = readdirSync(join(outDir, "imgs")).filter((name) => name.endsWith(".svg"));
+  const broken = glyphs.filter((link) => !existsSync(join(outDir, link)));
+  const problems = [
+    rooted.length ? `${rooted.length} root-absolute url(s) — a CDN path must stay relative` : "",
+    broken.length ? `${broken.length} url(s) with no file beside the CSS (${broken.slice(0, 3).join(", ")})` : "",
+    glyphs.length === files.length
+      ? ""
+      : `${glyphs.length} link(s) against ${files.length} glyph file(s) — a glyph was inlined or a rule dropped`,
+    /mask-image/.test(text) ? "" : "no mask-image rule — the icon sheet is missing",
+  ].filter(Boolean);
+  if (problems.length) {
+    console.error(`\n✖ aio-ui.css does not link its glyphs:\n`);
+    for (const problem of problems) console.error(`  - ${problem}`);
+    process.exit(1);
+  }
+  console.log(`  imgs/          ${String(files.length).padStart(3)} glyph(s), every one linked`);
+}
 
 for (const file of ["aio-ui.js", "aio-ui.min.js", "aio-ui.css", "aio-ui.min.css"]) {
   const bytes = statSync(join(outDir, file)).size;

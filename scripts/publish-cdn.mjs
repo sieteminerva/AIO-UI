@@ -84,9 +84,12 @@ for (const [name, entry] of Object.entries(registry.packages)) {
 }
 // The bundled pair sits next to the tarballs; jsDelivr serves it from the branch root.
 const bundleFiles = registry.bundle?.files ?? [];
+// The bundled sheet links its glyphs, so `imgs/` sits at the branch root beside `aio-ui.css`.
+const bundleImgs = registry.bundle?.imgs?.folder;
 for (const file of [...bundleFiles, "registry.json", "layout.json", "checksums.txt"]) {
   copyFileSync(join(releaseDir, file), join(treeDir, file));
 }
+if (bundleImgs) cpSync(join(releaseDir, bundleImgs), join(treeDir, bundleImgs), { recursive: true });
 
 // ---- 1b. Render the branch README from the template + registry -------------
 const README_TEMPLATE = join(ROOT, "templates", "cdn", "README.md.tpl");
@@ -124,7 +127,15 @@ const worktree = ensureWorktree({ root: ROOT, branch, remote });
 
 // Same checkout the tarballs live in, so only the unpacked tree at the root is
 // replaced. A wipe would delete `v<version>/`, and a published URL is a contract.
-for (const entry of ["packages", ...bundleFiles, "registry.json", "layout.json", "checksums.txt", "README.md"]) {
+for (const entry of [
+  "packages",
+  ...bundleFiles,
+  ...(bundleImgs ? [bundleImgs] : []),
+  "registry.json",
+  "layout.json",
+  "checksums.txt",
+  "README.md",
+]) {
   rmSync(join(worktree, entry), { recursive: true, force: true });
 }
 

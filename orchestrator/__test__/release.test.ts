@@ -60,7 +60,11 @@ interface Registry {
   base: string;
   packages: Record<string, RegistryEntry>;
   /** The four `aio-ui{,.min}.{js,css}` files published at the branch root, when present. */
-  bundle?: { files: string[] };
+  bundle?: {
+    files: string[];
+    /** The glyph folder the bundled sheet links, when present (b110 onwards). */
+    imgs?: { folder: string; count: number; sample: string };
+  };
 }
 
 /** Aggregators whose `export *` makes the import map a closure, not a list. */
@@ -156,6 +160,31 @@ describe.skipIf(!available)("release artefacts", () => {
       if (actual !== hash) bad.push(file);
     }
     expect(bad).toEqual([]);
+  });
+
+  it("ships the bundled sheet's glyphs beside it, as links", () => {
+    // The sheet links (`url("./imgs/x.svg")`), it never inlines, so the folder has to travel
+    // with the four bundle files — otherwise every icon 404s at the branch root. This is the
+    // artefact-level half of the guard `build-bundle.mjs` runs on the freshly built file.
+    const imgs = registry.bundle?.imgs;
+    if (!imgs) return; // a registry written before b110 records no folder
+    const folder = join(RELEASE, imgs.folder);
+    expect(existsSync(join(folder, imgs.sample)), `sample glyph ${imgs.sample}`).toBe(true);
+    expect(readdirSync(folder).filter((name) => name.endsWith(".svg"))).toHaveLength(imgs.count);
+
+    const problems: string[] = [];
+    for (const file of ["aio-ui.css", "aio-ui.min.css"]) {
+      const path = join(RELEASE, file);
+      if (!existsSync(path)) continue;
+      const text = readFileSync(path, "utf8");
+      const links = [...text.matchAll(/url\((["']?)([^"')]+)\1\)/g)].map((match) => match[2]);
+      // Authored `data:` glyphs (the spinner, a select arrow) stay as written; a link to a
+      // *file* must resolve beside the stylesheet, never at a domain root.
+      const linked = links.filter((link) => !/^(data:|[a-z]+:|#)/i.test(link));
+      for (const link of linked) if (!existsSync(join(RELEASE, link))) problems.push(`${file}: ${link}`);
+      if (!linked.length) problems.push(`${file}: no relative glyph link at all`);
+    }
+    expect(problems).toEqual([]);
   });
 
   it("names every tarball after its own package version", () => {

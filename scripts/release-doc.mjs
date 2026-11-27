@@ -96,6 +96,10 @@ function artefactsTable() {
   const bundleBase = registry.bundle?.base ?? base;
   // Keep `bundle.files` order (JS pair first, then CSS) — that is how release.mjs lists them.
   const rows = bundleFiles.map((file) => [`\`${file}\``, `\`${bundleBase}${file}\``]);
+  // The sheet links its glyphs, so the folder is part of the branch root too. One sample URL
+  // stands for the 107 files; a folder URL would answer with a listing, not a file.
+  const imgs = registry.bundle?.imgs;
+  if (imgs) rows.push([`\`${imgs.folder}/\``, `\`${bundleBase}${imgs.folder}/${imgs.sample}\` (${imgs.count} glyphs)`]);
   return table(["File", "URL"], rows);
 }
 
@@ -222,6 +226,9 @@ async function runProbe() {
   const urls = [];
   if (base) urls.push(`${base}registry.json`);
   for (const file of bundleFiles) urls.push(`${registry.bundle?.base ?? base}${file}`);
+  // One glyph from the folder the bundled sheet links: proof `imgs/` reached the CDN.
+  const imgs = registry.bundle?.imgs;
+  if (imgs) urls.push(`${registry.bundle?.base ?? base}${imgs.folder}/${imgs.sample}`);
   const firstPackage = Object.values(packages)[0];
   if (firstPackage?.tarball) urls.push(firstPackage.tarball);
 
@@ -253,7 +260,7 @@ if (probe) {
 } else if (readme) {
   runReadme();
 } else {
-  const artefactRows = bundleFiles.length;
+  const artefactRows = bundleFiles.length + (registry.bundle?.imgs ? 1 : 0);
   if (!apply) {
     console.log(
       `[doc] v${targetVersion} · ${counts.packages} package(s) · ${counts.entries} row(s) ` +

@@ -530,6 +530,14 @@ for (const item of plan) {
 const BUNDLE_FILES = ["aio-ui.js", "aio-ui.min.js", "aio-ui.css", "aio-ui.min.css"];
 const bundleSource = join(ROOT, "temp", "bundle", "dist");
 const missingBundle = BUNDLE_FILES.filter((file) => !existsSync(join(bundleSource, file)));
+// The stylesheet links its glyphs (`url("./imgs/x.svg")`), so the folder travels beside the
+// four files: at the branch root `<cdn>/aio-ui.css` resolves `<cdn>/imgs/x.svg`.
+const bundleGlyphDir = join(bundleSource, "imgs");
+const bundleGlyphs = existsSync(bundleGlyphDir)
+  ? readdirSync(bundleGlyphDir)
+      .filter((name) => name.endsWith(".svg"))
+      .sort()
+  : [];
 if (missingBundle.length) {
   console.warn(`[release] no bundled pair (${missingBundle.join(", ")}) — run: npm run build:bundle`);
 } else {
@@ -543,6 +551,11 @@ if (missingBundle.length) {
     base: `https://cdn.jsdelivr.net/gh/${repository}@v${version}/`,
     usage: "aio-ui.min.css + aio-ui.min.js for a page with no build step (globalThis.AioUI)",
   };
+  if (bundleGlyphs.length) {
+    cpSync(bundleGlyphDir, join(outDir, "imgs"), { recursive: true });
+    // `sample` is what `check:live` fetches: one glyph proves the folder reached jsDelivr.
+    registry.bundle.imgs = { folder: "imgs", count: bundleGlyphs.length, sample: bundleGlyphs[0] };
+  }
 }
 
 // ---- Size gates, before anything is published -----------------------------

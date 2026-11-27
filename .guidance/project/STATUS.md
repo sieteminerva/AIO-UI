@@ -1,68 +1,34 @@
 # Logbook — the cards
 
-> Orientation only: read the cards, report them, ask which card. Open a card's detail doc
-> **only** after the user picks it — never "to orient" (`AGENT_RULES.md` §13). Rewritten each
-> session, newest on top. One card = one line + one pointer.
+> Orientation only: read the cards, report them, ask which card. Detail docs open only after the
+> user picks (`AGENT_RULES.md` §13). Newest on top; one card = one line + one pointer.
 
-### 1. Icon channel + the note contract + one tab id pair (b112/b113, landed)
+### 1. Open task notes — the queue b111 left behind
 
-The `<i>` behaviour lives in `src/components.css` and `icons.css` is links only (112 glyphs,
-`close` retired for `cross`); the field schema is one name again — `iFieldNode`, with
-`AnyInputSchema` gone — and the Apps Script note is public as `iAppsScriptFieldNode` (`range`
-is a named range, allowed only on the types that choose; `config.sheet`/`cell`/`skipped` are the
-storage address). A tab's button and panel now share one id pair, `onTabChanged`/
-`onContentLoaded` are fed, `active` falls back to the first tab, and a button carries ONE
-`btn-label` span with the record's `title` as its tooltip (the second span was always empty).
-`copy` copies a one-control scope's value (not its payload), and `config.minHeight` finally lands
-on the form as `--form-min-height` instead of a `@container` wrapper that is never rendered.
-**Not published:** the CDN at `@v0.2.8` still serves the pre-b112 bytes — the release was written
-locally and then reverted on purpose (the owner installs from a path for now); local tarballs live
-in `temp/tgz-0.2.8/` (input, form, tab). Republishing the same version needs
-`release.mjs --version 0.2.8 --apply` → `publish-releases.mjs --apply` → `publish-cdn.mjs --apply`
-(moves the tag) → jsDelivr purge.
-→ `packages/styles/icons/README.md` · `docs/framework/FIELD-TYPES.md` ·
-`packages/components/tab/README.md` · `docs/framework/INPUT-ACTIONS.md`
+The only open card: everything through b111 landed, so the debt sits in five `TASK.md` files —
+`scripts/TASK.md` (surface generator + the last two wildcard rows), `packages/styles/TASK.md`,
+`packages/components/header/TASK.md` (demo control for `appearance`, `selectors[key].color`
+audit), `packages/components/id-address/TASK.md` (native → base → aio pick order), and
+`examples/demo/src/ThemeConsole/TASK.md` (drawer height, mixer persistence, 2 more) — plus the
+package READMEs that still say `install 0.2.6`.
 
-### 2. v0.2.8 published — the glyphs sit beside the bundled CSS (b110, landed)
+**The one item that needs a person, not an agent:** finalising the CSS tokens per component.
+T1–T5 already shipped in `v0.2.6` (b82–b94): one `light-dark()` root, two brand strengths (fill
+vs `-ui` stroke), a 4.5:1 ink floor, and a lint test that fails on any raw colour literal. So the
+plumbing works — every sheet reads `--app-*` and nothing hardcodes a hex any more. What is left is
+not code. Nobody has actually sat with each component and said "this grey is right" or "this one
+is off". That verdict cannot be tested, only looked at, and the eyes are the owner's. Until then
+the tokens are _technically_ final but not _agreed_ — which is exactly why they stay on this
+queue instead of the landed list.
+→ `packages/styles/TASK.md` (the others sit beside their package)
 
-The bundled sheet links its 107 glyphs (`url("./imgs/x.svg")`) instead of inlining them, so `imgs/`
-travels with the four bundle files and `registry.bundle.imgs` records it. Two defects were in the
-way: every Vite asset was named `aio-ui.css`, so the last SVG overwrote the stylesheet (the artefact
-was 8 kB of raw `<svg>`), and `base: "/"` rewrote links to the domain root. Proved: `npm run verify`
-→ 1137 pass / 1 skip; `aio-ui.css` 328.4 kB / `min.css` 173.7 kB (was 530.1 / 379.2) with 107 links;
-the published CSS answers `200` with 107 relative links and `imgs/add-cart.svg` `200
-image/svg+xml`; `check:live` **7/7**. Also learned: a partial version bump repacks every dependent at
-the old number (the dependency URL carries the tag), so 0.2.8 shipped as a whole-family bump.
-**Open:** package README `install` blocks still say `0.2.6` — `release-doc --readme --apply` was
-never run for 0.2.7/0.2.8.
-→ `docs/releases/v0.2.8.md` · `scripts/build-bundle.mjs`
+### Landed — one line each, prose in `.guidance/project/framework.md`
 
-### 3. Open task notes — the queue b111 left behind
+- **b112/b113** icon channel + `iFieldNode` + one tab id pair → `packages/styles/icons/README.md` · `docs/framework/FIELD-TYPES.md`
+- **v0.2.8** published, glyphs beside the bundled sheet → `docs/releases/v0.2.8.md`
+- **b109** form multistep + action seam → `packages/components/form/adapters/Multistep.ts`
 
-Everything landed through b111, so the debt now lives in five `TASK.md` files rather than here:
-`scripts/TASK.md` (surface generator + the last two wildcard rows), `packages/styles/TASK.md`
-(**T3 taste pass — owner reviews the colours**, plus the picker-upward re-check),
-`packages/components/header/TASK.md` (demo control for `appearance`, `selectors[key].color` audit),
-`packages/components/id-address/TASK.md` (confirm the native → base → aio pick order before the
-next change), `examples/demo/src/ThemeConsole/TASK.md` (drawer height, mixer persistence, 2 more).
-Plus the one item card 1 carries: package README `install` blocks still say `0.2.6`.
-→ `scripts/TASK.md` (the rest are beside their package)
-
-### 4. Form multistep + action seam + icon channel (b109, landed)
-
-Multistep no longer assumes a step sits at schema index 0 (`attach()` mounts the smallest held
-index, `isFirst`/`isLast` come from the steps that exist, one-step form gets Submit); the input +
-actions composite keeps one hairline at the seam and its outer radius. `packages/styles/icons` is a
-real channel: `icons.css` links `imgs/*.svg`, the folder ships, `src/icon.css` dropped its 83
-duplicate inline glyphs (238 kB → 13 kB). Proved: `npm run verify` → 1136 pass / 1 skip; measured
-input radii `9.68/0/9.68/0` px with a `rgba(0,0,0,0)` seam.
-→ `packages/styles/icons/README.md` · `packages/components/form/adapters/Multistep.ts`
-
-### No landed card without a pointer
-
-A card leaves this page only when its detail doc carries the rest. To start a card, take the
-owner's request (or a `TASK.md` above), record it here as one summary line plus a link that
-resolves in the commit that lands it.
+_No landed card without a pointer: the prose lives in its doc and the commit that landed it._
 
 ## Map
 

@@ -7,12 +7,12 @@ surgery, no per-component code — the cheapest possible theme, and the template
 <!-- install:begin -->
 ## Install
 
-Version — `0.2.6` (tag `v0.2.6`)
+Version — `0.2.9` (tag `v0.2.9`)
 
-    npm install https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.6/aio-ui-theme-cyberpunk-0.2.6.tgz
+    npm install https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.9/aio-ui-theme-cyberpunk-0.2.9.tgz
 
-CDN (ES module, no build step) — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.6/packages/themes/cyberpunk/dist/index.js`
-Stylesheet — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.6/packages/themes/cyberpunk/dist/src/CyberpunkTheme.css`
+CDN (ES module, no build step) — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.9/packages/themes/cyberpunk/dist/index.js`
+Stylesheet — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.9/packages/themes/cyberpunk/dist/src/CyberpunkTheme.css`
 <!-- install:end -->
 
 ## Hooks

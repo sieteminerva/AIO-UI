@@ -6,11 +6,11 @@ theme, and a redirect instead of a blank screen when the hash names a route nobo
 <!-- install:begin -->
 ## Install
 
-Version — `0.2.6` (tag `v0.2.6`)
+Version — `0.2.9` (tag `v0.2.9`)
 
-    npm install https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.6/aio-ui-router-0.2.6.tgz
+    npm install https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.9/aio-ui-router-0.2.9.tgz
 
-CDN (ES module, no build step) — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.6/packages/modules/router/dist/index.js`
+CDN (ES module, no build step) — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.9/packages/modules/router/dist/index.js`
 <!-- install:end -->
 
 ## Payload

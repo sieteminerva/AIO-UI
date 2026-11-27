@@ -19,7 +19,8 @@
     "dir": "packages/styles",
     "stylesRoot": "src",
     "subpaths": {
-      "./index.css": "src/index.css"
+      "./index.css": "src/index.css",
+      "./icons.css": "icons/icons.css"
     }
   },
   "@aio-ui/utilities": {

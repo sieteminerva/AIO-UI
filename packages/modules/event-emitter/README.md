@@ -7,11 +7,11 @@ The `events` slot — one synchronous bus for two layers: component events (`ele
 <!-- install:begin -->
 ## Install
 
-Version — `0.2.6` (tag `v0.2.6`)
+Version — `0.2.9` (tag `v0.2.9`)
 
-    npm install https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.6/aio-ui-event-emitter-0.2.6.tgz
+    npm install https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.9/aio-ui-event-emitter-0.2.9.tgz
 
-CDN (ES module, no build step) — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.6/packages/modules/event-emitter/dist/index.js`
+CDN (ES module, no build step) — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.9/packages/modules/event-emitter/dist/index.js`
 <!-- install:end -->
 
 ## Payload

@@ -11,16 +11,14 @@ selector, or retheme it without touching markup by redeclaring a `--app-*` token
 (or one `--masonry-*` token for this component only).
 
 <!-- install:begin -->
-
 ## Install
 
-Version — `0.2.6` (tag `v0.2.6`)
+Version — `0.2.9` (tag `v0.2.9`)
 
-    npm install https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.6/aio-ui-masonry-0.2.6.tgz
+    npm install https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.9/aio-ui-masonry-0.2.9.tgz
 
-CDN (ES module, no build step) — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.6/packages/components/masonry/dist/index.js`
-Stylesheet — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.6/packages/components/masonry/dist/Masonry.css`
-
+CDN (ES module, no build step) — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.9/packages/components/masonry/dist/index.js`
+Stylesheet — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.9/packages/components/masonry/dist/Masonry.css`
 <!-- install:end -->
 
 ## Payload

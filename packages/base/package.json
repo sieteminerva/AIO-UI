@@ -1,17 +1,17 @@
 {
   "name": "@aio-ui/base",
-  "version": "0.2.8",
+  "version": "0.2.9",
   "type": "module",
   "files": [
     "dist",
     "src"
   ],
   "dependencies": {
-    "@aio-ui/skeleton": "^0.2.8",
-    "@aio-ui/utilities": "^0.2.8"
+    "@aio-ui/skeleton": "^0.2.9",
+    "@aio-ui/utilities": "^0.2.9"
   },
   "peerDependencies": {
-    "@aio-ui/core": "^0.2.8"
+    "@aio-ui/core": "^0.2.9"
   },
   "exports": {
     ".": {

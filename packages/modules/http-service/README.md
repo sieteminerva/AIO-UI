@@ -6,11 +6,11 @@ calls `fetch` or imports a JSON file directly, and moving to a real backend is a
 <!-- install:begin -->
 ## Install
 
-Version — `0.2.6` (tag `v0.2.6`)
+Version — `0.2.9` (tag `v0.2.9`)
 
-    npm install https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.6/aio-ui-http-service-0.2.6.tgz
+    npm install https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.9/aio-ui-http-service-0.2.9.tgz
 
-CDN (ES module, no build step) — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.6/packages/modules/http-service/dist/index.js`
+CDN (ES module, no build step) — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.9/packages/modules/http-service/dist/index.js`
 <!-- install:end -->
 
 ## Payload

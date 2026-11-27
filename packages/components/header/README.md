@@ -4,6 +4,17 @@ An article-style heading block: an icon, a title, a subtitle and one metadata li
 The root is a real `<header>`, so the markup is the page's SEO surface — one heading,
 machine-readable dates, and decoration that never enters the accessible name.
 
+<!-- install:begin -->
+## Install
+
+Version — `0.2.9` (tag `v0.2.9`)
+
+    npm install https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.9/aio-ui-header-0.2.9.tgz
+
+CDN (ES module, no build step) — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.9/packages/components/header/dist/index.js`
+Stylesheet — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.9/packages/components/header/dist/Header.css`
+<!-- install:end -->
+
 ## Payload
 
 ```ts

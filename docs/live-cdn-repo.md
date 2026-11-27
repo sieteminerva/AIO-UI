@@ -3,12 +3,12 @@
 Operational guide for the published `@aio-ui/*` packages: what is live, which repository and tag
 serve it, the commands that publish it, and the checks that must pass before anything is pushed.
 
-Last verified: **2026-11-27** — the published tag is **`v0.2.8`** (**38 packages**, 79 subpath
-rows, mode B, jsDelivr `200`). Probed on `v0.2.8`: `registry.json`, `aio-ui{,.min}.{js,css}`, the
-glyph `imgs/add-cart.svg` and `raw/releases/v0.2.8/aio-ui-base-0.2.8.tgz` all return `200`
+Last verified: **2026-11-28** — the published tag is **`v0.2.9`** (**38 packages**, 79 subpath
+rows, mode B, jsDelivr `200`). Probed on `v0.2.9`: `registry.json`, `aio-ui{,.min}.{js,css}`, the
+glyph `imgs/add-cart.svg` and `raw/releases/v0.2.9/aio-ui-base-0.2.9.tgz` all return `200`
 (`check:live` 7/7), the package
 modules and stylesheets answer `200`, and the CDN `checksums.txt` is byte-identical to the local
-one. Tags `v0.2.1` … `v0.2.8` exist; the earlier ones (`v0.1.0`, `v0.1.1`, `v0.2.0`) were deleted
+one. Tags `v0.2.1` … `v0.2.9` exist; the earlier ones (`v0.1.0`, `v0.1.1`, `v0.2.0`) were deleted
 when the repository was renamed, because their content named the old repository and jsDelivr pins
 a served tag permanently — a fix ships as a **new version** (§8). Installing from a clone is §3,
 the branch README is §2.1.
@@ -19,6 +19,15 @@ the branch README is §2.1.
 > on `main`) and `temp/` is scratch only. `@cdn` URLs are retired — use `@releases` or the tag.
 > GitHub release assets are no longer part of the flow: a tarball is a file on the branch.
 
+> **`v0.2.9` published (2026-11-28).** 38 packages, **mode B**, 1.44 MB total, heaviest `input`
+> 0.24 MB; branch root `aio-ui{,.min}.{js,css}` (`min.js` 544.8 kB, `min.css` 163.4 kB) plus
+> `imgs/` — **112 glyphs**, `close` retired for `cross`. Carries the b112/b113 work: one field
+> schema (`iFieldNode`, `AnyInputSchema` gone), `icons.css` links only, one tab id pair, and
+> `config.minHeight` landing on the form root. `v0.2.8` stays untouched: jsDelivr had already
+> served it (`immutable`), so the fix ships as a new version — the `v0.1.1` lesson. `publish-releases`
+> (branch `fe8e2ba`) then `publish-cdn` (branch `0282f4e`, tag `v0.2.9`); `check:live` 7/7.
+> → `docs/releases/v0.2.9.md`
+>
 > **`v0.2.8` published (2026-11-27).** 38 packages, **mode B**, 1.44 MB total, heaviest `input`
 > 0.23 MB; branch root `aio-ui{,.min}.{js,css}` (`min.js` 543.9 kB, `min.css` 173.7 kB) **plus
 > `imgs/`** — the bundled sheet links its 107 glyphs (`url("./imgs/x.svg")`) instead of inlining
@@ -68,12 +77,12 @@ the branch README is §2.1.
 | Default branch | `main` — source only; `dist/` is gitignored                                                    |
 | CDN branch     | `releases` — orphan branch: the unpacked tree at the root **and** `v<version>/*.tgz` beside it |
 | Local checkout | `<repo>/releases` — a git worktree of that branch, ignored on `main`                           |
-| Version tag    | `v0.2.8` — the current published tag (38 packages, 79 subpath rows)                            |
-| CDN base       | `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.8/`                                      |
-| Branch README  | `…@v0.2.8/README.md` — generated at publish time, see §2.1                                     |
+| Version tag    | `v0.2.9` — the current published tag (38 packages, 79 subpath rows)                            |
+| CDN base       | `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.9/`                                      |
+| Branch README  | `…@v0.2.9/README.md` — generated at publish time, see §2.1                                     |
 | Install URL    | `…/raw/releases/v<version>/aio-ui-<name>-<version>.tgz` — no GitHub release asset to upload    |
 | Packages       | 38 (4 framework roots, 23 components, 7 modules, 3 themes, 1 kit)                              |
-| Glyph folder   | `imgs/` at the branch root — 107 files, beside `aio-ui.css` (`registry.bundle.imgs`)           |
+| Glyph folder   | `imgs/` at the branch root — 112 files, beside `aio-ui.css` (`registry.bundle.imgs`)           |
 
 Why the split: jsDelivr serves **repository files**, and `dist/` is not committed on `main`.
 `scripts/publish-cdn.mjs` rebuilds the tag content from the release tarballs on `releases`, so the

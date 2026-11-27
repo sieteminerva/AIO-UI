@@ -14,15 +14,14 @@ it a plain CSS library by construction: any markup carrying the same wrappers an
 styled identically, and the base field look stays with the component that rendered the field.
 
 <!-- install:begin -->
-
 ## Install
 
-Version — `0.2.6` (tag `v0.2.6`)
+Version — `0.2.9` (tag `v0.2.9`)
 
-    npm install https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.6/aio-ui-id-address-0.2.6.tgz
+    npm install https://github.com/sieteminerva/AIO-UI/raw/releases/v0.2.9/aio-ui-id-address-0.2.9.tgz
 
-CDN (ES module, no build step) — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.6/packages/components/id-address/dist/index.js`
-Stylesheet — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.6/packages/components/id-address/dist/id-address.css`
+CDN (ES module, no build step) — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.9/packages/components/id-address/dist/index.js`
+Stylesheet — `https://cdn.jsdelivr.net/gh/sieteminerva/AIO-UI@v0.2.9/packages/components/id-address/dist/IdAddress.css`
 <!-- install:end -->
 
 ## Payload
